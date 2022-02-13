@@ -1,0 +1,16 @@
+\DoxyHorRuler{0}
+
+
+conceptually the Data\+Model class is a transient data storage class thats accessable from every Tool within a Tool\+Chain. It is the primary location for storing and passing data between Tools.
+
+The Data\+Model class can therefore be adapted and expanded to include any data objects or classes that you require in your applicaion
+
+In it\textquotesingle{}s initial blank state it comes with just two variables\+:
+
+\mbox{[} Store vars; \mbox{]}\+: An ascii storage class which maps string keys to any variable type (see Store class in Tool\+Framework). This class houses by defualt all the variables passed to a Tool\+Chain in the Tool\+Chain config as well as all the command line argumnets at execution. It also has some flag vaiables which can be read about int he manual for things like stopping execution when looping.
+
+and
+
+\mbox{[} Logging $\ast$\+Log; \mbox{]}\+: A lass for sending logg messages similar to c++ cout with a redirectable stream (see Logging class in Tool\+Framework/\+Tool\+DAQ)
+
+A TTree map with getter and setter functions is provided and can be uncommented if required for those who wish to organise root TTrees (note\+: requires root dependancy) 
