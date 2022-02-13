@@ -1,0 +1,10 @@
+*~
+*.o
+include/*.h
+lib/*.so
+UserTools/*/*.o
+DataModel/*.o
+Dependencies
+main
+*.d
+*.root

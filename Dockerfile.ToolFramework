@@ -1,0 +1,15 @@
+### Created by Dr. Benjamin Richards
+
+### Download base image from repo
+FROM toolframework/core
+
+### Run the following commands as super user (root):
+USER root
+
+Run git clone https://github.com/ToolFramework/ToolApplication.git \
+    && cd ToolApplication \
+    && ln -s /opt ./Dependencies \
+    && ./GetToolFramework.sh --Final 
+
+### Open terminal
+CMD ["/bin/bash"]
