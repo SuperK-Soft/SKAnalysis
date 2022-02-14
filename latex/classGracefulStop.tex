@@ -1,0 +1,63 @@
+\hypertarget{classGracefulStop}{}\doxysection{Graceful\+Stop Class Reference}
+\label{classGracefulStop}\index{GracefulStop@{GracefulStop}}
+
+
+{\ttfamily \#include $<$Graceful\+Stop.\+h$>$}
+
+Inheritance diagram for Graceful\+Stop\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classGracefulStop}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classGracefulStop_a6e8c0d0f0671c53d85e5bd74f67f0855}\label{classGracefulStop_a6e8c0d0f0671c53d85e5bd74f67f0855}} 
+\mbox{\hyperlink{classGracefulStop_a6e8c0d0f0671c53d85e5bd74f67f0855}{Graceful\+Stop}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classGracefulStop_aa29cd11c418cbfd806c70e450af148f9}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classGracefulStop_ad64480018bb4a01816c8957cf4f2f9f6}\label{classGracefulStop_ad64480018bb4a01816c8957cf4f2f9f6}} 
+bool \mbox{\hyperlink{classGracefulStop_ad64480018bb4a01816c8957cf4f2f9f6}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Execute function checks if we received linux SIGUSR1 and sets \char`\"{}\+Stop\+Loop\char`\"{} to perform a graceful Toolchain stop if we have. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classGracefulStop_ab6e1039f96b8578972a834737db9e6c7}\label{classGracefulStop_ab6e1039f96b8578972a834737db9e6c7}} 
+bool \mbox{\hyperlink{classGracefulStop_ab6e1039f96b8578972a834737db9e6c7}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise function cleans up signal handler. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This tool checks for the SIGUSR1 linux signal and sets the \textquotesingle{}Stop\+Loop\textquotesingle{} variable to gracefully end the toolchain if it has been received.
+
+\begin{DoxyParagraph}{Author}
+B.\+Richards 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2019/05/28 10\+:44\+:00 
+\end{DoxyParagraph}
+Contact\+: \href{mailto:b.richards@qmul.ac.uk}{\texttt{ b.\+richards@qmul.\+ac.\+uk}} 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classGracefulStop_aa29cd11c418cbfd806c70e450af148f9}\label{classGracefulStop_aa29cd11c418cbfd806c70e450af148f9}} 
+\index{GracefulStop@{GracefulStop}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!GracefulStop@{GracefulStop}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool Graceful\+Stop\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+Graceful\+Stop/Graceful\+Stop.\+h\item 
+User\+Tools/\+Graceful\+Stop/Graceful\+Stop.\+cpp\end{DoxyCompactItemize}

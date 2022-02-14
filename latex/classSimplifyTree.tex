@@ -1,0 +1,63 @@
+\hypertarget{classSimplifyTree}{}\doxysection{Simplify\+Tree Class Reference}
+\label{classSimplifyTree}\index{SimplifyTree@{SimplifyTree}}
+
+
+{\ttfamily \#include $<$Simplify\+Tree.\+h$>$}
+
+Inheritance diagram for Simplify\+Tree\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classSimplifyTree}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classSimplifyTree_a35335e92c83efdc95abb4a5d7bf39bdb}\label{classSimplifyTree_a35335e92c83efdc95abb4a5d7bf39bdb}} 
+\mbox{\hyperlink{classSimplifyTree_a35335e92c83efdc95abb4a5d7bf39bdb}{Simplify\+Tree}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classSimplifyTree_a9a8f3f71837464c1a0496e492ea69beb}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise function for setting up Tool resources. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSimplifyTree_a15b464278332a7cfdd068419a3e0a08f}\label{classSimplifyTree_a15b464278332a7cfdd068419a3e0a08f}} 
+bool \mbox{\hyperlink{classSimplifyTree_a15b464278332a7cfdd068419a3e0a08f}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Execute function used to perform Tool purpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSimplifyTree_a0279c39ad5c93b2cfdad839fe05ea379}\label{classSimplifyTree_a0279c39ad5c93b2cfdad839fe05ea379}} 
+bool \mbox{\hyperlink{classSimplifyTree_a0279c39ad5c93b2cfdad839fe05ea379}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resources. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A simple Tool to read a raw input file and convert it to a simple TTree that requires no libraries to read.
+
+\begin{DoxyParagraph}{Author}
+M.\+O\textquotesingle{}Flaherty 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2022/01/15 
+\end{DoxyParagraph}
+Contact\+: \href{mailto:marcus.o-flaherty@warwick.ac.uk}{\texttt{ marcus.\+o-\/flaherty@warwick.\+ac.\+uk}} 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classSimplifyTree_a9a8f3f71837464c1a0496e492ea69beb}\label{classSimplifyTree_a9a8f3f71837464c1a0496e492ea69beb}} 
+\index{SimplifyTree@{SimplifyTree}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!SimplifyTree@{SimplifyTree}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool Simplify\+Tree\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise function for setting up Tool resources. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+Simplify\+Tree/Simplify\+Tree.\+h\item 
+User\+Tools/\+Simplify\+Tree/Simplify\+Tree.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,134 @@
+\hypertarget{classMTreeReader}{}\doxysection{MTree\+Reader Class Reference}
+\label{classMTreeReader}\index{MTreeReader@{MTreeReader}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a974022d02284a7559eafbfdedcc3f03b}\label{classMTreeReader_a974022d02284a7559eafbfdedcc3f03b}} 
+{\bfseries MTree\+Reader} (std\+::string filename, std\+::string treename)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a22f28e71188e1b1766675d2c8b3b194b}\label{classMTreeReader_a22f28e71188e1b1766675d2c8b3b194b}} 
+int {\bfseries Load} (std\+::string filename, std\+::string treename)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a446dba4b4112760a422cb73eb056f609}\label{classMTreeReader_a446dba4b4112760a422cb73eb056f609}} 
+int {\bfseries Load\+File} (std\+::string filename)
+\item 
+\mbox{\Hypertarget{classMTreeReader_afb3a715517f85caf38923283a499fac1}\label{classMTreeReader_afb3a715517f85caf38923283a499fac1}} 
+int {\bfseries Load\+Tree} (std\+::string treename)
+\item 
+\mbox{\Hypertarget{classMTreeReader_adaf3cb6b9a3e97af6fa2b1c0699154c2}\label{classMTreeReader_adaf3cb6b9a3e97af6fa2b1c0699154c2}} 
+int {\bfseries Load} (TTree $\ast$thetreein)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a7ef95b3aed0a707cf0f788257687d9fb}\label{classMTreeReader_a7ef95b3aed0a707cf0f788257687d9fb}} 
+int {\bfseries Load} (std\+::vector$<$ std\+::string $>$ filelist, std\+::string treename)
+\item 
+\mbox{\Hypertarget{classMTreeReader_af3f4ec46c36b13b0d9971fbea696fc69}\label{classMTreeReader_af3f4ec46c36b13b0d9971fbea696fc69}} 
+void {\bfseries Set\+Closed} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a9bee2eae187bac794d7ffd0837af689b}\label{classMTreeReader_a9bee2eae187bac794d7ffd0837af689b}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, const T $\ast$\&pointer\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a6880a7728d629c59174a19eba335f911}\label{classMTreeReader_a6880a7728d629c59174a19eba335f911}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, T $\ast$\&pointer\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_aa956d2e6a640e1d7c40aeef8e1d6a017}\label{classMTreeReader_aa956d2e6a640e1d7c40aeef8e1d6a017}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, T \&ref\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a5016707f6fcc76876b5fa7480a620961}\label{classMTreeReader_a5016707f6fcc76876b5fa7480a620961}} 
+{\footnotesize template$<$typename T , std\+::size\+\_\+t N$>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, T(\&ref\+\_\+in)\mbox{[}N\mbox{]})
+\item 
+\mbox{\Hypertarget{classMTreeReader_a00343311011852bd7bb1f19fbd3436f6}\label{classMTreeReader_a00343311011852bd7bb1f19fbd3436f6}} 
+{\footnotesize template$<$typename T , std\+::size\+\_\+t N, std\+::size\+\_\+t M$>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, T(\&ref\+\_\+in)\mbox{[}N\mbox{]}\mbox{[}M\mbox{]})
+\item 
+\mbox{\Hypertarget{classMTreeReader_ac58daf91abea1f907b8875d9512cc049}\label{classMTreeReader_ac58daf91abea1f907b8875d9512cc049}} 
+{\footnotesize template$<$typename T , std\+::size\+\_\+t N, std\+::size\+\_\+t M, std\+::size\+\_\+t S$>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, T(\&ref\+\_\+in)\mbox{[}N\mbox{]}\mbox{[}M\mbox{]}\mbox{[}S\mbox{]})
+\item 
+\mbox{\Hypertarget{classMTreeReader_aa38a6507e4941c60ec9a83d822fbb61a}\label{classMTreeReader_aa38a6507e4941c60ec9a83d822fbb61a}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get\+Array\+Branch\+Value} (std\+::string branchname, T $\ast$arr\+\_\+in, std\+::size\+\_\+t NCOL, std\+::size\+\_\+t NROW=1, std\+::size\+\_\+t NAISLE=1)
+\item 
+\mbox{\Hypertarget{classMTreeReader_aaacd375809e27f3d2caaa5881933f2e3}\label{classMTreeReader_aaacd375809e27f3d2caaa5881933f2e3}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get\+Branch\+Value} (std\+::string branchname, \mbox{\hyperlink{classbasic__array}{basic\+\_\+array}}$<$ T $>$ \&ref\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_af23ec30b7dc122a6c80895c2ca003324}\label{classMTreeReader_af23ec30b7dc122a6c80895c2ca003324}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get} (std\+::string branchname, const T $\ast$\&pointer\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_af3140b785198958ee576d3e243e2f70e}\label{classMTreeReader_af3140b785198958ee576d3e243e2f70e}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get} (std\+::string branchname, T \&ref\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a6f383ff4bf6e37a3e1bde9366f4cb241}\label{classMTreeReader_a6f383ff4bf6e37a3e1bde9366f4cb241}} 
+{\footnotesize template$<$typename T $>$ }\\int {\bfseries Get} (std\+::string branchname, \mbox{\hyperlink{classbasic__array}{basic\+\_\+array}}$<$ T $>$ \&ref\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a0e3d2be6532beec1ce33740a789d1a35}\label{classMTreeReader_a0e3d2be6532beec1ce33740a789d1a35}} 
+void {\bfseries Set\+Verbosity} (int verbin)
+\item 
+\mbox{\Hypertarget{classMTreeReader_ada4e6f2d25fde7e03471e6b045b9260e}\label{classMTreeReader_ada4e6f2d25fde7e03471e6b045b9260e}} 
+TFile $\ast$ {\bfseries Get\+File} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a3b8187e4bf33263b4f0bb815bc2a041c}\label{classMTreeReader_a3b8187e4bf33263b4f0bb815bc2a041c}} 
+TTree $\ast$ {\bfseries Get\+Tree} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a247907219c649572d4a10c16e148d395}\label{classMTreeReader_a247907219c649572d4a10c16e148d395}} 
+TTree $\ast$ {\bfseries Get\+Current\+Tree} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a03acddfcaab272c4b2012ea96faeb392}\label{classMTreeReader_a03acddfcaab272c4b2012ea96faeb392}} 
+TChain $\ast$ {\bfseries Get\+Chain} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a92ae5db1e13b521532b65b2117007aca}\label{classMTreeReader_a92ae5db1e13b521532b65b2117007aca}} 
+uint64\+\_\+t {\bfseries Get\+Entry\+Number} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a7be6ab0978eb50ac02d8d469e90e7eec}\label{classMTreeReader_a7be6ab0978eb50ac02d8d469e90e7eec}} 
+int {\bfseries Clear} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a5361a93927d56e3e2da41831ec4864a7}\label{classMTreeReader_a5361a93927d56e3e2da41831ec4864a7}} 
+void {\bfseries Set\+Auto\+Clear} (bool autoclearin)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a1353c505be40db29e3930da587be5efb}\label{classMTreeReader_a1353c505be40db29e3930da587be5efb}} 
+int {\bfseries Get\+Entry} (long entry\+\_\+number)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a366d4cdd96d2500062b2457fe506524f}\label{classMTreeReader_a366d4cdd96d2500062b2457fe506524f}} 
+long {\bfseries Get\+Entries\+Fast} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a6dece1b2db10f32df43f5a4bd7254204}\label{classMTreeReader_a6dece1b2db10f32df43f5a4bd7254204}} 
+long {\bfseries Get\+Entries} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_adf13254178b36fcfe6d577e2f14ba81d}\label{classMTreeReader_adf13254178b36fcfe6d577e2f14ba81d}} 
+int {\bfseries Disable\+Branches} (std\+::vector$<$ std\+::string $>$ branchnames)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a273a1cfe63a964578e2ff5e47e988cdb}\label{classMTreeReader_a273a1cfe63a964578e2ff5e47e988cdb}} 
+int {\bfseries Enable\+Branches} (std\+::vector$<$ std\+::string $>$ branchnames)
+\item 
+\mbox{\Hypertarget{classMTreeReader_acadd40c736447181aec400bc4705c7a8}\label{classMTreeReader_acadd40c736447181aec400bc4705c7a8}} 
+int {\bfseries Only\+Enable\+Branches} (std\+::vector$<$ std\+::string $>$ branchnames)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a44056f292194725a69a868eaf9a86461}\label{classMTreeReader_a44056f292194725a69a868eaf9a86461}} 
+int {\bfseries Only\+Disable\+Branches} (std\+::vector$<$ std\+::string $>$ branchnames)
+\item 
+\mbox{\Hypertarget{classMTreeReader_ab15f6f5875a4dcbbf544b3072d790584}\label{classMTreeReader_ab15f6f5875a4dcbbf544b3072d790584}} 
+std\+::map$<$ std\+::string, std\+::string $>$ {\bfseries Get\+Branch\+Types} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a56dcdba71ede5c23cb7745548abe8559}\label{classMTreeReader_a56dcdba71ede5c23cb7745548abe8559}} 
+std\+::map$<$ std\+::string, intptr\+\_\+t $>$ {\bfseries Get\+Branch\+Addresses} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a7af32e1d96668ae337da6af5e7c2c0bf}\label{classMTreeReader_a7af32e1d96668ae337da6af5e7c2c0bf}} 
+std\+::map$<$ std\+::string, std\+::string $>$ {\bfseries Get\+Branch\+Titles} ()
+\item 
+\mbox{\Hypertarget{classMTreeReader_a7680934f9b6b83edd6cce8d45c8777e6}\label{classMTreeReader_a7680934f9b6b83edd6cce8d45c8777e6}} 
+TBranch $\ast$ {\bfseries Get\+Branch} (std\+::string branchname)
+\item 
+\mbox{\Hypertarget{classMTreeReader_a4aa36d8725cb172f78d73c3f772ce645}\label{classMTreeReader_a4aa36d8725cb172f78d73c3f772ce645}} 
+std\+::string {\bfseries Get\+Branch\+Type} (std\+::string branchname)
+\item 
+\mbox{\Hypertarget{classMTreeReader_aba43fe73b39c23c634f39148989c21e4}\label{classMTreeReader_aba43fe73b39c23c634f39148989c21e4}} 
+std\+::vector$<$ size\+\_\+t $>$ {\bfseries Get\+Branch\+Dims} (std\+::string branchname)
+\item 
+\mbox{\Hypertarget{classMTreeReader_ae85861c0a3269152ac274250e47e50fc}\label{classMTreeReader_ae85861c0a3269152ac274250e47e50fc}} 
+void {\bfseries Set\+MCFlag} (bool MCin)
+\item 
+\mbox{\Hypertarget{classMTreeReader_adcd5814d40caae649a58d0bef255e771}\label{classMTreeReader_adcd5814d40caae649a58d0bef255e771}} 
+bool {\bfseries Get\+MCFlag} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/MTree\+Reader.\+h\item 
+Data\+Model/MTree\+Reader.\+cpp\end{DoxyCompactItemize}

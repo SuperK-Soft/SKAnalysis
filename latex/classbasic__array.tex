@@ -1,0 +1,82 @@
+\hypertarget{classbasic__array}{}\doxysection{basic\+\_\+array$<$ T, bool $>$ Class Template Reference}
+\label{classbasic__array}\index{basic\_array$<$ T, bool $>$@{basic\_array$<$ T, bool $>$}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classbasic__array_adce4678fa56a449124fbe7089f0c005f}\label{classbasic__array_adce4678fa56a449124fbe7089f0c005f}} 
+{\bfseries basic\+\_\+array} (intptr\+\_\+t addr\+\_\+in, size\+\_\+t sizein)
+\item 
+\mbox{\Hypertarget{classbasic__array_a25241e5375eac685fd4d173092d37640}\label{classbasic__array_a25241e5375eac685fd4d173092d37640}} 
+{\bfseries basic\+\_\+array} (intptr\+\_\+t addr\+\_\+in, std\+::vector$<$ size\+\_\+t $>$ sizes)
+\item 
+\mbox{\Hypertarget{classbasic__array_a5b494be656ca7885c977c8892182e465}\label{classbasic__array_a5b494be656ca7885c977c8892182e465}} 
+{\footnotesize template$<$class X $>$ }\\{\bfseries basic\+\_\+array} (X ptr\+\_\+in, typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+same$<$ typename std\+::remove\+\_\+extent$<$ typename std\+::remove\+\_\+pointer$<$ X $>$\+::type $>$\+::type, T $>$\+::value, bool $>$\+::type potato=true)
+\item 
+\mbox{\Hypertarget{classbasic__array_a05c36e9b7606418215665e5e87881b54}\label{classbasic__array_a05c36e9b7606418215665e5e87881b54}} 
+{\footnotesize template$<$typename X , size\+\_\+t N$>$ }\\{\bfseries basic\+\_\+array} (X(\&ref\+\_\+in)\mbox{[}N\mbox{]})
+\item 
+\mbox{\Hypertarget{classbasic__array_a947ae4bb4bf3e5ef0b92b31c427b43eb}\label{classbasic__array_a947ae4bb4bf3e5ef0b92b31c427b43eb}} 
+W {\bfseries operator\mbox{[}$\,$\mbox{]}} (int i) const
+\item 
+\mbox{\Hypertarget{classbasic__array_a5a634e0cce730a5eac2c22d285626ab8}\label{classbasic__array_a5a634e0cce730a5eac2c22d285626ab8}} 
+const W \& {\bfseries at} (int i) const
+\item 
+\mbox{\Hypertarget{classbasic__array_a655bb5c325930dcab5359b17352411b4}\label{classbasic__array_a655bb5c325930dcab5359b17352411b4}} 
+const W \& {\bfseries back} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a24c120c6a362b651254250e29ea49ea9}\label{classbasic__array_a24c120c6a362b651254250e29ea49ea9}} 
+const W $\ast$ {\bfseries begin} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a96d9632e6fc613515b7c4d8bd0403ed7}\label{classbasic__array_a96d9632e6fc613515b7c4d8bd0403ed7}} 
+const W $\ast$ {\bfseries cbegin} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a4fa3ae2ecf449c0dcca2c11074ea007b}\label{classbasic__array_a4fa3ae2ecf449c0dcca2c11074ea007b}} 
+const W $\ast$ {\bfseries cend} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a63b688d6217bdcd265340dface118f0d}\label{classbasic__array_a63b688d6217bdcd265340dface118f0d}} 
+const W $\ast$ {\bfseries crbegin} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a7e8149662082e6b1cf2a0a2424bfce6e}\label{classbasic__array_a7e8149662082e6b1cf2a0a2424bfce6e}} 
+const W $\ast$ {\bfseries crend} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_aa67665a1696d4eaabb28766eabe7ae24}\label{classbasic__array_aa67665a1696d4eaabb28766eabe7ae24}} 
+const W $\ast$ {\bfseries data} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a177ea4ea176a574bb30f6466603de311}\label{classbasic__array_a177ea4ea176a574bb30f6466603de311}} 
+bool {\bfseries empty} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_ad7b55df3c11a4f27faa114a477fb88d1}\label{classbasic__array_ad7b55df3c11a4f27faa114a477fb88d1}} 
+const W $\ast$ {\bfseries end} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_acbb065dc4bbd2ef2f363dc29c3cf31d8}\label{classbasic__array_acbb065dc4bbd2ef2f363dc29c3cf31d8}} 
+const W \& {\bfseries front} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_af47ea0fc4f92b93893fbddb5e2beae21}\label{classbasic__array_af47ea0fc4f92b93893fbddb5e2beae21}} 
+W $\ast$ {\bfseries rbegin} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a31cae8f827ac25f3e4ff1ae302398f39}\label{classbasic__array_a31cae8f827ac25f3e4ff1ae302398f39}} 
+W $\ast$ {\bfseries rend} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a6f0120d017477719ed29fdc051988775}\label{classbasic__array_a6f0120d017477719ed29fdc051988775}} 
+int {\bfseries size} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a4a7c53ffbd432ed7a1e4cf891116d65e}\label{classbasic__array_a4a7c53ffbd432ed7a1e4cf891116d65e}} 
+int {\bfseries max\+\_\+size} () const
+\item 
+\mbox{\Hypertarget{classbasic__array_a31239f7c9ac168eceb6fdf8765e231ab}\label{classbasic__array_a31239f7c9ac168eceb6fdf8765e231ab}} 
+int {\bfseries dimensions} () const
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classbasic__array_abfb33a5aefd559bc698135d6ca53259f}\label{classbasic__array_abfb33a5aefd559bc698135d6ca53259f}} 
+W $\ast$ {\bfseries addr}
+\item 
+\mbox{\Hypertarget{classbasic__array_a7bb8fc1a0079db6a5b17746b9edb5ce0}\label{classbasic__array_a7bb8fc1a0079db6a5b17746b9edb5ce0}} 
+size\+\_\+t {\bfseries a\+\_\+size}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/basic\+\_\+array.\+h\end{DoxyCompactItemize}

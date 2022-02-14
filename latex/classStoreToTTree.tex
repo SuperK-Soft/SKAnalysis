@@ -1,0 +1,47 @@
+\hypertarget{classStoreToTTree}{}\doxysection{Store\+To\+TTree Class Reference}
+\label{classStoreToTTree}\index{StoreToTTree@{StoreToTTree}}
+
+
+{\ttfamily \#include $<$Store\+To\+TTree.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classStoreToTTree_a7b8e179d709abf245566db87155f270a}\label{classStoreToTTree_a7b8e179d709abf245566db87155f270a}} 
+void {\bfseries Set\+Verbosity} (int verb)
+\item 
+\mbox{\Hypertarget{classStoreToTTree_a847951c1fde1b9669f784585e871acc8}\label{classStoreToTTree_a847951c1fde1b9669f784585e871acc8}} 
+void {\bfseries Make\+Branches} (TTree $\ast$tree, Store $\ast$store)
+\item 
+\mbox{\Hypertarget{classStoreToTTree_a2f878f7cf7286282b3cd85bd89a2b4ba}\label{classStoreToTTree_a2f878f7cf7286282b3cd85bd89a2b4ba}} 
+void {\bfseries Make\+Branches} (TTree $\ast$tree, BStore $\ast$store)
+\item 
+\mbox{\Hypertarget{classStoreToTTree_aa7223505f6913baaeee40b670cd6a5fe}\label{classStoreToTTree_aa7223505f6913baaeee40b670cd6a5fe}} 
+void {\bfseries Make\+Branches} (TTree $\ast$tree, std\+::map$<$ std\+::string, Store $\ast$ $>$ \&stores)
+\item 
+\mbox{\Hypertarget{classStoreToTTree_a3effd3b00abd574174c7231abe8d2d39}\label{classStoreToTTree_a3effd3b00abd574174c7231abe8d2d39}} 
+bool {\bfseries Fill\+Branches} (TTree $\ast$tree, Store $\ast$store)
+\item 
+\mbox{\Hypertarget{classStoreToTTree_ad4b987348b93c423491f6cb5eaff1030}\label{classStoreToTTree_ad4b987348b93c423491f6cb5eaff1030}} 
+bool {\bfseries Fill\+Branches} (TTree $\ast$tree, BStore $\ast$store)
+\item 
+\mbox{\Hypertarget{classStoreToTTree_a12204228fa73f379f5fd3eb92dc9adb7}\label{classStoreToTTree_a12204228fa73f379f5fd3eb92dc9adb7}} 
+bool {\bfseries Fill\+Branches} (TTree $\ast$tree, std\+::map$<$ std\+::string, Store $\ast$ $>$ \&stores)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Store\+To\+TTree\+::\+Make\+Branches takes in a Store and makes a TTree branch for each variable in the Store. Store\+To\+TTree\+::\+Fill\+Branches transfers the current contents of the BStore into a new TBranch entry. \mbox{\hyperlink{classStoreToTTree}{Store\+To\+TTree}} accepts both (ASCII) Store class and (Binary) BStore classes.
+
+\begin{DoxyParagraph}{Author}
+M.\+O\textquotesingle{}Flaherty 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2021/07/08 
+\end{DoxyParagraph}
+Contact\+: \href{mailto:marcus.o-flaherty@warwick.ac.uk}{\texttt{ marcus.\+o-\/flaherty@warwick.\+ac.\+uk}} 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Store\+To\+TTree.\+h\item 
+Data\+Model/Store\+To\+TTree.\+cpp\end{DoxyCompactItemize}

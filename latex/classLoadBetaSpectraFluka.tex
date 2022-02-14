@@ -1,0 +1,66 @@
+\hypertarget{classLoadBetaSpectraFluka}{}\doxysection{Load\+Beta\+Spectra\+Fluka Class Reference}
+\label{classLoadBetaSpectraFluka}\index{LoadBetaSpectraFluka@{LoadBetaSpectraFluka}}
+
+
+{\ttfamily \#include $<$Load\+Beta\+Spectra\+Fluka.\+h$>$}
+
+Inheritance diagram for Load\+Beta\+Spectra\+Fluka\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classLoadBetaSpectraFluka}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLoadBetaSpectraFluka_aec21c84b97450dac0afe6b53c7145b20}\label{classLoadBetaSpectraFluka_aec21c84b97450dac0afe6b53c7145b20}} 
+\mbox{\hyperlink{classLoadBetaSpectraFluka_aec21c84b97450dac0afe6b53c7145b20}{Load\+Beta\+Spectra\+Fluka}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classLoadBetaSpectraFluka_a05bcf892dacaedfcffb9fe79b02b8039}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise function for setting up Tool resources. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classLoadBetaSpectraFluka_a449fdccc67dfbdb164db9ba6316bec9b}\label{classLoadBetaSpectraFluka_a449fdccc67dfbdb164db9ba6316bec9b}} 
+bool \mbox{\hyperlink{classLoadBetaSpectraFluka_a449fdccc67dfbdb164db9ba6316bec9b}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Execute function used to perform Tool purpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classLoadBetaSpectraFluka_a2d3b8c7bfa68d0032c77b0c0ebd86569}\label{classLoadBetaSpectraFluka_a2d3b8c7bfa68d0032c77b0c0ebd86569}} 
+bool \mbox{\hyperlink{classLoadBetaSpectraFluka_a2d3b8c7bfa68d0032c77b0c0ebd86569}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resources. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classLoadBetaSpectraFluka_a2208af44891a25edac2c7564dc1363e0}\label{classLoadBetaSpectraFluka_a2208af44891a25edac2c7564dc1363e0}} 
+bool \mbox{\hyperlink{classLoadBetaSpectraFluka_a2208af44891a25edac2c7564dc1363e0}{Analyse}} ()
+\begin{DoxyCompactList}\small\item\em Perform analysis of this entry. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Read output from FLUKA simulation describing beta energy spectra of spallation isotopes Also includes reconstructed energy following propagation in skdetsim \& reconstruction with bonsai
+
+\begin{DoxyParagraph}{Author}
+M.\+O\textquotesingle{}Flaherty 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2019/05/28 
+\end{DoxyParagraph}
+Contact\+: \href{mailto:marcus.o-flaherty@warwick.ac.uk}{\texttt{ marcus.\+o-\/flaherty@warwick.\+ac.\+uk}} 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classLoadBetaSpectraFluka_a05bcf892dacaedfcffb9fe79b02b8039}\label{classLoadBetaSpectraFluka_a05bcf892dacaedfcffb9fe79b02b8039}} 
+\index{LoadBetaSpectraFluka@{LoadBetaSpectraFluka}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!LoadBetaSpectraFluka@{LoadBetaSpectraFluka}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool Load\+Beta\+Spectra\+Fluka\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise function for setting up Tool resources. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+Load\+Beta\+Spectra\+Fluka/Load\+Beta\+Spectra\+Fluka.\+h\item 
+User\+Tools/\+Load\+Beta\+Spectra\+Fluka/Load\+Beta\+Spectra\+Fluka.\+cpp\end{DoxyCompactItemize}

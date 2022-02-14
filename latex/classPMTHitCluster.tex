@@ -1,0 +1,72 @@
+\hypertarget{classPMTHitCluster}{}\doxysection{PMTHit\+Cluster Class Reference}
+\label{classPMTHitCluster}\index{PMTHitCluster@{PMTHitCluster}}
+Inheritance diagram for PMTHit\+Cluster\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classPMTHitCluster}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a85cedc74a4af98e50d04c61933e84f3e}\label{classPMTHitCluster_a85cedc74a4af98e50d04c61933e84f3e}} 
+void {\bfseries Append} (const \mbox{\hyperlink{classPMTHit}{PMTHit}} \&hit)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_af62272e51fdc1a26fb5a21d8009d59fe}\label{classPMTHitCluster_af62272e51fdc1a26fb5a21d8009d59fe}} 
+void {\bfseries Set\+Vertex} (const TVector3 \&in\+Vertex)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_affe43d3fef321090019a78bec72d86e1}\label{classPMTHitCluster_affe43d3fef321090019a78bec72d86e1}} 
+const TVector3 \& {\bfseries Get\+Vertex} () const
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a49e6b6021520cbf316db0c4f122480dd}\label{classPMTHitCluster_a49e6b6021520cbf316db0c4f122480dd}} 
+bool {\bfseries Has\+Vertex} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a091692d9f259f43e686cfebb02a5fd79}\label{classPMTHitCluster_a091692d9f259f43e686cfebb02a5fd79}} 
+void {\bfseries Remove\+Vertex} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a5fd7c414c921efa7328b1d137aebc88e}\label{classPMTHitCluster_a5fd7c414c921efa7328b1d137aebc88e}} 
+void {\bfseries Sort} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a3b652cd8db3ee52c12a55d5bc6b795d7}\label{classPMTHitCluster_a3b652cd8db3ee52c12a55d5bc6b795d7}} 
+void {\bfseries Dump\+All\+Elements} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_ad0f2ab82056a2f76781bbe5f5ea30e2e}\label{classPMTHitCluster_ad0f2ab82056a2f76781bbe5f5ea30e2e}} 
+\mbox{\hyperlink{classPMTHit}{PMTHit}} {\bfseries operator\mbox{[}$\,$\mbox{]}} (int i\+Hit) const
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a716b29471feaf06bd7c4918599fda31d}\label{classPMTHitCluster_a716b29471feaf06bd7c4918599fda31d}} 
+\mbox{\hyperlink{classPMTHitCluster}{PMTHit\+Cluster}} {\bfseries Slice} (int start\+Index, float t\+Width)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a88c0047a4c3b94e3d627819bf5afb6c1}\label{classPMTHitCluster_a88c0047a4c3b94e3d627819bf5afb6c1}} 
+\mbox{\hyperlink{classPMTHitCluster}{PMTHit\+Cluster}} {\bfseries Slice} (int start\+Index, float minusT, float plusT)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a258a53d5ce18955693527b79b49ea5ea}\label{classPMTHitCluster_a258a53d5ce18955693527b79b49ea5ea}} 
+{\footnotesize template$<$typename T $>$ }\\float {\bfseries Find} (std\+::function$<$ T(const \mbox{\hyperlink{classPMTHit}{PMTHit}} \&)$>$ proj\+Func, std\+::function$<$ T(const std\+::vector$<$ T $>$ \&)$>$ calc\+Func)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a9c81ca2cdcc715cfbb9a4fc67a10cf8d}\label{classPMTHitCluster_a9c81ca2cdcc715cfbb9a4fc67a10cf8d}} 
+{\footnotesize template$<$typename T $>$ }\\std\+::vector$<$ T $>$ {\bfseries Get\+Projection} (std\+::function$<$ T(const \mbox{\hyperlink{classPMTHit}{PMTHit}} \&)$>$ lambda)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a4d97a9bfaceaced576358580e4ea646c}\label{classPMTHitCluster_a4d97a9bfaceaced576358580e4ea646c}} 
+std\+::vector$<$ float $>$ {\bfseries T} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_af013ad33e44f024dcf7329b7f583b438}\label{classPMTHitCluster_af013ad33e44f024dcf7329b7f583b438}} 
+{\footnotesize template$<$typename T $>$ }\\std\+::vector$<$ T $>$ {\bfseries operator\mbox{[}$\,$\mbox{]}} (std\+::function$<$ T(const \mbox{\hyperlink{classPMTHit}{PMTHit}} \&)$>$ lambda)
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a0b0a6bffcc842522cceab6ccb003d51c}\label{classPMTHitCluster_a0b0a6bffcc842522cceab6ccb003d51c}} 
+\mbox{\hyperlink{classPMTHit}{PMTHit}} {\bfseries Get\+Last\+Hit} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_aec4a7c1edf96f3a4a670f2049165dc3f}\label{classPMTHitCluster_aec4a7c1edf96f3a4a670f2049165dc3f}} 
+std\+::array$<$ float, 6 $>$ {\bfseries Get\+Beta\+Array} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_ac99294668763d5d3a68bb3db25d94e19}\label{classPMTHitCluster_ac99294668763d5d3a68bb3db25d94e19}} 
+\mbox{\hyperlink{structOpeningAngleStats}{Opening\+Angle\+Stats}} {\bfseries Get\+Opening\+Angle\+Stats} ()
+\item 
+\mbox{\Hypertarget{classPMTHitCluster_a48db14f785c96f89a68e58eab472466c}\label{classPMTHitCluster_a48db14f785c96f89a68e58eab472466c}} 
+TVector3 {\bfseries Find\+TRMSMinimizing\+Vertex} (float INITGRIDWIDTH=800, float MINGRIDWIDTH=50, float GRIDSHRINKRATE=0.\+5, float VTXSRCRANGE=5000)
+\end{DoxyCompactItemize}
+\doxysubsection*{Additional Inherited Members}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/PMTHit\+Cluster.\+h\item 
+Data\+Model/PMTHit\+Cluster.\+cpp\end{DoxyCompactItemize}

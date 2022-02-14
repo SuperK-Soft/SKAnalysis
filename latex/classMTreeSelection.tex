@@ -1,0 +1,110 @@
+\hypertarget{classMTreeSelection}{}\doxysection{MTree\+Selection Class Reference}
+\label{classMTreeSelection}\index{MTreeSelection@{MTreeSelection}}
+Inheritance diagram for MTree\+Selection\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classMTreeSelection}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a6a3defe743ffc3fe6b8ed7d87191fa0b}\label{classMTreeSelection_a6a3defe743ffc3fe6b8ed7d87191fa0b}} 
+{\bfseries MTree\+Selection} (\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$treereader, std\+::string fname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a243d3f3a25ead2103828a328f2128289}\label{classMTreeSelection_a243d3f3a25ead2103828a328f2128289}} 
+{\bfseries MTree\+Selection} (std\+::string cut\+Filein)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aeb173a1ee9e858d9f668f774a6351803}\label{classMTreeSelection_aeb173a1ee9e858d9f668f774a6351803}} 
+void {\bfseries Make\+Output\+File} (std\+::string fname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a86b9e276ebec98efcc92aa409700402d}\label{classMTreeSelection_a86b9e276ebec98efcc92aa409700402d}} 
+bool {\bfseries Set\+Tree\+Reader} (\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$treereaderin)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a841b0c6caa7d00fafec95dddeada4ce3}\label{classMTreeSelection_a841b0c6caa7d00fafec95dddeada4ce3}} 
+void {\bfseries Add\+Cut} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a998bbfe9b193328e3ef6f3a310871af7}\label{classMTreeSelection_a998bbfe9b193328e3ef6f3a310871af7}} 
+void {\bfseries Add\+Cut} (std\+::string cutname, std\+::string branchname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a1bbb08413012909a28fb60c781154252}\label{classMTreeSelection_a1bbb08413012909a28fb60c781154252}} 
+void {\bfseries Add\+Cut} (std\+::string cutname, std\+::vector$<$ std\+::string $>$ branchnames)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a182f1bba37f1ee4a1f30771fe0c119c6}\label{classMTreeSelection_a182f1bba37f1ee4a1f30771fe0c119c6}} 
+void {\bfseries Increment\+Event\+Count} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_ae8486622887b69099b0fb5a40dbfb595}\label{classMTreeSelection_ae8486622887b69099b0fb5a40dbfb595}} 
+bool {\bfseries Note\+Cut} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a08cef92f272900e46d1fcf17eeeb6958}\label{classMTreeSelection_a08cef92f272900e46d1fcf17eeeb6958}} 
+bool {\bfseries Add\+Passing\+Event} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aa7e447f4d6a5b8eb18a4770edff48ab7}\label{classMTreeSelection_aa7e447f4d6a5b8eb18a4770edff48ab7}} 
+bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, size\+\_\+t index)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a957a4d213c79ae6c11790cca94b4efb6}\label{classMTreeSelection_a957a4d213c79ae6c11790cca94b4efb6}} 
+bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, std\+::vector$<$ size\+\_\+t $>$ indices)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a1d454de8df7c53ddd105d814a454fe12}\label{classMTreeSelection_a1d454de8df7c53ddd105d814a454fe12}} 
+bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, TTree $\ast$thetree, Long64\+\_\+t entry\+\_\+number)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a0d43811a85a351d9ad36f1017837254e}\label{classMTreeSelection_a0d43811a85a351d9ad36f1017837254e}} 
+bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, TTree $\ast$thetree, Long64\+\_\+t entry\+\_\+number, std\+::string branchname, size\+\_\+t index)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_ad407b149f970027a2be4c7e006ead44e}\label{classMTreeSelection_ad407b149f970027a2be4c7e006ead44e}} 
+bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, TTree $\ast$thetree, Long64\+\_\+t entry\+\_\+number, std\+::vector$<$ std\+::string $>$ branchnames, std\+::vector$<$ size\+\_\+t $>$ indices)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a5350b566543a59f1158fc7427f358ce3}\label{classMTreeSelection_a5350b566543a59f1158fc7427f358ce3}} 
+std\+::string {\bfseries Branch\+Address\+To\+Name} (intptr\+\_\+t branchptr)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aed485de4d388e92ed0ef8583693adc08}\label{classMTreeSelection_aed485de4d388e92ed0ef8583693adc08}} 
+void {\bfseries Print\+Cuts} ()
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a12f65e017b128a57c9d394b3a8d555d5}\label{classMTreeSelection_a12f65e017b128a57c9d394b3a8d555d5}} 
+bool {\bfseries Write} ()
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a9f904a69e4b634d7a967cfd0c881e112}\label{classMTreeSelection_a9f904a69e4b634d7a967cfd0c881e112}} 
+bool {\bfseries Load\+Cut\+File} (std\+::string cut\+Filein)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a23456ad5ea4568ada5f91a6653ab95ce}\label{classMTreeSelection_a23456ad5ea4568ada5f91a6653ab95ce}} 
+Long64\+\_\+t {\bfseries Get\+Next\+Entry} (std\+::string cutname=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a3e6b2391d3fa654bfe2e028592e474ad}\label{classMTreeSelection_a3e6b2391d3fa654bfe2e028592e474ad}} 
+bool {\bfseries Get\+Passes\+Cut} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a0ed6022527bf059fbbfd9aa56267b134}\label{classMTreeSelection_a0ed6022527bf059fbbfd9aa56267b134}} 
+bool {\bfseries Get\+Passes\+Cut} (std\+::string cutname, size\+\_\+t index)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_ab0bc16e619aac952cb93095b62e9d7ec}\label{classMTreeSelection_ab0bc16e619aac952cb93095b62e9d7ec}} 
+bool {\bfseries Get\+Passes\+Cut} (std\+::string cutname, std\+::vector$<$ size\+\_\+t $>$ indices)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aaa80a2019abe4ad8996b419ba8dd0072}\label{classMTreeSelection_aaa80a2019abe4ad8996b419ba8dd0072}} 
+std\+::set$<$ size\+\_\+t $>$ {\bfseries Get\+Passing\+Indexes} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_ad314ab98e97a279d73ecae64c54b4c06}\label{classMTreeSelection_ad314ab98e97a279d73ecae64c54b4c06}} 
+std\+::set$<$ std\+::vector$<$ size\+\_\+t $>$ $>$ {\bfseries Get\+Passing\+Indices} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_afb5dd3d15dc9b9046700a697e4a21a70}\label{classMTreeSelection_afb5dd3d15dc9b9046700a697e4a21a70}} 
+\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$ {\bfseries Get\+Tree\+Reader} ()
+\item 
+\mbox{\Hypertarget{classMTreeSelection_ab5f56e5fe58188ea34ac0831dc1c8c3f}\label{classMTreeSelection_ab5f56e5fe58188ea34ac0831dc1c8c3f}} 
+std\+::string {\bfseries Get\+Top\+Cut} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a89c1a166bbfef9846f2bb9c83b7aad39}\label{classMTreeSelection_a89c1a166bbfef9846f2bb9c83b7aad39}} 
+bool {\bfseries Serialise} (Binary\+Stream \&bs)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a10ffc09ca90d4b54e076a2e1093fbdfa}\label{classMTreeSelection_a10ffc09ca90d4b54e076a2e1093fbdfa}} 
+bool {\bfseries Print} ()
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aaaa1c1dcd828549abd78c7d0259389fd}\label{classMTreeSelection_aaaa1c1dcd828549abd78c7d0259389fd}} 
+std\+::string {\bfseries Get\+Version} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/MTree\+Selection.\+h\item 
+Data\+Model/MTree\+Selection.\+cpp\end{DoxyCompactItemize}

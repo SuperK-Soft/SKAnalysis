@@ -1,0 +1,122 @@
+\hypertarget{classArgParser}{}\doxysection{Arg\+Parser Class Reference}
+\label{classArgParser}\index{ArgParser@{ArgParser}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classArgParser_a22ff015b7fe0fe7a920e8f76a5c20363}{Arg\+Parser}} (int \&argc, char $\ast$$\ast$argv)
+\begin{DoxyCompactList}\small\item\em Constructor of \mbox{\hyperlink{classArgParser}{Arg\+Parser}}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classArgParser_ad30be0a85aebf05db9b8aeb5e6e469d6}{Arg\+Parser}} (std\+::ifstream \&f)
+\begin{DoxyCompactList}\small\item\em Constructor of \mbox{\hyperlink{classArgParser}{Arg\+Parser}} for input file stream. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classArgParser}{Arg\+Parser}} \& \mbox{\hyperlink{classArgParser_aeafa1079ba6e2875f3be57b53773b4a0}{operator+=}} (\mbox{\hyperlink{classArgParser}{Arg\+Parser}} \&added\+Parser)
+\begin{DoxyCompactList}\small\item\em Concatenate tokens to form a single \mbox{\hyperlink{classArgParser}{Arg\+Parser}}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classArgParser_a01938f0d0ca8e1d5cb86de2d0cffc621}\label{classArgParser_a01938f0d0ca8e1d5cb86de2d0cffc621}} 
+void {\bfseries Set\+Tokens} (std\+::vector$<$ std\+::string $>$ \&token)
+\item 
+\mbox{\Hypertarget{classArgParser_aed81c6641cd70cb32f424be2be3d8f64}\label{classArgParser_aed81c6641cd70cb32f424be2be3d8f64}} 
+std\+::vector$<$ std\+::string $>$ \& {\bfseries Get\+Tokens} ()
+\item 
+const std\+::string \& \mbox{\hyperlink{classArgParser_a575f38f6d494329c9ceb239ce14a4312}{Get\+Option}} (const std\+::string \&option) const
+\begin{DoxyCompactList}\small\item\em Get the argument following a flag. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classArgParser_a19b0fda7d6d95e6a4fca4bd1abcfaff4}{Option\+Exists}} (const std\+::string \&option) const
+\begin{DoxyCompactList}\small\item\em Check if an option is specified. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classArgParser_a786e721535a0a30834fa6b2221a3d056}\label{classArgParser_a786e721535a0a30834fa6b2221a3d056}} 
+void {\bfseries Override\+Store} (Store $\ast$store)
+\item 
+\mbox{\Hypertarget{classArgParser_a4bff91dc1b1d3044dc4b4c0e6c8b1fad}\label{classArgParser_a4bff91dc1b1d3044dc4b4c0e6c8b1fad}} 
+{\footnotesize template$<$typename T $>$ }\\bool {\bfseries Check\+Type} (const std\+::string \&str)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classArgParser_a22ff015b7fe0fe7a920e8f76a5c20363}\label{classArgParser_a22ff015b7fe0fe7a920e8f76a5c20363}} 
+\index{ArgParser@{ArgParser}!ArgParser@{ArgParser}}
+\index{ArgParser@{ArgParser}!ArgParser@{ArgParser}}
+\doxysubsubsection{\texorpdfstring{ArgParser()}{ArgParser()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Arg\+Parser\+::\+Arg\+Parser (\begin{DoxyParamCaption}\item[{int \&}]{argc,  }\item[{char $\ast$$\ast$}]{argv }\end{DoxyParamCaption})}
+
+
+
+Constructor of \mbox{\hyperlink{classArgParser}{Arg\+Parser}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argc} & {\ttfamily argc} of the main function. \\
+\hline
+{\em argv} & {\ttfamily argv} of the main function. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classArgParser_ad30be0a85aebf05db9b8aeb5e6e469d6}\label{classArgParser_ad30be0a85aebf05db9b8aeb5e6e469d6}} 
+\index{ArgParser@{ArgParser}!ArgParser@{ArgParser}}
+\index{ArgParser@{ArgParser}!ArgParser@{ArgParser}}
+\doxysubsubsection{\texorpdfstring{ArgParser()}{ArgParser()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Arg\+Parser\+::\+Arg\+Parser (\begin{DoxyParamCaption}\item[{std\+::ifstream \&}]{f }\end{DoxyParamCaption})}
+
+
+
+Constructor of \mbox{\hyperlink{classArgParser}{Arg\+Parser}} for input file stream. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em f} & Input file stream. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classArgParser_a575f38f6d494329c9ceb239ce14a4312}\label{classArgParser_a575f38f6d494329c9ceb239ce14a4312}} 
+\index{ArgParser@{ArgParser}!GetOption@{GetOption}}
+\index{GetOption@{GetOption}!ArgParser@{ArgParser}}
+\doxysubsubsection{\texorpdfstring{GetOption()}{GetOption()}}
+{\footnotesize\ttfamily const std\+::string\& Arg\+Parser\+::\+Get\+Option (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{option }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get the argument following a flag. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em option} & Flag string to look up. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The subsequent argument if a flag is specified, otherwise an empty string. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classArgParser_aeafa1079ba6e2875f3be57b53773b4a0}\label{classArgParser_aeafa1079ba6e2875f3be57b53773b4a0}} 
+\index{ArgParser@{ArgParser}!operator+=@{operator+=}}
+\index{operator+=@{operator+=}!ArgParser@{ArgParser}}
+\doxysubsubsection{\texorpdfstring{operator+=()}{operator+=()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classArgParser}{Arg\+Parser}}\& Arg\+Parser\+::operator+= (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classArgParser}{Arg\+Parser}} \&}]{added\+Parser }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Concatenate tokens to form a single \mbox{\hyperlink{classArgParser}{Arg\+Parser}}. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em added\+Parser} & \mbox{\hyperlink{classArgParser}{Arg\+Parser}} to add. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classArgParser_a19b0fda7d6d95e6a4fca4bd1abcfaff4}\label{classArgParser_a19b0fda7d6d95e6a4fca4bd1abcfaff4}} 
+\index{ArgParser@{ArgParser}!OptionExists@{OptionExists}}
+\index{OptionExists@{OptionExists}!ArgParser@{ArgParser}}
+\doxysubsubsection{\texorpdfstring{OptionExists()}{OptionExists()}}
+{\footnotesize\ttfamily bool Arg\+Parser\+::\+Option\+Exists (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{option }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Check if an option is specified. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em option} & Option string to look up. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+{\ttfamily true} if the option is specified, otherwise {\ttfamily false} 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Arg\+Parser.\+h\item 
+Data\+Model/Arg\+Parser.\+cpp\end{DoxyCompactItemize}

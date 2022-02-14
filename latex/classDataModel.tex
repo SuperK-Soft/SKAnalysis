@@ -1,0 +1,128 @@
+\hypertarget{classDataModel}{}\doxysection{Data\+Model Class Reference}
+\label{classDataModel}\index{DataModel@{DataModel}}
+
+
+{\ttfamily \#include $<$Data\+Model.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classDataModel_abff03aef2cb531142a35781bb87c3365}\label{classDataModel_abff03aef2cb531142a35781bb87c3365}} 
+\mbox{\hyperlink{classDataModel_abff03aef2cb531142a35781bb87c3365}{Data\+Model}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_af7d4b37e528ee7b04c668c8ae69b9434}\label{classDataModel_af7d4b37e528ee7b04c668c8ae69b9434}} 
+\mbox{\hyperlink{classDataModel_af7d4b37e528ee7b04c668c8ae69b9434}{$\sim$\+Data\+Model}} ()
+\begin{DoxyCompactList}\small\item\em Simple destructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_a04a7a6d4373029f83d751beb5db8f78a}\label{classDataModel_a04a7a6d4373029f83d751beb5db8f78a}} 
+TApplication $\ast$ {\bfseries Get\+TApp} ()
+\item 
+\mbox{\Hypertarget{classDataModel_a13b7dd6941f0fb5c2645dc479c755bd1}\label{classDataModel_a13b7dd6941f0fb5c2645dc479c755bd1}} 
+Connection\+Table $\ast$ {\bfseries Get\+Connection\+Table} (int sk\+\_\+geometry=-\/1)
+\item 
+\mbox{\Hypertarget{classDataModel_a3ee9fa6ca6b7e1996cc31205cd4fb972}\label{classDataModel_a3ee9fa6ca6b7e1996cc31205cd4fb972}} 
+bool {\bfseries Register\+Reader} (std\+::string reader\+Name, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader, std\+::function$<$ bool()$>$ has\+AFT, std\+::function$<$ bool()$>$ load\+SHE, std\+::function$<$ bool()$>$ load\+AFT, std\+::function$<$ bool(int)$>$ load\+Common)
+\item 
+\mbox{\Hypertarget{classDataModel_a5c16f80901ce09e60f31e3cc49a9ef24}\label{classDataModel_a5c16f80901ce09e60f31e3cc49a9ef24}} 
+bool {\bfseries Has\+AFT} (std\+::string Reader\+Name=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classDataModel_a12b57ac71bb6f54fefabb47bebb648fb}\label{classDataModel_a12b57ac71bb6f54fefabb47bebb648fb}} 
+bool {\bfseries Load\+SHE} (std\+::string Reader\+Name=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classDataModel_a85ad6fc3d5a0f2cba8fc27a2af15c17a}\label{classDataModel_a85ad6fc3d5a0f2cba8fc27a2af15c17a}} 
+bool {\bfseries Load\+AFT} (std\+::string Reader\+Name=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classDataModel_a3d703bbf4d27f9652527c5b3403e07d6}\label{classDataModel_a3d703bbf4d27f9652527c5b3403e07d6}} 
+bool {\bfseries Load\+Entry} (int entry\+\_\+i, std\+::string Reader\+Name=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classDataModel_a6023cca61b409a87652a119d37db3ffe}\label{classDataModel_a6023cca61b409a87652a119d37db3ffe}} 
+int {\bfseries Get\+Next\+LUN} (int lun=10, std\+::string reader=\char`\"{}reader\char`\"{})
+\item 
+\mbox{\Hypertarget{classDataModel_a53b15fb6d74badf2333402bfac3d622a}\label{classDataModel_a53b15fb6d74badf2333402bfac3d622a}} 
+int {\bfseries Get\+LUN} (std\+::string reader)
+\item 
+\mbox{\Hypertarget{classDataModel_a00fab90605a64a71aa05e085857e138c}\label{classDataModel_a00fab90605a64a71aa05e085857e138c}} 
+bool {\bfseries Free\+LUN} (int lun, std\+::string reader=\char`\"{}\char`\"{})
+\item 
+\mbox{\Hypertarget{classDataModel_a299b24ca8478fefd9ed071e116f687b9}\label{classDataModel_a299b24ca8478fefd9ed071e116f687b9}} 
+void {\bfseries KZInit} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classDataModel_aa777da4c632e4659ee5b1447ad513458}\label{classDataModel_aa777da4c632e4659ee5b1447ad513458}} 
+Logging $\ast$ \mbox{\hyperlink{classDataModel_aa777da4c632e4659ee5b1447ad513458}{Log}}
+\begin{DoxyCompactList}\small\item\em Log class pointer for use in Tools, it can be used to send messages which can have multiple error levels and destination end points. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_a6db42acc6c98cd31e937085a0b882a22}\label{classDataModel_a6db42acc6c98cd31e937085a0b882a22}} 
+std\+::map$<$ std\+::string, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$ $>$ \mbox{\hyperlink{classDataModel_a6db42acc6c98cd31e937085a0b882a22}{Trees}}
+\begin{DoxyCompactList}\small\item\em A map of \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} pointers, used to read ROOT trees. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_a3bfe078835a99c6f8d6e71fad595104d}\label{classDataModel_a3bfe078835a99c6f8d6e71fad595104d}} 
+std\+::map$<$ std\+::string, \mbox{\hyperlink{classMTreeSelection}{MTree\+Selection}} $\ast$ $>$ \mbox{\hyperlink{classDataModel_a3bfe078835a99c6f8d6e71fad595104d}{Selectors}}
+\begin{DoxyCompactList}\small\item\em A map of \mbox{\hyperlink{classMTreeSelection}{MTree\+Selection}} pointers used to read event selections. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_aafbb24b53433960b87dbaa06867d1535}\label{classDataModel_aafbb24b53433960b87dbaa06867d1535}} 
+std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ bool()$>$ $>$ {\bfseries has\+AFTs}
+\item 
+\mbox{\Hypertarget{classDataModel_aeefa338c8a74c8a90c646045f325b6b1}\label{classDataModel_aeefa338c8a74c8a90c646045f325b6b1}} 
+std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ bool()$>$ $>$ {\bfseries load\+SHEs}
+\item 
+\mbox{\Hypertarget{classDataModel_a69efdf63383e7b78868ff88c45bc2abd}\label{classDataModel_a69efdf63383e7b78868ff88c45bc2abd}} 
+std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ bool()$>$ $>$ {\bfseries load\+AFTs}
+\item 
+\mbox{\Hypertarget{classDataModel_a9ec502d1b018fd91578dc44c676802ec}\label{classDataModel_a9ec502d1b018fd91578dc44c676802ec}} 
+std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ bool(int)$>$ $>$ {\bfseries load\+Commons}
+\item 
+\mbox{\Hypertarget{classDataModel_a4baac5fe364a7a23762d70d2c2216486}\label{classDataModel_a4baac5fe364a7a23762d70d2c2216486}} 
+Store \mbox{\hyperlink{classDataModel_a4baac5fe364a7a23762d70d2c2216486}{vars}}
+\begin{DoxyCompactList}\small\item\em This Store can be used for any variables. It is an inefficent ascii based storage and command line arguments will be placed in here along with Tool\+Chain variables. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_aaaeb97ea84c890b10a40bf353f722e4e}\label{classDataModel_aaaeb97ea84c890b10a40bf353f722e4e}} 
+BStore \mbox{\hyperlink{classDataModel_aaaeb97ea84c890b10a40bf353f722e4e}{CStore}}
+\begin{DoxyCompactList}\small\item\em This is a more efficent binary Store that can be used to store a dynamic set of inter Tool variables, very useful for constants and and flags hence the name CStore. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_aaee04afd014c5339c4f3c536f6b7430b}\label{classDataModel_aaee04afd014c5339c4f3c536f6b7430b}} 
+std\+::map$<$ std\+::string, BStore $\ast$ $>$ \mbox{\hyperlink{classDataModel_aaee04afd014c5339c4f3c536f6b7430b}{Stores}}
+\begin{DoxyCompactList}\small\item\em This is a map of named BStore pointers which can be deffined to hold a nammed collection of any type of BStore. It is usefull to store data collections that needs subdividing into differnt stores. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classDataModel_a11496d293cb40fdf06196cfc28423718}\label{classDataModel_a11496d293cb40fdf06196cfc28423718}} 
+bool {\bfseries kz\+\_\+initialized} =false
+\item 
+\mbox{\Hypertarget{classDataModel_a032c6e93e713432b0069c9ef2e4149f3}\label{classDataModel_a032c6e93e713432b0069c9ef2e4149f3}} 
+BStore $\ast$ {\bfseries event\+Variables\+\_\+p}
+\item 
+\mbox{\Hypertarget{classDataModel_acee9a3c3615a4426c28c9e6348767dae}\label{classDataModel_acee9a3c3615a4426c28c9e6348767dae}} 
+BStore \& {\bfseries event\+Variables}
+\item 
+\mbox{\Hypertarget{classDataModel_a7816e27db02a423904be595e86a90562}\label{classDataModel_a7816e27db02a423904be595e86a90562}} 
+\mbox{\hyperlink{classPMTHitCluster}{PMTHit\+Cluster}} {\bfseries event\+PMTHits}
+\item 
+\mbox{\Hypertarget{classDataModel_aee44cbf33f1fd7963121fb850682076b}\label{classDataModel_aee44cbf33f1fd7963121fb850682076b}} 
+\mbox{\hyperlink{classEventCandidates}{Event\+Candidates}} {\bfseries event\+Candidates}
+\item 
+\mbox{\Hypertarget{classDataModel_a3b59830253a3c3815c9259115d3aa649}\label{classDataModel_a3b59830253a3c3815c9259115d3aa649}} 
+\mbox{\hyperlink{classEventParticles}{Event\+Particles}} {\bfseries event\+Primaries}
+\item 
+\mbox{\Hypertarget{classDataModel_a4fa504700c013aa102df452e62caa306}\label{classDataModel_a4fa504700c013aa102df452e62caa306}} 
+\mbox{\hyperlink{classEventParticles}{Event\+Particles}} {\bfseries event\+Secondaries}
+\item 
+\mbox{\Hypertarget{classDataModel_a7f75a37f69f6da41c1b806d7598ebd1f}\label{classDataModel_a7f75a37f69f6da41c1b806d7598ebd1f}} 
+\mbox{\hyperlink{classEventTrueCaptures}{Event\+True\+Captures}} {\bfseries event\+True\+Captures}
+\item 
+\mbox{\Hypertarget{classDataModel_adc4e01e3ae0cb17f41e7f1994257a9d6}\label{classDataModel_adc4e01e3ae0cb17f41e7f1994257a9d6}} 
+std\+::map$<$ std\+::string, Store $\ast$ $>$ {\bfseries tool\+\_\+configs}
+\item 
+\mbox{\Hypertarget{classDataModel_a61376b2b951b3360fd4f4c81e22e9bb2}\label{classDataModel_a61376b2b951b3360fd4f4c81e22e9bb2}} 
+\mbox{\hyperlink{classStoreToTTree}{Store\+To\+TTree}} {\bfseries Store\+Converter}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This class Is a transient data model class for your Tools within the Tool\+Chain. If Tools need to comunicate they pass all data objects through the data model. There fore inter tool data objects should be deffined in this class.
+
+\begin{DoxyParagraph}{Author}
+B.\+Richards 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2019/05/26 18\+:34\+:00 
+\end{DoxyParagraph}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Data\+Model.\+h\item 
+Data\+Model/Data\+Model.\+cpp\end{DoxyCompactItemize}

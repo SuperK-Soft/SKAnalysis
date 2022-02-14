@@ -1,0 +1,53 @@
+\hypertarget{classUtilities}{}\doxysection{Utilities Class Reference}
+\label{classUtilities}\index{Utilities@{Utilities}}
+
+
+{\ttfamily \#include $<$Utilities.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classUtilities_ab1676c9ce35cf347a73d16f1094e1271}\label{classUtilities_ab1676c9ce35cf347a73d16f1094e1271}} 
+\mbox{\hyperlink{classUtilities_ab1676c9ce35cf347a73d16f1094e1271}{Utilities}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUtilities_ae52d1dd16b34518b2ef4de01660cb8b2}\label{classUtilities_ae52d1dd16b34518b2ef4de01660cb8b2}} 
+\mbox{\hyperlink{structThread__args}{Thread\+\_\+args}} $\ast$ \mbox{\hyperlink{classUtilities_ae52d1dd16b34518b2ef4de01660cb8b2}{Create\+Thread}} (std\+::string Thread\+Name, void($\ast$func)(\mbox{\hyperlink{structThread__args}{Thread\+\_\+args}} $\ast$), \mbox{\hyperlink{structThread__args}{Thread\+\_\+args}} $\ast$args)
+\begin{DoxyCompactList}\small\item\em Create a thread with more complicated data exchange definned by arguments. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUtilities_a6f1c1d53b9ce59bb26c56a3bebdbb255}\label{classUtilities_a6f1c1d53b9ce59bb26c56a3bebdbb255}} 
+bool \mbox{\hyperlink{classUtilities_a6f1c1d53b9ce59bb26c56a3bebdbb255}{Kill\+Thread}} (\mbox{\hyperlink{structThread__args}{Thread\+\_\+args}} $\ast$\&args)
+\begin{DoxyCompactList}\small\item\em Kill a thread assosiated to args. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUtilities_a8c17a46ce33b0b647797f24bc859bd7a}\label{classUtilities_a8c17a46ce33b0b647797f24bc859bd7a}} 
+bool \mbox{\hyperlink{classUtilities_a8c17a46ce33b0b647797f24bc859bd7a}{Kill\+Thread}} (std\+::string Thread\+Name)
+\begin{DoxyCompactList}\small\item\em Kill a thread by name. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUtilities_af4091a68d8a27a3b806d029cc9b2135e}\label{classUtilities_af4091a68d8a27a3b806d029cc9b2135e}} 
+{\footnotesize template$<$typename T $>$ }\\bool \mbox{\hyperlink{classUtilities_af4091a68d8a27a3b806d029cc9b2135e}{Kill\+Thread}} (T $\ast$pointer)
+\begin{DoxyCompactList}\small\item\em Kill a thread with args that inheirt form base \mbox{\hyperlink{structThread__args}{Thread\+\_\+args}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classUtilities_a29b7f99dcb44ddb9a519c3e441a7fa2b}\label{classUtilities_a29b7f99dcb44ddb9a519c3e441a7fa2b}} 
+static void $\ast$ \mbox{\hyperlink{classUtilities_a29b7f99dcb44ddb9a519c3e441a7fa2b}{Thread}} (void $\ast$arg)
+\begin{DoxyCompactList}\small\item\em Thread with args. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classUtilities_a26ebd7308ea895452c4c1066dc5834e5}\label{classUtilities_a26ebd7308ea895452c4c1066dc5834e5}} 
+std\+::map$<$ std\+::string, \mbox{\hyperlink{structThread__args}{Thread\+\_\+args}} $\ast$ $>$ \mbox{\hyperlink{classUtilities_a26ebd7308ea895452c4c1066dc5834e5}{Threads}}
+\begin{DoxyCompactList}\small\item\em Map of threads managed by the utilities class. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This class can be instansiated in a Tool and provides some helpful threading, dynamic socket descovery and promotion functionality
+
+\begin{DoxyParagraph}{Author}
+B.\+Richards 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2019/05/26 18\+:34\+:00 
+\end{DoxyParagraph}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Utilities.\+h\item 
+Data\+Model/Utilities.\+cpp\end{DoxyCompactItemize}

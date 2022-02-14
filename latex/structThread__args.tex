@@ -1,0 +1,53 @@
+\hypertarget{structThread__args}{}\doxysection{Thread\+\_\+args Struct Reference}
+\label{structThread__args}\index{Thread\_args@{Thread\_args}}
+Inheritance diagram for Thread\+\_\+args\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.777778cm]{structThread__args}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structThread__args_a399b672e0f4f137fe52c141bd8c38eb1}{Thread\+\_\+args}} ()
+\item 
+virtual \mbox{\hyperlink{structThread__args_ad786e0c55b4e44bc04d9ba3b813bace1}{$\sim$\+Thread\+\_\+args}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{structThread__args_a594f831be7ce66015a7606e023b24cf4}\label{structThread__args_a594f831be7ce66015a7606e023b24cf4}} 
+std\+::string \mbox{\hyperlink{structThread__args_a594f831be7ce66015a7606e023b24cf4}{Thread\+Name}}
+\begin{DoxyCompactList}\small\item\em name of thread (deffined at creation) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structThread__args_ad5950e8a9a345f012c6b11a8d9dc7cc2}\label{structThread__args_ad5950e8a9a345f012c6b11a8d9dc7cc2}} 
+void($\ast$ \mbox{\hyperlink{structThread__args_ad5950e8a9a345f012c6b11a8d9dc7cc2}{func}} )(\mbox{\hyperlink{structThread__args}{Thread\+\_\+args}} $\ast$)
+\begin{DoxyCompactList}\small\item\em function pointer to thread with args \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structThread__args_a4f71beb11e75d05269fc63ca7c19a8a9}\label{structThread__args_a4f71beb11e75d05269fc63ca7c19a8a9}} 
+pthread\+\_\+t \mbox{\hyperlink{structThread__args_a4f71beb11e75d05269fc63ca7c19a8a9}{thread}}
+\begin{DoxyCompactList}\small\item\em Simple constructor underlying thread that interface is built ontop of. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structThread__args_a9cb8f6b709c5687bf28531bf4d808c75}\label{structThread__args_a9cb8f6b709c5687bf28531bf4d808c75}} 
+bool \mbox{\hyperlink{structThread__args_a9cb8f6b709c5687bf28531bf4d808c75}{running}}
+\begin{DoxyCompactList}\small\item\em Bool flag to tell the thread to run (if not set thread goes into wait cycle. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{structThread__args_a298b8c85c8598ecc557e2090d90a73c3}\label{structThread__args_a298b8c85c8598ecc557e2090d90a73c3}} 
+bool \mbox{\hyperlink{structThread__args_a298b8c85c8598ecc557e2090d90a73c3}{kill}}
+\begin{DoxyCompactList}\small\item\em Bool flay used to kill the thread. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{structThread__args_a399b672e0f4f137fe52c141bd8c38eb1}\label{structThread__args_a399b672e0f4f137fe52c141bd8c38eb1}} 
+\index{Thread\_args@{Thread\_args}!Thread\_args@{Thread\_args}}
+\index{Thread\_args@{Thread\_args}!Thread\_args@{Thread\_args}}
+\doxysubsubsection{\texorpdfstring{Thread\_args()}{Thread\_args()}}
+{\footnotesize\ttfamily Thread\+\_\+args\+::\+Thread\+\_\+args (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+$<$ Simple constructor\mbox{\Hypertarget{structThread__args_ad786e0c55b4e44bc04d9ba3b813bace1}\label{structThread__args_ad786e0c55b4e44bc04d9ba3b813bace1}} 
+\index{Thread\_args@{Thread\_args}!````~Thread\_args@{$\sim$Thread\_args}}
+\index{````~Thread\_args@{$\sim$Thread\_args}!Thread\_args@{Thread\_args}}
+\doxysubsubsection{\texorpdfstring{$\sim$Thread\_args()}{~Thread\_args()}}
+{\footnotesize\ttfamily virtual Thread\+\_\+args\+::$\sim$\+Thread\+\_\+args (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+$<$ virtual constructor
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Utilities.\+h\end{DoxyCompactItemize}

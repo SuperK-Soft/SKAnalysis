@@ -1,0 +1,68 @@
+\hypertarget{classTruthNeutronCaptures}{}\doxysection{Truth\+Neutron\+Captures Class Reference}
+\label{classTruthNeutronCaptures}\index{TruthNeutronCaptures@{TruthNeutronCaptures}}
+
+
+{\ttfamily \#include $<$Truth\+Neutron\+Captures.\+h$>$}
+
+Inheritance diagram for Truth\+Neutron\+Captures\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classTruthNeutronCaptures}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classTruthNeutronCaptures_a87ed6b17f0de977d09a4741cedca15ea}\label{classTruthNeutronCaptures_a87ed6b17f0de977d09a4741cedca15ea}} 
+\mbox{\hyperlink{classTruthNeutronCaptures_a87ed6b17f0de977d09a4741cedca15ea}{Truth\+Neutron\+Captures}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classTruthNeutronCaptures_a9a0fd4fdfc555e08a62fc7b436b25858}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classTruthNeutronCaptures_aa942a530fd88cefde6f3f714c8c4dd5b}\label{classTruthNeutronCaptures_aa942a530fd88cefde6f3f714c8c4dd5b}} 
+bool \mbox{\hyperlink{classTruthNeutronCaptures_aa942a530fd88cefde6f3f714c8c4dd5b}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool purpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classTruthNeutronCaptures_a2e9c1c533addefc72deaf46fbb9de6aa}\label{classTruthNeutronCaptures_a2e9c1c533addefc72deaf46fbb9de6aa}} 
+bool \mbox{\hyperlink{classTruthNeutronCaptures_a2e9c1c533addefc72deaf46fbb9de6aa}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A simple tool to plot basic characteristics of neutron captures, reading outputs from skdetsim.
+\begin{DoxyEnumerate}
+\item run skdetsim or skdetsim-\/gd with output option \textquotesingle{}SKCNTL-\/\+OUTPUTTYPE 2\textquotesingle{} to generate zbs output file
+\item convert the zbs file to an hbk file with {\ttfamily fillnt\+\_\+simple.\+sh -\/o (output hbook file) (input zbs file)}
+\item convert the hbk file to a root file with {\ttfamily h2root (input hbook file) (output root file)} This somewhat convoluted process is required to retain information about neutrons and gammas. This file processes the output root files from step 3.
+\end{DoxyEnumerate}
+
+\begin{DoxyParagraph}{Author}
+M.\+O\textquotesingle{}Flahery 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2020/08/12 
+\end{DoxyParagraph}
+Contact\+: \href{mailto:marcus.o-flaherty@warwick.ac.uk}{\texttt{ marcus.\+o-\/flaherty@warwick.\+ac.\+uk}} 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classTruthNeutronCaptures_a9a0fd4fdfc555e08a62fc7b436b25858}\label{classTruthNeutronCaptures_a9a0fd4fdfc555e08a62fc7b436b25858}} 
+\index{TruthNeutronCaptures@{TruthNeutronCaptures}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!TruthNeutronCaptures@{TruthNeutronCaptures}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool Truth\+Neutron\+Captures\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+Truth\+Neutron\+Captures/Truth\+Neutron\+Captures.\+h\item 
+User\+Tools/\+Truth\+Neutron\+Captures/Truth\+Neutron\+Captures.\+cpp\end{DoxyCompactItemize}

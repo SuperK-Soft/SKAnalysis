@@ -1,0 +1,68 @@
+\hypertarget{classTruthNeutronCaptures__v2}{}\doxysection{Truth\+Neutron\+Captures\+\_\+v2 Class Reference}
+\label{classTruthNeutronCaptures__v2}\index{TruthNeutronCaptures\_v2@{TruthNeutronCaptures\_v2}}
+
+
+{\ttfamily \#include $<$Truth\+Neutron\+Captures\+\_\+v2.\+h$>$}
+
+Inheritance diagram for Truth\+Neutron\+Captures\+\_\+v2\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classTruthNeutronCaptures__v2}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classTruthNeutronCaptures__v2_a18fa7bcf4eddb8678763bab61b20f805}\label{classTruthNeutronCaptures__v2_a18fa7bcf4eddb8678763bab61b20f805}} 
+\mbox{\hyperlink{classTruthNeutronCaptures__v2_a18fa7bcf4eddb8678763bab61b20f805}{Truth\+Neutron\+Captures\+\_\+v2}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classTruthNeutronCaptures__v2_aacef3f00f2863a768af234ecd5c4e15e}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classTruthNeutronCaptures__v2_ae1d373b50e027edda17e31d1c781ae40}\label{classTruthNeutronCaptures__v2_ae1d373b50e027edda17e31d1c781ae40}} 
+bool \mbox{\hyperlink{classTruthNeutronCaptures__v2_ae1d373b50e027edda17e31d1c781ae40}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool purpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classTruthNeutronCaptures__v2_a0f82487400bc5af40b7f9069dd107eca}\label{classTruthNeutronCaptures__v2_a0f82487400bc5af40b7f9069dd107eca}} 
+bool \mbox{\hyperlink{classTruthNeutronCaptures__v2_a0f82487400bc5af40b7f9069dd107eca}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A simple tool to plot basic characteristics of neutron captures, reading outputs from skdetsim.
+\begin{DoxyEnumerate}
+\item checkout and compile modified SKOFL with secondaries added to MCInfo class.
+\item compile modified skdetsim with NEUTRON environmental variable defined to enable saving secondaries.
+\item run skdetsim with option \textquotesingle{}SKCNTL-\/\+OUTPUTTYPE 1\textquotesingle{} and \textquotesingle{}SKCNTL-\/\+FILEFORMAT 1\textquotesingle{} to generate SKROOT output. This file processes the output root files from step 3.
+\end{DoxyEnumerate}
+
+\begin{DoxyParagraph}{Author}
+M.\+O\textquotesingle{}Flahery 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2020/08/12 
+\end{DoxyParagraph}
+Contact\+: \href{mailto:marcus.o-flaherty@warwick.ac.uk}{\texttt{ marcus.\+o-\/flaherty@warwick.\+ac.\+uk}} 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classTruthNeutronCaptures__v2_aacef3f00f2863a768af234ecd5c4e15e}\label{classTruthNeutronCaptures__v2_aacef3f00f2863a768af234ecd5c4e15e}} 
+\index{TruthNeutronCaptures\_v2@{TruthNeutronCaptures\_v2}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!TruthNeutronCaptures\_v2@{TruthNeutronCaptures\_v2}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool Truth\+Neutron\+Captures\+\_\+v2\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+Truth\+Neutron\+Captures\+\_\+v2/Truth\+Neutron\+Captures\+\_\+v2.\+h\item 
+User\+Tools/\+Truth\+Neutron\+Captures\+\_\+v2/Truth\+Neutron\+Captures\+\_\+v2.\+cpp\end{DoxyCompactItemize}

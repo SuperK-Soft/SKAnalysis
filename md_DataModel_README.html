@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ToolApplication: Data Model</title>
+<title>ToolApplication: README</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,17 +62,12 @@ $(function() {
 </div><!-- top -->
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">Data Model </div>  </div>
+<div class="title">README </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><hr  />
-<p>conceptually the DataModel class is a transient data storage class thats accessable from every Tool within a ToolChain. It is the primary location for storing and passing data between Tools.</p>
-<p>The DataModel class can therefore be adapted and expanded to include any data objects or classes that you require in your applicaion</p>
-<p>In it's initial blank state it comes with just two variables:</p>
-<p>[ Store vars; ]: An ascii storage class which maps string keys to any variable type (see Store class in ToolFramework). This class houses by defualt all the variables passed to a ToolChain in the ToolChain config as well as all the command line argumnets at execution. It also has some flag vaiables which can be read about int he manual for things like stopping execution when looping.</p>
-<p>and</p>
-<p>[ Logging *Log; ]: A lass for sending logg messages similar to c++ cout with a redirectable stream (see Logging class in ToolFramework/ToolDAQ)</p>
-<p>A TTree map with getter and setter functions is provided and can be uncommented if required for those who wish to organise root TTrees (note: requires root dependancy) </p>
+<div class="textblock"><p>#Data Model </p><hr  />
+<p>Data Model Class can be defined how ever the User requires. A Store is provided which ineficently maps variables to string lkeys via conversion to stringstream and can be used for debuging or other useful vairables.</p>
+<p>A TTree map with getter and setter functions is provided and can be uncommented if required. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

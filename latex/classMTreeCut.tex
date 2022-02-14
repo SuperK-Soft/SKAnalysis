@@ -1,0 +1,134 @@
+\hypertarget{classMTreeCut}{}\doxysection{MTree\+Cut Class Reference}
+\label{classMTreeCut}\index{MTreeCut@{MTreeCut}}
+Inheritance diagram for MTree\+Cut\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classMTreeCut}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a23f520549ff7dd301894cab359242799}\label{classMTreeCut_a23f520549ff7dd301894cab359242799}} 
+{\bfseries MTree\+Cut} (TFile $\ast$outfilein, std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeCut_af58bf1c07a56e67ca134caf3ca839ca8}\label{classMTreeCut_af58bf1c07a56e67ca134caf3ca839ca8}} 
+{\bfseries MTree\+Cut} (std\+::string cutname, TEntry\+List $\ast$inelist, TTree $\ast$intree)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a713c591bec6cf8fe7d7cc5d8ee11717b}\label{classMTreeCut_a713c591bec6cf8fe7d7cc5d8ee11717b}} 
+void {\bfseries Initialize} (int type\+\_\+in)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a5ac3becc04ea90dee48f3fb4c7d067df}\label{classMTreeCut_a5ac3becc04ea90dee48f3fb4c7d067df}} 
+void {\bfseries Initialize} (int type\+\_\+in, std\+::string indexcutbranch, std\+::vector$<$ std\+::string $>$ linkedbranches)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a118704b439ef69f7ea9b79a68c0bd536}\label{classMTreeCut_a118704b439ef69f7ea9b79a68c0bd536}} 
+void {\bfseries Initialize} (int type\+\_\+in, std\+::vector$<$ std\+::string $>$ indexcutbranches, std\+::vector$<$ std\+::vector$<$ std\+::string $>$$>$ linkedbranches)
+\item 
+\mbox{\Hypertarget{classMTreeCut_ac266c8d05a4c23f9db46e8548e1a91a3}\label{classMTreeCut_ac266c8d05a4c23f9db46e8548e1a91a3}} 
+void {\bfseries Set\+Entry\+List} (TEntry\+List $\ast$inelist)
+\item 
+\mbox{\Hypertarget{classMTreeCut_afe1f667e18db1d7bd206136a57e0f24a}\label{classMTreeCut_afe1f667e18db1d7bd206136a57e0f24a}} 
+void {\bfseries Set\+Tree} (TTree $\ast$intree)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a9f59214ca62ab272cf4134a79dae33fc}\label{classMTreeCut_a9f59214ca62ab272cf4134a79dae33fc}} 
+void {\bfseries Set\+Save\+File} (TFile $\ast$outfilein)
+\item 
+\mbox{\Hypertarget{classMTreeCut_aeb56de9487df8ce6177e94ec89efdf25}\label{classMTreeCut_aeb56de9487df8ce6177e94ec89efdf25}} 
+void {\bfseries Set\+Branch\+Addresses} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_a40b541b9d7d5355e8105df8c713df961}\label{classMTreeCut_a40b541b9d7d5355e8105df8c713df961}} 
+bool {\bfseries Get\+Meta\+Info} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_a9d87914ce10285c68c9a580494eb0400}\label{classMTreeCut_a9d87914ce10285c68c9a580494eb0400}} 
+bool {\bfseries Enter} (Long64\+\_\+t entry\+\_\+number, TTree $\ast$treeptr=nullptr)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a4607366b9207111e4917c763328f5f02}\label{classMTreeCut_a4607366b9207111e4917c763328f5f02}} 
+bool {\bfseries Enter} (Long64\+\_\+t entry\+\_\+number, size\+\_\+t index, TTree $\ast$treeptr=nullptr)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a37819180e8133516b63a85a3657b8c3e}\label{classMTreeCut_a37819180e8133516b63a85a3657b8c3e}} 
+bool {\bfseries Enter} (Long64\+\_\+t entry\+\_\+number, std\+::vector$<$ size\+\_\+t $>$ \&indices, TTree $\ast$treeptr=nullptr)
+\item 
+\mbox{\Hypertarget{classMTreeCut_ac2577f283d13ee98ae144c3648b78ec1}\label{classMTreeCut_ac2577f283d13ee98ae144c3648b78ec1}} 
+bool {\bfseries Flush} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_a58fbe311d71b9eef4db4586e999b28cc}\label{classMTreeCut_a58fbe311d71b9eef4db4586e999b28cc}} 
+void {\bfseries Write} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_a80dbcda819352bfa3979e036d18d6a6f}\label{classMTreeCut_a80dbcda819352bfa3979e036d18d6a6f}} 
+Long64\+\_\+t {\bfseries Get\+Current\+Entry} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_a7de04ffadb08a2d090b253a2915c4a43}\label{classMTreeCut_a7de04ffadb08a2d090b253a2915c4a43}} 
+Long64\+\_\+t {\bfseries Get\+Next\+Entry} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_af54f2228e8efa1a664031b22f3f6ae3e}\label{classMTreeCut_af54f2228e8efa1a664031b22f3f6ae3e}} 
+std\+::set$<$ size\+\_\+t $>$ {\bfseries Get\+Passing\+Indexes} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_ad9e4b394ed1e42f431502d323a831fac}\label{classMTreeCut_ad9e4b394ed1e42f431502d323a831fac}} 
+std\+::set$<$ std\+::vector$<$ size\+\_\+t $>$ $>$ {\bfseries Get\+Passing\+Indices} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeCut_ab67849ae52454153095e7bcbd4b266e2}\label{classMTreeCut_ab67849ae52454153095e7bcbd4b266e2}} 
+std\+::string {\bfseries mode} =\char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a80cb7b3e21dd80695e4b872b12763426}\label{classMTreeCut_a80cb7b3e21dd80695e4b872b12763426}} 
+std\+::string {\bfseries cut\+\_\+name}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a8ada76582ddd7525d7e2235edbfae11e}\label{classMTreeCut_a8ada76582ddd7525d7e2235edbfae11e}} 
+std\+::string {\bfseries cut\+\_\+description}
+\item 
+\mbox{\Hypertarget{classMTreeCut_af07d43066e5bfb5bf9072cc854c0be3d}\label{classMTreeCut_af07d43066e5bfb5bf9072cc854c0be3d}} 
+TFile $\ast$ {\bfseries outfile} =nullptr
+\item 
+\mbox{\Hypertarget{classMTreeCut_ae3e0ebaf64764e3a993ff0e0d92ef9bd}\label{classMTreeCut_ae3e0ebaf64764e3a993ff0e0d92ef9bd}} 
+TEntry\+List $\ast$ {\bfseries ttree\+\_\+entries} =nullptr
+\item 
+\mbox{\Hypertarget{classMTreeCut_a0c6ff6ae265576710692a5e43b461abb}\label{classMTreeCut_a0c6ff6ae265576710692a5e43b461abb}} 
+TTree $\ast$ {\bfseries additional\+\_\+indices} =nullptr
+\item 
+\mbox{\Hypertarget{classMTreeCut_af45e7b31042c54a5e508dab86f2f9a42}\label{classMTreeCut_af45e7b31042c54a5e508dab86f2f9a42}} 
+int {\bfseries type} =-\/1
+\item 
+\mbox{\Hypertarget{classMTreeCut_a2ba9210436daccb0ce42f11ff2a54e4c}\label{classMTreeCut_a2ba9210436daccb0ce42f11ff2a54e4c}} 
+std\+::string {\bfseries additional\+\_\+branchname}
+\item 
+\mbox{\Hypertarget{classMTreeCut_af1236446e3da30e16ba7c072184f3c1b}\label{classMTreeCut_af1236446e3da30e16ba7c072184f3c1b}} 
+std\+::vector$<$ std\+::string $>$ {\bfseries linked\+\_\+branch\+\_\+list}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a2e99af0b697ed690e167f6bfd250edab}\label{classMTreeCut_a2e99af0b697ed690e167f6bfd250edab}} 
+std\+::set$<$ size\+\_\+t $>$ {\bfseries indexes\+\_\+this\+\_\+entry}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a1962c19e22c32b2205996ff85005b7f6}\label{classMTreeCut_a1962c19e22c32b2205996ff85005b7f6}} 
+std\+::set$<$ size\+\_\+t $>$ $\ast$ \mbox{\hyperlink{classMTreeCut_a1962c19e22c32b2205996ff85005b7f6}{indexes\+\_\+this\+\_\+entry\+\_\+p}} =nullptr
+\begin{DoxyCompactList}\small\item\em use a set to prevent duplicates. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMTreeCut_acb57fc23d285fce1f8a78fdf075bbd7a}\label{classMTreeCut_acb57fc23d285fce1f8a78fdf075bbd7a}} 
+std\+::vector$<$ std\+::string $>$ {\bfseries additional\+\_\+branchnames}
+\item 
+\mbox{\Hypertarget{classMTreeCut_aa1f8d29925ee8ace92f67609aebee494}\label{classMTreeCut_aa1f8d29925ee8ace92f67609aebee494}} 
+std\+::vector$<$ std\+::vector$<$ std\+::string $>$ $>$ {\bfseries linked\+\_\+branch\+\_\+lists}
+\item 
+\mbox{\Hypertarget{classMTreeCut_ac01533d37decb9d08d6dac57a4333c6c}\label{classMTreeCut_ac01533d37decb9d08d6dac57a4333c6c}} 
+std\+::set$<$ std\+::vector$<$ size\+\_\+t $>$ $>$ {\bfseries indices\+\_\+this\+\_\+entry}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a564b2ddb34b191b27dfea3d2ab2e2856}\label{classMTreeCut_a564b2ddb34b191b27dfea3d2ab2e2856}} 
+std\+::set$<$ std\+::vector$<$ size\+\_\+t $>$ $>$ $\ast$ {\bfseries indices\+\_\+this\+\_\+entry\+\_\+p} =nullptr
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a27384c7fc2d666048b106c09345e9ade}\label{classMTreeCut_a27384c7fc2d666048b106c09345e9ade}} 
+bool {\bfseries Serialise} (Binary\+Stream \&bs)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a1dc306979fb14fd0a5d38828f8fca685}\label{classMTreeCut_a1dc306979fb14fd0a5d38828f8fca685}} 
+bool {\bfseries Print} ()
+\item 
+\mbox{\Hypertarget{classMTreeCut_af2ac32d8e7fce2751ef6ecd903cbcef9}\label{classMTreeCut_af2ac32d8e7fce2751ef6ecd903cbcef9}} 
+std\+::string {\bfseries Get\+Version} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/MTree\+Cut.\+h\item 
+Data\+Model/MTree\+Cut.\+cpp\end{DoxyCompactItemize}

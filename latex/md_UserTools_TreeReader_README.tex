@@ -1,0 +1,119 @@
+A tool for reading in data from ROOT or ZEBRA files. Access to file data is provided by two means\+:
+\begin{DoxyEnumerate}
+\item For ROOT files an \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} will be created and placed into the \mbox{\hyperlink{classDataModel_a6db42acc6c98cd31e937085a0b882a22}{Data\+Model\+::\+Trees}} map.
+\item For SK files (ROOT or ZEBRA), {\ttfamily skread} and/or {\ttfamily skrawread} will be called to populate fortran common blocks. For SK ROOT files both means of data access will be available.
+\end{DoxyEnumerate}
+
+Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md48}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md48}
+The following options are available. Defaults, when applicable, are given in parentheses. 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{verbosity 1                                    \# tool verbosity (1)}
+\DoxyCodeLine{readerName MyReader                            \# the name to associate to this reader instance in the DataModel}
+\DoxyCodeLine{inputFile /path/to/an/input/file.root          \# a single input file, ROOT or ZBS}
+\DoxyCodeLine{FileListName MyFileList                        \# the name of a set of files prepared by the LoadFileList tool}
+\DoxyCodeLine{maxEntries 10                                  \# max number of entries to process before stopping the ToolChain (-\/1)}
+\DoxyCodeLine{skFile 1                                       \# whether to enable additional functionality for SK files (1)}
+
+\end{DoxyCode}
+
+
+When reading ROOT files the following options are also available\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{treeName MyTree                                \# the name of the tree within the file}
+\DoxyCodeLine{firstEntry 10                                  \# the first entry to read (0)}
+
+\end{DoxyCode}
+
+
+When enabling additional functionality for SK files the following options are also available\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{LUN 10                                         \# LUN to assign to the file (10)}
+\DoxyCodeLine{SK\_GEOMETRY 4                                  \# which SK geometry this file relates to (4)}
+\DoxyCodeLine{skoptn 31,30,26,25                             \# options describing what to load via skread/skrawread (31)}
+\DoxyCodeLine{skbadopt 23                                    \# which classes of channels to mask (23)}
+\DoxyCodeLine{skbadchrun 42428                               \# which run to use for bad ch list for MC / calibration data}
+\DoxyCodeLine{skreadMode 0                                   \# which set of `skread` or `skrawread` to call (0)}
+\DoxyCodeLine{skipPedestals 1                                \# whether to skip pedestal and status entries (1)}
+\DoxyCodeLine{readSheAftTogether 1                           \# whether to read AFT data for associated SHE events together (0)}
+\DoxyCodeLine{onlySheAftPairs 1                              \# whether to only return SHE+AFT pairs (0)}
+
+\end{DoxyCode}
+
+
+When processing SK ROOT files the following additional options are also available\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{skrootMode 0                                   \# operation mode of the TreeManager (2)}
+\DoxyCodeLine{outputFile /path/to/an/output/file.root        \# the output file, when using the TreeManager in root2root mode}
+
+\end{DoxyCode}
+
+
+Notes\+:
+\begin{DoxyItemize}
+\item default values are given above in parentheses. If none is given, the option is mandatory.
+\item input\+File will take precedence over File\+List\+Name (only one is required). It supports a file path or glob.
+\item sk\+File mode will be set to 1 when reading ZBS files, based on the file extention.
+\item first\+Entry should probably be left at 0 when in sk\+File mode, since event information is carried over by skread/skrawread, and event processing may fail if entries are not read sequentially from the first entry
+\item if max\+Entries is not given or less than 0, all entries in the file will be read.
+\item skroot\+Mode\+: 2=read, 1=write, 0=root2root copy.
+\item skread\+Mode\+: on each entry call... 3=both {\ttfamily skrawread} and {\ttfamily skread}, 2={\ttfamily skrawread} only, 1={\ttfamily skread} only, 0={\ttfamily auto} -\/ both if input file has no MC branch, only {\ttfamily skread} otherwise.
+\item if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see \$\+SKOFL\+\_\+\+ROOT/src/skrd/skoptn.F for all options)
+\item LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.
+\item skip\+Pedestals will load the next entry for which {\ttfamily skread} or {\ttfamily skrawread} did not return 3 or 4 (not pedestal or runinfo entry).
+\item When reading ROOT files, only enable branches you intend to use. Specify a list of input branches as follows\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{StartInputBranchList}
+\DoxyCodeLine{branchA}
+\DoxyCodeLine{branchB}
+\DoxyCodeLine{branchC}
+\DoxyCodeLine{EndInputBranchList}
+
+\end{DoxyCode}
+
+\item this will disable all branches other than {\ttfamily branchA}, {\ttfamily branchB} and {\ttfamily branchC}.
+\item for skroot files in {\ttfamily copy} mode, an output file will be created and entries may be copied from input to output file. Unused input branches should be disabled as above, but branches that are needed for processing but not desired in the output can be removed from the copy operation by listing only the desired output branches as follows\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{StartOutputBranchList}
+\DoxyCodeLine{branchA}
+\DoxyCodeLine{branchB}
+\DoxyCodeLine{EndOutputBranchList}
+
+\end{DoxyCode}
+
+\item in this case branches {\ttfamily branchA},{\ttfamily branchB} and {\ttfamily branchC} will be read in and accessible, but the output file will only contain branches {\ttfamily branchA} and {\ttfamily branchB}.
+\item output\+File is only applicable in skroot copy or write mode.
+\item In write mode you will need to call {\ttfamily skroot\+\_\+set\+\_\+$\ast$$\ast$$\ast$} and {\ttfamily skroot\+\_\+fill\+\_\+tree\+\_\+} functions as required. If you need to read inputs from another file, you will need to use another \mbox{\hyperlink{classTreeReader}{Tree\+Reader}} instance.
+\item N.\+B. The minimum set of active input branches for calling \mbox{\hyperlink{classlf__allfit}{lf\+\_\+allfit}} seems to be\+:
+\item SOFTWARETRG
+\item EVENTHEADER
+\item PEDESTALS
+\item TQLIST
+\item ODTQLIST
+\item SPACERS
+\item HEADER
+\item TQAREAL
+\item ATMPD
+\item SLE
+\end{DoxyItemize}
+
+skoptn values\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{31 : Read HEADER bank \& put it to skhead.h  (always required)}
+\DoxyCodeLine{30 : Read real data from TQREAL bank \& put it to sktq.h}
+\DoxyCodeLine{29 : Read T \& Q count from TQ bank \& put it to sktq.h}
+\DoxyCodeLine{27:  Set bad channel for ATMPD MC}
+\DoxyCodeLine{26 : Read bad channel information from the file \& put it to skbadc.h}
+\DoxyCodeLine{25 : Mask the bad channel}
+\DoxyCodeLine{24 : Mask ID-\/OD XTALK}
+\DoxyCodeLine{23 : Read water transparency info into skwaterlen.h}
+\DoxyCodeLine{22 : Read the pedestal data from PDST bank \& put it to skpdst.h}
+\DoxyCodeLine{20 : Read event without clearing previous event }
+\DoxyCodeLine{19 : Read Real data from VETO bank \& put it to skveto.h }
+\DoxyCodeLine{18 : Read TQ data from TQ bank \& put it to skveto.h}
+\DoxyCodeLine{17 : Read RWANTI bank \& put it to sktq.h regardless of header}
+\DoxyCodeLine{16 : Read TQSKZ \& TQSKAZ in SKREAD}
+\DoxyCodeLine{15 : Timing correction (TMQ) by Ikeda-\/san}
+\DoxyCodeLine{14 : Do not remove q<0 hits for OD (SK IV only)}
+
+\end{DoxyCode}
+ 
