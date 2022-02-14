@@ -1,0 +1,19 @@
+#ToolChain dynamic setup file
+
+##### Runtime Paramiters #####
+verbose 9
+error_level 0 # 0= do not exit, 1= exit on unhandeled errors only, 2= exit on unhandeled errors and handeled errors
+attempt_recover 1
+
+###### Logging #####
+log_interactive 1 # Interactive=cout;  0=false, 1= true
+log_local 0 # Local = local file log;  0=false, 1= true
+log_local_path ./log
+log_split_files 0 # seperate output and error log files (named x.o and x.e)
+
+##### Tools To Add #####
+Tools_File configfiles/Dummy/ToolsConfig
+
+##### Run Type #####
+Inline 1
+Interactive 0
