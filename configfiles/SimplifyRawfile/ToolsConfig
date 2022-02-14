@@ -1,0 +1,4 @@
+myGracefulStop GracefulStop configfiles/SimplifyRawfile/GracefulStopConfig
+myLoadFileList LoadFileList configfiles/SimplifyRawfile/LoadFileListConfig
+myTreeReader TreeReader configfiles/SimplifyRawfile/TreeReaderConfig
+mySimplifyTree SimplifyTree configfiles/SimplifyRawfile/SimplifyTreeConfig

@@ -1,0 +1,7 @@
+#myGracefulStop GracefulStop configfiles/TreeReaderDemoSkroot/GracefulStopConfig
+myLoadFileList LoadFileList configfiles/TreeReaderDemoSkroot/LoadFileListConfig
+##myTreeReader TreeReader configfiles/TreeReaderDemoSkroot/TreeReaderConfig
+myTreeReader TreeReader configfiles/TreeReaderDemoSkroot/TreeReaderConfig_2
+##mylf_allfit_new lf_allfit_new configfiles/TreeReaderDemoSkroot/lf_allfit_newConfig
+myevDisp1 evDisp configfiles/TreeReaderDemoSkroot/evDispConfig_1
+myevDisp2 evDisp configfiles/TreeReaderDemoSkroot/evDispConfig_2

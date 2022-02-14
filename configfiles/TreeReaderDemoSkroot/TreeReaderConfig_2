@@ -1,0 +1,43 @@
+verbosity 100
+readerName demoReader
+FileListName MyFileList             # the name of a set of files prepared by the LoadFileList tool
+treeName data                       # the name of the tree within the file (when reading ROOT file)
+maxEntries 20                       # max num input entries to process
+skFile 1                            # required for zbs files
+#skrootMode 0                        # root2root copy mode, required by lf_allfit_new
+#outputFile lf_allfit_testout.root   # for skrootMode 0 or 1 where the TreeManager writes a file.
+SK_GEOMETRY 4                       # which SK geometry this file relates to (4)
+#skoptn 31,30,26,25                  # options describing what to load via skread/skrawread (31)
+skoptn 31,30,25                     # for MC cannot use option 26, instead provide skbadchrun
+skbadopt 23                         # which classes of channels to mask (23)
+skbadchrun 62428                    # which run to use for bad ch list for MC / calibration data
+skreadMode 0                        # which set of `skread` or `skrawread` to call (0)
+skipPedestals 1                     # whether to skip pedestal and status entries (1)
+#triggerMasks 28                     # must have all of the given bits set in idtgsk to be returned
+#triggerMasks 29                     # must have all of the given bits set in idtgsk to be returned
+readSheAftTogether 0                # whether to read AFT data for associated SHE events together (0)
+onlySheAftPairs 0                   # whether to only return SHE+AFT pairs (0)
+
+#StartInputBranchList
+################
+## the following seems to be the minimum set of required braches for lf_allfit data
+#SOFTWARETRG
+#EVENTHEADER
+#PEDESTALS
+#TQLIST
+#ODTQLIST
+#SPACERS
+#HEADER
+#TQAREAL
+#ATMPD
+#SLE
+##############
+#EndInputBranchList
+
+StartInputBranchList
+###############
+## the following seems to be the minimum set of required braches for lf_allfit MC
+HEADER
+TQREAL
+#############
+EndInputBranchList

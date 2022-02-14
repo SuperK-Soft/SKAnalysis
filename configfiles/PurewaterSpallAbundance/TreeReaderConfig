@@ -1,0 +1,58 @@
+verbosity 1
+#inputFile $HOME/relic_sk4_ana/li9/subsetfile.root
+inputFile /disk02/lowe8/relic_sk4/dec20/data/for_ntag/spall_resq_oldbdt_nlow1/relic.precut.leaf.ntag_oldbdt_nlow1.spall_new_resq.061525.077958.root
+treeName data
+readerName spallTree
+firstEntry 0                        # first TTree entry of run 61525 (2015 paper used for SPALLATION)
+#firstEntry 152882                  # first TTree entry of run 68671 (2015 used for NTAG)
+maxEntries -1                       # max num input entries to process
+
+# enable the following ONLY if bypassing PurewaterSpallAbundanceCuts tool
+# load cut information from this file - only passing entries will be read
+selectionsFile li9_selections.root
+# A selectionsFile may record many different cuts. Specify the loosest cut from which
+# we should process every entry here. If undefined, the loosest cut on file will be used.
+cutName lowe_energy>6MeV
+
+StartInputBranchList
+###############
+HEADER
+LOWE
+ThirdRed
+np
+N200M
+neutron5
+dt
+nmusave_pre
+nmusave_post
+#spaloglike
+#spaloglike_shfld
+#spaloglike_kirk
+#spaloglike_kirk_shfld
+#spaloglike_li9
+#spaloglike_kirk_li9
+mubstatus
+#mubntrack
+mubitrack
+mubgood
+#mubffgood
+spadt
+spadlt
+#spadll
+#spadll_kirk
+#sparesq
+#spaqpeak
+#spaqpeak_kirk
+#spamuqismsk
+#spamuqismsk_pertrack
+#spadts
+#spadt_li9
+#candidates
+#muindex
+#neut_flag
+#mult_flag
+#neut_shift
+#neutdiff
+multispa_dist
+#############
+EndInputBranchList

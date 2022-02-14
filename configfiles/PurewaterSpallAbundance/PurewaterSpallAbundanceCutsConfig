@@ -1,0 +1,12 @@
+verbosity 1
+treeReaderName spallTree        # name of the TreeReader used for input
+#outputFile $HOME/relic_sk4_ana/li9/li9_subset.root
+outputFile li9_selections.root
+
+# cut variables
+max_closest_muon_dt 0.001       # seconds. 'cut_1ms'   in sonia's code
+max_closest_lowe_dx 490         # cm       'cut_multi' in sonia's code
+ntag_FOM_threshold 0.995        # nominal BDT FOM threshold for Li9 tagging (ncut_li9 in sonia's code)
+run_min 61525                   # start of SK-IV, QBEE installed, Low-E threshold lowered to 3.5 MeV
+#run_min 68671                   # SHE (AFT?) trigger threshold lowered to 8 (7.5?) MeV - use for ntagging
+run_max 73031                   # end of Yang Zhang's time range

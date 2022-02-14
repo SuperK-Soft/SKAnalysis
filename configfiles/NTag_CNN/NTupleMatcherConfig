@@ -1,0 +1,4 @@
+tool_verbosity 1
+ntuple_file_path /disk02/atmpd6/sk4_dst/may19/fc_mc/ntuple/2500.photon.fcred.ntag.root
+#ntuple_file_path ../2500.photon.fcred.ntag.root
+mc_file_id 4

@@ -1,0 +1,18 @@
+myGracefulStop GracefulStop configfiles/PurewaterSpallAbundance/GracefulStopConfig
+#myTreeReader TreeReader configfiles/PurewaterSpallAbundance/TreeReaderConfig
+#myPurewaterSpallAbundanceCuts PurewaterSpallAbundanceCuts configfiles/PurewaterSpallAbundance/PurewaterSpallAbundanceCutsConfig
+# we may bypass the selection process by skipping the above tool and loading
+# its output selector file directly. Uncomment the appropriate section in TreeReaderConfig.
+#myPureWaterLi9Plots PurewaterLi9Plots configfiles/PurewaterSpallAbundance/PurewaterLi9PlotsConfig
+#myPlotMuonDtDlt PlotMuonDtDlt configfiles/PurewaterSpallAbundance/PlotMuonDtDltConfig
+#myFitLi9Lifetime FitLi9Lifetime configfiles/PurewaterSpallAbundance/FitLi9LifetimeConfig
+#myFitPurewaterLi9NcaptureDt FitPurewaterLi9NcaptureDt configfiles/PurewaterSpallAbundance/FitPurewaterLi9NcaptureDtConfig
+#myPlotMuonDtDlt PlotMuonDtDlt configfiles/PurewaterSpallAbundance/PlotMuonDtDltConfig
+# the FitSpallationDt tool may load files prepared by laura's script. In this case,
+# use the following TreeReaderConfig:
+#myTreeReader TreeReader configfiles/PurewaterSpallAbundance/SpallTreeReaderConfig
+# it may also load its input directly from a BoostStore, bypassing the reading of
+# sparse entries from a ROOT file and allowing faster retrieval of passing data from disk.
+myFitSpallationDt FitSpallationDt configfiles/PurewaterSpallAbundance/FitSpallationDtConfig
+# TODO: tool to fit energy distribution for spallation
+# TODO: tool to fit energy distribution for Li9 specifically

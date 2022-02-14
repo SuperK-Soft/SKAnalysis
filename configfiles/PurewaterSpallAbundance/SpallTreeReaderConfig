@@ -1,0 +1,18 @@
+verbosity 1
+# spallation file created via laura's script, minimal variables
+#inputFile /disk02/lowe8/relic_sk4/may20/data/spainfo/data/spainfo.*.root
+#inputFile spainfo.*.root
+inputFile spall_dts.root
+treeName spall
+readerName spallTree
+
+StartInputBranchList
+###############
+nrunsk
+muboy_status
+dt
+lt
+bsgood_relic
+energy_relic
+#############
+EndInputBranchList

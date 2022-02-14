@@ -4,6 +4,11 @@
 
 Dependencies=`pwd`/Dependencies
 
-export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=`pwd`/lib:${Dependencies}/TMVA/lib:$LD_LIBRARY_PATH
+
+for folder in `ls -d ${PWD}/UserTools/*/ `
+do
+    export PYTHONPATH=$folder:${PYTHONPATH}
+done
 
 export SEGFAULT_SIGNALS="all"

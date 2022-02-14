@@ -1,0 +1,9 @@
+verbosity 1
+readerName rawReader
+FileListName MyFileList    # the name of a set of files prepared by the LoadFileList tool
+treeName data              # the name of the tree within the file (when reading ROOT file)
+maxEntries -1              # max num input entries to process
+skFile 1                   # use SK functions for reading data
+SK_GEOMETRY 5              # which SK phase this file relates to
+skoptn 31,30,26,25         # options describing what to load via skread/skrawread
+#triggerMasks 28            # only return events with this trigger bit set (28 = super-high-energy trigger)

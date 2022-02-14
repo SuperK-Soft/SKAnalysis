@@ -1,10 +1,18 @@
 *~
-*.o
-include/*.h
-lib/*.so
+ *.o
 UserTools/*/*.o
 DataModel/*.o
 Dependencies
 main
-*.d
+ *.d
 *.root
+*.so
+*.a
+*.pcm
+*.pyc
+lib/*
+include/*
+DataModel/NTagDataModelDict.cxx
+BStore_RootDict.cxx
+BStore_RootDict.h
+BStore_Linkdef_1.hh

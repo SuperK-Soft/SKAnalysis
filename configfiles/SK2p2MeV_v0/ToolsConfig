@@ -1,0 +1,2 @@
+myTreeReader TreeReader configfiles/SK2p2MeV_v0/TreeReaderConfig
+mySK2p2MeV_ntag SK2p2MeV_ntag configfiles/SK2p2MeV_v0/SK2p2MeVConfig

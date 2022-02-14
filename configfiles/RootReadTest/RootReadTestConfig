@@ -1,0 +1,12 @@
+# RootReadTestTool config file
+
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsim_r77957.viazbs.root
+#treeName h1
+#testFileType official_ntuple
+
+inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsim.r71123.1.root
+treeName data
+testFileType SKROOT
+
+maxEvents 3
+verbose 2

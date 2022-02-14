@@ -1,0 +1,6 @@
+tool_verbosity 1
+#noise_file_path /disk02/calib3/usr/han/dummy/sk6/085710/t2k*.root
+noise_file_path /disk02/calib3/usr/han/dummy/sk6/085710/t2k_run085710.000001.1st.root
+#noise_file_path ../t2k*.root
+noise_start_time 2
+noise_end_time 505

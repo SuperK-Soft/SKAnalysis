@@ -1,0 +1,6 @@
+verbosity 1
+index_name sk2p2.HEADER.nevsk
+filename_1 /HOME/relic_sk4_ana/relic_work_dir/data_reduc/neutron_tagging/src/trash_out.root
+filename_2 /HOME/ntag/NTag_ToolFramework/SK2p2MeV_testout.root
+max_entries -1
+ftolerance 0.005

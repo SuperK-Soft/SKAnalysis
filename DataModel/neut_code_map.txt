@@ -1,0 +1,117 @@
+C        ######### NEUTRINO MODE #########
+C
+C            ***** CHARGED CURRENT *****
+C
+C               -- ELASTIC --
+C           1 : NEU,N --> LEPTON-,P
+C
+C               -- SINGLE PI FROM DELTA RESONANCE --
+C          11 : NEU,P --> LEPTON-,P,PI+
+C          12 : NEU,N --> LEPTON-,P,PI0
+C          13 : NEU,N --> LEPTON-,N,PI+
+C
+C          16 : NEU,O(16) --> LEPTON-,O(16),PI+
+C
+C               -- MULTI PI (1.3 < W < 2.0 GeV) --
+C          21 : NEU,(N OR P) --> LEPTON-,(N OR P),MULTI PI
+C
+C               -- SINGLE ETA FROM DELTA RESONANCE --
+C                                     (added 97/12/01 J.Kameda)
+C          22 : NEU,N --> LEPTON-,P,ETA0
+C
+C               -- SINGLE K FROM DELTA RESONANCE --
+C                                     (added 98/02/25 J.Kameda)
+C          23 : NEU,N --> LEPTON-,LAMBDA,K+
+C
+C               -- DEEP INELASTIC (2.0 GeV < W , JET set) --
+C          26 : NEU,(N OR P) --> LEPTON-,(N OR P),MESONS
+C
+C            ***** NEUTAL CURRENT *****
+C
+C               -- SINGLE PI FROM DELTA RESONANCE --
+C          31 : NEU,N --> NEU,N,PI0
+C          32 : NEU,P --> NEU,P,PI0
+C          33 : NEU,N --> NEU,P,PI-
+C          34 : NEU,P --> NEU,N,PI+
+C
+C          36 : NEU,O(16) --> NEU,O(16),PI0
+C
+C               -- MULTI PI (1.3 GeV < W < 2.0 GeV) --
+C          41 : NEU,(N OR P) --> NEU,(N OR P),MULTI PI
+C
+C               -- SINGLE ETA FROM DELTA RESONANCE --
+C                                     (added 97/12/01 J.Kameda)
+C          42 : NEU,N --> NEU,N,ETA0
+C          43 : NEU,P --> NEU,P,ETA0
+C
+C               -- SINGLE  K  FROM DELTA RESONANCE --
+C                                     (added 98/02/20 J.Kameda)
+C          44 : NEU,N --> NEU,LAMBDA,K0
+C          45 : NEU,P --> NEU,LAMBDA,K+
+C
+C               -- DEEP INELASTIC (2.0 GeV < W , JET set) --
+C          46 : NEU,(N OR P) --> NEU,(N OR P),MESONS
+C
+C               -- ELASTIC --
+C          51 : NEU,P --> NEU,P
+C          52 : NEU,N --> NEU,N
+C
+C
+C        ######### ANTI NEUTRINO MODE #########
+C
+C            ***** CHARGED CURRENT *****
+C
+C               -- ELASTIC --
+C          -1 : NEUBAR,P --> LEPTON+,N
+C
+C               -- SINGLE PI FROM DELTA RESONANCE --
+C         -11 : NEUBAR,N --> LEPTON+,N,PI-
+C         -12 : NEUBAR,P --> LEPTON+,N,PI0
+C         -13 : NEUBAR,P --> LEPTON+,P,PI-
+C
+C         -16 : NEUBAR,O(16) --> LEPTON+,O(16),PI-
+C
+C               -- MULTI PI (W > 1.4 GEV) --
+C         -21 : NEUBAR,(N OR P) --> LEPTON+,(N OR P),MULTI PI
+C
+C               -- SINGLE ETA FROM DELTA RESONANCE --
+C                                     (added 97/12/01 J.Kameda)
+C         -22 : NEUBAR,P --> LEPTON+,N,ETA0
+C
+C               -- SINGLE  K FROM DELTA RESONANCE --
+C                                     (added 98/02/25 J.Kameda)
+C         -23 : NEUBAR,P --> LEPTON+,LAMBDA,K0
+C
+C               -- DEEP INELASTIC (2.0 GeV < W , JET set) --
+C         -26 : NEUBAR,(N OR P) --> LEPTON+,(N OR P),MESONS
+C
+C               ** NEUTAL CURRENT **
+C
+C               -- SINGLE PI FROM DELTA RESONANCE --
+C         -31 : NEUBAR,N --> NEUBAR,N,PI0
+C         -32 : NEUBAR,P --> NEUBAR,P,PI0
+C         -33 : NEUBAR,N --> NEUBAR,P,PI-
+C         -34 : NEUBAR,P --> NEUBAR,N,PI+
+C
+C         -36 : NEUBAR,O(16) --> NEUBAR,O(16),PI0
+C
+C               -- MULTI PI (W > 1.4 GEV) --
+C         -41 : NEUBAR,(N OR P) --> NEUBAR,(N OR P),MULTI PI
+C
+C               -- SINGLE ETA FROM DELTA RESONANCE --
+C                                     (added 97/12/01 J.Kameda)
+C         -42 : NEUBAR,N --> NEUBAR,N,ETA0
+C         -43 : NEUBAR,P --> NEUBAR,P,ETA0
+C
+C               -- SINGLE  K  FROM DELTA RESONANCE --
+C                                     (added 98/02/20 J.Kameda)
+C          -44 : NEUBAR,N --> NEUBAR,LAMBDA,K0
+C          -45 : NEUBAR,P --> NEUBAR,LAMBDA,K+
+C
+C               -- DEEP INELASTIC (2.0 GeV < W , JET set) --
+C         -46 : NEUBAR,(N OR P) --> NEUBAR,(N OR P),MESONS
+C
+C               -- ELASTIC --
+C         -51 : NEUBAR,P --> NEUBAR,P
+C         -52 : NEUBAR,N --> NEUBAR,N
+C

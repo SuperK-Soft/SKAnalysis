@@ -1,0 +1,15 @@
+FileListName MyFileList
+
+# There are three options for specifying input files
+# if more than one is given, files are chosen according to the indicated precedence
+
+# a single file (first precedence)
+inputFile /disk02/data7/sk5/run/0800/080008/rfm_run080008.000008.root
+
+# a file containing a list of files (second precedence)
+fileList configfiles/SimplifyRawfile/list_of_files.txt
+
+# a directory and pattern (third precedence)
+inputDirectory /disk02/data7/sk5/run/0800/080008/
+filePattern rfm_run*.root
+useRegex 0  # pattern style: 0=glob, 1=regex

@@ -1,0 +1,5 @@
+verbosity 1
+outputFile ""
+li9_ncapture_dtmin 0            # microseconds
+li9_ncapture_dtmin 500          # microseconds
+readerName spallTree

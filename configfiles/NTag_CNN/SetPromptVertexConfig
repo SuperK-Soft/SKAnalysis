@@ -1,0 +1,4 @@
+tool_verbosity 1
+vertex_mode TRUE
+smearing_resolution 7
+prompt_vertex 0,0,0   # values should be comma separated, no spaces

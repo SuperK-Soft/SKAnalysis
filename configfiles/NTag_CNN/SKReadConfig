@@ -1,0 +1,6 @@
+tool_verbosity 1
+input_file_path /disk02/usr6/han/gd/mc/out/atmnu/zbs/atmnu_2500_04.zbs
+sk_options 31,30,26,25
+sk_bad_channel_option 0
+sk_geometry 6
+reference_run 62428

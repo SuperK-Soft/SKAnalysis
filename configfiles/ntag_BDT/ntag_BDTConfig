@@ -1,0 +1,7 @@
+verbosity 10
+treeReaderName bdtReader
+writeFrequency 1000     # intermittently write to output file every 1000 events, in case of crash
+n10_threshold 6         # precut: num hits in 10ns
+NLOWINDEX 0             # unused; which Nlow branch to propagate
+BDT_model /HOME/relic_sk4_ana/relic_work_dir/data_reduc/neutron_tagging/src/sk4_full_1500.joblib
+outfile bdtOut.root

@@ -1,0 +1,13 @@
+myGracefulStop GracefulStop configfiles/NTag_CNN/GracefulStopConfig
+#mySKRead SKRead configfiles/NTag_CNN/SKReadConfig
+myTreeReader TreeReader configfiles/NTag_CNN/TreeReaderConfig
+#myNTupleMatcher NTupleMatcher configfiles/NTag_CNN/NTupleMatcherConfig
+#myAddNoise AddNoise configfiles/NTag_CNN/AddNoiseConfig
+myReadHits ReadHits configfiles/NTag_CNN/ReadHitsConfig
+myReadMCInfo ReadMCInfo configfiles/NTag_CNN/ReadMCInfoConfig
+mySetPromptVertex SetPromptVertex configfiles/NTag_CNN/SetPromptVertexConfig
+mySubtractToF SubtractToF configfiles/NTag_CNN/SubtractToFConfig
+mySearchCandidates SearchCandidates configfiles/NTag_CNN/SearchCandidatesConfig
+myExtractFeatures ExtractFeatures configfiles/NTag_CNN/ExtractFeaturesConfig
+myApplyTMVA ApplyTMVA configfiles/NTag_CNN/ApplyTMVAConfig
+myWriteOutput WriteOutput configfiles/NTag_CNN/WriteOutputConfig

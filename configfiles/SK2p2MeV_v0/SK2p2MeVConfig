@@ -1,0 +1,5 @@
+verbosity 1
+treeReaderName sk2p2mevReader
+derived_classname relic
+outFile SK2p2MeV_testout.root
+SK_GEOMETRY 4

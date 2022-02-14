@@ -1,0 +1,4 @@
+verbosity 100
+FileListName MyFileList                                                  # required argument
+filePattern *.zbs                                                        # filename pattern
+inputDirectory /disk02/calib3/usr/han/mc/260/t2k_sk6_noise/zbs           # directory to search

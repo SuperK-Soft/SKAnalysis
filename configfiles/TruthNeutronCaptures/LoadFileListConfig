@@ -1,0 +1,30 @@
+# vim: filetype=Makefile #
+# LoadFileList config file
+verbosity 10
+
+# we can specify a specific file to read.
+# this takes precedence over a file list or pattern.
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsim.r71123.1.root
+
+# multiple input files can be specified by providing the path of a file
+# containing a list of input files to process. One file per line.
+# files can be commented out with a '#' in the first character of the line.
+# this takes precedence over a pattern
+fileList files_to_process.txt
+
+# a list may contain absolute paths or just filenames.
+# If the first valid line contains no '/' characters, we assume
+# these are filenames only and use the inputDirectory parameter
+inputDirectory /HOME/LinuxSystemFiles/SK/skdetsim/outputs
+
+# by not setting either inputFile or fileList,
+# we can also use inputDirectory with a matching pattern.
+# we can use a regex to be selective in our matches, e.g.
+#useRegex true
+#filePattern skdetsim[_\\.]r([0-9]+)[_\\.]?([^\\.]*?)\\.root$
+# which would match files named like "skdetsim_r77957.root" or "skdetsim.r71123.1.root"
+# or we could do it the easy way and use a glob
+filePattern *.root
+useRegex false
+
+

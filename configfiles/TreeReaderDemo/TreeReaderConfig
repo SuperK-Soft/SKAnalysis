@@ -1,0 +1,14 @@
+verbosity 1
+inputFile $HOME/standalones/lowfit_standalone/testout.root
+treeName data
+readerName demoReader
+firstEntry 10                 # first TTree entry to process
+maxEntries 10                 # max num input entries to process
+
+StartInputBranchList
+###############
+HEADER
+LOWE
+TQREAL
+#############
+EndInputBranchList

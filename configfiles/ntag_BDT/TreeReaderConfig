@@ -1,0 +1,6 @@
+verbosity 1
+readerName bdtReader
+inputFile SK2p2MeV_testout.root                   # a single input file - if not specified, use FileListName
+treeName sk2p2                                    # the name of the tree within the file
+maxEntries -1                                     # max num input entries to process
+skFile 0                                          # do not call SKREAD/SKRAWREAD - no need.

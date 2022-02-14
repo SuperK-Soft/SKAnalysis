@@ -46,6 +46,6 @@ else
      mv $dir/tmp $dir/ToolChainConfig
      more $dir/ToolsConfig | sed s:"configfiles/":"configfiles/"$dir"/": > $dir/tmp
      mv $dir/tmp $dir/ToolsConfig
-     ln -s  configfiles/$dir/ToolChainConfig ../$dir
+     #ln -s  configfiles/$dir/ToolChainConfig ../$dir
      
 fi

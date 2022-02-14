@@ -1,0 +1,4 @@
+myGracefulStop GracefulStop configfiles/TreeReaderDemo/GracefulStopConfig
+myTreeReader TreeReader configfiles/TreeReaderDemo/TreeReaderConfig
+myTreeReaderDemo TreeReaderDemo configfiles/TreeReaderDemo/TreeReaderDemoConfig
+myevDisp evDisp configfiles/TreeReaderDemo/evDispConfig

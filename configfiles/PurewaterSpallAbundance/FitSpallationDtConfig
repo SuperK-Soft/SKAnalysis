@@ -1,0 +1,27 @@
+verbosity 1
+treeReaderName spallTree
+outputFile ""
+paper_scaling 1.476               # 1.3, (3.5E4/1E5), but this doesn't account for different energy threshold
+efficienciesFile FlukaBetaEfficiencies_bsgoodcut_bsmaxcut_totE.bs
+useHack 0
+useEfficiencyScaling 1            # TODO as yet unimplemented
+n_dt_bins 5000                    # 5k used by 2015 paper, 3k used by laura
+fix_const 0                       # whether to fit (or fix to 0) a constant term in the fitting function
+split_iso_pairs 1                 # whether to use one or two exponentials in the fitting of pairs
+use_par_limits 0                  # whether to constrain fix abundances to >0 (and less than 1E7)
+binning_type 1                    # 0 = logarithmic binning of dt histgram, 1 = linear binning
+random_subtract 0                 # whether to fit all post muon dts, or all post muon dts - all pre muon dts
+livetime 2790.1                   # 1890/2790.1 Hack, override upstream tools. Should not be required!
+
+#valuesFileMode read              # only define if using a BoostStore for values!
+valuesFile spall_dts.bs
+
+# if reading a file that has not undergone selection, specify cut critera
+run_min 61525                     # start of SK-IV, QBEE installed, Low-E threshold lowered to 3.5 MeV
+#run_min 68671                    # SHE (AFT?) trigger threshold lowered to 8 (7.5?) MeV - use for ntagging
+#run_max 73031                    # end of Yang Zhang's time range
+run_max 999999                    # no limit
+
+# bypass reading input data and making dt histogram, and just pull 'spal1->data_dt-random1_dt' from this file:
+#laurasfile Li9Spall/laura/spal_data_Status12345_lt200.root
+

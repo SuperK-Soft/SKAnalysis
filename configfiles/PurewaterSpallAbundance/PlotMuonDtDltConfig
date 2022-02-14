@@ -1,0 +1,3 @@
+verbosity 1
+outputFile "" # if empty, will write to the current active ROOT file
+readerName spallTree

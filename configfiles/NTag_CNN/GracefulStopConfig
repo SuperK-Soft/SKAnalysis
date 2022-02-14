@@ -1,0 +1,6 @@
+# This optional tool requires no configuration variables and allows the toolchain
+# to be stopped at any time by sending the toolchain process the `SIGUSR1` signal.
+# Stopping the toolchain in this way will set the toolchain `StopLoop` variable,
+# resulting in ad-hoc termination of the toolchain whilst still calling the
+# toolchain Finalise methods. Obtain the process ID from `ps -ux` and then do
+# `kill -SIGUSR1 <process_id>`

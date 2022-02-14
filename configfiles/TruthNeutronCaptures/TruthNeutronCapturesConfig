@@ -1,0 +1,60 @@
+# vim: filetype=Makefile #
+# FindNeutronCaptures config file
+verbosity 10
+drawPlots 0    # whether to show root plots during execution
+treeReaderName demoReader
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsim_r77957.viazbs.root
+#outputFile plotNeutronsTest.root
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsimgd_sk4gdcard.root
+#outputFile skgdNeutronsTest.root
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/skdetsim_elhedri/printneutrons.root
+#outputFile /HOME/LinuxSystemFiles/SK/skdetsim/skdetsim_elhedri/truthneutrons.root
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/skdetsimgd/outputs/elhedrigd.root
+#outputFile /HOME/LinuxSystemFiles/SK/skdetsim/skdetsimgd/outputs/truthneutrons.root
+#inputFile /HOME/LinuxSystemFiles/SK/skdetsim/skdetsim_elhedri/outputs/weird_event.root
+#outputFile /HOME/LinuxSystemFiles/SK/skdetsim/skdetsim_elhedri/outputs/trueweirdneutrons.root
+
+#########
+### PURE WATER
+# skdetsim with G3 neutron handling, via SecondaryInfo new vectors (TruthNeutronCaptures_v2 tool)
+#inputFile $HOME/skdetsim/skdetsim_elhedri/outputs/skdetsim_r77597.root
+#outputFile $HOME/skdetsim/skdetsim_elhedri/outputs/skdetsim_r77597_truens.root
+#inputFile $HOME/skdetsim/skdetsim_elhedri/outputs/skdetsim_ngun.root
+#outputFile $HOME/skdetsim/skdetsim_elhedri/outputs/skdetsim_ngun_truens.root
+
+# skdetsim with G3 neutron handling, via ATMPD info (TruthNeutronCaptures tool)
+#inputFile $HOME/skdetsim/skdetsim_elhedri/outputs/skdetsim_viazbs_r77597.root
+#outputFile $HOME/skdetsim/skdetsim_elhedri/outputs/skdetsim_viazbs_r77597_truens.root
+
+# skdetsim with G4 neutron handling, via SecondaryInfo new vectors (TruthNeutronCaptures_v2 tool)
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_pure_r77597.root
+#outputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_pure_r77597_truens.root
+
+# skdetsim with G4 neutron handling, via ATMPD info (TruthNeutronCaptures_v2 tool)
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_pure_viazbs_r77597.root
+#outputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_pure_viazbs_r77597_truens.root
+
+# skgd with pure water (SKCNTL-GDWTR=0) and with NEUTRONHP_USE_ONLY_PHOTONEVAPORATION=0, via SecondaryInfo new vectors (TruthNeutronCaptures_v2 tool)
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_pure_nophotevp_r77597.root
+#outputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_pure_nophotevp_r77597_truens.root
+
+### GD WATER
+# skdetsim with G4 neutron handling, via SecondaryInfo new vectors (TruthNeutronCaptures_v2 tool)
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root
+#outputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597_truens.root
+
+# skdetsim with G4 neutron handling, via ATMPD info (TruthNeutronCaptures tool)
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_viazbs_r77597.root
+#outputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_viazbs_r77597_truens.root
+
+# special run: skgd with NEUTRONHP_USE_ONLY_PHOTONEVAPORATION=0, SecondaryInfo new vectors - XXX MAY NEED TO REGENERATE THIS
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_nophotevp_r77597.root
+#outputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_nophotevp_r77597_truens.root
+
+#########
+## SKG4, Gd water, via SecondaryInfo old arrays (TruthNeutronCaptures_v3 tool)
+inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root
+outputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident_truens_v4.root
+
+maxEvents -1
+writeFrequency 10

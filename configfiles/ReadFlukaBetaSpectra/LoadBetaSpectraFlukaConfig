@@ -1,0 +1,8 @@
+# LoadBetaSpectraFluka config file
+verbosity 1
+inputFile $HOME/relic_sk4_ana/li9/alice_fluka_sims_mergedall_myroot_newsampling.root
+histosFile FlukaBetaSpectra_bsgoodcut_bsmaxcut_totE.root
+mapsFile FlukaBetaEfficiencies_bsgoodcut_bsmaxcut_totE.bs
+maxEvents -1
+bonsai_goodness_cut 0.4
+bonsai_maxE_cut 1000

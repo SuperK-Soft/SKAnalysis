@@ -1,0 +1,5 @@
+verbosity 1
+outputFile ""
+li9_lifetime_dtmin 0.05         # seconds. range of mu_lowe dt values to use for Li9 sample
+li9_lifetime_dtmax 0.5          # seconds.
+readerName spallTree
