@@ -39,6 +39,7 @@
 
 class StoreToTTree {
     public:
+    StoreToTTree();
     ~StoreToTTree();
     
     // User functions

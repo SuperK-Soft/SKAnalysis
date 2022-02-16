@@ -746,6 +746,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 		if(skrootMode!=SKROOTMODE::ZEBRA){
 			int entry_temp = static_cast<int>(entry_number);
 			skroot_jump_entry_(&LUN, &entry_temp, &get_ok);
+			//skroot_next_entry_(&LUN, &get_ok);
 			if(get_ok==1){
 				// ran off end of TTree!
 				bytesread=0;

@@ -4,6 +4,13 @@
 #include "TString.h"
 #include "TClassEdit.h"
 
+StoreToTTree::StoreToTTree(){
+    if(verbosity>0) std::cout<<"Making interpreter"<<std::endl;
+    meInterpreter = new TCint("meInterpreter","title");
+    if(verbosity>0) std::cout<<"loading library"<<std::endl;
+    meInterpreter->Load("lib/libBStore_RootDict.so");
+}
+
 StoreToTTree::~StoreToTTree(){
     // This makes the application segfault on exit. While harmless, it looks bad.
     // The culprit line is 'TClass::SetUnloaded' called by ROOT's libCore or something.
@@ -100,7 +107,13 @@ void StoreToTTree::MakeBranches(TTree* tree, BStore* store) {
             command += thetype + "* "+ key + "=0; TBranch* b = t->Branch(\"" + key + "\", &" + key + ",32000,0);";
         }
         if(verbosity>0) std::cout<<"Making Tree branch with command: "<<std::endl<<command.Data()<<std::endl;
-        gROOT->ProcessLine(command.Data());
+        if(!meInterpreter){
+            if(verbosity>0) std::cout<<"Making interpreter"<<std::endl;
+            meInterpreter = new TCint("meInterpreter","title");
+            if(verbosity>0) std::cout<<"loading library"<<std::endl;
+            meInterpreter->Load("lib/libBStore_RootDict.so");
+        }
+        meInterpreter->ProcessLine(command.Data());
         if(verbosity>1) std::cout<<"done"<<std::endl;
         // NOTE! the branch address is not yet correct, but the branch is now
         // made with the correct type. We will need to set the address before calling Fill,
