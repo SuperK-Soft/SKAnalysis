@@ -221,7 +221,7 @@ class MTreeReader {
 	// tree operations
 	int Clear();
 	void SetAutoClear(bool autoclearin);
-	int GetEntry(long entry_number);
+	int GetEntry(long entry_number, bool skipTreeRead=false);
 	long GetEntriesFast();
 	long GetEntries();
 	int DisableBranches(std::vector<std::string> branchnames);

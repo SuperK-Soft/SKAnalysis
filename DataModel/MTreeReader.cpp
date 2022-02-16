@@ -416,7 +416,7 @@ int MTreeReader::Clear(){
 	return 1; // TODO check for errs
 }
 
-int MTreeReader::GetEntry(long entry_number){
+int MTreeReader::GetEntry(long entry_number, bool skipTreeRead){
 	// in case we've already got this entry loaded, nothing to do
 	if(currentEntryNumber==entry_number) return 1;
 	
@@ -462,10 +462,13 @@ int MTreeReader::GetEntry(long entry_number){
 		// maybe build a list of function pointers to invoke?
 	}
 	
-	// load data from tree
-	// The function returns the number of bytes read from the input buffer.
-	// If entry does not exist the function returns 0. If an I/O error occurs, the function returns -1.
-	auto bytesread = thetree->GetEntry(entry_number);
+	int bytesread=1;
+	if(!skipTreeRead){
+		// load data from tree
+		// The function returns the number of bytes read from the input buffer.
+		// If entry does not exist the function returns 0. If an I/O error occurs, the function returns -1.
+		bytesread = thetree->GetEntry(entry_number);
+	}
 	if(bytesread>0) currentEntryNumber = entry_number;
 	return bytesread;
 }

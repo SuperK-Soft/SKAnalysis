@@ -79,7 +79,7 @@ class TreeReader: public Tool {
 	
 	std::vector<std::string> list_of_files;
 	
-	bool has_aft;    // do we have an AFT event buffered that matches this SHE event
+	bool has_aft=false;    // do we have an AFT event buffered that matches this SHE event
 	bool aft_loaded=false; // is the AFT loaded into the common blocks at present
 	long buffered_entry = -1;
 	long file_cursor=0;

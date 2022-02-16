@@ -535,8 +535,10 @@ bool TreeReader::Execute(){
 		// + i don't know how to determine the number of entries in a zbs file, so we may read off
 		//   the end of our current zbs file, and need to re-try the read after loading the next file.
 		// + if we're applying a trigger mask we'll skip entries whose trigger doesn't match.
-		// + if we're only looking for SHE+AFT pairs, we'll skip all other entries
-		// + if we're reading a selection file, we'll only return the specified entry numbers
+		// + if we're only looking for SHE+AFT pairs, we'll skip all entries that aren't SHE
+		//   with a follow-up AFT
+		// + if we're reading a selection file, we'll skip all entries not specified by the selection
+		// 
 		// So, we'll need a loop that will keep reading entries until we find one we like.
 		do {
 			
@@ -588,6 +590,10 @@ bool TreeReader::Execute(){
 				// search for and load the following AFT if there is one
 				if(get_ok>0 && loadSheAftPairs && trigger_bits.test(28)){
 					get_ok = AFTRead(entrynum);
+					// returns: 1 if AFT loaded
+					// returns: -100 if not AFT, but we're not only processing pairs
+					// returns: -999 if not AFT (or error reading AFT) and we're only processing pairs
+					// returns: <=0  if error during AFT read and we're not only processing pairs
 				} else if(get_ok>0 && loadSheAftPairs){
 					Log(toolName+" PairLoading mode on but prompt event is not SHE, skipping follow-up read",
 					    v_debug,verbosity);
@@ -622,7 +628,7 @@ bool TreeReader::Execute(){
 		} while(get_ok==-999);
 		
 		if(entriesPerExecute>1) PushCommons();
-		if(get_ok==0) break;
+		if(get_ok==0) break;  // end of file
 	} // read and buffer loop
 	
 	Log(toolName+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,verbosity);
@@ -637,7 +643,7 @@ bool TreeReader::Execute(){
 	}
 	
 	++readEntries;      // keep track of the number of entries we've actually returned
-	aft_loaded = false; // reset this on every execution
+	aft_loaded = false; // whether common blocks currently hold SHE or AFT; reset this on every execution
 	
 	// check if we've hit the user-requested limit on number of entries to read
 	if((maxEntries>0)&&(readEntries>=maxEntries)){
@@ -835,8 +841,9 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 	}
 	if(bytesread >0 && skrootMode!=SKROOTMODE::ZEBRA) {
 		Log(toolName+" using MTreeReader to get next TTree entry",v_debug,verbosity);
-		// else not using TreeManagers / skread / etc
-		bytesread = myTreeReader.GetEntry(entry_number);
+		// if in SKROOT mode we've already read from disk, just want to update
+		// the internal MTreeReader variables, so skip the actual TTree::GetEntry call
+		bytesread = myTreeReader.GetEntry(entry_number, (skrootMode!=SKROOTMODE::NONE));
 	}
 	Log(toolName+" bytesread is "+toString(bytesread),v_debug,verbosity);
 	
@@ -862,31 +869,42 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 int TreeReader::AFTRead(long entry_number){
 	
 	Log(toolName+" Prompt entry is SHE, checking next entry for AFT", v_debug,verbosity);
+	has_aft=false; // default assumption
 	
 	// do a pre-check to see if we need to read the next entry.
 	if(skrootMode!=SKROOTMODE::ZEBRA){
 		// For ROOT files we can peek at the next TTree entry to determine whether it's
 		// an AFT trigger without doing a full read.
 		get_ok = CheckForAFTROOT(entry_number);
+		// returns -1 on error trying to read AFT
+		// -100 if no error but next entry is not AFT
+		// -103 if AFT
 	} else {
 		// For zebra files we don't have this capability, so this always returns -103
 		get_ok = CheckForAFTZebra(entry_number);
+		// always returns -103
 	}
 	// get_ok = -103 requests a follow-up read (FIXME better return value)
 	// If a follow-up read is requested, the current contents of the fortran commons
 	// will have been put in the buffers, so they don't get overwritten by the next read.
 	
-	// if the pre-check indicated we need to do a follow up read, do that now.
-	if(get_ok==-103){
-		Log(toolName+" Re-Invoking ReadEntry to check next entry",v_debug,verbosity);
-		
-		// i assume that if there's an AFT, it'll always be the next entry,
-		// and there won't be things like status entries in between the SHE and AFT.
-		get_ok = ReadEntry(entrynum+1, false);
-		Log(toolName+" Follow-up read returned "+toString(get_ok),v_debug,verbosity);
-		
-		PrintTriggerBits();
+	// if the pre-check didn't ask for a follow up read, we're done
+	if(get_ok!=-103){
+		// either due to an error reading, because we ran off the end of the file,
+		// or just because this was not AFT, if we only want pairs we can skip this event
+		if(onlyPairs) return -999;
+		else return get_ok;
 	}
+	
+	// if the pre-check indicated we need to do a follow up read, do that now.
+	Log(toolName+" Re-Invoking ReadEntry to check next entry",v_debug,verbosity);
+	
+	// i assume that if there's an AFT, it'll always be the next entry,
+	// i.e. there won't be things like status entries in between the SHE and AFT.
+	get_ok = ReadEntry(entrynum+1, false);
+	Log(toolName+" Follow-up read returned "+toString(get_ok),v_debug,verbosity);
+	
+	PrintTriggerBits();
 	
 	// check the follow-up read didn't encounter any errors
 	if(get_ok>0){
@@ -894,26 +912,26 @@ int TreeReader::AFTRead(long entry_number){
 		// We didn't. Check the follow-up entry to see if it's AFT.
 		if(skrootMode!=SKROOTMODE::ZEBRA){
 			get_ok = LoadAFTROOT();
+			// always returns 1; we already knew this entry would be AFT
 		} else {
 			get_ok = LoadAFTZebra();
+			// return -100: It wasn't an AFT, but onlyPairs is not set.
+			//              The old SHE event has been put back into active commons.
+			//              The next entry has been left in the buffer to use as a prompt candidate
+			//              on the next Execute call.
+			// return 1:    It was an AFT, we'll now have an SHE entry in active commons
+			//              and the AFT entry in buffered commons.
+			//              (this is always the case with ROOT, since we already peeked)
+			// return -999: It wasn't an AFT, and onlyPairs is set.
+			//              The old SHE will have been discarded, and the next entry
+			//              will have been placed into the buffer to use as a new prompt candidate.
 		}
-		// FIXME better return values
-		// return 1:    It was an AFT, we'll now have an SHE entry in active commons
-		//              and the AFT entry in buffered commons.
-		//              (this is always the case with ROOT, since we already peeked)
-		//
-		// return -999: It wasn't an AFT, and onlyPairs is set.
-		//              The old SHE will have been discarded, and the next entry
-		//              will have been placed into the buffer to use as a new prompt candidate.
-		//
-		// return -103: It wasn't an AFT, but onlyPairs is not set.
-		//              The old SHE event has been put back into active commons.
-		//              The next entry has been left in the buffer to use as a prompt candidate
-		//              on the next Execute call.
 		
 		if(get_ok==1){
 			Log(toolName+" Successfully found SHE+AFT pair",v_debug,verbosity);
-		} else if(get_ok == -103){
+			has_aft=true;
+		} else if(get_ok == -100){
+			// not AFT, but we're noy only reading pairs
 			// the next entry has been left in buffers as a possible prompt candidate
 			// for the next Execute call. Make a note of its entry number,
 			// in case we're selecting only specific entries from the file and don't want it.
@@ -945,16 +963,18 @@ int TreeReader::CheckForAFTROOT(long entry_number){
 		get_ok = myTreeReader.GetTree()->GetBranch("HEADER")->GetEntry(entry_number+1);
 		if(get_ok==0){
 			Log(toolName+" Error peeking next HEAD branch to look for AFT!",v_error,verbosity);
+			return -1;  // error reading AFT
 		} else {
 			const Header* header=nullptr;
 			myTreeReader.Get("HEADER", header);
 			next_trigger_bits = header->idtgsk;
-			next_trigger_bits.set(0);  // indicate we've read it.
 		}
 	} else {
 		Log(toolName+" can't check for AFT, no further entries in HEADER branch",
 			v_debug,verbosity);
+			return -100;  // no error reading but no AFT
 	}
+	
 	if(next_trigger_bits.test(29)){
 		Log(toolName+" next entry is AFT, requesting follow-up read",v_debug,verbosity);
 		// The next entry is indeed an AFT. We need to read it in properly now,
@@ -964,19 +984,12 @@ int TreeReader::CheckForAFTROOT(long entry_number){
 		retval=-103;
 	} else {
 		Log(toolName+" next entry is not AFT, no AFT this time.",v_debug,verbosity);
-		// Else the next entry is not AFT. So current event is SHE, but has no AFT.
-		has_aft=false;
-		// if we only want pairs, this event can be skipped
-		if(onlyPairs){
-			Log(toolName+" User only wants pairs, dropping SHE and starting "
-				+"read process over",v_debug,verbosity);
-		} else if(next_trigger_bits.test(0)){
-			// if we loaded the next SKROOT header branch entry but didn't find AFT,
-			// rewind it back so that anyone using the MTreeReader gets the right Header
+		if(!onlyPairs){
+			// if we're not explicitly requesting pairs we'll still process this SHE event
+			// rewind Header branch so that anyone using the MTreeReader gets the right data
 			myTreeReader.GetTree()->GetBranch("HEADER")->GetEntry(entry_number);
 		}
-		retval=-999;
-		// otherwise return it anyway, but no need to re-call ReadEntry.
+		return -100;
 	}
 	
 	return retval;
@@ -1018,7 +1031,6 @@ int TreeReader::LoadAFTZebra(){
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
 	if(trigger_bits.test(29)){
 		Log(toolName+" Successfully found an SHE+AFT pair",v_debug,verbosity);
-		has_aft = true;  // the next entry is indeed an AFT.
 		// this means we have an SHE in buffer and an AFT in the common blocks right now.
 		// swap the SHE event back into the common blocks and AFT into the buffer.
 		LoadCommons(0);
@@ -1027,7 +1039,6 @@ int TreeReader::LoadAFTZebra(){
 		
 	} else {
 		Log(toolName+" Follow-up entry is not AFT",v_debug,verbosity);
-		has_aft = false; // the next entry is NOT an AFT.
 		
 		// we have two options for proceeding here.
 		// If the user ONLY wants SHE+AFT pairs...
@@ -1048,7 +1059,7 @@ int TreeReader::LoadAFTZebra(){
 			LoadCommons(0);
 			// ... we'll look again at the buffered entry on the next Execute call,
 			// instead of reading from file.
-			bytesread = -103;
+			bytesread = -100;
 		}
 	}
 	
