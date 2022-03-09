@@ -263,9 +263,9 @@ class MTreeReader {
 	std::map<std::string,std::vector<size_t>> branch_dims_cache; // dims of constant sized arrays
 	
 	TFile* thefile=nullptr;
-	TTree* thetree=nullptr;      // generic, if working with a tchain we cast it to a TTree
-	bool autoclear=true;  // call 'Clear' method on all object branches before GetEntry
-	int verbosity=1; // TODO add to constructor
+	TTree* thetree=nullptr;          // generic, if working with a tchain we cast it to a TTree
+	bool autoclear=false;            // call 'Clear' method on all object branches before GetEntry
+	int verbosity=1;                 // TODO add to constructor
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;

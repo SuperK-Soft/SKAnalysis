@@ -406,10 +406,12 @@ int MTreeReader::Clear(){
 		if(not theobject){
 			// no object... is this an error?
 			std::cerr<<"MTreeReader AutoClear error: failure to get pointer to TObject "
-					 <<"for branch "<<isobject.second<<std::endl;
+					 <<"for branch "<<isobject.first<<std::endl;
 			continue;  // TODO throw suitable exception
 		}
+		if(verbosity>4) std::cout<<"Clearing "<<isobject.first<<std::endl;
 		theobject->Clear();
+		if(verbosity>10) std::cout<<"done"<<std::endl;
 	}
 	return 1; // TODO check for errs
 }
