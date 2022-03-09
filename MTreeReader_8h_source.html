@@ -334,9 +334,9 @@ $(function() {
 <div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    std::map&lt;std::string,std::vector&lt;size_t&gt;&gt; branch_dims_cache; <span class="comment">// dims of constant sized arrays</span></div>
 <div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    </div>
 <div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    TFile* thefile=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    TTree* thetree=<span class="keyword">nullptr</span>;      <span class="comment">// generic, if working with a tchain we cast it to a TTree</span></div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keywordtype">bool</span> autoclear=<span class="keyword">true</span>;  <span class="comment">// call &#39;Clear&#39; method on all object branches before GetEntry</span></div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <span class="keywordtype">int</span> verbosity=1; <span class="comment">// TODO add to constructor</span></div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    TTree* thetree=<span class="keyword">nullptr</span>;          <span class="comment">// generic, if working with a tchain we cast it to a TTree</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keywordtype">bool</span> autoclear=<span class="keyword">false</span>;            <span class="comment">// call &#39;Clear&#39; method on all object branches before GetEntry</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <span class="keywordtype">int</span> verbosity=1;                 <span class="comment">// TODO add to constructor</span></div>
 <div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    uint64_t currentEntryNumber=0;</div>
 <div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    <span class="keywordtype">int</span> currentTreeNumber=0;</div>
 <div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    <span class="keywordtype">bool</span> isMC=<span class="keyword">false</span>;</div>
