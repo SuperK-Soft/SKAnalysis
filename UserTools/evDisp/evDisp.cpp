@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <cmath>
+#include <math.h>
 #include <bitset>
 
 #include "TROOT.h"
@@ -23,6 +24,11 @@
 evDisp::evDisp():Tool(){
 	// get the name of the tool from its class name
 	toolName=type_name<decltype(this)>(); toolName.pop_back();
+}
+
+namespace{
+	const double caplimit = 1700;
+	const double barrellimitY = 2000;
 }
 
 bool evDisp::Initialise(std::string configfile, DataModel &data){
@@ -123,17 +129,17 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 		topCapHitMap->SetPoint(1,1,1,1);
 		topCapHitMap->SetPoint(2,2,2,2);
 		topCapHitMap->SetMargin(0.03);
-		topCapHitMap->GetHistogram()->SetBins(50,-1600,1600, 50,-1600, 1600);
+		topCapHitMap->GetHistogram()->SetBins(50,-caplimit,caplimit, 50,-caplimit, caplimit);
 		bottomCapHitMap->SetPoint(0,-10,10,26.7);
 		bottomCapHitMap->SetPoint(1,1,1,1);
 		bottomCapHitMap->SetPoint(2,2,2,2);
 		bottomCapHitMap->SetMargin(0.03);
-		bottomCapHitMap->GetHistogram()->SetBins(50,-1600,1600, 50,-1600, 1600);
+		bottomCapHitMap->GetHistogram()->SetBins(50,-caplimit,caplimit, 50,-caplimit, caplimit);
 		barrelHitMap->SetPoint(0,-10,10,26.7);
 		barrelHitMap->SetPoint(1,1,1,1);
 		barrelHitMap->SetPoint(2,2,2,2);
 		barrelHitMap->SetMargin(0.03);
-		barrelHitMap->GetHistogram()->SetBins(50,-3.2,3.2, 50,-2000, 2000);
+		barrelHitMap->GetHistogram()->SetBins(50,-3.2,3.2, 50,-barrellimitY, barrellimitY);
 	}
 	
 	return true;
@@ -148,14 +154,14 @@ bool evDisp::Execute(){
 	/* rfm data files don't have TQREAL populated, even for events with a valid HEADER.
 	   Instead they have a valid TQLIST branch, which is a TClonesArray of TQ class objects.
 	   This gets read out by skrawread which calls TQRAWSK, which calls TQSKZ, which calls skroot_get_idtq
-	   to read the TQLIST branch. The returned data gets passed into to TQSKZ, which puts it into the 
+	   to read the TQLIST branch. The returned data gets passed into to TQSKZ, which puts it into the
 	   common block array IQISKZ. After returning to TQRAWSK, this calls SKTQCONV_QB to do charge conversion
 	   from TDC/ADC counts to ns/p.e., and puts the result into TBUF_RAW (or QBUF_RAW, there are basically
 	   arrays of T, Q, and cable number here).
 	   Finally, skroot_set_tree calls skroot_set_tqreal to transfer the converted hits
 	   from QBUF_RAW etc. into the TQREAL branch.
 	   The upshot is TQLIST is used to populate TQREAL after conversion from TDC/ADC counts to ns/p.e.
-	   Once populated TQREAL has members `int nhits`, and a `std::vector<float> T, Q` 
+	   Once populated TQREAL has members `int nhits`, and a `std::vector<float> T, Q`
 	   for hit times and charges and a `std::vector<int> cables` for cable numbers of the hits.
 	   following from $SKOFL_ROOT/inc/sktq.h:
 	   
@@ -280,8 +286,8 @@ bool evDisp::Execute(){
 			case 2: {
 				//skt_, skq_, skchnl_ common blocks
 				cableNumber = skchnl_.ihcab[pmtNumber];
-				charge = skq_.qisk[pmtNumber];
-				time = skt_.tisk[pmtNumber];
+				charge = skq_.qisk[cableNumber-1];  // Note indexing style!
+				time = skt_.tisk[cableNumber-1];
 				in_gate = true;  // TODO where is ihtiflz in this case...?
 				break;
 			}
@@ -303,10 +309,12 @@ bool evDisp::Execute(){
 		 # -- for trigger ID QB (15001-15240, see skhead.h for details)
 		 # -- for anti-PMT(20001-21885)
 		*/
-		// MAXPM is a #defined constant representing max cable number of ID PMTs
-		// MAXPMA likewise represents the numbe of OD PMTs
+		// MAXPM is a #defined constant representing max cable number of ID PMTs, starting from 1.
+		// MAXPMA likewise represents the number of OD PMTs,
 		// can't seem to see a #defined constant for OD tubeID starts... it's 20001 from above
-		if(cableNumber>MAXPM) continue;
+		if(cableNumber==0 || cableNumber>MAXPM) continue;
+		// TODO add OD drawing.
+		
 		// see above IHTIFLZ definition for in_gate test
 		if(inGateOnly && (std::bitset<8*sizeof(int)>(in_gate).test(1)==0) ) continue;
 		
@@ -315,11 +323,26 @@ bool evDisp::Execute(){
 		tubeRadialCoordinate = sqrt(pow(tubePosition[0], 2.f) + pow(tubePosition[1],2.f));
 		tubeAngularCoordinate = acos(tubePosition[0] / tubeRadialCoordinate);
 		if(tubePosition[1] > 0) tubeAngularCoordinate = -tubeAngularCoordinate;
+		// get location (barrel, top/bottom cap, ID/OD...)
+		// enum Locations{ kIDTop, kIDWall, kIDBot, kODTop, kODWall, kODBot }; (from ConnectionTable.cc)
+		int loc = myConnectionTable->GetLocation(tubePosition[0],tubePosition[1],tubePosition[2]);
+		
 		if(verbosity>10){
 			std::cout<<"hit on PMT "<<cableNumber<<std::endl;
 			std::cout<<"charge is "<<charge<<", time is "<<time
 				 <<", PMT position is "<<tubePosition[0]<<", "<<tubePosition[1]
 				 <<", "<<tubePosition[2]<<std::endl;
+		}
+		
+		// sanity check limits
+		if(abs(tubeAngularCoordinate)>M_PI){
+			std::cerr<<"angle outside pi range: "<<tubeAngularCoordinate<<std::endl;
+		} else if(abs(tubePosition[2])>barrellimitY){
+			std::cerr<<"y position out of barrel range: "<<tubePosition[2]<<std::endl;
+		} else if(abs(tubePosition[0])>caplimit){
+			std::cerr<<"x position out of range: "<<tubePosition[0]<<std::endl;
+		} else if(abs(tubePosition[1])>caplimit){
+			std::cout<<"z position out of range: "<<tubePosition[1]<<std::endl;
 		}
 		
 		// try to match colour scale of superscan.
@@ -333,8 +356,8 @@ bool evDisp::Execute(){
 		if(var<varMin) varMin=var;
 		if(var>varMax) varMax=var;
 		
-		// identify top/bottom cap PMTs by their z position
-		if (tubePosition[2] == zMax){
+		// choose plot from location
+		if (loc==0){
 //			std::cout<<"setting top cap point {"<<tubePosition[0]
 //					 <<", "<<tubePosition[1]<<", "<<var<<"}"<<std::endl;
 			if(topCapHeatMap) topCapHeatMap->Fill(tubePosition[0], tubePosition[1], var);
@@ -343,7 +366,7 @@ bool evDisp::Execute(){
 			if(var<top_cap_range.first) top_cap_range.first = var;
 			if(var>top_cap_range.second) top_cap_range.second = var;
 			++top_cap_pmts_hit;
-		} else if (tubePosition[2] == zMin){
+		} else if (loc==2){
 //			std::cout<<"setting bottom cap point {"<<tubePosition[0]
 //					 <<", "<<tubePosition[1]<<", "<<var<<"}"<<std::endl;
 			if(bottomCapHeatMap) bottomCapHeatMap->Fill(tubePosition[0], tubePosition[1], var);
@@ -352,7 +375,7 @@ bool evDisp::Execute(){
 			if(var<bot_cap_range.first) bot_cap_range.first = var;
 			if(var>bot_cap_range.second) bot_cap_range.second = var;
 			++bottom_cap_pmts_hit;
-		} else {
+		} else if(loc==1){
 //			std::cout<<"setting barrel point {"<<tubeAngularCoordinate
 //					 <<", "<<tubePosition[2]<<", "<<var<<"}"<<std::endl;
 			if(barrelHeatMap) barrelHeatMap->Fill( tubeAngularCoordinate, tubePosition[2], var);

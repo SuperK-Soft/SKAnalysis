@@ -64,6 +64,8 @@ bool ReadMCInfo::Execute()
     Log(Form("Simulation T0: %3.2f ns", geantT0));
 
     // Primaries
+    // skgetv calls skroot_get_mc to set /SKVECT/POS,IP,PIN,PABS,NVECT from
+    // PVTXVC, IPVC, PVC, PIN and NVC respectively.
     skgetv_();
 
     for (int iVec = 0; iVec < skvect_.nvect; iVec++) {

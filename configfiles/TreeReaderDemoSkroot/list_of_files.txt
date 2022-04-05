@@ -2,5 +2,7 @@
 #$HOME/ntag/atmnu_2500_04.zbs
 #$HOME/vectgen_testout.zbs
 #$HOME/standalones/lowfit_standalone/rfm_run062773.000033.root
-$HOME/rfm_run074724.000001.root
+#$HOME/rfm_run074724.000001.root
 #$HOME/skdetsim/outputs/skdetsim.r77957.root
+#/host/SK_shared/liz_neutrons_skdetsim_sk6ex.root
+$HOME/rfm_run080008.000008.root

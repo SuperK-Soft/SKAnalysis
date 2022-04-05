@@ -286,14 +286,19 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// skoptn 25 indicates that skread should mask bad channels.
 		// As a base there is a manually maintained list of bad channels, $SKOFL_ROOT/const/badch.dat
 		// skoptn 26 indicates that the set of bad channels should be looked up using
-		// on the run and subrun of the current event. In this case we instead (in addition?)
-		// use a list of bad channels generated automatically on a run-wise basis:
+		// the run and subrun numbers of the current event. In this case we can instead (in addition?)
+		// use a list of bad channels generated during online processing, and saved to:
 		// $SKOFL_ROOT/const/badch/badch.XXXX where XXXX is the run number.
-		// For MC or calibration files, skoptn 26 should *not* be given, and instead
-		// skbadch() may be called with a reference run to use for the bad channel list.
-		// XXX we're a bit stuck here, because we don't know if it's MC yet.
-		// we could omit the run-wise bad channel masking for now and apply it aferwards,
-		// provided we can update our skread options on the fly in this way....? Can we?
+		// For MC or calibration files, skoptn 26 should *not* be given, since the run number in MC data
+		// is a dummy and the corresponding bad channel file will not be found.
+		// Instead skbadch() may be called with a reference run to use for the bad channel list.
+		// We could rely on the user passing the right options, but it would be good to verify this.
+		// However, this is a bit tricky because we don't know if the input file is MC
+		// until we've opened it and read some entries. On the other hand we normally set the skoptns
+		// before reading from the file....
+		// For now, we'll omit the run-wise bad channel masking for the MC check,
+		// and then re-call skoptn_ with the additional 26 flag if it's required and suitable to do so.
+		// This does rely on repeated calls to skoptn_ being handled correctly.
 		bool use_runwise_bad_ch_masking = skroot_options.find("26")!=std::string::npos;
 		if(use_runwise_bad_ch_masking) skroot_options.erase(skroot_options.find("26"),2);
 		bool isMC=false;

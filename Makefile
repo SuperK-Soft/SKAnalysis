@@ -2,7 +2,7 @@ include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
 PWD=`pwd`
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Werror=array-bounds -lgfortran # -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -14,7 +14,7 @@ endif
 #CXXFLAGS    += -g -pg -ggdb3
 
 # Fortran compiler flags. APPEND ONLY probably
-FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none
+FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none # -falign-commons
 
 # SK Offline Library (SKOFL) Headers & Libraries
 # n.b. no spaces between -I and following path allowed here (rootcint doesn't like it)

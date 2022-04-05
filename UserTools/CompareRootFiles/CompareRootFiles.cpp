@@ -1780,7 +1780,13 @@ std::string CompareRootFiles::BuildLinkDef(data_instance& thedata, std::vector<s
 	linkdef << "#ifdef __CINT__\n";
 	// now we need to include a pragma line for every class that ROOT needs to know about.
 	for(auto&& aclass : headerlist){
-		linkdef << "#pragma link C++ class "<<aclass.first<<"+;\n";
+		// should we use 'class+protected' instead of class+?
+		// see https://root.cern.ch/root/htmldoc/guides/users-guide/AddingaClass.html which says:
+		/* With '#pragma link c++ class MyClass' the Dictionary of all public members of MyClass
+		will be generated. If the 'class+protected' flag is used, the dictionary for protected members
+		will also be generated. This 'class+protected' flag will help you only for plain protected
+		member access, but not for virtual function resolution. */
+		linkdef << "#pragma link C++ class+protected "<<aclass.first<<"+;\n";
 		// if the type is a container, we also need to specifically request iterators,
 		// and for some reason the != operator of the iterator!!
 		if(IsStlContainer(aclass.first)){

@@ -67,10 +67,20 @@ class SimplifyTree: public Tool {
 	TTree* outtree = nullptr;
 	float tubePosition[3];
 	// simple output TTree branches
+	int sk_phase;
+	int run_num;
+	int subrun_num;
+	int event_num;
+	std::string timestring;
+	int trigger_flags;
+	int event_flags;
+	int readout_t0;
+	int trigger_t0;
+	int readout_len;
 	std::vector<int> hit_id;        // PMT IDs
 	std::vector<double> hit_q;      // charges
 	std::vector<double> hit_t;      // times
-	std::vector<int> hit_ingate;    // hit flags
+	std::vector<int> hit_flags;    // hit flags
 	std::vector<double> hit_x;      // hit x
 	std::vector<double> hit_y;      // hit y
 	std::vector<double> hit_z;      // hit z
