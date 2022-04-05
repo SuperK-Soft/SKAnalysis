@@ -129,27 +129,37 @@ $(function() {
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    TTree* outtree = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">float</span> tubePosition[3];</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="comment">// simple output TTree branches</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    std::vector&lt;int&gt; hit_id;        <span class="comment">// PMT IDs</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    std::vector&lt;double&gt; hit_q;      <span class="comment">// charges</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    std::vector&lt;double&gt; hit_t;      <span class="comment">// times</span></div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    std::vector&lt;int&gt; hit_ingate;    <span class="comment">// hit flags</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    std::vector&lt;double&gt; hit_x;      <span class="comment">// hit x</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    std::vector&lt;double&gt; hit_y;      <span class="comment">// hit y</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    std::vector&lt;double&gt; hit_z;      <span class="comment">// hit z</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    std::vector&lt;double&gt; hit_theta;  <span class="comment">// hit theta</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    std::vector&lt;double&gt; hit_loc;    <span class="comment">// hit loc (kIDTop, kIDWall, kIDBot... from ConnectionTable.cc)</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">float</span> tubeR;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">float</span> tubetheta;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;};</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">int</span> sk_phase;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">int</span> run_num;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">int</span> subrun_num;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">int</span> event_num;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    std::string timestring;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordtype">int</span> trigger_flags;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">int</span> event_flags;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">int</span> readout_t0;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">int</span> trigger_t0;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">int</span> readout_len;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    std::vector&lt;int&gt; hit_id;        <span class="comment">// PMT IDs</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    std::vector&lt;double&gt; hit_q;      <span class="comment">// charges</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    std::vector&lt;double&gt; hit_t;      <span class="comment">// times</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    std::vector&lt;int&gt; hit_flags;    <span class="comment">// hit flags</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    std::vector&lt;double&gt; hit_x;      <span class="comment">// hit x</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    std::vector&lt;double&gt; hit_y;      <span class="comment">// hit y</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    std::vector&lt;double&gt; hit_z;      <span class="comment">// hit z</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    std::vector&lt;double&gt; hit_theta;  <span class="comment">// hit theta</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    std::vector&lt;double&gt; hit_loc;    <span class="comment">// hit loc (kIDTop, kIDWall, kIDBot... from ConnectionTable.cc)</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordtype">float</span> tubeR;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">float</span> tubetheta;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;};</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:49</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
 <div class="ttc" id="aclassSimplifyTree_html"><div class="ttname"><a href="classSimplifyTree.html">SimplifyTree</a></div><div class="ttdef"><b>Definition:</b> SimplifyTree.h:21</div></div>
-<div class="ttc" id="aclassSimplifyTree_html_a0279c39ad5c93b2cfdad839fe05ea379"><div class="ttname"><a href="classSimplifyTree.html#a0279c39ad5c93b2cfdad839fe05ea379">SimplifyTree::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> SimplifyTree.cpp:247</div></div>
-<div class="ttc" id="aclassSimplifyTree_html_a15b464278332a7cfdd068419a3e0a08f"><div class="ttname"><a href="classSimplifyTree.html#a15b464278332a7cfdd068419a3e0a08f">SimplifyTree::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> SimplifyTree.cpp:65</div></div>
+<div class="ttc" id="aclassSimplifyTree_html_a0279c39ad5c93b2cfdad839fe05ea379"><div class="ttname"><a href="classSimplifyTree.html#a0279c39ad5c93b2cfdad839fe05ea379">SimplifyTree::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> SimplifyTree.cpp:468</div></div>
+<div class="ttc" id="aclassSimplifyTree_html_a15b464278332a7cfdd068419a3e0a08f"><div class="ttname"><a href="classSimplifyTree.html#a15b464278332a7cfdd068419a3e0a08f">SimplifyTree::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> SimplifyTree.cpp:68</div></div>
 <div class="ttc" id="aclassSimplifyTree_html_a35335e92c83efdc95abb4a5d7bf39bdb"><div class="ttname"><a href="classSimplifyTree.html#a35335e92c83efdc95abb4a5d7bf39bdb">SimplifyTree::SimplifyTree</a></div><div class="ttdeci">SimplifyTree()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> SimplifyTree.cpp:9</div></div>
 <div class="ttc" id="aclassSimplifyTree_html_a9a8f3f71837464c1a0496e492ea69beb"><div class="ttname"><a href="classSimplifyTree.html#a9a8f3f71837464c1a0496e492ea69beb">SimplifyTree::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> SimplifyTree.cpp:14</div></div>
 </div><!-- fragment --></div><!-- contents -->
