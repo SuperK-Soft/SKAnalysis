@@ -46,7 +46,7 @@ class TreeReader: public Tool {
 	void PrintTriggerBits();
 	int LoadConfig(std::string configfile);
 	void CloseLUN();
-	
+	const Header* myHeader=nullptr;
 	void PrintSubTriggers();
 	
 	// tool variables

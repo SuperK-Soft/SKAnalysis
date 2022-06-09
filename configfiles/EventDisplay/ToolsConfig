@@ -1,0 +1,4 @@
+myGracefulStop GracefulStop configfiles/EventDisplay/GracefulStopConfig
+myTreeReader TreeReader configfiles/EventDisplay/TreeReaderConfig
+mySkipTriggers SkipTriggers configfiles/EventDisplay/SkipTriggersConfig
+myevDisp evDisp configfiles/EventDisplay/evDispConfig

@@ -30,6 +30,8 @@
 #include "EventTrueCaptures.h"
 #include "PMTHitCluster.h"
 
+#include "ParticleCand.h"
+
 class MTreeReader;
 class MTreeSelection;
 class TreeReader;
@@ -88,8 +90,8 @@ class DataModel {
   // wrapper to check if we've called this yet, since we should probably only call it the once?
   void KZInit();
   bool kz_initialized=false;
-
-
+  
+  
   // Event vars
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
   BStore &eventVariables;   // use references to preserve current behaviour...
@@ -107,6 +109,22 @@ class DataModel {
   
   std::map<std::string, Store*> tool_configs;
   StoreToTTree StoreConverter;
+  
+  //flag for a new muon - used for the spallation reduction
+  bool newMuon = false;
+  
+  //flag for a new relic candidate - used for the spallation reduction
+  bool newRelic = false;
+  
+  //flag for a muon candidate that is within 30s of a relic candidate
+  std::vector<int> matchedMuonEntryNums;
+  
+  //vector for events that needs to be written out - used for the spallation reduction
+  std::vector<int> writeOut;
+  
+  //deques of the struct ParticleCand to store event info of muon candidates and relic candidates
+  std::deque<ParticleCand> muonCandDeque;
+  std::deque<ParticleCand> relicCandDeque;
 
  private:
 
