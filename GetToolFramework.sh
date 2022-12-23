@@ -52,7 +52,10 @@ if [ $toolframework -eq 1 ]
 then
 
 git clone https://github.com/ToolFramework/ToolFrameworkCore.git
-cd ToolFrameworkCore
+#cd ToolFrameworkCore
+#git remote add marc1uk git@github.com:marc1uk/ToolFrameworkCore.git
+#git fetch marc1uk
+#git checkout mods
 make clean
 make -j $threads
 export LD_LIBRARY_PATH=`pwd`/lib:$LD_LIBRARY_PATH

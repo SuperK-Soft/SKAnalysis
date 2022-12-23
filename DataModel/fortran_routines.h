@@ -55,8 +55,14 @@ extern "C" void runinfsk_();
 //
 extern "C" void softtrg_set_cond_(int*, int*, int*, int*, int*);
 extern "C" void get_sub_triggers_(int*, int*, int*, int*);
+extern "C" void get_sub_triggers2_(int*, int*, int*, int*, int*);
+extern "C" void get_sub_triggers_add_(int*,int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
 extern "C" void set_timing_gate_nsec_(float*);
+extern "C" int make_swtrg_list(int*,int*);
+extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*);
+extern "C" int softtrg_inittrgtbl(int , int, int, int);
+extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);
 
 // the following are provided by libwtlib_5.1.a
 extern "C" void skrunday_();
@@ -68,6 +74,7 @@ extern "C" void lfwater_(int*, float*);
 // the following are provided by libbonsai_3.3.a
 extern "C" void cfbsinit_(int*, float*);
 extern "C" void cfbsexit_();
+extern "C" int bonsaifit_(float*,float*,float*,int*,int*,int*,float*,float*);
 
 // the following are provided by libsklowe_7.0.a
 extern "C" void lfclear_all_();

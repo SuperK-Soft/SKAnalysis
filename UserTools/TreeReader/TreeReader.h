@@ -72,7 +72,7 @@ class TreeReader: public Tool {
 	int sk_geometry=4;                // TODO increment the default to 6.
 	std::string outputFile="";        // for when using SKROOT copy mode
 	int skip_ped_evts = 1;            // automatically skip pedestal/status TTree entries
-	bool loadSheAftPairs=false;       // should we load and buffer the AFT for an SHE event, if there is one?
+	bool loadSheAftPairs = false;     // should we load and buffer the AFT for an SHE event, if there is one?
 	bool onlyPairs=false;             // should we only return pairs of SHE+AFT events
 	int entriesPerExecute=1;          // alternatively, read and buffer N entries per Execute call
 	std::vector<int> triggerMasks;    // trigger bits required to return an entry

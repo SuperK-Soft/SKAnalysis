@@ -93,18 +93,21 @@ bool lf_allfit_new::Execute(){
 	
 	// apply lowfit
 	int NHITCUT = (MC) ? 800 : 1000;  //  number of hit limit for clusfit (changed for relic analysis)
-	
+
 	int lfflag;
 	int log_level;
 	int flag_skip=0;
 	if(MC){
 		lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
 		//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, 0, &log_level, &lfflag);
-	} else {
+	} else if (skq_.nqisk<NHITCUT){
 		//lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
 		//lfallfit_sk4_gain_corr(&watert, &NHITCUT, 0, &log_level, &lfflag);
 		lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 	}
+	else{
+		std::cout << "Too many hits!" << std::endl;
+		}
 	
 	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
 	skroot_set_lowe_(&lun,                      &skroot_lowe_.bsvertex[0], &skroot_lowe_.bsresult[0],

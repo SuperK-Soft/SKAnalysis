@@ -1,0 +1,4 @@
+verbose 4
+readerName fitReader
+dataSrc 0                  # 0 = skt_/skq_, 1 = sktqz_, 2 = TQREAL
+bonsaiSrc 0				   # 0 = built-in BONSAI calls, 1 = direct bonsai functions

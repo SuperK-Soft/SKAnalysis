@@ -16,3 +16,5 @@ DataModel/NTagDataModelDict.cxx
 BStore_RootDict.cxx
 BStore_RootDict.h
 BStore_Linkdef_1.hh
+Bonsai/*.o
+test_reconstruction/*

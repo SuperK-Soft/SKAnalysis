@@ -40,6 +40,8 @@ if (tool=="vectgen") ret=new vectgen;
 if (tool=="SK2p2MeV_ntag") ret=new SK2p2MeV_ntag;
 if (tool=="ntag_BDT") ret=new ntag_BDT;
 if (tool=="SimplifyTree") ret=new SimplifyTree;
+if (tool=="VertexFitter") ret=new VertexFitter;
+if (tool=="CombinedFitter") ret=new CombinedFitter;
 return ret;
 }
 

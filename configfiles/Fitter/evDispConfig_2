@@ -1,0 +1,7 @@
+verbosity 1
+treeReaderName demoReader  # for use with dataSrc=1
+plotVar 0                  # 0 = charge, 1 = time
+dataSrc 0                  # 0 = sktqz_, 1 = TQREAL
+evtSrc 1                   # 0 = SHE, 1 = AFT (if available)
+plotStyle 0                # 0 = point array, 1 = histogram
+

@@ -1,0 +1,82 @@
+To: Masayuki Nakahata <nakahata@suketto.icrr.u-tokyo.ac.jp>, mvagins@uci.edu
+cc: kbays@uci.edu, iida@suketto.icrr.u-tokyo.ac.jp,
+        sk_lowe@suketto.icrr.u-tokyo.ac.jp, sklowe@suketto.icrr.u-tokyo.ac.jp
+Subject: Re: clusfit does not work for high energy events
+In-Reply-To: <20070221143819W.nakahata@suketto.icrr.u-tokyo.ac.jp>
+Message-ID: <Pine.GSO.4.58.0702210901310.4539@e4e.oac.uci.edu>
+References: <20070221125927L.nakahata@suketto.icrr.u-tokyo.ac.jp>
+ <20070221143819W.nakahata@suketto.icrr.u-tokyo.ac.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-NACS_ES-MailScanner: No viruses found
+X-MailScanner-From: msmy@uci.edu
+Content-Length: 2346
+
+Dear SK Low E members,
+
+The new SK3 vertex fitters are finished; I compiled the code for
+the new sukaps at /home/sklowe/src/bonsai_3.1/libbonsai_3.1.a.
+Kirk will copy fit_param.dat in the same directory.
+
+Use of the new vertex fitters:
+
+Before any fitting is done, the following initializing
+is necessary:
+
+either CALL cfbsloadinit
+or     CALL cfbsinit(NPMT,xyzpm)
+
+to load the geometry. The first call will use the binary
+file geom.bin to load the geometry. The SK3 geometry is
+in geom_sk3.bin in the same directory.
+
+After all fitting is done, the following de-initializing
+is advisable:
+
+       CALL cfbsexit
+
+Please define the following variables:
+
+       INTEGER clusfit,bonsaifit,nwin1,nwin2,nwin3
+       EXTERNAL clusfit,bonsaifit,nwin1,nwin2,nwin3
+
+       INTEGER nclus,clussel,nlf,cablf(2000)
+       INTEGER nbons,bonssel
+       REAL    clusvertex(4),clusresult(4),clusgdn
+       REAL    tlf(2000),qlf(2000)
+       REAL    bonsaivertex(4),bonsairesult(6),bonsaigdn(2)
+
+For Clusfit, use
+
+       nclus=clusfit(clusvertex,clusresult,clusgdn,clussel,
+     ,               nlf,cablf,tlf,qlf)
+
+output:
+nclus:         # of tested vertices
+clusfit(4):    x,y,z, and t
+clusresult(4): theta,phi,cos_theta,good_t
+clusgdn:       goodness
+clussel:       # of selected hits
+input:
+nlf:           # of PMT hits
+cablf:         cable numbers of each hit
+tlf:           time of each hit
+qlf:           charge of each hit
+
+For BONSAI, use
+
+       nbons=bonsaifit(bonsaivertex,bonsairesult,bonsaigdn,bonssel,
+     ,                 nlf,tlf,qlf)
+
+output:
+nbons:        # of tested vertices
+bonsaivertex: x, y, z, and t
+bonsairesult: theta, phi, alpha, cos_theta, epsilon, like_t
+bonsaigdn:    likelihood, goodness
+bonsaisel:    # of selected hits for vertex search
+input:
+as for clusfit
+
+Please study bscalls.h/bscalls.cc for further functions.
+
+Michael

@@ -1,4 +1,4 @@
-///< Unity header to provide a clean Tool header list for factory and scripts ot add new Tools to
+// Unity header to provide a clean Tool header list for factory and scripts ot add new Tools to
 #include "DummyTool.h"
 #include "ApplyTMVA.h"
 #include "ExtractFeatures.h"
@@ -35,3 +35,5 @@
 #include "SK2p2MeV_ntag.h"
 #include "ntag_BDT.h"
 #include "SimplifyTree.h"
+#include "VertexFitter.h"
+#include "CombinedFitter.h"

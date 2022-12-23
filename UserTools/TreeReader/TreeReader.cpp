@@ -49,7 +49,7 @@ const std::vector<std::string> default_branches{
 
 bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	
-	m_data= &data;
+    m_data= &data;
 	
 	Log(toolName+": Initializing",v_debug,verbosity);
 	
