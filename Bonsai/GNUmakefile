@@ -21,7 +21,7 @@ LIBNAME = bonsai_3.3
 OBJS=	fit_param.o pmt_geometry.o binfile.o bonsai.o bonsaifit.o plato.o \
 	searchgrid.o fourhitgrid.o centroid.o hits.o hitsel.o goodness.o \
 	timefit.o likelihood.o vertex.o pot.o tree.o vertexfit.o \
-	bscalls.o ariadne.o
+	bscalls.o ariadne.o azimuth_ks.o distpmt.o
 
 #
 #  Rules for building library 

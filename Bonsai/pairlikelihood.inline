@@ -1,0 +1,315 @@
+#include <math.h>
+// *************************************************************
+// * create hitsel object and time-of-flight array             *
+// *************************************************************
+inline pairlikelihood::pairlikelihood(float r,float z):
+  fitquality(r,z,bon_dwallfit())
+{
+  nlike=0;
+}
+
+inline void pairlikelihood::set_hits(hitsel *p,hitsel *d)
+{
+  prompt=p;
+  delayed=d;
+  nlike=0;
+  if (prompt!=NULL) prompt->qsort();
+  if (delayed!=NULL) delayed->qsort();
+}
+
+// *************************************************************
+// * calculate dodecahedran of search radius and all thirteen  *
+// * qualitites                                                *
+// *************************************************************
+inline void pairlikelihood::check_around(float *vertex,float *result,
+		                     float radius,float *q,int &max)
+{
+  int i;
+
+  orientation.set(result[2],result[3],result[4]);
+  dod.surround(vertex+3,orientation,radius);
+  for(max=i=0; i<13; i++)
+    {
+      if ((q[i]=quality(vertex+3*i))>q[max])
+	{
+	  max=i;
+	  *result=verfit[3];
+	  result[1]=like[0];
+	  result[2]=*dirfit;
+	  result[3]=dirfit[1];
+	  result[4]=dirfit[2];
+	  result[5]=dirfit[3];
+	  result[6]=dirfit[4];
+	}
+#ifdef DEBUG_TWO
+      printf("%2d(%2d) (%8.2f,%8.2f,%8.2f,%6.1f): %8.6f(%8.6f) (%6.1f,%6.1f,%6.1f) %4.1f %8.5f\n",
+	     i,max,vertex[3*i],vertex[3*i+1],vertex[3*i+2],verfit[3],q[i],
+	     like0,dirfit[0]*57.29578,dirfit[1]*57.29578,
+	     dirfit[2]*57.29578,acos(dirfit[3])*57.29578,dirfit[4]);
+#endif
+    }
+}
+
+// *************************************************************
+// * return number of checked points for each iteration        *
+// *************************************************************
+inline char pairlikelihood::ncheck(void)
+{
+  return(13);
+}
+
+// *************************************************************
+// * calculate quality at interpolated point                   *
+// *************************************************************
+inline void pairlikelihood::interpolate(float *vertex,
+                                    float radius,float *q,float *inter)
+{
+  dod.interpolate(q,inter);
+  vertex[39]=vertex[0]+radius*orientation.getx(inter);
+  vertex[40]=vertex[1]+radius*orientation.gety(inter);
+  vertex[41]=vertex[2]+radius*orientation.getz(inter);
+  q[13]=quality(vertex+39);
+#ifdef DEBUG_TWO
+  printf("interpolate to (%8.2f,%8.2f,%8.2f): %8.6f\n",
+         vertex[39],vertex[40],vertex[41],q[13]);
+#endif
+}
+
+// *************************************************************
+// * maximize criterion pairlikelihood using bonsaifit object      *
+// *************************************************************
+inline void pairlikelihood::maximize(bonsaifit *fit,searchgrid *grid, bool useAngle)
+{
+  if (grid->nset()<1) return;
+  //initializing grid search
+  cang0=bangle();
+  plusdang=bplusdevangle();
+  minusdang=bminusdevangle();
+  if (!useAngle)
+    {
+      plusdang=FIT_PARAM_NONE;
+      minusdang=FIT_PARAM_NONE;
+    }
+#ifdef DEBUG
+  printf("Initial search: cos_theta=%6.2f+%6.2f-%6.2f\n",
+	 cang0,sqrt(0.5/plusdang),sqrt(0.5/minusdang));
+#endif
+  if (grid->nset()<2)
+    {
+      if (grid->size(0)+grid->size(1)<1) return;
+      fit->search(obon_minimum_radius(),grid,1);
+    }
+  else
+    {
+      if(bongrid()<clusgrid())
+        {
+          if (grid->size(0)+grid->size(3)<1) return;
+          fit->search(obon_minimum_radius(),grid,3);
+	}
+      else
+	{
+      	  if (grid->size(0)+grid->size(4)<1) return;
+          fit->search(obon_minimum_radius(),grid,4);
+	}
+    }
+
+  //original search
+  cang0=oangle();
+  plusdang=oplusdevangle();
+  minusdang=ominusdevangle();
+  if (!useAngle)
+    {
+      plusdang=FIT_PARAM_NONE;
+      minusdang=FIT_PARAM_NONE;
+    }
+
+#ifdef DEBUG
+  printf("Coarse search: cos_theta=%6.2f+%6.2f-%6.2f\n",
+	 cang0,sqrt(0.5/plusdang),sqrt(0.5/minusdang));
+#endif
+  fit->search(obon_min_gdn_difference(),obon_gdn_fraction(),
+	      obon_minimum_radius(),obon_stop_radius());
+  if (walldist(fit->xfit(),fit->yfit(),fit->zfit())<bon_dwall())
+    {
+#ifdef DEBUG
+      printf("dwall=%8.2f<%8.2f: Final search: cos_theta=%6.2f+%6.2f-%6.2f\n",
+	      walldist(fit->xfit(),fit->yfit(),fit->zfit()),
+              bon_dwall(),cang0,sqrt(0.5/plusdang),sqrt(0.5/minusdang));
+#endif
+      fit->search(bon_last_min_gdn_difference(),
+	              bon_last_gdn_fraction());
+#ifdef DEBUG
+      fit->print_branch_list();
+#endif
+      return;
+    }
+  // conditional search
+  cang0=cangle();
+  plusdang=cplusdevangle();
+  minusdang=cminusdevangle();
+  if (!useAngle)
+    {
+      plusdang=FIT_PARAM_NONE;
+      minusdang=FIT_PARAM_NONE;
+    }
+#ifdef DEBUG
+    printf("Fine search: cos_theta=%6.2f+%6.2f-%6.2f\n",
+	   cang0,sqrt(0.5/plusdang),sqrt(0.5/minusdang));
+#endif
+  fit->search(cbon_min_gdn_difference(),cbon_gdn_fraction(),
+	        cbon_minimum_radius(),cbon_stop_radius());
+  minusdang=cminusdevangle();
+  if (!useAngle)
+    {
+      minusdang=FIT_PARAM_NONE;
+    }
+#ifdef DEBUG
+    printf("Final search: cos_theta=%6.2f+%6.2f-%6.2f\n",
+	   cang0,sqrt(0.5/plusdang),sqrt(0.5/minusdang));
+#endif
+  fit->search(bon_last_min_gdn_difference(),
+	      bon_last_gdn_fraction());
+#ifdef DEBUG
+  fit->print_branch_list();
+#endif
+}
+
+// *************************************************************
+// * maximize criterion pairlikelihood using one starting point    *
+// *************************************************************
+inline void pairlikelihood::maximize(bonsaifit *fit,float *point,
+				    bool useAngle)
+{
+  cang0=cangle();
+  plusdang=cplusdevangle();
+  minusdang=cminusdevangle();
+  if (!useAngle)
+    {
+      plusdang=FIT_PARAM_NONE;
+      minusdang=FIT_PARAM_NONE;
+    }
+#ifdef DEBUG
+    printf("Fine search: cos_theta=%6.2f+%6.2f-%6.2f\n",
+	   cang0,sqrt(0.5/plusdang),sqrt(0.5/minusdang));
+#endif
+  fit->search(cbon_minimum_radius(),cbon_stop_radius(),point);
+}
+
+// *************************************************************
+// * get last fitted light emission time                       *
+// *************************************************************
+inline float pairlikelihood::get_zero(int ev)
+{
+  switch(ev)
+  {
+  case 1: return(verfit[3]);
+  case 2: return(verfit[4]);
+  default: return(0);
+  }
+}
+
+// *************************************************************
+// * get last fitted pairlikelihood                                  *
+// *************************************************************
+inline float pairlikelihood::get_ll(int ev)
+{
+  switch(ev)
+  {
+  case 0: return(like[1]+like[3]);
+  case 1: return(like[1]);
+  case 2: return(like[3]);
+  default: return(0);
+  }
+}
+
+// *************************************************************
+// * get last fitted pairlikelihood                                  *
+// *************************************************************
+inline float pairlikelihood::get_ll0(int ev)
+{
+  switch(ev)
+  {
+  case 0: return(like[0]+like[2]);
+  case 1: return(like[0]);
+  case 2: return(like[2]);
+  default: return(0);
+  }
+}
+inline int pairlikelihood::nwind(int ev,float *vertex,float tmin,float tmax)
+{
+  switch(ev)
+  {
+  case 0: event_hits=prompt; break;
+  case 1: event_hits=delayed; break;
+  default: return(-1);
+  }
+  return(timefit::nwind(vertex,tmin,tmax));
+}
+inline float pairlikelihood::ntgood(int ev,float *vertex,float bgrate,float &guncor)
+{
+  switch(ev)
+  {
+  case 0: event_hits=prompt; break;
+  case 1: event_hits=delayed; break;
+  default: guncor=-1; return(-1);
+  }
+  return(timefit::ntgood(vertex,bgrate,guncor));
+}
+
+
+inline void pairlikelihood::get_dir(float *dir)
+{
+  *dir=*dirfit;
+  dir[1]=dirfit[1];
+  dir[2]=dirfit[2];
+  dir[3]=dirfit[3];
+  dir[4]=dirfit[4];
+}
+
+// *************************************************************
+// * get number of times, quality was called                   *
+// *************************************************************
+inline int pairlikelihood::nfit(void)
+{
+  return(nlike);
+}
+
+// *************************************************************
+// * return size of output memory segment                      *
+// *************************************************************
+inline int pairlikelihood::nresult(void)
+{
+  return(7);
+};
+
+// *************************************************************
+// * copy emission time, raw pairlikelihood and direction fit to   *
+// * memory segment r                                          *
+// *************************************************************
+inline void pairlikelihood::get_result(float *r)
+{
+  *r=verfit[3];
+  r[1]=like[0];
+  r[2]=*dirfit;
+  r[3]=dirfit[1];
+  r[4]=dirfit[2];
+  r[5]=dirfit[3];
+  r[6]=dirfit[4];
+  return;
+};
+
+// *************************************************************
+// * copy emission time, raw pairlikelihood and direction fit from *
+// *  memory segment r                                         *
+// *************************************************************
+inline void pairlikelihood::set_result(float *r)
+{
+  verfit[3]=*r;
+  like[0]=r[1];
+  *dirfit=r[2];
+  dirfit[1]=r[3];
+  dirfit[2]=r[4];
+  dirfit[3]=r[5];
+  dirfit[4]=r[6];
+  return;
+};
