@@ -44,9 +44,9 @@ class VertexFitter: public Tool {
 
 	// tool functions
   	void lbfset0(void *dat, int *numdat);
-	int CalculateNX(int timewindow,float* vertex, int* cableIDs, float* times, int &bsn50);
-
-    // tool variables
+	int CalculateNX(int timewindow, float* vertex, int cableIDs[], float times[], int (&cableIDs_twindow)[500]);
+    
+	// tool variables
     // ==============
     std::string toolName;
 //	std::string treeReaderName;
@@ -56,6 +56,7 @@ class VertexFitter: public Tool {
     int nrunsk_last=0;    // to know when to read in new transparency data at start of each new run
     int nsubsk_last=0;    // same for new badch list, loaded on new run and subrun
     float watert;         // water transparency
+	int numPMTs;          // total number of PMTs
 
     // verbosity levels: if 'verbosity' < this level, the message type will be logged.
     int verbosity;

@@ -46,6 +46,28 @@ extern "C" void skcread_(int*, int*);
 extern "C" void skroot_set_tree_(int*);
 extern "C" void skroot_get_entry_(int*);
 
+// additional functions from lfallfit
+extern "C" void skatmmap2_(int*,int*,int*,int*,int*,int*);
+extern "C" void lfneihit_(int*,int*,int*);
+extern "C" void lfqhit_(int*,float*); 
+extern "C" void lfflasher_(int*,float*,int*);
+extern "C" float wallsk_(float*);
+extern "C" void lfdir2_(float*,float*,float*);
+extern "C" void lfneweff_sk3_final_(float*, float*, Float_t*);
+extern "C" void lfneweff_sk4_final_qe43_(float*,float*,float*,float*,int*,int*);
+extern "C" void lfeffwt_sk3_(float*, float*,float*);
+extern "C" float enelf_sk4_(float*,int*);
+extern "C" void lfdir4_(float*,float*,float*,float*);
+extern "C" void lfdirks_(float*,float*,float*);
+extern "C" float patliklf_sk4_(float*,float*,float*,int*);
+extern "C" float effwallf_(int*,float*,float*,float*);
+extern "C" void slsundir3_(int*,int*,float*,float*,float*,float*);
+extern "C" void lfnhit_tisk_(int*,float*,int*,int*,int*);
+extern "C" void lfnhit2_(int*,float*,int*,int*,int*);
+extern "C" void lfnhit_(int*,float*,int*,int*);
+extern "C" float lfcal_r02_(int*,int*,float*);
+extern "C" void lfariadne_(float*,int*,float*,float*,float*,float*,int*,float*);
+
 // from $ATMPD_ROOT/src/programs/TreeBuilder/examples/fort_fopen.F
 extern "C" void fort_fopen_(int*, const char*, char*, int* ,int);
 
