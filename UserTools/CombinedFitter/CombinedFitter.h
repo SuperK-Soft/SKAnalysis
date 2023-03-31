@@ -16,9 +16,7 @@
 
 #include "Bonsai/pmt_geometry.h"
 #include "Bonsai/bonsaifit.h"
-#include "Bonsai/likelihood.h"
-#include "Bonsai/goodness.h"
-#include "Bonsai/fourhitgrid.h"
+#include "Bonsai/pairlikelihood.h"
 
 #include <TH1.h>
 
@@ -48,7 +46,7 @@ class CombinedFitter: public Tool {
 	// tool functions
 	// Functions to get the prompt and delayed hits
 	void SetPromptHits(std::vector<float>& charges, std::vector<float>& times, std::vector<int>& cableIDs, int &nhit);
-	int SetAftHits(float lastSHE, std::vector<float> chargesRaw, std::vector<float> timesRaw, std::vector<int> cableIDsRaw, int nhitsRaw, std::vector<float>& charges_AFT, std::vector<float>& times_AFT, std::vector<int>& cableIDs_AFT);
+	int SetAftHits(int AddNoise, int numPMTs, float darkmc, float lastSHE, std::vector<float> chargesRaw, std::vector<float> timesRaw, std::vector<int> cableIDsRaw, int nhitsRaw, std::vector<float>& charges_AFT, std::vector<float>& times_AFT, std::vector<int>& cableIDs_AFT);
 
 	// Fitting functions
 	void lbfset0(void *dat, int *numdat); // Resets the fitting variables
@@ -66,31 +64,41 @@ class CombinedFitter: public Tool {
 	//	MTreeReader* myTreeReader=nullptr; 
 	// skroot tree
 	TTree* t;
-	TFile* out = nullptr;
-	// tree for ntuple output
-	TTree *theOTree = nullptr;
+	TFile* fout = nullptr;
+	// file and tree for ntuple output
+	TTree *outputTree =nullptr;
 	// variables to fill and write out
-	float *posmc; // MC true vertex position (mm) single particle (prompt)
-	float posmc_d[3]; // MC true vertex position (mm) single particle (delayed)
-	float mcx_d = 0;
-	/*float (*dirmc)[3]; // MC true direction 1st and 2nd particles
-	float *pabsmc; // MC absolute momentum 1st and 2nd particles
-	float *energymc; // MC generated energy (MeV) 1st and 2nd particles
-	float posmc_d[3];*/
+	// fitting
+	float x, y, z = 0;
+	float x_prev, y_prev, z_prev = 0;
+	float x_combined, y_combined, z_combined = 0;
+	float tgoodSHE, tgoodAFT = 0;
+	// mc
+	float mcx, mcy, mcz = 0;
+	float mcx_prev, mcy_prev, mcz_prev = 0;
+	int pdg, pdg_prev = 0;
+	float mcx_ncapture, mcy_ncapture, mcz_ncapture = 0;
+	float mc_energy, mc_energy_prev = 0;	
+	float mct_ncapture=0;
+	std::vector<float> timesAFT;
+
+	// variables to use in the tool
 	struct HitInfo
 	{
 		float charge;
 		float time;
 		int cableID;
 	};
+	int SLE_threshold = 0;
 	int nread=0;          // just track num loops for printing
 	int nrunsk_last=0;    // to know when to read in new transparency data at start of each new run
 	int nsubsk_last=0;    // same for new badch list, loaded on new run and subrun
+	float darkmc=0;
 	float watert;         // water transparency
 	int numPMTs;          // total number of PMTs
 
 	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity;
+	int verbosity=1;
 	int v_error=0;
 	int v_warning=1;
 	int v_message=2;
@@ -98,8 +106,7 @@ class CombinedFitter: public Tool {
 	//    std::string logmessage="";
 	int get_ok=0;
 
-	float prev_t_nsec=0;
-	TH1D *ht = new TH1D();
+
 	// variables to read in
 	// ====================
 	std::string readerName="";
@@ -108,14 +115,15 @@ class CombinedFitter: public Tool {
 	int nhitcut;
 	int ev=0;
 	bool MC=false;
+	bool addNoise = true;
 	int dataSrc=0;     // 0=sktqz_ common block, 1=TQReal branch
 	int bonsaiSrc = 0; // 0= built-in bonsai calls; 1 = direct bonsai functions
 
 	// bonsai
 	// ======
 	pmt_geometry* bsgeom;
-	likelihood* bslike;
-	bonsaifit *bsfit;
+	pairlikelihood* bspairlike;
+	bonsaifit *bspairfit;
 
 
 };

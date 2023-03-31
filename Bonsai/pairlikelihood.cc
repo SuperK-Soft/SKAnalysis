@@ -43,7 +43,6 @@ float pairlikelihood::quality(float *vertex)
 	like[3]=like[2]-devd*devd*minusdang;
     }
   if (nlike++==0) set_worst(like[1]+like[3]); else check_worst(like[1]+like[3]);
-  add_fit(vertex,like[1]+like[3]);
   //printf("%9.3lf\n",like);
   return(like[1]+like[3]);
 }

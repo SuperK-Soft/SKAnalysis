@@ -1,4 +1,6 @@
-verbose 4
-readerName fitReader
-dataSrc 0                  # 0 = skt_/skq_, 1 = sktqz_, 2 = TQREAL
-bonsaiSrc 0				   # 0 = built-in BONSAI calls, 1 = direct bonsai functions
+verbosity 		4
+readerName 		fitReader
+outputFile 		test_combinedFit_2pct_GdSulphate_dark.root
+dataSrc 		0                  # 0 = skt_/skq_, 1 = sktqz_, 2 = TQREAL
+bonsaiSrc 		0				   # 0 = built-in BONSAI calls, 1 = direct bonsai functions
+addNoise		1				# whether to add dark noise to the AFT

@@ -22,7 +22,6 @@
 
 #include "Bonsai/searchgrid.h"
 #include "Bonsai/bscalls.h"
-#include "Bonsai/ariadne.h"
 #include "TCanvas.h"
 
 // declarations and #includes for SK fortran routines
@@ -128,9 +127,9 @@ bool VertexFitter::Execute(){
 	int evid = 0;
 	TBranch *ev_id = t->Branch("evid",&evid,"evid/D");
 
-    if((nread%100)==0){
+//    if((nread%100)==0){
         Log(toolName+" read loop "+toString(nread)+", current run "+toString(skhead_.nrunsk),v_message,verbosity);
-    }
+//    }
     ++nread;
 
     if(MC && skhead_.nrunsk==999999){
@@ -154,13 +153,16 @@ bool VertexFitter::Execute(){
             nrunsk_last = skhead_.nrunsk;
             nsubsk_last = skhead_.nsubsk;
             if(skhead_.nrunsk!=nrunsk_last) darklf_(&skhead_.nrunsk);
-		// Get the dark rate
-		float darkmc;
-		int sk_geometry = skheadg_.sk_geometry;
-		if (sk_geometry==4) darkmc = mc->darkds*0.7880; // (1/1.269) lfallfit_sk4_mc.F::112
-		else if (sk_geometry==5) darkmc = mc->darkds*0.7880; // (1/1.269) (tentative) lfallfit_sk4_mc.F::114
-		else std::cout << "SK_GEOMETRY=" << sk_geometry << ". Not set up for earlier than SKIV" << std::endl;
-        }
+			// Get the dark rate
+			float darkmc;
+			int sk_geometry = skheadg_.sk_geometry;
+			if (sk_geometry>=4){
+				darkmc = mc->darkds*0.7880; // (1/1.269) lfallfit_sk4_mc.F::112
+			}
+			else{
+				std::cout << "SK_GEOMETRY=" << sk_geometry << ". Not set up for earlier than SKIV" << std::endl;
+			}
+		}
     }
 
 	// Start by clearing all variables
@@ -514,7 +516,6 @@ bool VertexFitter::Execute(){
 				bslike->set_hits(NULL);				
 			}
 		}
-
 
 
 		//------------------------------------------------------------------------

@@ -7,6 +7,7 @@
 #include "searchgrid.h"
 #include "plato.h"
 #include "likelihood.h"
+#include "pairlikelihood.h"
 
 // *************************************************************
 // * Defines clusfit goodness function and maximization        *

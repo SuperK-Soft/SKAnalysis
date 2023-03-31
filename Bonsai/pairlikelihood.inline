@@ -253,7 +253,7 @@ inline float pairlikelihood::ntgood(int ev,float *vertex,float bgrate,float &gun
   case 1: event_hits=delayed; break;
   default: guncor=-1; return(-1);
   }
-  return(timefit::ntgood(vertex,bgrate,guncor));
+  return(timefit::tgood(vertex,bgrate,guncor));
 }
 
 

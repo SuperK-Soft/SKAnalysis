@@ -16,12 +16,18 @@
 #include <string>
 #include <iostream>
 #include <bitset>
+
 #include "SuperManager.h"
 
 #include "Bonsai/searchgrid.h"
 #include "Bonsai/bscalls.h"
-#include "Bonsai/ariadne.h"
-#include "TCanvas.h"
+#include "Bonsai/pairlikelihood.h"
+#include "Bonsai/fourhitgrid.h"
+#include "Bonsai/combinedgrid.h"
+#include "Bonsai/goodness.h"
+
+#include <TCanvas.h>
+#include <TRandom.h>
 
 // declarations and #includes for SK fortran routines
 #include "fortran_routines.h"
@@ -53,6 +59,8 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("readerName",readerName);  // name given to the TreeReader used for file handling
 	m_variables.Get("dataSrc",dataSrc);   	   // where to get the data from (common blocks/tqreal)
 	m_variables.Get("bonsaiSrc",bonsaiSrc);    // which bonsai to use (skofl or local)
+	m_variables.Get("addNoise",addNoise);    // whether to add noise to AFT
+	m_variables.Get("outputFile",outputFile);  // name of file to save ntuples to
 
 	// use the readerName to find the LUN associated with this file
 	std::map<std::string,int> lunlist;
@@ -68,6 +76,36 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	t = skroot_get_tree(&lun);
 	if(t) MC = (t->FindBranch("MC")!=nullptr);
 
+	// make output file and tree
+	if(outputFile == nullptr) outputFile = "CombinedFitter_output.root";
+	fout = new TFile(outputFile.c_str(), "RECREATE");
+	outputTree = new TTree("corefit", "Coincidence reconstruction results");
+
+	// Set the branches we need to fill in the ntuple
+	outputTree->Branch("x",&x,"x/F");
+	outputTree->Branch("y",&y,"y/F");
+	outputTree->Branch("z",&z,"z/F");
+	outputTree->Branch("x_prev",&x_prev,"x_prev/F");
+	outputTree->Branch("y_prev",&y_prev,"y_prev/F");
+	outputTree->Branch("z_prev",&z_prev,"z_prev/F");
+	outputTree->Branch("x_combined",&x_combined,"x_combined/F");
+	outputTree->Branch("y_combined",&y_combined,"y_combined/F");
+	outputTree->Branch("z_combined",&z_combined,"z_combined/F");
+	outputTree->Branch("mcx",&mcx,"mcx/F");
+	outputTree->Branch("mcy",&mcy,"mcy/F");
+	outputTree->Branch("mcz",&mcz,"mcz/F");
+	outputTree->Branch("mcx_prev",&mcx_prev,"mcx_prev/F");
+	outputTree->Branch("mcy_prev",&mcy_prev,"mcy_prev/F");
+	outputTree->Branch("mcz_prev",&mcz_prev,"mcz_prev/F");
+	outputTree->Branch("mcx_ncapture",&mcx_ncapture,"mcx_ncapture/F");
+	outputTree->Branch("mcy_ncapture",&mcy_ncapture,"mcy_ncapture/F");
+	outputTree->Branch("mcz_ncapture",&mcz_ncapture,"mcz_ncapture/F");
+	outputTree->Branch("mct_ncapture",&mct_ncapture,"mct_ncapture/F");
+	outputTree->Branch("pdg",&pdg,"pdg/I");
+	outputTree->Branch("pdg_prev",&pdg_prev,"pdg_prev/I");
+	outputTree->Branch("mc_energy",&mc_energy,"mc_energy/F");
+	outputTree->Branch("mc_energy_prev",&mc_energy_prev,"mc_energy_prev/F");
+	outputTree->Branch("timesAFT",&timesAFT);
 	// initialize water transparency table
 	// (this will be for energy reconstruction I presume)
 	skrunday_();
@@ -82,19 +120,15 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	// Initialize BONSAI - create BONSAI objects from the PMT position array
 	//------------------
 	
+	// Initialise bonsai for coincidence reconstruction
+	std::cout << "Initialising BONSAI direct." << std::endl;
+	bsgeom = new pmt_geometry(numPMTs,xyzpm);
+	bspairlike = new pairlikelihood(bsgeom->cylinder_radius(),bsgeom->cylinder_height());
+	bspairfit = new bonsaifit(bspairlike);
+	
 	// Use built-in BONSAI functions (bonsai/bscalls.cc::)
-	if (bonsaiSrc==0) {
-		std::cout << "Initialising BONSAI using built-in function cfbsinit_." << std::endl;
-		cfbsinit_(&numPMTs, xyzpm);
-	}
-
-	// Use BONSAI direct (currently local)
-	else{
-		std::cout << "Initialising BONSAI direct." << std::endl;
-		bsgeom = new pmt_geometry(numPMTs,xyzpm);
-		bslike = new likelihood(bsgeom->cylinder_radius(),bsgeom->cylinder_height());
-		bsfit = new bonsaifit(bslike);
-	}
+	std::cout << "Initialising BONSAI using built-in function cfbsinit_." << std::endl;
+	cfbsinit_(&numPMTs, xyzpm);
 	std::cout << "BONSAI initialised" << std::endl;
 
 	// check where we are getting the hit info from
@@ -113,6 +147,7 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 }
 
 bool CombinedFitter::Execute(){
+
 
 	// Get the branches we need from the tree
 	// TODO we don't need to call this for each entry
@@ -133,13 +168,19 @@ bool CombinedFitter::Execute(){
 		Log(toolName+" warning: no run number!!",v_warning,verbosity);
 		skhead_.nrunsk = 75000;
 	}
+	// Putting this here temporarily for SKG4 sim
 	if(MC && skhead_.nrunsk==85000){
 		Log(toolName+" warning: no run number!!",v_warning,verbosity);
 		skhead_.nrunsk = 75000;
 	}
-
-	// once per run update the water transparency
+	// once per run update the water transparency and SLE threshold
 	if(skhead_.nrunsk!=nrunsk_last){
+		// Get the SLE trigger threshold for this run
+		int idetector[32], ithr[32], it0_offset[32], ipret0[32] ,ipostt0[32];
+		softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
+		SLE_threshold = ithr[3];
+		
+		// Update the water transparency
 		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];
 		lfwater_(&days_to_run_start, &watert);
 		Log(toolName+" loaded new water transparency value "+toString(watert)
@@ -155,10 +196,9 @@ bool CombinedFitter::Execute(){
 		if(skhead_.nrunsk!=nrunsk_last) darklf_(&skhead_.nrunsk);
 		// Get the dark rate
 		// TODO sort this out for later geometries
-		float darkmc;
 		int sk_geometry = skheadg_.sk_geometry;
-//		if (sk_geometry==4) darkmc = mc->darkds*0.7880; //(1/1.269)
-//		else if (sk_geometry>=5) darkmc = mc->darkds*0.7880; //(1/1.269)
+		if (sk_geometry>=4) darkmc = mc->darkds*0.7880; //(1/1.269)
+		if (darkmc==0) darkmc = 7500;
 	}
 
 	// Start by clearing all variables
@@ -184,10 +224,41 @@ bool CombinedFitter::Execute(){
 
 	int lnqisk = skq_.nqisk;// total number of hits in event
 
+	// mc vertex, direction, momentum, energy variables
+	float *posmc = skroot_lowe_.posmc; //MC vtx (mm) 1 particle
+	float posmcAFT[3]; 
+	float (*dirmc)[3] = skroot_lowe_.dirmc; //MC dir 2 particles
+	float *pabsmc = skroot_lowe_.pabsmc; 	//MC absolute momentum \
+						1st and 2nd particles
+	float *energymc = skroot_lowe_.energymc; // MC energy (MeV) \
+						1st and 2nd particles
+	
+	float bsvertexAFT[4];
+	float bsresultAFT[6];
+	float bsgoodAFT[3];
+	float *bsvertex = skroot_lowe_.bsvertex;
+	float *bsresult = skroot_lowe_.bsresult;
+	float *bsgood = skroot_lowe_.bsgood;
+	
 	// clear variables for low & mu fitters
 	// also clears mc variables
-	// sets bs variables to 99999
+	// sets bs variables to 9999
 	lfclear_all_();
+	for (int i=0;i<6;i++) bsresultAFT[i]=9999;
+	for (int i=0;i<4;i++) bsvertexAFT[i]=9999;
+	for (int i=0;i<3;i++){ 
+		bsgoodAFT[i]=9999;
+		posmcAFT[i] = 9999;
+	}
+	// clear variables to be saved to the ntuples
+	x, y, z = 9999;
+	x_prev, y_prev, z_prev = 9999;
+	mcx, mcy, mcz = 9999;
+	mcx_prev, mcy_prev, mcz_prev = 9999;
+	pdg, pdg_prev = 9999;
+	mcx_ncapture, mcy_ncapture, mcz_ncapture = 9999;
+	mc_energy, mc_energy_prev = 9999;
+	mct_ncapture=9999;
 
 	int NHITCUT = 800; //(MC) ? 800 : 1000;  //  max no. hits to reconstruct
 	
@@ -197,20 +268,13 @@ bool CombinedFitter::Execute(){
 	// neutron, positron, antineutrino for IBD events
 	// This saves the info for the positron, and neutron where applicable
 	if (MC) {
-		// mc vertex, direction, momentum, energy variables
-		float *posmc = skroot_lowe_.posmc; //MC vtx (mm) 1 particle
-		float (*dirmc)[3] = skroot_lowe_.dirmc; //MC dir 2 particles
-		float *pabsmc = skroot_lowe_.pabsmc; 	//MC absolute momentum \
-							1st and 2nd particles
-		float *energymc = skroot_lowe_.energymc; // MC energy (MeV) \
-							1st and 2nd particles
 
 		float p_x = 9999;
 		float p_y = 9999;
 		float p_z = 9999;
 		float p_abs = 9999;
+
 		double restmass;
-		int pdg;
 		
 		// Get the MC info for the prompt event
 		// This part is the same for SKG4 and SKDetsim
@@ -219,7 +283,7 @@ bool CombinedFitter::Execute(){
 		posmc[0] = mc->pvtxvc[1][0];
 		posmc[1] = mc->pvtxvc[1][1];
 		posmc[2] = mc->pvtxvc[1][2];
-		
+
 		// Calculate the absolute momentum pabs of the prompt
 		p_x = mc->pvc[1][0];//x momentum
 		p_y = mc->pvc[1][1];//y momentum
@@ -238,11 +302,12 @@ bool CombinedFitter::Execute(){
 		if (mc->energy[0]!=0) { 
 			//In SKG4, the energy is already calculated
 			energymc[0] = mc->energy[1]; // positron energy
+			pdg_prev = mc->ipvc[1];
 		} else {
 			// In SKDetsim, mc energy is 0 - we have to calculate it
 			// Get the particle rest mass and calculate energy
-			pdg = mc->ipvc[1]; // positron
-			restmass = PdgToMass(pdg);
+			pdg_prev = mc->ipvc[1]; // positron
+			restmass = PdgToMass(pdg_prev);
 			energymc[0] = sqrt(pow(restmass,2)+pow(p_abs,2));
 		}
 
@@ -253,36 +318,52 @@ bool CombinedFitter::Execute(){
 			// In SKG4, vtx and momentum are in secondaries branch
 			SecondaryInfo* secondaries = mgr->GetSECONDARY();
 			
-			// Get the mc vertex of the neutron event
-			// TODO - how shall we save this info?
-			posmc_d[0] = secondaries->vtxscnd[0][0];
-			posmc_d[1] = secondaries->vtxscnd[0][1];
-			posmc_d[2] = secondaries->vtxscnd[0][2];
-			
+			// Get the mc vertex of the neutron-capture event
+			// For this, I'm going to use the creation vertex of
+			// the gammas produced in the neutron capture.
+			// In SKG4, the neutron is the parent in the Secdata tree 
+			// and the gammas, conversion electrons, deuteron, Gd-158, etc are secondaries.
+			int nsecondaries = secondaries->nscndprt; // number of secondaries (usually gammas)
+			for (int isecondary = 0; isecondary<nsecondaries; isecondary++){
+				pdg = secondaries->iprntprt[isecondary]; // parent of the secondary particle
+				int pdg_secondary = secondaries->iprtscnd[isecondary]; // pdg of the secondary
+				bool from_ncapture = secondaries->lmecscnd[isecondary]==18; // production process
+				if (pdg_secondary == 22 && from_ncapture && pdg==2112){
+					// save the creation vertex of the gamma from the neutron capture
+					mcx_ncapture = secondaries->vtxscnd[isecondary][0];
+					mcy_ncapture = secondaries->vtxscnd[isecondary][1];
+					mcz_ncapture = secondaries->vtxscnd[isecondary][2];
+					posmcAFT[0] = secondaries->vtxprnt[isecondary][0];
+					posmcAFT[1] = secondaries->vtxprnt[isecondary][1];
+					posmcAFT[2] = secondaries->vtxprnt[isecondary][2];
+					mct_ncapture = secondaries->tscnd[isecondary];
+					Log(toolName+" ncapture time "+toString(mct_ncapture),v_debug,verbosity);
+					break; // stop looking once we have found one
+				}
+			}
 
-			// Calculate the absolute momentum of the delayed
+			// Calculate the absolute initial momentum of the delayed
 			p_x = mc->pvc[0][0];//x momentum
 			p_y = mc->pvc[0][1];//y momentum
 			p_z = mc->pvc[0][2];//z momentum
 			p_abs = sqrt(pow(p_x,2)+pow(p_y,2)+pow(p_z,2));
 			pabsmc[1] = p_abs;
 			
-			// Calculate the mc direction
+			// Calculate the initial mc direction of the delayed
 			if (p_abs>0) {
 				dirmc[1][0] = p_x/p_abs;
 				dirmc[1][1] = p_y/p_abs;
 				dirmc[1][2] = p_z/p_abs;
 			}
 		
-			// Then get the energy of the neutron from the MC branch
+			// Then get the initial energy of the neutron from the MC branch
 			energymc[1] = mc->energy[0];
 		} else {
-			// SKDetsim
+			// SKDetsim. NB outputs the initial vertex, not the neutron-capture vertex
 			// Get the mc x, y and z co-ordinates of the delayed
-			// TODO - how shall we save this info?
-			posmc_d[0] = mc->pvtxvc[2][0];
-			posmc_d[1] = mc->pvtxvc[2][1];
-			posmc_d[2] = mc->pvtxvc[2][2];
+			posmcAFT[0] = mc->pvtxvc[2][0];
+			posmcAFT[1] = mc->pvtxvc[2][1];
+			posmcAFT[2] = mc->pvtxvc[2][2];
 
 			//calculate the absolute momentum of the delayed
 			p_x = mc->pvc[2][0];//x momentum
@@ -304,15 +385,20 @@ bool CombinedFitter::Execute(){
 			energymc[1] = sqrt(pow(restmass,2)+pow(p_abs,2));
 		}
 	} // endif MC
+	mcx_prev = posmc[0];
+	mcy_prev = posmc[1];
+	mcz_prev = posmc[2];
+	mcx = posmcAFT[0];
+	mcy = posmcAFT[1];
+	mcz = posmcAFT[2];
+	mc_energy = energymc[1];
+	mc_energy_prev = energymc[0];
 
 	// Initialise with zeros the vectors which will be passed 
 	// to the fitter as arrays 
 	vector<float> charges;  	// final array of hit charges
 	vector<float> times;	// final array of hit times
 	vector<int> cableIDs;	// final array of PMT numbers
-	float *bsvertex = skroot_lowe_.bsvertex;
-	float *bsresult = skroot_lowe_.bsresult;
-	float *bsgood = skroot_lowe_.bsgood;
 
 //	lbfset0(cableIDs,&nqisk); // not needed if we're using vectors
 //	lbfset0(charges,&nqisk);
@@ -322,7 +408,8 @@ bool CombinedFitter::Execute(){
 	// Check if the first trigger is SHE
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
 	int SHE = trigger_bits.test(28);
-	if (SHE) {
+	int OD = trigger_bits.test(3);
+	if (SHE && !OD) {
 		/*************************************************************/
 		// Reconstruct the prompt first
 
@@ -353,14 +440,17 @@ bool CombinedFitter::Execute(){
 		skroot_set_tree(&lun);
 		skroot_fill_tree(&lun);*/
 
-		Log(toolName+"it0sk = "+toString(skheadqb_.it0sk/1.92/1000.),v_debug,verbosity);
+//		Log(toolName+"it0sk = "+toString(skheadqb_.it0sk/1.92/1000.),v_debug,verbosity);
 		
 		// Fill the arrays of hit info which will be passed to fitter
 		// Get the hits stored in the common blocks (skt_/skq_).
 		// These are in-gate hits with bad/missing channels removed.
 		SetPromptHits(charges,times,cableIDs,nhit);
+		// Get the last hit in the SHE event.
+		// This will be used to start the search for an AFT.
 		float endSHE = *max_element(begin(times),end(times));	
-		
+		endSHE = mct_ncapture; // using the mc time for now, to check the fit
+			
 		// Do the single-event BONSAI fit
 		int nsel;
 		float bscharges[nhit];
@@ -373,18 +463,16 @@ bool CombinedFitter::Execute(){
 			int nbf = bonsaifit_(&bsvertex[0],&bsresult[0],&bsgood[0],&nsel,&nhit,&bscableIDs[0],&bstimes[0],&bscharges[0]);
 		}
 
-
 		/*************************************************************/
 		// Now reconstruct the AFT, if there is one
-
-		// Get the raw hits from the tqreal branch
+		// Get the raw hits from the tqreal branch in MC
 		// Create vectors to store the info about all hits
 		// 'raw' in the following means pre-skread i.e. all hits
 		int nhitsRaw = tqreal->nhits;
 		vector<int> cableIDsRaw;
 		vector<float> chargesRaw;
 		vector<float> timesRaw;
-
+		
 		for (int ihit = 0;ihit<nhitsRaw;ihit++){
 
 			// Get the raw values from the tqreal branch
@@ -398,11 +486,15 @@ bool CombinedFitter::Execute(){
 		}
 
 		// Get the hits for the peak number of events in 200 ns
-		int nhits_AFT = 0;
 		vector<int> cableIDsAFT;
 		vector<float> chargesAFT;
-		vector<float> timesAFT;
-		int nhitsAFT = SetAftHits(endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
+		timesAFT.clear();
+
+		int nhitsAFT = SetAftHits(addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
+		Log(toolName+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,verbosity);
+		for (int hit=0;hit<nhitsAFT;hit++){
+			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
+		}
 
 		// Do the single fit
 		float bschargesAFT[nhitsAFT];
@@ -413,20 +505,46 @@ bool CombinedFitter::Execute(){
 		std::copy(cableIDsAFT.begin(),cableIDsAFT.end(),bscableIDsAFT);
 		nsel=0;
 		//TODO write a version of lf_clear_all_ to set these to 9999
-		float bsvertexAFT[4]={9999,9999,9999,9999};
-		float bsresultAFT[6]={9999,9999,9999,9999,9999,9999};
-		float bsgoodAFT[3]={9999,9999,9999};
-		if (nhitsAFT<=NHITCUT) {
+		if (nhitsAFT>SLE_threshold && nhitsAFT<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertexAFT[0],&bsresultAFT[0],&bsgoodAFT[0],&nsel,&nhitsAFT,&bscableIDsAFT[0],&bstimesAFT[0],&bschargesAFT[0]);
 		}
 		
 		/*********************************************************/
 		// Now that we have done the single fit for each of the SHE and AFT,
 		// do the combined fit
-		// TODO
-	
+		goodness* bsgdnSHE = new goodness(bspairlike->sets(),bspairlike->chargebins(),bsgeom,nhit,bscableIDs,bstimes,bscharges);
+		fourhitgrid *bsgridSHE = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bsgdnSHE);
+		goodness *bsgdnAFT = new goodness(bspairlike->sets(),bspairlike->chargebins(),bsgeom,nhitsAFT,bscableIDsAFT,bstimesAFT,bschargesAFT);
+		fourhitgrid *bsgridAFT = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bsgdnAFT);
+		combinedgrid *bspairgrid;
+		bspairgrid = new combinedgrid(bsgeom->cylinder_radius(),
+                             bsgeom->cylinder_height(),
+                             bsgridSHE,bsgridAFT);
+		int nselSHE = bsgdnSHE->nselected();
+		int nselAFT = bsgdnAFT->nselected();
+		bspairlike->set_hits(bsgdnSHE,bsgdnAFT);
+		int useAngle = 1;
+		bspairlike->maximize(bspairfit, bspairgrid,useAngle);
+		x_combined = bspairfit->xfit();
+		y_combined = bspairfit->yfit();
+		z_combined = bspairfit->zfit();
+		float goodn[2];
+		float bspairvertex[4];
+		bspairlike->ntgood(0,bspairvertex,0,goodn[0]);
+        bspairlike->ntgood(1,bspairvertex,0,goodn[1]);
+        tgoodSHE = goodn[1];
+        tgoodAFT = goodn[0];
 	} // SHE
 
+	// Save the 
+	x_prev = bsvertex[0];
+	y_prev = bsvertex[1];
+	z_prev = bsvertex[2];
+	x = bsvertexAFT[0];
+	y = bsvertexAFT[1];
+	z = bsvertexAFT[2];
+	
+	
 	// TODO move the rest of the fitting to loop over both triggers
 
 	// First, we get the atm hit parameters
@@ -721,6 +839,8 @@ bool CombinedFitter::Execute(){
 	//mgr->fill_tree(); // crashing for some reason
 	mgr->Clear(); // zero out structures for next entry ! don't forget !
 
+	outputTree->Fill();
+
 	//prev_t_nsec = t_nsec; // TODO reinstate when time is sorted
 	
 	return true;
@@ -734,11 +854,15 @@ bool CombinedFitter::Finalise()
 
     // terminate bonsai?
 	// plots for sanity check?
-    //TTree* t = skroot_get_tree(&lun);
-	//TH1D *h1 = new TH1D();
-	//t->Draw("sqrt(pow(LOWE.posmc[0]-LOWE.bsvertex[0],2)+pow(LOWE.posmc[1]-LOWE.bsvertex[1],2)+pow(LOWE.posmc[2]-LOWE.bsvertex[2],2))");
-	ht->Draw();
-  	return true;
+    // write the output ntuples to file
+	fout->Write();
+    delete outputTree;
+    fout->Close();
+    delete fout;
+    outputTree = 0;
+    fout = 0;
+   
+	return true;
 }
 
 
@@ -835,7 +959,6 @@ void CombinedFitter::SingleEventFit(vector<float> charges, vector<float> times, 
 	std::copy(cableIDs.begin(),cableIDs.end(),bscableIDs);
 	int nselected=0;
 	int nbf = bonsaifit_(&bsvertex[0],&bsresult[0],&bsgood[0],&nselected,&nhit,&bscableIDs[0],&bstimes[0],&bscharges[0]);
-	printf("bsvertex[0] %f \n",bsvertex[0]);	
 	/*else {
 		goodness *bshits = new goodness(bslike->sets(),bslike->chargebins(),bsgeom,nhit,bscableIDs,bstimes,bscharges);
 		int nsel = bshits->nselected();
@@ -870,18 +993,17 @@ void CombinedFitter::SingleEventFit(vector<float> charges, vector<float> times, 
 
 }
 
-int CombinedFitter::SetAftHits(float endSHE, vector<float> chargesRaw, vector<float> timesRaw, vector<int> cableIDsRaw, int nhitsRaw, vector<float>& chargesAFT, vector<float>& timesAFT, vector<int>& cableIDsAFT)
+int CombinedFitter::SetAftHits(int addNoise, int numPMTs, float darkmc, float endSHE, vector<float> chargesRaw, vector<float> timesRaw, vector<int> cableIDsRaw, int nhitsRaw, vector<float>& chargesAFT, vector<float>& timesAFT, vector<int>& cableIDsAFT)
 {
 	// Remove bad/missing channels and hits that were included in the prompt
-	int nhitsTmp = 0;
 //	vector<float> charges_tmp;
 //	vector<float> times_tmp;
 //	vector<int> cableIDs_tmp;
 	vector<HitInfo> hits_tmp;
-	
+		
 	// Alternative method to access the raw hits
 	// Slightly different to getting from tqreal branch
-	// (a few hits are missing this way)
+	// (a few hits are missing this way - is it doing some of the below work for us?)
 //	vector<float> chargesRawz;
 //	vector<float> timesRawz;
 //	vector<int> cableIDsRawz;
@@ -892,9 +1014,49 @@ int CombinedFitter::SetAftHits(float endSHE, vector<float> chargesRaw, vector<fl
 //		timesRawz.push_back(sktqz_.tiskz[i]);
 //	}
 
+	printf("%d, ",nhitsRaw);
+	if (addNoise){
+		Log(toolName+" Warning, adding dark noise",v_debug,verbosity);
+		TRandom rnd;
+		// Get a random dark rate for this event
+		float darkRate = numPMTs*darkmc;// total expected dark rate in Hz
+		float ndark = rnd.Poisson(darkRate); // dark rate
+		ndark *= 1e-9;
+		Log(toolName+" Dark hits per ns "+toString(ndark),v_debug,verbosity);
+		float tstartNoise = endSHE-1000;
+		float tendNoise = timesRaw[nhitsRaw-1]+1000;
+		float noiseWindow = tendNoise - tstartNoise; // total in the AFT
+		ndark *= noiseWindow;// total 
+		Log(toolName+" Dark rate "+toString(darkRate),v_debug,verbosity);
+		Log(toolName+" Noise window "+toString(noiseWindow),v_debug,verbosity);
+		Log(toolName+" Total dark hits "+toString(ndark),v_debug,verbosity);
+		// loop over randomly generated dark hits and assign random dark
+		// rate where event rate is below dark rate for hits in trigger
+		for (int darkhit = 0; darkhit<ndark; darkhit++){
+			// pick a random cable ID (PMT) and random time
+			int cableDark = (int)(numPMTs*rnd.Rndm())+1;
+			// pick a random time between the end of the SHE (the neutron
+			// capture at the moment, for testing purposes) and the end of
+			// the SHE+AFT trigger window
+			// TODO: It's overkill to generate this much but I'm leaving it 
+			// for now, and will refine it once things are working
+			float timeDark = tstartNoise + (tendNoise-tstartNoise)*rnd.Rndm();
+			// TODO Add an if statement so that the time is within the 
+			// noise window we want?
+			// Randomly generate a cable ID and charge and add the hit to 
+			// our list of raw hits
+			cableIDsRaw.push_back(cableDark);
+			timesRaw.push_back(timeDark);
+			chargesRaw.push_back(abs(rnd.Gaus(1,0.7)));
+			nhitsRaw++;
+		} // end of loop over dark hits
+	} // endif
+	printf(" %d \n",nhitsRaw);
+	
+
 	for (int ihit = 0; ihit<nhitsRaw; ihit++){
-		// ignore hits with no real pmt id
-		if (cableIDsRaw[ihit]<0 || cableIDsRaw[ihit]>=MAXPM)
+		// only inner hits
+		if (cableIDsRaw[ihit]<0 || cableIDsRaw[ihit]>=numPMTs)
 			continue;
 		// ignore hits included in the prompt
 		if (timesRaw[ihit]<=endSHE)
@@ -907,29 +1069,67 @@ int CombinedFitter::SetAftHits(float endSHE, vector<float> chargesRaw, vector<fl
 		//int *missingIDs = ?_.isqmis;
 		bool bad = (find(badIDs.begin(),badIDs.end(),cableIDsRaw[ihit]) != badIDs.end());
 		//bool missing = (find(missingIDs.begin(),missingIDs.end(),cableIDsRaw[ihit]) != missingIDs.end());
-		if (bad)
+		if (bad){
+			Log(toolName+" removing bad channel "+toString(cableIDsRaw[ihit]),v_debug,verbosity);
 			continue; 
+		}
 
 		// save the selected hits into arrays
 		hits_tmp.push_back({chargesRaw[ihit], timesRaw[ihit], cableIDsRaw[ihit]});	
-		nhitsTmp++;
 	}// nhitsRaw
 	
 	// Sort the hits in order of ascending time
 	sort(hits_tmp.begin(),hits_tmp.end(),
 		[](HitInfo const& i, HitInfo const& j) {return i.time < j.time;});
-		
-
+	
 	// TODO Find the 200 ns window with the maximum number of hits (n200Max)
+	int n200max = 0;
+	float t_gate_start = -99999;
+	float t_trigger = -99999;
+	float t_gate_end = -99999;
+	int triggerwindow = 200; //ns
+	int n200;
+	// loop over all of the hits after the prompt event to see if there is 
+	// a SLE trigger
+	int nhitsAFT = hits_tmp.size();
+	for (int istart=0; istart< nhitsAFT-1; istart++){
+		n200=0;
+		int iend = istart+1;
+		while (fabs(hits_tmp[iend].time-hits_tmp[istart].time)<triggerwindow){
+			iend++;
+		}
+		iend--;
+		n200 = iend-istart;
+		if (n200>n200max){
+			n200max = n200;
+			// Set the gate width (1.3 usec gate):
+			// 	 |---------|---------------------------------------------|
+			//-0.3usec  t_trigger                                   +1usec
+			t_gate_start = hits_tmp[istart].time - 200;
+			t_trigger = hits_tmp[istart].time;
+			t_gate_end = hits_tmp[istart].time + 1100;
+		}
+	}
 
-	// TODO Save the hits in the peak 200 ns window
+	// TODO which hits do we want to use????
+	// I think we want just the hits in 1300 ns (1.3 usec gate)
+	// Remove hits outside the 1.3 usec gate
+	hits_tmp.erase(remove_if(begin(hits_tmp),end(hits_tmp),
+		[t_gate_start,t_gate_end](HitInfo const& hit){
+			return (hit.time<t_gate_start || hit.time>t_gate_end);
+		}
+	),hits_tmp.end());
 
-	// No dark noise in the MC so for now we are just going to save the AFT hits
+	// Save the in-gate AFT hits 
+	// TODO there is currently no dark noise in the MC between the prompt and delayed. 
+	// Is there any around the neutron capture??
 	for ( auto ihit : hits_tmp) {
-		Log(toolName+"AFT hit time: "+toString(ihit.time),v_debug,verbosity);
 		cableIDsAFT.push_back(ihit.cableID);
 		chargesAFT.push_back(ihit.charge);
-		timesAFT.push_back(ihit.time);
-	}	
+		timesAFT.push_back(ihit.time-t_gate_start+200); // times offset
+	}
+	Log(toolName+"End of AFT hits for this event",v_debug,verbosity);
+	
+	
 	return(hits_tmp.size());
 }
