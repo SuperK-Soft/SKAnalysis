@@ -72,7 +72,8 @@ class CombinedFitter: public Tool {
 	float x, y, z = 0;
 	float x_prev, y_prev, z_prev = 0;
 	float x_combined, y_combined, z_combined = 0;
-	float tgoodSHE, tgoodAFT = 0;
+	float tgood, tgood_prev = 0;
+	float tgood_combined, tgood_combined_prev = 0;
 	// mc
 	float mcx, mcy, mcz = 0;
 	float mcx_prev, mcy_prev, mcz_prev = 0;

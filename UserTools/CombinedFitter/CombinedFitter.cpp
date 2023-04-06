@@ -105,7 +105,12 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	outputTree->Branch("pdg_prev",&pdg_prev,"pdg_prev/I");
 	outputTree->Branch("mc_energy",&mc_energy,"mc_energy/F");
 	outputTree->Branch("mc_energy_prev",&mc_energy_prev,"mc_energy_prev/F");
-	outputTree->Branch("timesAFT",&timesAFT);
+//	outputTree->Branch("timesAFT",&timesAFT);
+	outputTree->Branch("tgood",&tgood,"tgood/F");
+	outputTree->Branch("tgood_prev",&tgood_prev,"tgood_prev/F");
+	outputTree->Branch("tgood_combined",&tgood_combined,"tgood_combined/F");
+	outputTree->Branch("tgood_combined_prev",&tgood_combined_prev,"tgood_combined_prev/F");
+	
 	// initialize water transparency table
 	// (this will be for energy reconstruction I presume)
 	skrunday_();
@@ -462,6 +467,7 @@ bool CombinedFitter::Execute(){
 		if (nhit<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertex[0],&bsresult[0],&bsgood[0],&nsel,&nhit,&bscableIDs[0],&bstimes[0],&bscharges[0]);
 		}
+		tgood_prev = bsgood[1];
 
 		/*************************************************************/
 		// Now reconstruct the AFT, if there is one
@@ -508,7 +514,7 @@ bool CombinedFitter::Execute(){
 		if (nhitsAFT>SLE_threshold && nhitsAFT<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertexAFT[0],&bsresultAFT[0],&bsgoodAFT[0],&nsel,&nhitsAFT,&bscableIDsAFT[0],&bstimesAFT[0],&bschargesAFT[0]);
 		}
-		
+		tgood = bsgood[1];
 		/*********************************************************/
 		// Now that we have done the single fit for each of the SHE and AFT,
 		// do the combined fit
@@ -531,9 +537,9 @@ bool CombinedFitter::Execute(){
 		float goodn[2];
 		float bspairvertex[4];
 		bspairlike->ntgood(0,bspairvertex,0,goodn[0]);
-        bspairlike->ntgood(1,bspairvertex,0,goodn[1]);
-        tgoodSHE = goodn[1];
-        tgoodAFT = goodn[0];
+		bspairlike->ntgood(1,bspairvertex,0,goodn[1]);
+		tgood_combined = goodn[1];
+		tgood_combined_prev = goodn[0];
 	} // SHE
 
 	// Save the 
