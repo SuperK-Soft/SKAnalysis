@@ -241,6 +241,7 @@ bool CombinedFitter::Execute(){
 	float bsvertexAFT[4];
 	float bsresultAFT[6];
 	float bsgoodAFT[3];
+	float bsvertexCombined[3];
 	float *bsvertex = skroot_lowe_.bsvertex;
 	float *bsresult = skroot_lowe_.bsresult;
 	float *bsgood = skroot_lowe_.bsgood;
@@ -254,6 +255,7 @@ bool CombinedFitter::Execute(){
 	for (int i=0;i<3;i++){ 
 		bsgoodAFT[i]=9999;
 		posmcAFT[i] = 9999;
+		bsvertexCombined[i]=9999;
 	}
 	// clear variables to be saved to the ntuples
 	x, y, z = 9999;
@@ -466,7 +468,7 @@ bool CombinedFitter::Execute(){
 		std::copy(charges.begin(),charges.end(),bscharges);
 		std::copy(times.begin(),times.end(),bstimes);
 		std::copy(cableIDs.begin(),cableIDs.end(),bscableIDs);
-		if (nhit<=NHITCUT) {
+		if (nhit>9 && nhit<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertex[0],&bsresult[0],&bsgood[0],&nsel,&nhit,&bscableIDs[0],&bstimes[0],&bscharges[0]);
 		}
 		tgood_prev = bsgood[1];
@@ -498,7 +500,7 @@ bool CombinedFitter::Execute(){
 		vector<float> chargesAFT;
 		timesAFT.clear();
 
-		int nhitsAFT = SetAftHits(addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
+		int nhitsAFT = SetAftHits(SLE_threshold,addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
 		Log(toolName+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,verbosity);
 		for (int hit=0;hit<nhitsAFT;hit++){
 			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
@@ -513,7 +515,7 @@ bool CombinedFitter::Execute(){
 		std::copy(cableIDsAFT.begin(),cableIDsAFT.end(),bscableIDsAFT);
 		nsel=0;
 		//TODO write a version of lf_clear_all_ to set these to 9999
-		if (nhitsAFT>SLE_threshold && nhitsAFT<=NHITCUT) {
+		if (nhitsAFT>9 && nhitsAFT<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertexAFT[0],&bsresultAFT[0],&bsgoodAFT[0],&nsel,&nhitsAFT,&bscableIDsAFT[0],&bstimesAFT[0],&bschargesAFT[0]);
 			tgood = bsgood[1];
 			
@@ -533,9 +535,9 @@ bool CombinedFitter::Execute(){
 			bspairlike->set_hits(bsgdnSHE,bsgdnAFT);
 			int useAngle = 1;
 			bspairlike->maximize(bspairfit, bspairgrid,useAngle);
-			x_combined = bspairfit->xfit();
-			y_combined = bspairfit->yfit();
-			z_combined = bspairfit->zfit();
+			bsvertexCombined[0] = bspairfit->xfit();
+			bsvertexCombined[1] = bspairfit->yfit();
+			bsvertexCombined[2] = bspairfit->zfit();
 			float goodn[2];
 			float bspairvertex[4];
 			bspairlike->ntgood(0,bspairvertex,0,goodn[0]);
@@ -552,7 +554,11 @@ bool CombinedFitter::Execute(){
 	x = bsvertexAFT[0];
 	y = bsvertexAFT[1];
 	z = bsvertexAFT[2];
+	x_combined = bsvertexCombined[0];
+	y_combined = bsvertexCombined[1];
+	z_combined = bsvertexCombined[2];
 	
+	outputTree->Fill();
 	
 	// TODO move the rest of the fitting to loop over both triggers
 
@@ -848,7 +854,6 @@ bool CombinedFitter::Execute(){
 	//mgr->fill_tree(); // crashing for some reason
 	mgr->Clear(); // zero out structures for next entry ! don't forget !
 
-	outputTree->Fill();
 
 	//prev_t_nsec = t_nsec; // TODO reinstate when time is sorted
 	
@@ -1002,7 +1007,7 @@ void CombinedFitter::SingleEventFit(vector<float> charges, vector<float> times, 
 
 }
 
-int CombinedFitter::SetAftHits(int addNoise, int numPMTs, float darkmc, float endSHE, vector<float> chargesRaw, vector<float> timesRaw, vector<int> cableIDsRaw, int nhitsRaw, vector<float>& chargesAFT, vector<float>& timesAFT, vector<int>& cableIDsAFT)
+int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, float darkmc, float endSHE, vector<float> chargesRaw, vector<float> timesRaw, vector<int> cableIDsRaw, int nhitsRaw, vector<float>& chargesAFT, vector<float>& timesAFT, vector<int>& cableIDsAFT)
 {
 	// Remove bad/missing channels and hits that were included in the prompt
 //	vector<float> charges_tmp;
@@ -1023,7 +1028,6 @@ int CombinedFitter::SetAftHits(int addNoise, int numPMTs, float darkmc, float en
 //		timesRawz.push_back(sktqz_.tiskz[i]);
 //	}
 
-	printf("%d, ",nhitsRaw);
 	if (addNoise){
 		Log(toolName+" Warning, adding dark noise",v_debug,verbosity);
 		TRandom rnd;
@@ -1060,7 +1064,6 @@ int CombinedFitter::SetAftHits(int addNoise, int numPMTs, float darkmc, float en
 			nhitsRaw++;
 		} // end of loop over dark hits
 	} // endif
-	printf(" %d \n",nhitsRaw);
 	
 
 	for (int ihit = 0; ihit<nhitsRaw; ihit++){
@@ -1119,6 +1122,8 @@ int CombinedFitter::SetAftHits(int addNoise, int numPMTs, float darkmc, float en
 			t_gate_end = hits_tmp[istart].time + 1100;
 		}
 	}
+	
+	if (n200max<SLE_threshold) return(0);
 
 	// TODO which hits do we want to use????
 	// I think we want just the hits in 1300 ns (1.3 usec gate)
