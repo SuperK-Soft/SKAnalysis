@@ -422,7 +422,7 @@ bool CombinedFitter::Execute(){
 		// We shouldn't have explicitly get the SHE but may need it for timing
 		// in data so leaving it here for now commented out. Seems to change
 		// the hits so care must be taken if reinstating.
-		
+		// /////////////////////////////////////////////////
 		/*int in_gate_only = 0;
 		int hw_ctr = 0; // time of hw trigger (also SHE in MC) 
 		int max_trig = 500;
@@ -445,8 +445,9 @@ bool CombinedFitter::Execute(){
 		skread(-lun,*1003,*1003,*1003,*1003)
 		skroot_set_tree(&lun);
 		skroot_fill_tree(&lun);*/
-
 //		Log(toolName+"it0sk = "+toString(skheadqb_.it0sk/1.92/1000.),v_debug,verbosity);
+		// /////////////////////////////////////////////////////
+
 		
 		// Fill the arrays of hit info which will be passed to fitter
 		// Get the hits stored in the common blocks (skt_/skq_).
@@ -514,36 +515,37 @@ bool CombinedFitter::Execute(){
 		//TODO write a version of lf_clear_all_ to set these to 9999
 		if (nhitsAFT>SLE_threshold && nhitsAFT<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertexAFT[0],&bsresultAFT[0],&bsgoodAFT[0],&nsel,&nhitsAFT,&bscableIDsAFT[0],&bstimesAFT[0],&bschargesAFT[0]);
+			tgood = bsgood[1];
+			
+			/*********************************************************/
+			// Now that we have done the single fit for each of the SHE and AFT,
+			// do the combined fit
+			goodness* bsgdnSHE = new goodness(bspairlike->sets(),bspairlike->chargebins(),bsgeom,nhit,bscableIDs,bstimes,bscharges);
+			fourhitgrid *bsgridSHE = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bsgdnSHE);
+			goodness *bsgdnAFT = new goodness(bspairlike->sets(),bspairlike->chargebins(),bsgeom,nhitsAFT,bscableIDsAFT,bstimesAFT,bschargesAFT);
+			fourhitgrid *bsgridAFT = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bsgdnAFT);
+			combinedgrid *bspairgrid;
+			bspairgrid = new combinedgrid(bsgeom->cylinder_radius(),
+								 bsgeom->cylinder_height(),
+								 bsgridSHE,bsgridAFT);
+			int nselSHE = bsgdnSHE->nselected();
+			int nselAFT = bsgdnAFT->nselected();
+			bspairlike->set_hits(bsgdnSHE,bsgdnAFT);
+			int useAngle = 1;
+			bspairlike->maximize(bspairfit, bspairgrid,useAngle);
+			x_combined = bspairfit->xfit();
+			y_combined = bspairfit->yfit();
+			z_combined = bspairfit->zfit();
+			float goodn[2];
+			float bspairvertex[4];
+			bspairlike->ntgood(0,bspairvertex,0,goodn[0]);
+			bspairlike->ntgood(1,bspairvertex,0,goodn[1]);
+			tgood_combined = goodn[1];
+			tgood_combined_prev = goodn[0];
 		}
-		tgood = bsgood[1];
-		/*********************************************************/
-		// Now that we have done the single fit for each of the SHE and AFT,
-		// do the combined fit
-		goodness* bsgdnSHE = new goodness(bspairlike->sets(),bspairlike->chargebins(),bsgeom,nhit,bscableIDs,bstimes,bscharges);
-		fourhitgrid *bsgridSHE = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bsgdnSHE);
-		goodness *bsgdnAFT = new goodness(bspairlike->sets(),bspairlike->chargebins(),bsgeom,nhitsAFT,bscableIDsAFT,bstimesAFT,bschargesAFT);
-		fourhitgrid *bsgridAFT = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bsgdnAFT);
-		combinedgrid *bspairgrid;
-		bspairgrid = new combinedgrid(bsgeom->cylinder_radius(),
-                             bsgeom->cylinder_height(),
-                             bsgridSHE,bsgridAFT);
-		int nselSHE = bsgdnSHE->nselected();
-		int nselAFT = bsgdnAFT->nselected();
-		bspairlike->set_hits(bsgdnSHE,bsgdnAFT);
-		int useAngle = 1;
-		bspairlike->maximize(bspairfit, bspairgrid,useAngle);
-		x_combined = bspairfit->xfit();
-		y_combined = bspairfit->yfit();
-		z_combined = bspairfit->zfit();
-		float goodn[2];
-		float bspairvertex[4];
-		bspairlike->ntgood(0,bspairvertex,0,goodn[0]);
-		bspairlike->ntgood(1,bspairvertex,0,goodn[1]);
-		tgood_combined = goodn[1];
-		tgood_combined_prev = goodn[0];
 	} // SHE
 
-	// Save the 
+	// Save the results of the fit
 	x_prev = bsvertex[0];
 	y_prev = bsvertex[1];
 	z_prev = bsvertex[2];
