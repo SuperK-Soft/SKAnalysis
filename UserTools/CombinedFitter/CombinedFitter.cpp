@@ -258,6 +258,7 @@ bool CombinedFitter::Execute(){
 	// clear variables to be saved to the ntuples
 	x, y, z = 9999;
 	x_prev, y_prev, z_prev = 9999;
+	x_combined, y_combined, z_combined = 9999;
 	mcx, mcy, mcz = 9999;
 	mcx_prev, mcy_prev, mcz_prev = 9999;
 	pdg, pdg_prev = 9999;
