@@ -46,7 +46,7 @@ class CombinedFitter: public Tool {
 	// tool functions
 	// Functions to get the prompt and delayed hits
 	void SetPromptHits(std::vector<float>& charges, std::vector<float>& times, std::vector<int>& cableIDs, int &nhit);
-	int SetAftHits(int AddNoise, int numPMTs, float darkmc, float lastSHE, std::vector<float> chargesRaw, std::vector<float> timesRaw, std::vector<int> cableIDsRaw, int nhitsRaw, std::vector<float>& charges_AFT, std::vector<float>& times_AFT, std::vector<int>& cableIDs_AFT);
+	int SetAftHits(int SLE_threshold, int AddNoise, int numPMTs, float darkmc, float lastSHE, std::vector<float> chargesRaw, std::vector<float> timesRaw, std::vector<int> cableIDsRaw, int nhitsRaw, std::vector<float>& charges_AFT, std::vector<float>& times_AFT, std::vector<int>& cableIDs_AFT);
 
 	// Fitting functions
 	void lbfset0(void *dat, int *numdat); // Resets the fitting variables
