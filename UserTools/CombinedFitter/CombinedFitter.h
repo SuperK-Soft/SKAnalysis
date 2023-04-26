@@ -81,7 +81,7 @@ class CombinedFitter: public Tool {
 	float mcx_ncapture, mcy_ncapture, mcz_ncapture = 0;
 	float mc_energy, mc_energy_prev = 0;	
 	float mct_ncapture=0;
-	std::vector<float> timesAFT;
+	int nhitsAFT_raw=0;
 
 	// variables to use in the tool
 	struct HitInfo

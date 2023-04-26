@@ -105,7 +105,7 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	outputTree->Branch("pdg_prev",&pdg_prev,"pdg_prev/I");
 	outputTree->Branch("mc_energy",&mc_energy,"mc_energy/F");
 	outputTree->Branch("mc_energy_prev",&mc_energy_prev,"mc_energy_prev/F");
-//	outputTree->Branch("timesAFT",&timesAFT);
+	outputTree->Branch("nhitsAFT_raw",&nhitsAFT_raw,"nhitsAFT_raw");
 	outputTree->Branch("tgood",&tgood,"tgood/F");
 	outputTree->Branch("tgood_prev",&tgood_prev,"tgood_prev/F");
 	outputTree->Branch("tgood_combined",&tgood_combined,"tgood_combined/F");
@@ -203,7 +203,7 @@ bool CombinedFitter::Execute(){
 		// TODO sort this out for later geometries
 		int sk_geometry = skheadg_.sk_geometry;
 		if (sk_geometry>=4) darkmc = mc->darkds*0.7880; //(1/1.269)
-		if (darkmc==0) darkmc = 7500;
+		if (darkmc==0) darkmc = 5000;
 	}
 
 	// Start by clearing all variables
@@ -478,34 +478,41 @@ bool CombinedFitter::Execute(){
 		// Get the raw hits from the tqreal branch in MC
 		// Create vectors to store the info about all hits
 		// 'raw' in the following means pre-skread i.e. all hits
-		int nhitsRaw = tqreal->nhits;
+		int nhitsAll = tqreal->nhits;
 		vector<int> cableIDsRaw;
 		vector<float> chargesRaw;
 		vector<float> timesRaw;
-		
-		for (int ihit = 0;ihit<nhitsRaw;ihit++){
+		int nhitsRaw = 0;
+
+		for (int ihit = 0;ihit<nhitsAll;ihit++){
 
 			// Get the raw values from the tqreal branch
 			// NB these are raw in the sense that they are for all 
 			// of the hits, although in data some pre-processing
 			// has been done by this stage e.g. to convert charge
 			// to pe.(by skrawread)
-			chargesRaw.push_back(tqreal->Q[ihit]);
-			cableIDsRaw.push_back(tqreal->cables[ihit] & ( (1<<16)-1));//cable ID (i.e. PMT number) is stored in 1st 16 bits
-			timesRaw.push_back(tqreal->T[ihit]);
+			if (tqreal->T[ihit] >= endSHE){
+				chargesRaw.push_back(tqreal->Q[ihit]);
+				cableIDsRaw.push_back(tqreal->cables[ihit] & ( (1<<16)-1));//cable ID (i.e. PMT number) is stored in 1st 16 bits
+				timesRaw.push_back(tqreal->T[ihit]);
+				nhitsRaw++;
+			}
 		}
-
+		nhitsAFT_raw = timesRaw.size();
+		Log(toolName+": number of hits in the AFT before dark rate - "+toString(timesRaw.size()),v_debug,verbosity);
 		// Get the hits for the peak number of events in 200 ns
 		vector<int> cableIDsAFT;
 		vector<float> chargesAFT;
-		timesAFT.clear();
-
-		int nhitsAFT = SetAftHits(SLE_threshold,addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
+		vector<float> timesAFT;
+		int nhitsAFT = 0;
+		if (nhitsRaw>SLE_threshold){
+			nhitsAFT = SetAftHits(SLE_threshold,addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
+		}
 		Log(toolName+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,verbosity);
 		for (int hit=0;hit<nhitsAFT;hit++){
 			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
 		}
-
+		
 		// Do the single fit
 		float bschargesAFT[nhitsAFT];
 		float bstimesAFT[nhitsAFT];
@@ -1027,7 +1034,42 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 //		chargesRawz.push_back(sktqz_.qiskz[i]);
 //		timesRawz.push_back(sktqz_.tiskz[i]);
 //	}
+	
+	// Create a vector of IDs for removing bad channels
+	vector<int> badIDs;
+	for (int ibadch=0; ibadch< combad_.nbad; ibadch++){
+		badIDs.push_back(combad_.isqbad[ibadch]);
+	}
 
+	// Loop over all raw hits after the SHE and remove OD hits, bad channels, etc
+	for (int ihit = 0; ihit<nhitsRaw; ihit++){
+		// only inner hits
+		if (cableIDsRaw[ihit]<0 || cableIDsRaw[ihit]>=numPMTs)
+			continue;
+		// ignore hits included in the prompt
+		if (timesRaw[ihit]<=endSHE)
+			continue;
+		
+		// Remove bad channels TODO missing channels
+		bool bad = (find(badIDs.begin(),badIDs.end(),cableIDsRaw[ihit]) != badIDs.end());
+		if (bad){
+			Log(toolName+" removing bad channel "+toString(cableIDsRaw[ihit]),v_debug,verbosity);
+			continue; 
+		}
+		
+		// TODO remove missing channels
+		//int *missingIDs = ?_.isqmis;
+		//bool missing = (find(missingIDs.begin(),missingIDs.end(),cableIDsRaw[ihit]) != missingIDs.end());
+		
+		// save the selected hits into arrays
+		hits_tmp.push_back({chargesRaw[ihit], timesRaw[ihit], cableIDsRaw[ihit]});	
+		
+	}// nhitsRaw
+	
+	// Sort the hits in order of ascending time
+	sort(hits_tmp.begin(),hits_tmp.end(),
+		[](HitInfo const& i, HitInfo const& j) {return i.time < j.time;});
+	
 	if (addNoise){
 		Log(toolName+" Warning, adding dark noise",v_debug,verbosity);
 		TRandom rnd;
@@ -1036,8 +1078,8 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 		float ndark = rnd.Poisson(darkRate); // dark rate
 		ndark *= 1e-9;
 		Log(toolName+" Dark hits per ns "+toString(ndark),v_debug,verbosity);
-		float tstartNoise = endSHE-1000;
-		float tendNoise = timesRaw[nhitsRaw-1]+1000;
+		float tstartNoise = hits_tmp[0].time-1000;
+		float tendNoise = hits_tmp.back().time+1000;
 		float noiseWindow = tendNoise - tstartNoise; // total in the AFT
 		ndark *= noiseWindow;// total 
 		Log(toolName+" Dark rate "+toString(darkRate),v_debug,verbosity);
@@ -1046,55 +1088,35 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 		// loop over randomly generated dark hits and assign random dark
 		// rate where event rate is below dark rate for hits in trigger
 		for (int darkhit = 0; darkhit<ndark; darkhit++){
+			
 			// pick a random cable ID (PMT) and random time
 			int cableDark = (int)(numPMTs*rnd.Rndm())+1;
-			// pick a random time between the end of the SHE (the neutron
-			// capture at the moment, for testing purposes) and the end of
-			// the SHE+AFT trigger window
-			// TODO: It's overkill to generate this much but I'm leaving it 
-			// for now, and will refine it once things are working
-			float timeDark = tstartNoise + (tendNoise-tstartNoise)*rnd.Rndm();
-			// TODO Add an if statement so that the time is within the 
-			// noise window we want?
+			bool bad = (find(badIDs.begin(),badIDs.end(),cableDark) != badIDs.end());
+			// Remove bad channels and hits not in the inner detector
+			if (bad) 
+				continue;
+			if (cableDark<0 || cableDark>=numPMTs)
+				continue;
+			// TODO remove missing channels
+			
+			// pick a random time between the end of the SHE - 1000 ns (the neutron
+			// capture at the moment, for testing purposes) and 1000 ns after 
+			// the last neutron-capture hit
+			float timeDark = tstartNoise + noiseWindow*rnd.Rndm();
+			
 			// Randomly generate a cable ID and charge and add the hit to 
 			// our list of raw hits
-			cableIDsRaw.push_back(cableDark);
-			timesRaw.push_back(timeDark);
-			chargesRaw.push_back(abs(rnd.Gaus(1,0.7)));
+			hits_tmp.push_back({abs(rnd.Gaus(1,0.7)), timeDark, cableDark});
 			nhitsRaw++;
 		} // end of loop over dark hits
+
+		// Re-sort the hits in order of ascending time
+		sort(hits_tmp.begin(),hits_tmp.end(),
+			[](HitInfo const& i, HitInfo const& j) {return i.time < j.time;});
 	} // endif
 	
-
-	for (int ihit = 0; ihit<nhitsRaw; ihit++){
-		// only inner hits
-		if (cableIDsRaw[ihit]<0 || cableIDsRaw[ihit]>=numPMTs)
-			continue;
-		// ignore hits included in the prompt
-		if (timesRaw[ihit]<=endSHE)
-			continue;
-		// Remove bad channels TODO missing channels
-		vector<int> badIDs;
-		for (int ibadch=0; ibadch< combad_.nbad; ibadch++){
-			badIDs.push_back(combad_.isqbad[ibadch]);
-		}
-		//int *missingIDs = ?_.isqmis;
-		bool bad = (find(badIDs.begin(),badIDs.end(),cableIDsRaw[ihit]) != badIDs.end());
-		//bool missing = (find(missingIDs.begin(),missingIDs.end(),cableIDsRaw[ihit]) != missingIDs.end());
-		if (bad){
-			Log(toolName+" removing bad channel "+toString(cableIDsRaw[ihit]),v_debug,verbosity);
-			continue; 
-		}
-
-		// save the selected hits into arrays
-		hits_tmp.push_back({chargesRaw[ihit], timesRaw[ihit], cableIDsRaw[ihit]});	
-	}// nhitsRaw
 	
-	// Sort the hits in order of ascending time
-	sort(hits_tmp.begin(),hits_tmp.end(),
-		[](HitInfo const& i, HitInfo const& j) {return i.time < j.time;});
-	
-	// TODO Find the 200 ns window with the maximum number of hits (n200Max)
+	// Find the 200 ns window with the maximum number of hits (n200Max)
 	int n200max = 0;
 	float t_gate_start = -99999;
 	float t_trigger = -99999;
@@ -1117,12 +1139,18 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 			// Set the gate width (1.3 usec gate):
 			// 	 |---------|---------------------------------------------|
 			//-0.3usec  t_trigger                                   +1usec
-			t_gate_start = hits_tmp[istart].time - 200;
+			t_gate_start = hits_tmp[istart].time - 300;
 			t_trigger = hits_tmp[istart].time;
-			t_gate_end = hits_tmp[istart].time + 1100;
+			t_gate_end = hits_tmp[istart].time + 1000;
 		}
 	}
-	
+
+	// Just using the neutron-capture time to get the trigger time for now.
+	t_gate_start = endSHE-100;
+	t_gate_end = endSHE+1200;
+	n200max = hits_tmp.size();
+
+	SLE_threshold = 22;
 	if (n200max<SLE_threshold) return(0);
 
 	// TODO which hits do we want to use????
@@ -1140,7 +1168,7 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 	for ( auto ihit : hits_tmp) {
 		cableIDsAFT.push_back(ihit.cableID);
 		chargesAFT.push_back(ihit.charge);
-		timesAFT.push_back(ihit.time-t_gate_start+200); // times offset
+		timesAFT.push_back(ihit.time-t_gate_start+100); // times offset
 	}
 	Log(toolName+"End of AFT hits for this event",v_debug,verbosity);
 	
