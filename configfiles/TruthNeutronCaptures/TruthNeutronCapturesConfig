@@ -1,8 +1,9 @@
 # vim: filetype=Makefile #
 # FindNeutronCaptures config file
-verbosity 10
+verbosity 100
 drawPlots 0    # whether to show root plots during execution
 treeReaderName demoReader
+
 #inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsim_r77957.viazbs.root
 #outputFile plotNeutronsTest.root
 #inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsimgd_sk4gdcard.root
@@ -53,8 +54,10 @@ treeReaderName demoReader
 
 #########
 ## SKG4, Gd water, via SecondaryInfo old arrays (TruthNeutronCaptures_v3 tool)
-inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root
-outputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident_truens_v4.root
+#inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root
+#outputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident_truens_v4.root
+
+outputFile $HOME/SKG4/outputs/10_ngun_events_1_16MeV_truens_v3.root
 
 maxEvents -1
 writeFrequency 10

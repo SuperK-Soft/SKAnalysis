@@ -1,3 +1,3 @@
 tool_verbosity 1
 mva_method_name MLP
-weight_file_path ../NTag/weights/MLP_Gd0.011p_calibration.xml
+weight_file_path ../old_NTag/weights/MLP_Gd0.011p_calibration.xml

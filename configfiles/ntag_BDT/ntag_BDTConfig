@@ -1,11 +1,14 @@
-verbosity 10
+verbosity 1
 treeReaderName bdtReader
 writeFrequency 1000     # intermittently write to output file every 1000 events, in case of crash
 n10_threshold 6         # precut: num hits in 10ns
 NLOWINDEX 0             # unused; which Nlow branch to propagate
 #BDT_model /HOME/relic_sk4_ana/relic_work_dir/data_reduc/neutron_tagging/src/sk4_full_1500.joblib
+#BDT_model /host/SK_shared/bdt22_skg4_0.013_10M.joblib
 BDT_model /home/mattnich/disk3stor/mc/bdt22_skg4_0.013_10M.joblib
 #outfile bdtOut.root
 #outfile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_bdt.root
 #outfile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_bdt.root
+#outfile bdtOut_atmnu_2500_04.root
+#outfile bdtOut_SKG4_ngun.root
 outfile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_added_bdt.root

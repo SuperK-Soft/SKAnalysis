@@ -1,1 +1,2 @@
-/disk02/data7/sk5/run/0800/080008/rfm_run080008.000008.root
+#/disk02/data7/sk5/run/0800/080008/rfm_run080008.000008.root
+/HOME/rfm_run080008.000008.root

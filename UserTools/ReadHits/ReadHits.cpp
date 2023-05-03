@@ -16,8 +16,8 @@ bool ReadHits::Execute()
 {
     m_data->eventVariables.Set("nevsk", skhead_.nevsk);
     
-    prevEvTrigType = currentEvTrigType;
     SetTriggerType();
+    prevEvTrigType = currentEvTrigType;  // this isn't used for anything other than debug print
     
     PMTHitCluster* eventHits = &(m_data->eventPMTHits);
     Log("Clear event hits");
@@ -73,8 +73,9 @@ bool ReadHits::Execute()
         if(!coincidenceFound){
             Log("Error! ReadHits could not find a coincident hit between SHE and following AFT events! "
                 "Skipping the addition of AFT hits!",0,1);
-            prevEvTrigType = currentEvTrigType;  // make sure this gets set before we bail
-            return false;
+            // return false;
+            // seems like simple skdetsim MC does not provide such overlap??
+            tOffset = 0; /// ???? assume a global MC timing in this case???
         } else {
             //Log("Before appending hits");
             //eventHits->DumpAllElements();

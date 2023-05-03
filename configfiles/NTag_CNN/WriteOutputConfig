@@ -1,4 +1,5 @@
 tool_verbosity 1
 #output_file_path NTag_SKG4_ngun.root
-output_file_path NTag_skdetsimgd_r77597.root
+output_file_path NTag_atmnu_mc.root
+#output_file_path NTag_skdetsimgd_r77597.root
 output_mode recreate

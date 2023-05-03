@@ -32,6 +32,8 @@ bool TruthNeutronCaptures_v3::Initialise(std::string configfile, DataModel &data
 	m_variables.Get("outputFile",outputFile);          // output file to write
 	m_variables.Get("maxEvents",MAX_EVENTS);           // terminate after processing at most this many events
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY); // how many events to TTree::Fill between TTree::Writes
+	std::string treeReaderName;
+	m_variables.Get("treeReaderName",treeReaderName);  // reader name for input data
 	
 	// get the list of input files from the CStore
 	// -------------------------------------------
@@ -47,10 +49,11 @@ bool TruthNeutronCaptures_v3::Initialise(std::string configfile, DataModel &data
 	
 	// open the input TFile and TTree
 	// ------------------------------
-	get_ok = myTreeReader.Load(inputFile, "data"); // official ntuple TTree is descriptively known as 'h1'
-	DisableUnusedBranches();
-	entry_number = 0;
-	if(get_ok) ReadEntryNtuple(entry_number);
+	if(m_data->Trees.count(treeReaderName)==0){
+		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",0,0);
+		return false;
+	}
+	myTreeReader = m_data->Trees.at(treeReaderName);
 	
 	// create the output TFile and TTree
 	// ---------------------------------
@@ -141,7 +144,7 @@ void TruthNeutronCaptures_v3::CopyVariables(){
 	// ---------------------------------------
 	// those we want to keep in the output tree without modification
 	
-	out_filename = myTreeReader.GetTree()->GetCurrentFile()->GetName();
+	out_filename = myTreeReader->GetTree()->GetCurrentFile()->GetName();
 	out_skdetsim_version =  -1;
 	out_tba_table_version = -1;
 	out_water_transparency = water_transparency;
@@ -231,6 +234,16 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 	}
 	Log(toolName+" found "+toString(out_neutron_start_energy.size())+" primary neutrons", v_debug,verbosity);
 	
+// FIXME is this actually using 0-based indexing, or is it just not storing the result and defaulting to 0?
+int min_par = *std::min_element(parent_index.begin(), parent_index.end());
+if(min_par==0){
+	int secondary_i = std::distance(parent_index.begin(),std::min_element(parent_index.begin(), parent_index.end()));
+	std::cerr<<"SKG4 SECONDARY branch is using c++ style indexing in parent indices!!"<<std::endl;
+	std::cout<<"secondary "<<secondary_i<<" has parent index 0. It is a particle of type "
+		     <<secondary_PDG_code_2.at(secondary_i)<<" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))<<")"
+		     <<"created in process "<<secondary_gen_process.at(secondary_i)<<std::endl;
+}
+	
 	// ===========================
 	// SCAN FOR SECONDARY NEUTRONS
 	// ===========================
@@ -264,7 +277,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// can we use 'secondary_first_daugher_index' to quickly check for/grab
 			// the daughter and check its creation process to determine this neutron's
 			// termination process?
-			neutron_parent_indices.push_back(parent_index.at(secondary_i)-1);
+			// XXX it seems as though the SKG4 port does not retain Fortran-style (1-based) indexing
+			neutron_parent_indices.push_back(parent_index.at(secondary_i)/*-1*/);
 			
 			// termination information isn't saved, so we'll have to use the creation
 			// info of a matched secondary gamma to infer neutron termination information
@@ -283,8 +297,36 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			out_nuclide_daughter_pdg.push_back(-1);
 			out_nuclide_parent_pdg.push_back(-1);
 		}
+
+		else if(secondary_gen_process.at(secondary_i)==18 &&
+			    secondary_PDG_code_2.at(secondary_i)!=11  &&
+			    secondary_PDG_code_2.at(secondary_i)!=22 ){
+			std::cout<<"Found non-gamma non-electron product from ncapture!"<<std::endl;
+			std::cout<<"PDG: "+toString(secondary_PDG_code_2.at(secondary_i))
+					 <<" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))+") "
+					 <<" created at ("<<secondary_start_vertex_2.at(secondary_i).at(0)
+					 <<", "<<secondary_start_vertex_2.at(secondary_i).at(1)
+					 <<", "<<secondary_start_vertex_2.at(secondary_i).at(2)
+					 <<", "<<secondary_start_time_2.at(secondary_i)<<")"
+					 <<", terminated at (";
+			// ah, but to get termination info we need to find a daughter from its termination process aughh
+			auto it = std::find(parent_index.begin(),parent_index.end(),secondary_i);
+			if(it!=parent_index.end()){
+				int daughter_index = std::distance(parent_index.begin(),it);
+				std::cout<<secondary_start_vertex_2.at(daughter_index).at(0)
+				         <<", "<<secondary_start_vertex_2.at(daughter_index).at(1)
+				         <<", "<<secondary_start_vertex_2.at(daughter_index).at(2)
+				         <<", "<<secondary_start_time_2.at(daughter_index)<<")";
+			} else {
+				std::cout<<"?,?,?,?)";
+			}
+			std::cout<<std::endl;
+		}
+
 	}
 	Log(toolName+" found "+toString(out_neutron_start_energy.size())+" primary+secondary neutrons", v_debug,verbosity);
+	
+	DumpMCInfo();
 	
 	// ==================================
 	// SCAN FOR GAMMAS AND CAPTURE NUCLEI
@@ -399,7 +441,7 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					TVector3 parent_neutron_start_mom(parent_init_mom.at(secondary_i).at(0),
 													  parent_init_mom.at(secondary_i).at(1),
 													  parent_init_mom.at(secondary_i).at(2));
-					double nStartE = parent_neutron_start_mom.Mag2() / (2.*neutron_mass);
+					double nStartE = sqrt(parent_neutron_start_mom.Mag2() + pow(neutron_mass,2.)) - neutron_mass;
 					if(nStartE!=out_neutron_start_energy.at(neutron_parent_loc)){
 						std::cout<<"WARNING, NEUTRON START ENERGY FROM PARENT AT BIRTH ("<<nStartE
 								 <<") DIFFERS FROM NEUTRON START ENERGY FROM NEUTRON ITSELF ("
@@ -545,8 +587,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// but came from neutron capture it's the daughter nuclide
 			// its parent will also be the captured neutron, same as the decay gamma.
 			int neutron_parent_loc=-1;
-			// XXX HACK: for now it seems as though primary indices (iprntidx) are not stored,
-			// but secondary indices (iprnttrk) actually hold index of the primary parent...
+			// XXX HACK: for now it seems as though primary indices (iprnttrk) are not stored,
+			// but secondary indices (iprntidx) actually hold index of the primary parent...
 			// this seems broken??? XXX CRAP WORKAROUND SWAP 0 INDEX?
 			int primary_parent_index = 0; // parent_trackid.at(secondary_i); - not saved, presume 0
 			int secondary_parent_index = parent_index.at(secondary_i);
@@ -613,12 +655,19 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 	return 1;
 }
 
+// for comparison of our results with those extracted by the ReadMCInfo Tool.
+int TruthNeutronCaptures_v3::DumpMCInfo(){
+	m_data->eventPrimaries.DumpAllElements();
+	m_data->eventSecondaries.DumpAllElements();
+	return 0;
+}
+
 int TruthNeutronCaptures_v3::ReadEntryNtuple(long entry_number){
-	int bytesread = myTreeReader.GetEntry(entry_number);
+	int bytesread = myTreeReader->GetEntry(entry_number);
 	if(bytesread<=0) return bytesread;
 	
-	int success = (myTreeReader.GetBranchValue("SECONDARY",sec_info)) &&
-				  (myTreeReader.GetBranchValue("MC",mc_info));
+	int success = (myTreeReader->GetBranchValue("SECONDARY",sec_info)) &&
+				  (myTreeReader->GetBranchValue("MC",mc_info));
 	
 	// Print method should have been const-qualified. Hack around it.
 	//MCInfo* mci = const_cast<MCInfo*>(mc_info);
@@ -681,7 +730,7 @@ int TruthNeutronCaptures_v3::DisableUnusedBranches(){
 	"SECONDARY"
 	};
 	
-	return myTreeReader.OnlyEnableBranches(used_branches);
+	return myTreeReader->OnlyEnableBranches(used_branches);
 }
 
 int TruthNeutronCaptures_v3::CreateOutputFile(std::string filename){

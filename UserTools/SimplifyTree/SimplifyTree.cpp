@@ -191,6 +191,8 @@ bool SimplifyTree::Execute(){
 		
 		Log(toolName+": had "+std::to_string(n_hits)+" "+id_or_od+" hits",v_debug,verbosity);
 		
+		int n_ingate_hits=0;
+		
 		// loop over hits
 		for (int ihit = 0; ihit < n_hits; ++ihit){
 			
@@ -207,6 +209,7 @@ bool SimplifyTree::Execute(){
 			*/
 			
 			// straight from common blocks used to fill TQREAL object
+			
 			if(id_or_od=="ID"){
 				cableNumber = rawtqinfo_.icabbf_raw[ihit];
 				charge = rawtqinfo_.qbuf_raw[ihit];
@@ -217,10 +220,27 @@ bool SimplifyTree::Execute(){
 				time = rawtqinfo_.taskz_raw[ihit];
 			}
 			
-			// we only need the lower 16 bits of the PMT number
-			cableNumber = cableNumber & 0x0000FFFF;
 			// the upper 16 bits are a set of hit flags
+			// do this first as the shift does not modify cableNumber
 			int hitflags = cableNumber >> 16;
+			// mask off the lower 16 bits for the PMT number
+			cableNumber = cableNumber & 0x0000FFFF;
+			
+			std::bitset<8*sizeof(int)> hitflagsbits(hitflags);
+			if(hitflagsbits.test(1)){
+				//std::cout<<"in gate flag from icabbf_raw for hit "<<ihit<<std::endl;
+				++n_ingate_hits;
+			}
+			
+			/*
+			if(hitflags!=0) std::cout<<""<<hitflags<<std::endl;
+			int hitflags2 = sktqz_.ihtiflz[ihit];
+			std::bitset<8*sizeof(int)> hitflags2bits(hitflags2);
+			if(hitflags2bits.test(1)) std::cout<<"in gate flag from ihtiflz for hit "<<ihit<<std::endl;
+			int hitflags3 = sktqz_.iqiskz[ihit];
+			std::bitset<8*sizeof(int)> hitflags3bits(hitflags3);
+			if(hitflags3bits.test(11)) std::cout<<"in gate flag from iqiskz for hit "<<ihit<<std::endl;
+			*/
 			
 			/*
 			for reference:
@@ -387,12 +407,15 @@ bool SimplifyTree::Execute(){
 			
 		}  // end loop over hits
 		
-		 if(id_or_od=="ID"){
+		/*
+		if(id_or_od=="ID"){
+			std::cout<<"event had "<<n_ingate_hits<<" hits in gate"<<std::endl;
 			std::bitset<8*sizeof(int)> trigger_bits(trigger_flags);
-			if(trigger_bits.test(0)){ std::cout<<"LE trigger event "<<event_num<<std::endl; }
-			if(trigger_bits.test(1)){ std::cout<<"HE trigger event "<<event_num<<std::endl; }
 			if(trigger_bits.test(28)){ std::cout<<"SHE trigger event "<<event_num<<std::endl; }
-		 }
+			else if(trigger_bits.test(1)){ std::cout<<"HE trigger event "<<event_num<<std::endl; }
+			else if(trigger_bits.test(0)){ std::cout<<"LE trigger event "<<event_num<<std::endl; }
+		}
+		*/
 		
 		if(verbosity>3 && id_or_od=="ID"){
 			// some trigger flag checks just for info

@@ -3,6 +3,8 @@ readerName bdtReader
 #inputFile SK2p2MeV_testout.root                   # a single input file - if not specified, use FileListName
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_SK2p2.root
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_SK2p2.root
+#inputFile SK2p2MeV_atmnu_2500_04.root
+#inputFile SK2p2MeV_SKG4_ngun.root
 inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_added_SK2p2.root
 treeName sk2p2                                    # the name of the tree within the file
 maxEntries -1                                     # max num input entries to process
