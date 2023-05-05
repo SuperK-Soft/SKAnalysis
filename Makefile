@@ -52,6 +52,8 @@ LDLIBS += $(CERNLIB)
 ROOTINCLUDE= `root-config --cflags`
 ROOTLIB = `root-config --libs --evelibs --glibs` -lMinuit -lXMLIO -lMLP
 ROOTSTLLIBS = -L${HOME}/stllibs -lRootStl
+ROOTVER := `root-config --version | cut -b 1`
+CFLAGS += -DROOTVER=\"$(ROOTVER)\"
 
 TMVASYS = $(Dependencies)/TMVA
 TMVAINCLUDE = -I $(TMVASYS)/include
@@ -100,6 +102,9 @@ endif
 # Third Reduction Library (part of SRN analysis)
 THIRDREDLIB = -L${HOME}/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
 
+# SKG4 Library
+SKG4LIB = ${SKG4Dir}/lib/libSKG4Root.so
+
 # all user classes that the user may wish to write to ROOT files require a dictionary.
 # TODO maybe we should put these in a separate directory or something so they don't need to be listed explicitly
 ROOTCLASSES = DataModel/Candidate.h DataModel/Cluster.h DataModel/EventCandidates.h DataModel/EventParticles.h DataModel/EventTrueCaptures.h DataModel/Particle.h DataModel/PMTHitCluster.h DataModel/PMTHit.h DataModel/TrueCapture.h
@@ -131,7 +136,7 @@ all: lib/libMyTools.so lib/libToolChain.so lib/libStore.so include/Tool.h lib/li
 
 main: src/main.cpp lib/libStore.so lib/libLogging.so lib/libToolChain.so | lib/libMyTools.so lib/libDataModel.so  lib/liblowfit_sk4_stripped.so lib/libRootDict.so lib/libBStore_RootDict.so $(UserLibs)
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
-	g++ $(CXXFLAGS) -L lib -llowfit_sk4_stripped -I include $(DataModelInclude) $(MyToolsInclude) src/main.cpp -o $@ $(DataModelLib) $(MyToolsLib) -L lib -lStore -lMyTools -lToolChain -lDataModel -lLogging -lpthread $(ROOTLIB) $(ATMPDLIB) $(SKOFLLIB) $(CERNLIB) -lRootDict $(USERLIBS2)
+	g++ $(CXXFLAGS) -L lib -llowfit_sk4_stripped -I include $(DataModelInclude) $(MyToolsInclude) src/main.cpp -o $@ $(DataModelLib) $(MyToolsLib) -L lib -lStore -lMyTools -lToolChain -lDataModel -lLogging -lpthread $(ROOTLIB) $(ATMPDLIB) $(SKOFLLIB) $(CERNLIB) -lRootDict $(USERLIBS2) $(SKG4LIB)
 
 lib/libStore.so: $(Dependencies)/ToolFrameworkCore/src/Store/*
 	cd $(Dependencies)/ToolFrameworkCore && $(MAKE) lib/libStore.so
@@ -172,6 +177,13 @@ clean:
 	rm -f main
 	rm -f UserTools/*/*.o
 	rm -f DataModel/*.o
+	rm -f core.*
+	rm -f vector_*
+	rm -f DataModel/*Dict.cxx
+	rm -f BStore_RootDict.*
+	rm -f NTagDataModelDict.o
+	#rm -f map_string,string__LinkDef.h
+
 
 lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp)) lib/libRootDict.so
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"

@@ -4,7 +4,9 @@
 #ifndef PYTHON
 // dummy class
 #include "DummyTool.h"
-class ntag_BDT : public DummyTool{ public: ntag_BDT(){}; };
+class ntag_BDT : public DummyTool{ public: ntag_BDT(){
+#error "ntag_BDT tool requires python and bind!"
+}; };
 #else
 
 #include <string>

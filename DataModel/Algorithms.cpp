@@ -219,6 +219,8 @@ int safeSystemCallVerbose(std::string cmd){
 // But ROOT 5 does not know about c++11 container types, so better to use this.
 // may also want to use TClassEdit::ShortType(const char* type_as_string) to discard qualifiers
 bool IsStlContainer(std::string type_as_string){
+	// remove any potential std:: prefix
+	if(type_as_string.substr(0,5)=="std::") type_as_string.erase(0,5);
 	size_t base_pos = type_as_string.find('<');
 	if(base_pos==std::string::npos) return false;
 	return (container_types.count(type_as_string.substr(0,base_pos)));

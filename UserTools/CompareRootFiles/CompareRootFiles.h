@@ -35,6 +35,7 @@ struct data_instance {
 	//  2: dynamically sized array
 	//  3: stl container
 	//  4: class object
+	bool is_ptr=false;
 	
 	// for primitives we need the address and its datatype, or at least its size in bytes
 	long item_size;
