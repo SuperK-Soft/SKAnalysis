@@ -24,6 +24,7 @@ int G3ParticleCodeToPdg(int code);
 int StringToG3ParticleCode(std::string name);
 std::string G3ParticleCodeToString(int code);
 double PdgToMass(int code);
+std::string TriggerIDToTrigger(int code);
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
 
@@ -496,6 +497,43 @@ namespace constants{
 		{"single_stopping",muboy_classes::single_stopping},
 		{"multiple_mu",muboy_classes::multiple_mu},
 		{"also_multiple_mu",muboy_classes::also_multiple_mu}
+	};
+	
+	static const std::map<int, std::string> Trigger_ID_To_Trigger{
+		// from skhead.h
+		// "BLANK #" entries are empty ID numbers in skhead.h
+		{0, "LE (sftw. trig.)"},
+		{1, "HE (sftw. trig.)"},
+		{2, "SLE (sftw. trig.)"},
+		{3, "OD (sftw. trig.)"},
+		{4, "Periodic (SKI-III)"},
+		{5, "After/CAL (SKI-III)"},
+		{6, "VETO START"},
+		{7, "VETO STOP"},
+		{8, "BLANK 8"},
+		{9, "BLANK 9"},
+		{10, "BLANK 10"},
+		{11, "Random Wide Trigger"},
+		{12, "Laser (ID, Usho Laser)"},
+		{13, "LED"},
+		{14, "Ni"},
+		{15, "Laser (OD, AutoTQlaser)"},
+		{16, "LE (hitsum)"},
+		{17, "HE (histum)"},
+		{18, "SLE (hitsum)"},
+		{19, "OD (hitsum)"},
+		{20, "BLANK 20"},
+		{21, "BLANK 21"},
+		{22, "SN Burst"},
+		{23, "mu->e Decay"},
+		{24, "LINAC"},
+		{25, "LINAC Microwave"},
+		{26, "BLANK 26"},
+		{27, "Periodic (simple)"},
+		{28, "SHE"},
+		{29, "AFT"},
+		{30, "Pedestal"},
+		{31, "T2K"}
 	};
 	
 	// maps of regular expression error codes to descriptive strings
