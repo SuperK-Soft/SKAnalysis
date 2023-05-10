@@ -19,12 +19,12 @@
 
 #include "SuperManager.h"
 
-#include "Bonsai/searchgrid.h"
-#include "Bonsai/bscalls.h"
-#include "Bonsai/pairlikelihood.h"
-#include "Bonsai/fourhitgrid.h"
-#include "Bonsai/combinedgrid.h"
-#include "Bonsai/goodness.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/searchgrid.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/bscalls.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/pairlikelihood.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/fourhitgrid.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/combinedgrid.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/goodness.h"
 
 #include <TCanvas.h>
 #include <TRandom.h>
@@ -105,11 +105,19 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	outputTree->Branch("pdg_prev",&pdg_prev,"pdg_prev/I");
 	outputTree->Branch("mc_energy",&mc_energy,"mc_energy/F");
 	outputTree->Branch("mc_energy_prev",&mc_energy_prev,"mc_energy_prev/F");
-	outputTree->Branch("nhitsAFT_raw",&nhitsAFT_raw,"nhitsAFT_raw");
+	outputTree->Branch("nhitsAFT_raw",&nhitsAFT_raw,"nhitsAFT_raw/I");
 	outputTree->Branch("tgood",&tgood,"tgood/F");
 	outputTree->Branch("tgood_prev",&tgood_prev,"tgood_prev/F");
 	outputTree->Branch("tgood_combined",&tgood_combined,"tgood_combined/F");
 	outputTree->Branch("tgood_combined_prev",&tgood_combined_prev,"tgood_combined_prev/F");
+	outputTree->Branch("bsn50",&bsn50,"bsn50/I");
+	outputTree->Branch("bsn10",&bsn10,"bsn10/I");
+	outputTree->Branch("bsn50AFT",&bsn50AFT,"bsn50AFT/I");
+	outputTree->Branch("bsn10AFT",&bsn10AFT,"bsn10AFT/I");
+	outputTree->Branch("n50_prev",&n50_prev,"n50_prev/I");
+	outputTree->Branch("n10_prev",&n10_prev,"n10_prev/I");
+	outputTree->Branch("n50_aft",&n50_aft,"n50_aft/I");
+	outputTree->Branch("n10_aft",&n10_aft,"n10_aft/I");
 	
 	// initialize water transparency table
 	// (this will be for energy reconstruction I presume)
@@ -241,7 +249,7 @@ bool CombinedFitter::Execute(){
 	float bsvertexAFT[4];
 	float bsresultAFT[6];
 	float bsgoodAFT[3];
-	float bsvertexCombined[3];
+	float bsvertexCombined[4];
 	float *bsvertex = skroot_lowe_.bsvertex;
 	float *bsresult = skroot_lowe_.bsresult;
 	float *bsgood = skroot_lowe_.bsgood;
@@ -251,11 +259,13 @@ bool CombinedFitter::Execute(){
 	// sets bs variables to 9999
 	lfclear_all_();
 	for (int i=0;i<6;i++) bsresultAFT[i]=9999;
-	for (int i=0;i<4;i++) bsvertexAFT[i]=9999;
+	for (int i=0;i<4;i++){
+		bsvertexAFT[i]=9999;
+		bsvertexCombined[i]=9999;
+	}
 	for (int i=0;i<3;i++){ 
 		bsgoodAFT[i]=9999;
 		posmcAFT[i] = 9999;
-		bsvertexCombined[i]=9999;
 	}
 	// clear variables to be saved to the ntuples
 	x, y, z = 9999;
@@ -416,8 +426,9 @@ bool CombinedFitter::Execute(){
 	// Check if the first trigger is SHE
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
 	int SHE = trigger_bits.test(28);
+	int SLE = trigger_bits.test(2);
 	int OD = trigger_bits.test(3);
-	if (SHE && !OD) {
+	if (SLE && !OD) {
 		/*************************************************************/
 		// Reconstruct the prompt first
 
@@ -508,6 +519,7 @@ bool CombinedFitter::Execute(){
 		if (nhitsRaw>SLE_threshold){
 			nhitsAFT = SetAftHits(SLE_threshold,addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
 		}
+		
 		Log(toolName+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,verbosity);
 		for (int hit=0;hit<nhitsAFT;hit++){
 			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
@@ -552,6 +564,40 @@ bool CombinedFitter::Execute(){
 			tgood_combined = goodn[1];
 			tgood_combined_prev = goodn[0];
 		}
+		
+		// Now get the n50 and n10 values from the combined fit
+		if (bsvertex[0]<9999){
+			vector<int> cableIDs_bsn50;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			bsn50 = CalculateNX(50,bsvertex,cableIDs,times,cableIDs_bsn50);
+		
+			vector<int> cableIDs_bsn10;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			bsn10 = CalculateNX(10,bsvertex,cableIDs,times,cableIDs_bsn10);
+		}
+		if (bsvertexAFT[0]<9999){
+			vector<int> cableIDs_bsn50AFT;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			bsn50AFT = CalculateNX(50,bsvertexAFT,cableIDsAFT,timesAFT,cableIDs_bsn50AFT);
+			vector<int> cableIDs_bsn10AFT;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			bsn10AFT = CalculateNX(10,bsvertexAFT,cableIDsAFT,timesAFT,cableIDs_bsn10AFT);
+		}
+		if (bsvertexCombined[0]<9999){
+			vector<int> cableIDs_n50_prev;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			n50_prev = CalculateNX(50,bsvertexCombined,cableIDs,times,cableIDs_n50_prev);
+			vector<int> cableIDs_n10_prev;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			n10_prev = CalculateNX(10,bsvertexCombined,cableIDs,times,cableIDs_n10_prev);
+			vector<int> cableIDs_n50_aft;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			n50_aft = CalculateNX(50,bsvertexCombined,cableIDsAFT,timesAFT,cableIDs_n50_aft);
+			vector<int> cableIDs_n10_aft;
+			Log(toolName+" calculating NX",v_debug,verbosity);
+			n10_aft = CalculateNX(10,bsvertexCombined,cableIDsAFT,timesAFT,cableIDs_n10_aft);
+		}
+
 	} // SHE
 
 	// Save the results of the fit
@@ -897,7 +943,7 @@ void CombinedFitter::lbfset0(void *dat, int *numdat){
 }
 
 int CombinedFitter::CalculateNX(int timewindow, float* vertex, vector<int> cableIDs, vector<float> times, vector<int>& cableIDs_twindow) {
-	if (skq_.nqisk <= 0)
+	if (times.size() <= 0)
 	{
 		return 0;
 	}
@@ -907,7 +953,7 @@ int CombinedFitter::CalculateNX(int timewindow, float* vertex, vector<int> cable
 	// Find tof subtracted times for all hits at reconstructed vertex
 	vector<float> tof;
 	Log(toolName+" getting tof subtracted times for all hits",v_debug,verbosity);
-	for (int hit=0; hit<skq_.nqisk; hit++) {
+	for (int hit=0; hit<times.size(); hit++) {
 		   tof.push_back(times[hit]-sqrt(pow((vertex[0]-geopmt_.xyzpm[cableIDs[hit]-1][0]),2)+pow((vertex[1]-geopmt_.xyzpm[cableIDs[hit]-1][1]),2)+pow((vertex[2]-geopmt_.xyzpm[cableIDs[hit]-1][2]),2))/cns2cm);
 	}
 
@@ -923,9 +969,9 @@ int CombinedFitter::CalculateNX(int timewindow, float* vertex, vector<int> cable
 	int hstart_test = 0 ;
 	int hstart = 0; 
 	int hstop = 0;
-	while (hstart_test < skq_.nqisk-bsnwindow) {
+	while (hstart_test < times.size()-bsnwindow) {
 		hstop = hstart_test+bsnwindow;
-		while((hstop<skq_.nqisk) && (tof_sorted[hstop]-tof_sorted[hstart_test]<=timewindow))
+		while((hstop<times.size()) && (tof_sorted[hstop]-tof_sorted[hstart_test]<=timewindow))
 		{
 			hstart = hstart_test;
 			bsnwindow++;
@@ -937,7 +983,7 @@ int CombinedFitter::CalculateNX(int timewindow, float* vertex, vector<int> cable
 	hstop=hstart+bsnwindow-1;
 	// Make a list of cable IDs for the hits in the time window
 	int bsnwin = 0;
-    for(int hit=0; hit<skq_.nqisk; hit++) {
+    for(int hit=0; hit<times.size(); hit++) {
         if (tof[hit]<tof_sorted[hstart]) continue;
         if (tof[hit]>tof_sorted[hstop]) continue;
         cableIDs_twindow.push_back(cableIDs[hit]);
@@ -1150,7 +1196,6 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 	t_gate_end = endSHE+1200;
 	n200max = hits_tmp.size();
 
-	SLE_threshold = 22;
 	if (n200max<SLE_threshold) return(0);
 
 	// TODO which hits do we want to use????

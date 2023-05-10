@@ -14,9 +14,9 @@
 #include "basic_array.h"
 #include "fortran_routines.h"
 
-#include "Bonsai/pmt_geometry.h"
-#include "Bonsai/bonsaifit.h"
-#include "Bonsai/pairlikelihood.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/pmt_geometry.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/bonsaifit.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/pairlikelihood.h"
 
 #include <TH1.h>
 
@@ -82,6 +82,10 @@ class CombinedFitter: public Tool {
 	float mc_energy, mc_energy_prev = 0;	
 	float mct_ncapture=0;
 	int nhitsAFT_raw=0;
+	int bsn50 = 0;		int bsn10 = 0;
+	int bsn50AFT = 0;	int bsn10AFT = 0;
+	int n50_prev = 0;	int n10_prev = 0;
+	int n50_aft = 0;	int n10_aft = 0;
 
 	// variables to use in the tool
 	struct HitInfo
