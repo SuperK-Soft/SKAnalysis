@@ -1,15 +1,15 @@
 verbosity 1                              # tool verbosity (1)
 #inputFile /home/sk_user/SKAnalysis/test_reconstruction/IBD_1k.root
-inputFile /home/sk_user/SKAnalysis/test_reconstruction/ibd_sk6_1k_skg4_gd_0p2.root  # skg4 with 500 time offset
+#inputFile /home/sk_user/SKAnalysis/test_reconstruction/ibd_sk6_10k_reactornu_0p1pct_gd.root
 #inputFile /home/sk_user/SKAnalysis/test_reconstruction/relic.precut.sheaft.087220.root
-#FileListName MyFileList        # the name of a set of files prepared by the LoadFileList tool
+FileListName MyFileList        # the name of a set of files prepared by the LoadFileList tool
 treeName data                   # the name of the tree within the file
 readerName fitReader            # the name to give the MTreeReader in the DataModel
 firstEntry 0                    # the first entry to read (0)
-maxEntries 1000                 # max number of entries to process before stopping the ToolChain (-1)
+maxEntries 10000                # max number of entries to process before stopping the ToolChain (-1)
 skFile 1                        # whether to enable additional functionality (1)
 skrootMode 0                    # 2=read, 1=write, 0=root2root copy. (2)
-outputFile  test_reconstruction/test_ibd_skg4_2pct_vfit.root  # the output file, when using the TreeManager in root2root mode
+outputFile  test_reconstruction/test_fileList.root  # the output file, when using the TreeManager in root2root mode
 skreadMode 0                    # 3=`skrawread` and `skread`, 2=`skrawread`, 1=`skread`, 0=auto
 LUN 10                          # LUN to assign to the file (10)
 skoptn 31,30,26,25              # options describing what to load via skread/skrawread (31)

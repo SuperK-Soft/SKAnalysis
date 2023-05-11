@@ -78,7 +78,9 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 
 	// make output file and tree
 	if(outputFile == nullptr) outputFile = "CombinedFitter_output.root";
-	fout = new TFile(outputFile.c_str(), "RECREATE");
+	ifstream f(outputFile.c_str());
+	if (f.good()) fout = new TFile(outputFile.c_str(), "UPDATE");
+	else fout = new TFile(outputFile.c_str(),"CREATE");
 	outputTree = new TTree("corefit", "Coincidence reconstruction results");
 
 	// Set the branches we need to fill in the ntuple

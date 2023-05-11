@@ -1,6 +1,6 @@
-verbosity 		4
+verbosity 		1
 readerName 		fitReader
-outputFile 		test_combinedFit_2pct_GdSulphate_dark.root
+outputFile 		ignorethis.root#test_combinedFit_sk6_reactornu_0p1pct_gd.root
 dataSrc 		0                  # 0 = skt_/skq_, 1 = sktqz_, 2 = TQREAL
 bonsaiSrc 		0				   # 0 = built-in BONSAI calls, 1 = direct bonsai functions
 addNoise		1				# whether to add dark noise to the AFT
