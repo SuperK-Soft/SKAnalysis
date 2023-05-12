@@ -1,0 +1,74 @@
+
+/* skvect_ is defined in $ATMPD_ROOT/src/analysis/neutron/ntag_gd/skvectC.h
+   as being an object of type vcwork_common, which is a struct converted from
+   an old fortran common block.
+   unfortunately, $SKOFL_ROOT/include/vcworkC.h also defines the type vcwork_common,
+   as another struct representing an old fortran common block, but with entirely
+   different members. Of course, c++ cannot have 2 structs with the same name
+   but different definitions.
+   soo... we re-define the ATMPD version here with a new name. And hope this doesn't
+   cause other problems....
+   this definition got added to NTag's SKLibs header, since vcvertex_ gets referenced
+   in multiple NTag tools
+*/
+
+/*
+ * Generated automatically by fh2h.pl
+ * !!! DO NOT EDIT !!!
+ * Edit the original fortran header file instead
+ * or fix fh2h.pl if there is a translation bug.
+ */
+
+
+#ifndef FH2H_ATMPD_SKVECT_H
+#define FH2H_ATMPD_SKVECT_H
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+#ifndef IMPLICIT
+#define IMPLICIT  /* Only to point out implicit types */
+#endif
+
+
+#define MAXVECT (50)
+
+
+/*------ common blocks -------------------------------------------------*/
+
+extern struct atmpd_vcwork_common {
+  float  pos[3];
+  int    ip[MAXVECT];
+  float  pin[MAXVECT][3];
+  float  pabs[MAXVECT];
+  int    nvect;
+} skvect_;
+#ifndef NO_EXTERN_COMMON_POINTERS
+extern struct skvect_common *skvect;
+#endif
+#ifdef STATIC_COMMON_POINTERS
+static struct skvect_common *skvect = &skvect_;
+#endif
+
+
+/*------ data statements -----------------------------------------------*/
+
+
+#ifndef NO_STATIC_DATA
+
+
+#endif  /* #ifndef NO_STATIC_DATA */
+
+
+/*------ end of fortran header -----------------------------------------*/
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif  /* #ifndef FH2H_SKVECT_H */

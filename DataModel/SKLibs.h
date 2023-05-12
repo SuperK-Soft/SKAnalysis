@@ -14,11 +14,11 @@
 extern "C" {
     void kzinit_();
     void geoset_();
-    void set_rflist_(int*, const char*, const char*, const char*, const char*,
-                     const char*, const char*, const char*, const char*, const char*,
-                     int, int, int, int, int, int, int, int, int);
-    void skopenf_(int*, int*, const char*, int*);
-    void skoptn_(const char*, int);
+//XXX    void set_rflist_(int*, const char*, const char*, const char*, const char*,
+//                     const char*, const char*, const char*, const char*, const char*,
+//                     int, int, int, int, int, int, int, int, int);
+//XXX    void skopenf_(int*, int*, const char*, int*);
+//XXX    void skoptn_(const char*, int);
     void skbadopt_(int*);
     void skbadch_(int*, int*, int*);
     int  skread_(int*);
@@ -40,9 +40,9 @@ extern "C" {
 
 // BONSAI
 extern "C" {
-    void bonsai_ini_(int*);
-    void bonsai_fit_(int*, float*, float*, float*, int*, int*, float*, float*, float*,
-                     float*, float*, float*, float*, float*, float*);
+//XXX    void bonsai_ini_(int*);
+//XXX    void bonsai_fit_(int*, float*, float*, float*, int*, int*, float*, float*, float*,
+//                     float*, float*, float*, float*, float*, float*);
     void bonsai_end_();
 }
 
@@ -55,5 +55,21 @@ extern "C" {
     void spfinalsep_();
 //	float pttruewaterlen_(float&);
 }
+
+// right mess here; see ReadMCInfo/atmpd_skvectC.h,
+// but it's used by multiple NTag Tools so move it here.
+extern struct atmpd_vcwork_common {
+  float  pos[3];
+  int    ip[50];
+  float  pin[50][3];
+  float  pabs[50];
+  int    nvect;
+} skvect_;
+#ifndef NO_EXTERN_COMMON_POINTERS
+extern struct skvect_common *skvect;
+#endif
+#ifdef STATIC_COMMON_POINTERS
+static struct skvect_common *skvect = &skvect_;
+#endif
 
 #endif

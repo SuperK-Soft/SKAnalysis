@@ -1,4 +1,6 @@
-include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
+#include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
+include ./skofl.gmk  # pulls in libskroot.so as well
+# skofl.gmk is copy of aboe with rfa removed from SITE_LIRBRARIES
 PWD=`pwd`
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
@@ -21,7 +23,10 @@ FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none # -falign-commons
 SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe
 
 # lowe libraries - some of these may not be required in this list
-SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lrfa -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader
+SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader -lsnevtinfo
+BINLIB = -L ${RFA_ROOT} -lrfa
+#SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++ -L/opt/intel/cce/10.0.023/lib -lirc
+#SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++
 
 # Atmospheric, Muon and Proton Decay libraries (ATMPD) Headers & Libraries
 OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
@@ -136,7 +141,7 @@ all: lib/libMyTools.so lib/libToolChain.so lib/libStore.so include/Tool.h lib/li
 
 main: src/main.cpp lib/libStore.so lib/libLogging.so lib/libToolChain.so | lib/libMyTools.so lib/libDataModel.so  lib/liblowfit_sk4_stripped.so lib/libRootDict.so lib/libBStore_RootDict.so $(UserLibs)
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
-	g++ $(CXXFLAGS) -L lib -llowfit_sk4_stripped -I include $(DataModelInclude) $(MyToolsInclude) src/main.cpp -o $@ $(DataModelLib) $(MyToolsLib) -L lib -lStore -lMyTools -lToolChain -lDataModel -lLogging -lpthread $(ROOTLIB) $(ATMPDLIB) $(SKOFLLIB) $(CERNLIB) -lRootDict $(USERLIBS2) $(SKG4LIB)
+	g++ $(CXXFLAGS) -no-pie -fno-pie -L lib -llowfit_sk4_stripped -I include $(DataModelInclude) $(MyToolsInclude) src/main.cpp -o $@ $(DataModelLib) $(MyToolsLib) -L lib -lStore -lMyTools -lToolChain -lDataModel -lLogging -lpthread $(ROOTLIB) $(ATMPDLIB) $(SKOFLLIB) $(CERNLIB) -lRootDict $(USERLIBS2) $(SKG4LIB) $(BINLIB)
 
 lib/libStore.so: $(Dependencies)/ToolFrameworkCore/src/Store/*
 	cd $(Dependencies)/ToolFrameworkCore && $(MAKE) lib/libStore.so

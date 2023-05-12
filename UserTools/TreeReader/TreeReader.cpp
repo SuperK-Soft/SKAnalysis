@@ -1327,7 +1327,8 @@ bool TreeReader::LoadNextZbsFile(){
 	
 	set_rflist_zbs( LUN, next_file.c_str(), false );
 	int ipt = 1;
-	skopenf_( LUN, ipt, "Z", get_ok, 1 );
+	int ihndl=1;
+	skopenf_( &LUN, &ipt, "Z", &get_ok, &ihndl );
 	
 	if(get_ok!=0){
 		Log(toolName+" Error loading next ZBS file '"+next_file,v_error,verbosity);

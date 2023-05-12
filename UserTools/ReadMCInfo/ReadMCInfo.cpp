@@ -3,15 +3,13 @@
 #include <cmath>
 
 #include <skroot.h>
-#undef MAXHWSK
-#undef MAXPM
-#undef MAXPMA
-#include "skvectC.h"
+//#undef MAXHWSK
+//#undef MAXPM
+//#undef MAXPMA
+
 #include "geotnkC.h"
-#include "skheadC.h"
-
 #include "apscndryC.h"
-
+//#include "skvectC.h"
 #include "SKLibs.h"
 
 #include "TrueCapture.h"

@@ -3,10 +3,7 @@
 #include <TString.h>
 
 #include <skheadC.h>
-#undef MAXHWSK
 #include <fortran_interface.h>
-#undef MAXPM
-#undef MAXPMA
 
 #include "SKLibs.h"
 #include "PathGetter.h"
@@ -39,7 +36,7 @@ bool SKRead::Initialise(std::string configfile, DataModel &data)
     // Set read options before opening file //
     //////////////////////////////////////////
 
-    skoptn_(skOptions.Data(), skOptions.Length());
+    skoptn_(const_cast<char*>(skOptions.Data()), skOptions.Length());
     skheadg_.sk_geometry = skGeometry; geoset_();
     
     // Custom bad-channel masking (M. Harada)
@@ -75,7 +72,8 @@ bool SKRead::Initialise(std::string configfile, DataModel &data)
         set_rflist_(&lun, inFilePath.Data(),
                     "LOCAL", "", "RED", "", "", "recl=5670 status=old", "", "",
                     inFilePath.Length(), 5, 0, 3, 0, 0, 20, 0, 0);
-        skopenf_(&lun, &fileIndex, "Z", &openError);
+        int ihndl=0;
+        skopenf_(&lun, &fileIndex, "Z", &openError, &ihndl);
 
         if (openError) {
             Log("Error occurred while opening the input ZEBRA file: " + inFilePath, pERROR,m_verbose);

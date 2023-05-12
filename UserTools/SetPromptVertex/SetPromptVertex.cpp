@@ -2,16 +2,13 @@
 #include <TRandom.h>
 
 #include <skroot.h>
-#undef MAXHWSK
 #include <apmringC.h>
 #include <apmueC.h>
 #include <apmsfitC.h>
 #include <appatspC.h>
 #include <loweroot.h>
 #include <geotnkC.h>
-#include <skvectC.h>
-#undef MAXPM
-#undef MAXPMA
+//#include <skvectC.h>
 
 #include "SKLibs.h"
 

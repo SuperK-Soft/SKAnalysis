@@ -98,14 +98,14 @@ extern "C" {
     void zbsinit_();
     void kzwrit_(int&);
     void kzeclr_();
-    void set_rflist_(int&, const char*, const char*, const char*, const char*,
+    // void set_rflist_(int&, const char*, const char*, const char*, const char*,
+                     // const char*, const char*, const char*, const char*, const char*,
+                     // long, long,  long,  long,  long,  long,  long,  long,  long  );
+    // void skopenf_(int&, int&, const char*, int&, long);
+    void set_rflist_(int*, const char*, const char*, const char*, const char*,
                      const char*, const char*, const char*, const char*, const char*,
-                     long, long,  long,  long,  long,  long,  long,  long,  long  );
-    void skopenf_(int&, int&, const char*, int&, long);
-//////    void set_rflist_(int*, const char*, const char*, const char*, const char*,
-//////                     const char*, const char*, const char*, const char*, const char*,
-//////                     int, int, int, int, int, int, int, int, int);
-//////    void skopenf_(int*, int*, const char*, int*, int*);
+                     int, int, int, int, int, int, int, int, int);
+    void skopenf_(int*, int*, const char*, int*, int*);
 //    void skoptn_(const char*, int);
 //    void skbadopt_(int*);
 //    void skbadch_(int*, int*, int*);
