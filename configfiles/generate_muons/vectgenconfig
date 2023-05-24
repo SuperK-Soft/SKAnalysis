@@ -1,0 +1,14 @@
+# vectgen config file
+verbosity 2
+output_file muons_1000.dat
+output_format DatTable     # "DatTable" or "zbs"
+num_events 1000            # if given, overrides use of run number and event rate
+#event_rate 1              # events per minute
+#run_number 77958          # run to use for run duration lookup
+#livetime_file /home/sklowe/realtime_sk4_rep/solar_apr19/timevent/timevent.r061525.r077958  # run livetimes
+random_seed 242218818     # if not given, generated (but not recorded!)
+min_energy 1               # min positron energy, MeV
+max_energy 90              # max positron energy, MeV
+#pos_x 0.0                 # position. If not given, events will be randomly generated
+#pos_y 0.0                 # uniformly within 150cm from the inner detector wall
+#pos_z 0.0                 # if any are given, all events will be at the specified location.

@@ -1,0 +1,4 @@
+myLoadFileList LoadFileList configfiles/ReconResolution/LoadFileListConfig
+FirstReader TreeReader configfiles/ReconResolution/TreeReaderConfig
+SecondReader TreeReader configfiles/ReconResolution/TreeReaderConfig2
+myReconResolution ReconResolution configfiles/ReconResolution/ReconResolutionConfig

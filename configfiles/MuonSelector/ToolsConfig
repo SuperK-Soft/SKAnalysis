@@ -1,0 +1,3 @@
+myGracefulStop GracefulStop configfiles/MuonSelector/GracefulStopConfig
+myTreeReader TreeReader configfiles/MuonSelector/TreeReaderConfig
+mySelectMuons SelectMuons configfiles/MuonSelector/SelectMuonsconfig

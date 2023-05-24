@@ -1,0 +1,33 @@
+verbosity 1
+
+
+#inputFile $HOME/ToolAnalysis/test_toolchain.root
+#inputFile $HOME/ToolAnalysis/test_data_out.root # data from rfm file after being run through lfallfit
+#inputFile $HOME/skdetsim/testoutput.root
+#inputFile $HOME/ToolAnalysis/ibd_reweight.root
+#inputFile $HOME/ToolAnalysis/reconstructed_ibd_reweight.root
+#inputFile $HOME/skdetsim/1000events.root
+#inputFile $HOME/rfm_run074701.000001.root
+#inputFile $HOME/standalones/lowfit_standalone/testout.root
+#inputFile $HOME/skdetsim/IBD_10000.root
+#inputFile $HOME/ToolAnalysis/rootFiles/reconstructed/lowE_IBD_10000.root
+
+#inputFile $HOME/SKG4/result_file/rootfile/IBD_10000.root
+
+inputFile $HOME/ToolAnalysis/lowE_IBD_10000.root
+
+treeName data
+readerName demoReader
+skFile 1
+skoptn 31,30,26,25
+#firstEntry 10                 # first TTree entry to process
+maxEntries 10000000                 # max num input entries to process
+skbadopt 23
+SK_GEOMETRY 4
+skipPedestals 1
+LUN 10
+skrootMode 0
+outputFile randname.root
+
+#readSheAftTogether 1                # whether to read AFT data for associated SHE events together (0)
+#onlySheAftPairs 1                   # whether to only return SHE+AFT pairs (0)

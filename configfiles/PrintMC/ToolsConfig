@@ -1,0 +1,2 @@
+myTreeReader TreeReader configfiles/PrintMC/TreeReaderConfig
+myPrintMCInfo PrintMCInfo configfiles/PrintMC/PrintMCInfoConfig

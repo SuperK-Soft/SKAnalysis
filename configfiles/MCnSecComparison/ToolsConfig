@@ -1,0 +1,3 @@
+dataTreeReader TreeReader configfiles/MCnSecComparison/dataTreeReaderConfig
+secTreeReader TreeReader configfiles/MCnSecComparison/secTreeReaderConfig
+myCompareMCandSecondaries CompareMCandSecondaries configfiles/MCnSecComparison/CompareMCandSecondariesConfig

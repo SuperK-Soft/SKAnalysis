@@ -1,0 +1,6 @@
+verbosity 100
+FileListName MyFileList                                                  # required argument
+filePattern "*.root"
+inputDirectory $HOME/ToolAnalysis/rootFiles/SKDETSIM/Recon
+
+useRegex 0

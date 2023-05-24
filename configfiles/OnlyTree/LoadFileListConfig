@@ -1,0 +1,10 @@
+verbosity 100
+FileListName MyFileList                                                  # required argument
+#inputFile $HOME/skdetsim/testoutput.root
+inputFile $Home/rfm_run074701.000001.root
+
+#inputFile $HOME/standalones/lowfit_standalone/rfm_run062773.000033.root  # first precedence
+#fileList configfiles/TreeReaderDemoSkroot/list_of_files.txt              # second precedence
+#filePattern rfm_run062773.*.root                                         # third precedence
+#inputDirectory $HOME/standalones/lowfit_standalone                       # required for filePattern
+#useRegex 0  # 1=regex, 0=glob                                            # default = glob

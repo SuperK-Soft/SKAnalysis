@@ -1,0 +1,10 @@
+verbosity 1
+
+inputFile /home/sk_user/SKG4/result_file/rootfile/IBD_100_secondaries.root
+
+treeName Secdata
+readerName secTreeReader
+skFile 0
+#firstEntry 10                 # first TTree entry to process
+maxEntries 10000000                 # max num input entries to process
+LUN 10
