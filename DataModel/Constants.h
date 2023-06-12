@@ -251,7 +251,7 @@ namespace constants{
 		{45,1000010020},  // deuteron
 		{46,1000010030},  // triton
 		{47,1000020040},  // alpha
-		{48,0}            // Geantino
+		{48,0},            // Geantino
 		{49,1000020030},  // He3
 		{69,1000080160}   // 16O
 		// "what are the g3 codes for gadolinium nuclei?" - there are none! no Gd nucleus is saved.

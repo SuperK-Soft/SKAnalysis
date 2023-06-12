@@ -28,27 +28,14 @@ bool TruthNeutronCaptures_v3::Initialise(std::string configfile, DataModel &data
 	// Get the Tool configuration variables
 	// ------------------------------------
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
-	m_variables.Get("inputFile",inputFile);            // a single specific input file
 	m_variables.Get("outputFile",outputFile);          // output file to write
 	m_variables.Get("maxEvents",MAX_EVENTS);           // terminate after processing at most this many events
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY); // how many events to TTree::Fill between TTree::Writes
 	std::string treeReaderName;
 	m_variables.Get("treeReaderName",treeReaderName);  // reader name for input data
 	
-	// get the list of input files from the CStore
-	// -------------------------------------------
-	// filled if using LoadFileList tool
-	// TODO yet to implement support for this in MTreeReader
-	if(inputFile==""){
-		get_ok = m_data->CStore.Get("InputFileList", input_file_names);
-		if(not get_ok){
-			Log(toolName+" Error: No inputFile given and no InputFileList in CStore!",v_error,verbosity);
-			return false;
-		}
-	}
-	
-	// open the input TFile and TTree
-	// ------------------------------
+	// Get input TreeReader
+	// --------------------
 	if(m_data->Trees.count(treeReaderName)==0){
 		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",0,0);
 		return false;

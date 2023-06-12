@@ -27,6 +27,11 @@ std::string toString(const TVector3& vec){
 	return s;
 }
 
+std::string toString(const TLorentzVector& vec){
+	std::string s = "("+toString(vec.T())+", "+toString(vec.X())+", "+toString(vec.Y())+", "+toString(vec.Z())+")";
+	return s;
+}
+
 int ReadListFromFile(std::string filename, std::vector<std::string> &lines, char commentchar, bool trim_whitespace){
 	// read each new line into a std::vector<string> and return
 	std::ifstream fin (filename.c_str());

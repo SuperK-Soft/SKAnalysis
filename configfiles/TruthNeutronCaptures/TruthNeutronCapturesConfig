@@ -57,7 +57,8 @@ treeReaderName demoReader
 #inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root
 #outputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident_truens_v4.root
 
-outputFile $HOME/SKG4/outputs/10_ngun_events_1_16MeV_truens_v3.root
+#outputFile $HOME/SKG4/outputs/10_ngun_events_1_16MeV_truens_v3.root
+outputFile validation.root
 
 maxEvents -1
 writeFrequency 10

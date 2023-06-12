@@ -105,6 +105,20 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		return false;
 	}
 	
+	// safety check that if asked to read an SKROOT file, it has a TTree called 'data'
+	// if not, the TreeManager will segfault!
+	if(skrootMode==SKROOTMODE::READ || skrootMode==SKROOTMODE::COPY){
+		// i guess we can only pracitcally check the first file
+		// i don't think it'll seg as long as at least one file has a 'data' tree
+		// XXX although, perhaps it would be better to check all of them?
+		TFile* ftest = TFile::Open(firstfile.c_str(),"READ");
+		if(ftest->Get("data")==nullptr){
+			Log(toolName+" ERROR! input file "+firstfile+" has no 'data' TTree!",v_error,verbosity);
+			m_data->vars.Set("StopLoop",1);
+			return false;
+		}
+	}
+	
 	// warning check: see if we're given an input when we're in WRITE mode
 	if(skrootMode==SKROOTMODE::WRITE && (inputFile!="" || FileListName!="")){
 		Log(toolName+" warning! InputFile or FileListName given, but mode is skroot::write! "

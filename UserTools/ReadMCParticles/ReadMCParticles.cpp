@@ -463,7 +463,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 	basic_array<float(*)[3]> secondary_parent_init_mom{intptr_t(sec_info->pprntinit),n_secondaries};        // [MeV?] momentum of parent @ its birth
 	
 	// the many ways to map a secondary to its parent; who knows what they all mean?
-	basic_array<int*> secondary_parent_primary_idx{intptr_t(sec_info->iprnttrk),n_secondaries};   // index of primary parent in primaries array (appears not populated by SKG4)...
+	basic_array<int*> secondary_parent_primary_idx{intptr_t(sec_info->iprnttrk),n_secondaries};   // index of primary parent in primaries array (not populated by SKG4)
 	basic_array<int*> secondary_parent_primary_pdg{intptr_t(sec_info->iorgprt),n_secondaries};    // pdg code of parent primary particle
 	basic_array<int*> secondary_parent_G3_trackid{intptr_t(sec_info->itrkscnd),n_secondaries};    // parent G3 track number; any use?
 	basic_array<int*> secondary_parent_G3_stackid{intptr_t(sec_info->istakscnd),n_secondaries};   // parent G3 stack number; any use?

@@ -90,7 +90,7 @@ class basic_array /*: public generic_array*/ {
 	
 	const W& at(int i) const {
 		if(i<0||i>a_size){
-			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" in "+__FILE__+"::"+std::to_string(__LINE__));
+			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" of "+std::to_string(a_size)+" in "+__FILE__+"::"+std::to_string(__LINE__));
 		}
 		return addr[i];
 	}
@@ -232,7 +232,7 @@ class basic_array<T,true> /*: public generic_array*/ {
 	
 	const V& at(int i) const {
 		if(i<0||i>a_size){
-			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" in "+__FILE__+"::"+std::to_string(__LINE__));
+			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" of "+std::to_string(a_size)+" in "+__FILE__+"::"+std::to_string(__LINE__));
 		}
 		return subarray.at(i);
 	}
