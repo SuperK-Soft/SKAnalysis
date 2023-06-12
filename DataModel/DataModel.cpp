@@ -3,6 +3,8 @@
 #include "skheadC.h" // for skheadg_.sk_geometry needed to construct the ConnectionTable
 #include "fortran_routines.h"
 
+DataModel* DataModel::thisptr=0;
+
 DataModel::DataModel() : eventVariables_p(new BStore(false,true)), eventVariables(*eventVariables_p) {
 	Log=0;
 	// WriteOutput tool uses StoreToTTree to write these Stores to ROOT file.
@@ -11,10 +13,11 @@ DataModel::DataModel() : eventVariables_p(new BStore(false,true)), eventVariable
 	
 	// make a global TApplication for ROOT drawing
 	rootTApp = new TApplication("rootTApp",0,0);
+	thisptr = this;
 }
 
 DataModel::~DataModel(){
-	if(rootTApp) delete rootTApp;
+	//if(rootTApp) delete rootTApp;                 // segfaults on application termination, maybe?
 	//if(connectionTable) delete connectionTable;   // segfaults on application termination, maybe?
 }
 
@@ -45,6 +48,14 @@ ConnectionTable* DataModel::GetConnectionTable(int sk_geometry){
 	if(connectionTable==nullptr){
 		if(sk_geometry<0) sk_geometry = skheadg_.sk_geometry;
 		if(sk_geometry<1) sk_geometry = 6;  // default
+		// as of 2023-05-09 the ConnectionTable constructor only accepts
+		// a value of 5 for SK-5 geometry; anything else results in SK-4.
+		// see $SKOFL_ROOT/src/ConnectionTableReader/ConnectionTable.cc
+		if(sk_geometry!=4 && sk_geometry!=5){
+			sk_geometry = (sk_geometry<4) ? 4 : 5;
+			std::cerr<<"DataModel::GetConnectionTable: Warning! ConnectionTable only supports"
+			         <<"SK-4 or SK-5; using gometry SK-"<<sk_geometry<<std::endl;
+		}
 		connectionTable = new ConnectionTable(sk_geometry);
 	}
 	return connectionTable;

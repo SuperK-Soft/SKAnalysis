@@ -56,6 +56,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// Get the Tool configuration variables
 	// ------------------------------------
 	LoadConfig(configfile);
+	toolName = toolName+" "+readerName;
 	m_data->tool_configs[toolName] = &m_variables;
 	
 	// safety check that we were given an input file
@@ -211,6 +212,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveInputBranches.begin(),ActiveInputBranches.end(),abranch) ==
 							ActiveInputBranches.end()){
+							if(abranch=="HEADER") continue; // always required
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -225,6 +227,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveOutputBranches.begin(),ActiveOutputBranches.end(),abranch) ==
 							ActiveOutputBranches.end()){
+							if(abranch=="HEADER") continue; // always required
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -428,7 +431,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					Log(toolName+" Error! skbadoptn contains 25 (mask bad channels) but not 26 "
 						+"(look up bad channels based on run number). In this case one needs to provide "
 						+"a reference run to use for the bad channel list! Please specify a run to use in "
-						+"option skbadchrefrun in "+toolName+" config",v_error,verbosity);
+						+"option skbadchrefrun in TreeReader config",v_error,verbosity);
 					return false;
 				}
 				Log(toolName+" masking bad channels with reference run "
@@ -447,8 +450,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				*        istat  ;+10 : normal end  additional read /skam/const/badch.dat
 				*/
 				if(istat<0){
-					Log(toolName+" Error applying skbadch with reference run "+toString(skroot_badch_ref_run),
-					    v_error,verbosity);
+					Log(toolName+" Error applying skbadch with reference run "+
+					    toString(skroot_badch_ref_run),v_error,verbosity);
 					return false;
 				}
 			}
@@ -471,7 +474,11 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			std::find(ActiveInputBranches.begin(), ActiveInputBranches.end(), "*")==ActiveInputBranches.end()){
 			// only disable unlisted branches if we have a non-empty list of active branches
 			// and the key "*" was not specified.
-			myTreeReader.OnlyEnableBranches(ActiveInputBranches);
+			get_ok = myTreeReader.OnlyEnableBranches(ActiveInputBranches);
+			if(!get_ok){
+				Log(toolName+" Did not recognise some branches in active branches list!",
+				    v_error,verbosity);
+			}
 		}
 	}
 	
@@ -1581,8 +1588,8 @@ bool TreeReader::HasAFT(){
 }
 
 bool TreeReader::LoadAFT(){
-	Log(toolName+" LoadAFT called for tree "+readerName
-		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
+	Log(toolName+" LoadAFT called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,verbosity);
 	if(has_aft && !aft_loaded){
 		aft_loaded = LoadCommons(0);
 		return aft_loaded;
@@ -1591,8 +1598,8 @@ bool TreeReader::LoadAFT(){
 }
 
 bool TreeReader::LoadSHE(){
-	Log(toolName+" LoadSHE called for tree "+readerName
-		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
+	Log(toolName+" LoadSHE called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,verbosity);
 	if(has_aft && aft_loaded){
 		aft_loaded = !LoadCommons(0);
 		return aft_loaded;

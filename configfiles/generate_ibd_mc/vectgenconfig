@@ -1,9 +1,10 @@
 # vectgen config file
 verbosity 2
-output_file vectgen_out.dat
-output_format DatTable     # "DatTable" or "zbs"
-#output_format zbs         # not yet supported due to cernlib issues
-num_events 1000000            # if given, overrides use of run number and event rate
+#output_file vectgen_out.dat
+#output_format DatTable     # "DatTable" or "zbs"
+output_file stillbroke.zbs
+output_format zbs         # not yet supported due to cernlib issues
+num_events 10            # if given, overrides use of run number and event rate
 #event_rate 1              # events per minute
 #run_number 77958          # run to use for run duration lookup
 #livetime_file /home/sklowe/realtime_sk4_rep/solar_apr19/timevent/timevent.r061525.r077958  # run livetimes

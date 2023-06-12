@@ -1,14 +1,25 @@
 verbosity 1
-inputFile $HOME/standalones/lowfit_standalone/testout.root
+#inputFile $HOME/standalones/lowfit_standalone/testout.root
+#inputFile ~/disk02/ibd_bdt_eff/ibd_wnoise.root
+#inputFile /home/mattnich/disk3stor/mc/atmos/atmos_recon.mcfit.root
+#inputFile ~/skdetsim/skdetsimgd/skdetsim_ibd_zbstest.root
+#inputFile ~/testfix.root
+#inputFile ~/skdetsim/skdetsimgd/vect.r77957_out.root
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
+inputFile ~/skg4/SKG4/ibd_testsecvecs.root
 treeName data
 readerName demoReader
-firstEntry 10                 # first TTree entry to process
+skFile 0                      # do not fill fortran common blocks
+firstEntry 0                  # first TTree entry to process
 maxEntries 10                 # max num input entries to process
+
 
 StartInputBranchList
 ###############
 HEADER
-LOWE
-TQREAL
+#LOWE
+MC
+SECONDARY
+#TQREAL
 #############
 EndInputBranchList

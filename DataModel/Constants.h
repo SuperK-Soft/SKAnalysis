@@ -29,10 +29,10 @@ enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0
 
 namespace constants{
 	
-	/// @brief The format code for a multievent binary BoostStore
-	constexpr int BOOST_STORE_BINARY_FORMAT = 0;
-	constexpr int BOOST_STORE_ASCII_FORMAT = 1;
-	constexpr int BOOST_STORE_MULTIEVENT_FORMAT = 2;
+	/// @brief The format code for a multievent binary BStore
+	constexpr int BSTORE_BINARY_FORMAT = 0;
+	constexpr int BSTORE_ASCII_FORMAT = 1;
+	constexpr int BSTORE_MULTIEVENT_FORMAT = 2;
 	
 	static const TDatabasePDG* particleDb = TDatabasePDG::Instance();
 	// https://root.cern.ch/root/html532/src/TDatabasePDG.cxx.html
@@ -41,60 +41,46 @@ namespace constants{
 	static const std::map<int,std::string> G3_process_code_to_string{
 		// full list from Geant3 manual page 445
 		// see p420+ for a full list of Geant3 common blocks and their parameters
+		{1, "Volume Boundary"},
+		{2, "Multiple Scattering"},
+		{3, "Continuous Energy Loss"},
+		{4, "Magnetic Field Bending"},
 		{5, "Decay"},
 		{6, "Pair production"},
 		{7, "Compton Scatter"},
 		{8, "Photo-electric"},
 		{9, "Bremsstrahlung"},
+		{10, "Delta-ray Production"},
+		{11, "Positron Annihilation"},
 		{12, "Hadronic Interaction"},
-		{13, "Hadronic Elastic Coherent Scattering"},
+		{13, "Hadronic Elastic Coherent"},
+		{14, "Nuclear Evaporation"},
+		{15, "Nuclear Fission"},
+		{16, "Nuclear Absorption"},
+		{17, "Anti-Proton Annihilation"},
 		{18, "Neutron Capture"},
+		{19, "Hadronid Elastic Incoherent"},
 		{20, "Hadronic Inelastic"},
 		{21, "Muon-Nuclear Interaction"},
-		{23, "Photonuclear"},
-		{30, "Below tracking threshold"}
+		{22, "Exceeded Time of Fight Cut"},
+		{23, "Nuclear Photo-Fission"},
+		{24, "Bending in a Magnetic Field"},
+		{25, "Rayleigh Effect"},
+		{26, "Parametrisation Activated"},
+		{27, "Error matrix computed (GEANE tracking)"},
+		{28, "Not Used"},
+		{29, "No Mechanism Active (usually at entrance of a new volume)"},
+		{30, "Below tracking threshold"},
+		{101, "Cerenkov Absorption"},
+		{102, "Cerenkov Refection/Refraction"},
+		{103, "Step Limited by STEMAX"},
+		{104, "Correction against Loss of Precision in Boundary Crossing"},
+		{105, "Cerenkov Generation"},
+		{106, "Cerenkov Reflection"},
+		{107, "Cerenkov Refraction"},
+		{108, "Synchrotron Generation"},
+		{109, "PAI or ASHO model used for energy loss fuctuations"}
 	};
-		/*
-		NEXT, 1, particle has reached the boundary of current volume
-		MULS, 2, multiple scattering
-		LOSS, 3, continuous energy loss
-		FIEL, 4, bending in magnetic feld
-		DCAY, 5, particle decay
-		PAIR, 6, photon pair-production or muon direct pair production
-		COMP, 7, Compton scattering
-		PHOT, 8, photoelectric effect
-		BREM, 9, bremsstrahlung
-		DRAY, 10, δ-ray production
-		ANNI, 11, positron annihilation
-		HADR, 12, hadronic interaction
-		ECOH, 13, hadronic elastic coherent scattering
-		EVAP, 14, nuclear evaporation
-		FISS, 15, nuclear fssion
-		ABSO, 16, nuclear absorption
-		ANNH, 17, anti-proton annihilation
-		CAPT, 18, neutron capture
-		EINC, 19, hadronic elastic incoherent scattering
-		INHE, 20, hadronic inelastic scattering
-		MUNU, 21, muon-nuclear interaction
-		TOFM, 22, exceeded time of fight cut
-		PFIS, 23, nuclear photo-fssion
-		SCUT, 24, the particle was unexpectedly crossing volume boundaries due to bending in a magnetic feld and the step has been halved to avoid this
-		RAYL, 25, Rayleigh effect
-		PARA, 26, parametrisation activated
-		PRED, 27, error matrix computed (GEANE tracking)
-		LOOP, 28, not used
-		NULL, 29, no mechanism is active, usually at the entrance of a new volume
-		STOP, 30, particle has fallen below energy threshold and tracking stops
-		LABS, 101, Cerenkov photon absorption
-		LREF, 102, Cerenkov photon refection/refraction
-		SMAX, 103, step limited by STEMAX
-		SCOR, 104, correction against loss of precision in boundary crossing
-		CKOV, 105, Cerenkov photon generation
-		REFL, 106, Cerenkov photon refection
-		REFR, 107, Cerenkov photon refraction
-		SYNC, 108, synchrotron radiation generation
-		STRA, 109, PAI or ASHO model used for energy loss fuctuations.
-		*/
 	
 	// from skdetsim source file 'gt2pd.h'
 	static const std::map<int,std::string> g3_particle_code_to_string{
@@ -253,20 +239,22 @@ namespace constants{
 		{23,3312},     // Xi-
 		{24,3334},     // Omega- (PB)
 		// XXX The following are from skdetsim gt2pd.h, but are NOT legitimate PDG codes! XXX
+		/*
 		{45,100045},   // deuteron
 		{46,100046},   // triton
 		{47,100047},   // alpha
-		{48,100048},   // Geantino
+		{48,100048}    // Geantino
 		{49,100049},   // He3
-		{69,100069}    // 16O nucleus
-//		// the legitimate codes for the above  - since this is a map we cannot store both...!
-//		{45,1000010020},  // deuteron
-//		{46,1000010030},  // triton
-//		{47,1000020040},  // alpha
-//		{48,0},           // Geantino - no PDG code
-//		{49,1000020030},  // He3
-//		{69,1000080160}   // 16O
-//		// XXX what are the g3 codes for gadolinium nuclei???
+		{69,100069},   // 16O nucleus
+		*/
+		// the legitimate codes for the above
+		{45,1000010020},  // deuteron
+		{46,1000010030},  // triton
+		{47,1000020040},  // alpha
+		{48,0}            // Geantino
+		{49,1000020030},  // He3
+		{69,1000080160}   // 16O
+		// "what are the g3 codes for gadolinium nuclei?" - there are none! no Gd nucleus is saved.
 	};
 	
 	static const std::map<int,int> pdg_to_g3_particle_code{
@@ -278,7 +266,12 @@ namespace constants{
 		{-3122,26},    // anti-Lambda
 		{11,3},        // e-
 		{-3222,27},    // Sigma-
-		{12,4},        // e-neutrino : Geant3 just has "neutrino"... which to map it to?
+		{12,4},        // e-neutrino : Geant3 just has "neutrino"
+		{14,4},        // mu-neutrino
+		{16,4},        // tau-neutrino
+		{-12,4},       // if we add these mappings we can't distinguish
+		{-14,4},       // neutrinos from antineutrinos, but perhaps
+		{-16,4},       // that's better than simply not knowing anything?
 		{-3212,28},    // Sigma0
 		{-13,5},       // mu+
 		{-3112,29},    // Sigma+ (PB)*/
@@ -327,7 +320,7 @@ namespace constants{
 		{1000010020,45},  // deuteron
 		{1000010030,46},  // triton
 		{1000020040,47},  // alpha
-		//{0,48},         // Geantino - no PDG code
+		{0,48},           // Geantino
 		{1000020030,49},  // He3
 		{1000080160,69}   // 16O
 	};
@@ -479,7 +472,7 @@ namespace constants{
 	};
 	
 	// TODO TParticleTable allows a 'DecayList' of daughter nuclides
-	// could we use this to connect skdetsim daughter nuclei to their parent?
+	// could we use this to connect daughter nuclei to their parent?
 	// we will probably need to build this decay list ourselves though.
 	
 	enum muboy_classes{ misfit=0, single_thru_going=1, single_stopping=2, multiple_mu=3, also_multiple_mu=4, corner_clipper=5};

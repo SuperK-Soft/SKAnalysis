@@ -25,6 +25,7 @@ bool SimplifyTree::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
 	std::string treeReaderName;
 	m_variables.Get("treeReaderName",treeReaderName);
+	m_variables.Get("OutputDir",outputdir);
 	
 	// check for input TreeReader
 	 if(m_data->Trees.count(treeReaderName)==0){
@@ -86,10 +87,11 @@ bool SimplifyTree::Execute(){
 		
 		// make an output file named after the input file
 		infilename = iTreeReader->GetFile()->GetName();
-		// strip path, put in current directory, not alongside input file
+		// strip path, put in requested (default=current) directory
 		std::string outfname = basename(infilename.c_str());
 		outfname = outfname.substr(0, outfname.size()-5);
 		outfname += "_simple.root";
+		if(outputdir!="") outfname=outputdir+"/"+outfname;
 		Log(toolName+": New output simple file: "+outfname,v_debug,verbosity);
 		fout = new TFile(outfname.c_str(), "recreate");
 		

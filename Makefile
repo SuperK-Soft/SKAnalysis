@@ -64,18 +64,30 @@ TMVASYS = $(Dependencies)/TMVA
 TMVAINCLUDE = -I $(TMVASYS)/include
 TMVALIB = -L $(TMVASYS)/lib -lTMVA.1
 
+$(info Checking for python3 and pybind...)
 # Python Headers & Libraries
-HASPYTHON3 := $(shell python3-config --cflags >/dev/null 2>&1; echo $$?)
-ifeq ($(HASPYTHON3),0)
-    CXXFLAGS+= -DPYTHON=1 
+HASPYTHON3 := $(shell sh -c "PYBIN=$$(readlink -f `which python3`); PYCONF=\"${PYBIN}-config\"; eval \"${PYCONF}\" --cflags >/dev/null 2>&1; echo $$?")
+#$(info    HASPYTHON3 is $(HASPYTHON3))
+# check we also have required python modules: pybind11
+HASPYBIND11 := $(shell sh -c "python3 -m pybind11 >/dev/null 2>&1; echo $$?")
+# Random aside: these if's need to be indented with SPACES or you get 'recipe commences before first target' error
+#ifeq ($(HASPYTHON3),0)
+# NOTE: makefiles don't support combined conditionals (if A && B), so we use shell to evaluate it.
+# makefile if is SPACE SENSITIVE, so no spaces between whats on either side of the comma:
+# if(A,B) works, if(A, B) doesn't!
+ifeq ($(shell [[ $(HASPYTHON3) == 0 && $(HASPYBIND11) == 0 ]] && echo true ),true)
+    $(info Found python3 and pybind, attempting to enable python Tools)
+    CXXFLAGS+= -DPYTHON=1
     PythonInclude = `python3-config --cflags`
-    PythonLib = `python3-config --ldflags --libs`
+    # if python version is 3.8+ we need --embed after --ldflags
+    # for python <3.8, we should not have this (TODO: detect and modify?)
+    PythonLib = `python3-config --ldflags --embed --libs`
     # note that pybind11 documentation says the following
     # | it's better to (intentionally) *not* link against libpython.
     # | The symbols will be resolved when the extension library is loaded into a Python binary.
     # | This is preferable because you might have several different installations of a given Python version
     # | (e.g. the system-provided Python, and one that ships with a piece of commercial software).
-    # | In this way, the plugin will work with both versions, instead of possibly importing a second 
+    # | In this way, the plugin will work with both versions, instead of possibly importing a second
     # | Python library into a process that already contains one (which will lead to a segfault).
     # ...?? both `python3-config --ldflags` and `python3-config --libs` both pull in `libpython3.6m`,
     # so maybe it means "don't manually add `-lpython`"?
@@ -95,7 +107,9 @@ ifeq ($(HASPYTHON3),0)
     # ... MUST be placed at the top of the DataModel.h file.
     # Dunno why, but otherwise it complains "invalid conversion from 'int' to 'const char*'"
 else
-    $(warn "Did not find python3-config...")
+    $(info Did not find python3, Tools depending on python will not be enabled)
+    # for some reason the warning doesn't print for some make versions?
+    #$(warn "Did not find python3, Tools depending on python will not be enabled")
 endif
 
 # support compression in BStores

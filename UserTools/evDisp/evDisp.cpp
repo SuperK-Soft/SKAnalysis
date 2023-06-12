@@ -77,30 +77,32 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	}
 	
 	// canvas for plotting
-	displayCanvas = new TCanvas();  // if we name it, name must be unique - prevents duplicate Tools.
-	((TRootCanvas*)displayCanvas->GetCanvasImp())->Resize(1024,700); // FIXME make unique names automatically
-	/* divide up the canvas:
-	 __________
-	| ———  ——— |
-	||TOP||BOT||
-	| ———  ——— |
-	| ———————— |
-	|| BARREL ||
-	| ———————— |
-	 ‾‾‾‾‾‾‾‾‾‾
-	*/
-	displayCanvas->Divide(1,2);
-	displayPad = displayCanvas->cd(1);
-	displayPad->Divide(2,1);
-	displayCanvas->cd(1);
-	displayPad->cd(1);
-	gPad->SetFrameFillColor(1); // black fill
-	displayPad->cd(2);
-	gPad->SetFrameFillColor(1); // black fill
-	displayCanvas->cd(2);
-	gPad->SetFrameFillColor(1); // black fill
+    if(plotStyle==0 || plotStyle==1){
+		displayCanvas = new TCanvas();  // if we name it, name must be unique - prevents duplicate Tools.
+		((TRootCanvas*)displayCanvas->GetCanvasImp())->Resize(1024,700); // FIXME make unique names automatically
+		/* divide up the canvas:
+		 __________
+		| ———  ——— |
+		||TOP||BOT||
+		| ———  ——— |
+		| ———————— |
+		|| BARREL ||
+		| ———————— |
+		 ‾‾‾‾‾‾‾‾‾‾
+		*/
+		displayCanvas->Divide(1,2);
+		displayPad = displayCanvas->cd(1);
+		displayPad->Divide(2,1);
+		displayCanvas->cd(1);
+		displayPad->cd(1);
+		gPad->SetFrameFillColor(1); // black fill
+		displayPad->cd(2);
+		gPad->SetFrameFillColor(1); // black fill
+		displayCanvas->cd(2);
+		gPad->SetFrameFillColor(1); // black fill
+		gStyle->SetOptStat(0);   // disable stats box
+	}
 	
-	gStyle->SetOptStat(0);   // disable stats box
 //	gStyle->SetPalette(57);  // kBird doesn't seem to exist in ROOT 5, do it ourselves
 //	Double_t stops[9] = { 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000 };
 	Double_t stops[9] = {0.0000, 0.03210, 0.0642, 0.1383, 0.2260, 0.3333, 0.4716, 0.6666, 1.0000 };  //XXX
@@ -472,7 +474,7 @@ bool evDisp::Execute(){
 		barrelHeatMap->Draw("COL");
 	}
 	
-	gPad->WaitPrimitive();
+	if(plotStyle==0 || plotStyle==1) gPad->WaitPrimitive();
 	
 	//displayCanvas->SaveAs("HeatMap.png");
 	

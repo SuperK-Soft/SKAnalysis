@@ -65,6 +65,7 @@ class SimplifyTree: public Tool {
 	// ======================
 	TFile* fout = nullptr;
 	TTree* outtree = nullptr;
+	std::string outputdir;
 	float tubePosition[3];
 	// simple output TTree branches
 	int sk_phase;

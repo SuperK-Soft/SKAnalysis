@@ -1,6 +1,9 @@
-verbosity 1
+verbosity 10
 readerName sk2p2mevReader
-inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
+#inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root
+inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_added.root
 treeName data                                     # the name of the tree within the file
 maxEntries -1                                     # max num input entries to process
 skFile 0                                          # do not call SKREAD/SKRAWREAD - no need.

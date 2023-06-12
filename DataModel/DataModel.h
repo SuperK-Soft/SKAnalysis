@@ -24,11 +24,22 @@
 #include "Utilities.h"
 #include "StoreToTTree.h"
 #include "Constants.h"
+#include "Algorithms.h"
 
 #include "EventCandidates.h"
 #include "EventParticles.h"
 #include "EventTrueCaptures.h"
 #include "PMTHitCluster.h"
+
+#include "MParticle.h"
+#include "NCapture.h"
+#include "NCaptCandidate.h"
+
+#include "TParticlePDG.h"
+#include "TDatabasePDG.h"
+
+#include "MParticle.h"
+#include "MVertex.h"
 
 class MTreeReader;
 class MTreeSelection;
@@ -53,6 +64,11 @@ class DataModel {
   
   DataModel(); ///< Simple constructor
   ~DataModel(); ///< Simple destructor
+  
+  // some of our helper classes in the DataModel dir could benefit from access
+  // to the datamodel. make it a singleton (we only have one anyway)
+  static DataModel* GetInstance(){ return thisptr; }
+  static DataModel* thisptr;
 
   //TTree* GetTTree(std::string name);
   //void AddTTree(std::string name,TTree *tree);
@@ -94,16 +110,19 @@ class DataModel {
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
   BStore &eventVariables;   // use references to preserve current behaviour...
   
-  // Hits
+  // NTag classes
   PMTHitCluster eventPMTHits;
-  // Candidates
   EventCandidates eventCandidates;
-  // Primaries (MC)
   EventParticles eventPrimaries;
-  // Secondaries (MC)
   EventParticles eventSecondaries;
-  // Neutron captures (MC)
   EventTrueCaptures eventTrueCaptures;
+  
+  const TDatabasePDG* pdgdb = TDatabasePDG::Instance();
+  std::vector<MParticle> eventParticles;
+  std::vector<MVertex> eventVertices;
+  // generalised neutron captures
+  std::map<std::string,std::vector<NCaptCandidate>> NCaptureCandidates;
+  std::vector<NCapture> NCapturesTrue;
   
   std::map<std::string, Store*> tool_configs;
   StoreToTTree StoreConverter;
@@ -118,7 +137,6 @@ class DataModel {
   
   
 };
-
 
 
 #endif
