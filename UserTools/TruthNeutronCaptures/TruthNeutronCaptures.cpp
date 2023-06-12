@@ -300,17 +300,32 @@ int TruthNeutronCaptures::CalculateVariables(){
 			Log(toolName+" primary parent index "+toString(primary_parent_index)
 						+" secondary parent index "+toString(secondary_parent_index),v_debug,verbosity);
 			// first check if it has a valid SECONDARY parent
-			if(secondary_parent_index>0){
-				// its parent was a secondary: check if it's in our list of secondary neutrons
-				if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
-					neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
-				}
-				// else its parent was a secondary, but not one we know
-				else if(from_ncapture){
-					// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-					Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT INDEX "
-							+toString(secondary_parent_index),v_warning,verbosity);
-					continue;
+			if(std::abs(secondary_parent_index)>0){
+				if(secondary_parent_index>0){
+					// its parent was a secondary: check if it's in our list of secondary neutrons
+					if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
+						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
+					}
+					// else its parent was a secondary, but not one we know
+					else if(from_ncapture){
+						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
+						Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT INDEX "
+								+toString(secondary_parent_index),v_warning,verbosity);
+						continue;
+					}
+				} else {
+					// its parent was a primary: check if it's in our list of primary neutrons
+					secondary_parent_index = std::abs(secondary_parent_index);
+					if(primary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
+						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
+					}
+					// else its parent was a secondary, but not one we know
+					else if(from_ncapture){
+						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
+						Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT INDEX "
+								+toString(secondary_parent_index),v_warning,verbosity);
+						continue;
+					}
 				}
 			}
 			// only fall-back to getting parent PRIMARY if parent secondary index = 0
@@ -419,17 +434,32 @@ int TruthNeutronCaptures::CalculateVariables(){
 			Log(toolName+" primary parent index "+toString(primary_parent_index)
 						+" secondary parent index "+toString(secondary_parent_index),v_debug,verbosity);
 			// first check if it has a valid SECONDARY parent
-			if(secondary_parent_index>0){
-				// its parent was a secondary: check if it's in our list of secondary neutrons
-				if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
-					neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
-				}
-				// else its parent was a secondary, but not one we know
-				else {
-					// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-					Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT"
-							+toString(secondary_parent_index),v_warning,verbosity);
-					continue;
+			if(std::abs(secondary_parent_index)>0){
+				if(secondary_parent_index>0){
+					// its parent was a secondary: check if it's in our list of secondary neutrons
+					if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
+						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
+					}
+					// else its parent was a secondary, but not one we know
+					else {
+						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
+						Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT"
+								+toString(secondary_parent_index),v_warning,verbosity);
+						continue;
+					}
+				} else {
+					// its parent was a primary: check if it's in our list of secondary neutrons
+					secondary_parent_index = std::abs(secondary_parent_index);
+					if(primary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
+						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
+					}
+					// else its parent was a primary, but not one we know
+					else {
+						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
+						Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT"
+								+toString(secondary_parent_index),v_warning,verbosity);
+						continue;
+					}
 				}
 			}
 			// only fall-back to getting parent PRIMARY if parent secondary index = 0
@@ -525,15 +555,28 @@ int TruthNeutronCaptures::CalculateVariables(){
 			int neutron_parent_loc=-1;
 			int primary_parent_index = parent_trackid.at(secondary_i);
 			int secondary_parent_index = parent_index.at(secondary_i);
-			if(secondary_parent_index>0){
-				if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
-					neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
+			if(std::abs(secondary_parent_index)>0){
+				if(secondary_parent_index>0){
+					if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
+						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
+					} else {
+						// came from capture of a neutron we don't know?
+						Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+							+" FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT (NEUTRON) INDEX "
+								+toString(secondary_parent_index),v_warning,verbosity);
+						continue;
+					}
 				} else {
-					// came from capture of a neutron we don't know?
-					Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
-						+" FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT (NEUTRON) INDEX "
-							+toString(secondary_parent_index),v_warning,verbosity);
-					continue;
+					secondary_parent_index=std::abs(secondary_parent_index);
+					if(primary_n_ind_to_loc.count(secondary_parent_index-1)){ // -1 as indices are 1-based
+						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
+					} else {
+						// came from capture of a neutron we don't know?
+						Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+							+" FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT (NEUTRON) INDEX "
+								+toString(secondary_parent_index),v_warning,verbosity);
+						continue;
+					}
 				}
 			} else if(primary_parent_index>0){
 				if(primary_n_ind_to_loc.count(primary_parent_index-1)){  // -1 as indices are 1-based
