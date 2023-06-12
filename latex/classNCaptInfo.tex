@@ -1,0 +1,144 @@
+\hypertarget{classNCaptInfo}{}\doxysection{NCapt\+Info Class Reference}
+\label{classNCaptInfo}\index{NCaptInfo@{NCaptInfo}}
+
+
+{\ttfamily \#include $<$NCapt\+Info.\+h$>$}
+
+Inheritance diagram for NCapt\+Info\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.000000cm]{classNCaptInfo}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_ac55b6f1d52d3898af4cd9a56826b149c}\label{classNCaptInfo_ac55b6f1d52d3898af4cd9a56826b149c}} 
+\mbox{\hyperlink{classNCaptInfo_ac55b6f1d52d3898af4cd9a56826b149c}{NCapt\+Info}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classNCaptInfo_a96dc7d1c33378afd0b3c519d16b5badb}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classNCaptInfo_a54e08a5537991853e2c71778bdc68784}\label{classNCaptInfo_a54e08a5537991853e2c71778bdc68784}} 
+bool \mbox{\hyperlink{classNCaptInfo_a54e08a5537991853e2c71778bdc68784}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool perpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classNCaptInfo_aa927e181c665793f4b192acc8fbb041c}\label{classNCaptInfo_aa927e181c665793f4b192acc8fbb041c}} 
+bool \mbox{\hyperlink{classNCaptInfo_aa927e181c665793f4b192acc8fbb041c}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classNCaptInfo_afc9b2e48d156a51e21678a3cc642efff}\label{classNCaptInfo_afc9b2e48d156a51e21678a3cc642efff}} 
+virtual bool {\bfseries Get\+Candidates} (std\+::vector$<$ \mbox{\hyperlink{classNCaptCandidate}{NCapt\+Candidate}} $>$ \&candidates)=0
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a7f23337e80dd935bd65b9e906c183dd9}\label{classNCaptInfo_a7f23337e80dd935bd65b9e906c183dd9}} 
+bool {\bfseries Match\+To\+True\+Captures} ()
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a5d59eac3471babdf6e33ffb6a5d7a6b4}\label{classNCaptInfo_a5d59eac3471babdf6e33ffb6a5d7a6b4}} 
+bool {\bfseries Match\+Mistags} ()
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a09ba3727b589c21f6b2b37b3256c2381}\label{classNCaptInfo_a09ba3727b589c21f6b2b37b3256c2381}} 
+bool {\bfseries Print\+Candidates} ()
+\item 
+\mbox{\Hypertarget{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}\label{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}} 
+bool {\bfseries Make\+Plots} (int step)
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a33fdc9f6421f5360e5404d979d8168ea}\label{classNCaptInfo_a33fdc9f6421f5360e5404d979d8168ea}} 
+\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$ {\bfseries my\+Tree\+Reader}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a419cec7816f8bd123b77089168a6d522}\label{classNCaptInfo_a419cec7816f8bd123b77089168a6d522}} 
+std\+::string {\bfseries m\+\_\+unique\+\_\+name} =\char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_ab195e8a5bd20259be82cc90a9f835d8e}\label{classNCaptInfo_ab195e8a5bd20259be82cc90a9f835d8e}} 
+bool {\bfseries match\+\_\+mistags} =false
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a289f10dac5224de91a0c15d49a5364af}\label{classNCaptInfo_a289f10dac5224de91a0c15d49a5364af}} 
+double {\bfseries time\+\_\+match\+\_\+tolerance}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a1b21ae3d68ae3ebbe275db273e840726}\label{classNCaptInfo_a1b21ae3d68ae3ebbe275db273e840726}} 
+double {\bfseries dist\+\_\+match\+\_\+tolerance}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a8bcc518286b55539a189c4454f878c07}\label{classNCaptInfo_a8bcc518286b55539a189c4454f878c07}} 
+double {\bfseries likelihood\+\_\+threshold}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a02ac3db6dc006e6a434c93177e8dcad6}\label{classNCaptInfo_a02ac3db6dc006e6a434c93177e8dcad6}} 
+TH1D $\ast$ {\bfseries h\+\_\+likelihood} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_afabbce037bce97e36634d96781b321fe}\label{classNCaptInfo_afabbce037bce97e36634d96781b321fe}} 
+TH1D $\ast$ {\bfseries h\+\_\+tdiff} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_acfe58bdf6474f91afc7c66b3685bcb32}\label{classNCaptInfo_acfe58bdf6474f91afc7c66b3685bcb32}} 
+TH1D $\ast$ {\bfseries h\+\_\+xdiff} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a7b9550bc88667a3ffbfbd28412753822}\label{classNCaptInfo_a7b9550bc88667a3ffbfbd28412753822}} 
+TH1D $\ast$ {\bfseries h\+\_\+ydiff} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a5f8bb76349b482771dbf4afa8cdba1a3}\label{classNCaptInfo_a5f8bb76349b482771dbf4afa8cdba1a3}} 
+TH1D $\ast$ {\bfseries h\+\_\+zdiff} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a75cfd56f067036bae0f03ff5deb5def9}\label{classNCaptInfo_a75cfd56f067036bae0f03ff5deb5def9}} 
+TH1D $\ast$ {\bfseries h\+\_\+rdiff} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_ab55eec6b1ea02538746b1dd0c61e2501}\label{classNCaptInfo_ab55eec6b1ea02538746b1dd0c61e2501}} 
+TH2D $\ast$ {\bfseries h\+\_\+tdiff\+\_\+vs\+\_\+metric} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a8169e6f4a31b40e60be4ef384b011023}\label{classNCaptInfo_a8169e6f4a31b40e60be4ef384b011023}} 
+TH2D $\ast$ {\bfseries h\+\_\+rdiff\+\_\+vs\+\_\+metric} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a1688c8995b6fff30e6c1cd2b97d2176d}\label{classNCaptInfo_a1688c8995b6fff30e6c1cd2b97d2176d}} 
+int {\bfseries verbosity} =1
+\item 
+\mbox{\Hypertarget{classNCaptInfo_ae314d9522e2aabc913df43c431671ed3}\label{classNCaptInfo_ae314d9522e2aabc913df43c431671ed3}} 
+int {\bfseries v\+\_\+error} =0
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a8109c7030054224e09369f34f8ef2772}\label{classNCaptInfo_a8109c7030054224e09369f34f8ef2772}} 
+int {\bfseries v\+\_\+warning} =1
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a0ebac0f84a20a10af110de59f68f12d6}\label{classNCaptInfo_a0ebac0f84a20a10af110de59f68f12d6}} 
+int {\bfseries v\+\_\+message} =2
+\item 
+\mbox{\Hypertarget{classNCaptInfo_adc7356614a82ec651d8fbe4de2462835}\label{classNCaptInfo_adc7356614a82ec651d8fbe4de2462835}} 
+int {\bfseries v\+\_\+debug} =3
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a76e67639eef069ece0d84d8b07d917aa}\label{classNCaptInfo_a76e67639eef069ece0d84d8b07d917aa}} 
+std\+::string {\bfseries logmessage} =\char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_aabdf096a52874a064fb68383e886e45a}\label{classNCaptInfo_aabdf096a52874a064fb68383e886e45a}} 
+int {\bfseries get\+\_\+ok} =0
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This is an abstract base class for a Tool that converts neutron tagging information into a generalised form. Add support for your own ntagger by making a class that derives from this, and overrides the pure virtual function Get\+Candidates. See existing cases for examples.
+
+\begin{DoxyParagraph}{Author}
+M.\+O 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2023/05/09 
+\end{DoxyParagraph}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classNCaptInfo_a96dc7d1c33378afd0b3c519d16b5badb}\label{classNCaptInfo_a96dc7d1c33378afd0b3c519d16b5badb}} 
+\index{NCaptInfo@{NCaptInfo}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!NCaptInfo@{NCaptInfo}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool NCapt\+Info\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+NCapt\+Info/NCapt\+Info.\+h\item 
+User\+Tools/\+NCapt\+Info/NCapt\+Info.\+cpp\end{DoxyCompactItemize}

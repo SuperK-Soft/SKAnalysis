@@ -63,7 +63,9 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="classDataModel-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">DataModel Class Reference</div>  </div>
@@ -115,6 +117,12 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>FreeLUN</b> (int lun,
 <tr class="memitem:a299b24ca8478fefd9ed071e116f687b9"><td class="memItemLeft" align="right" valign="top"><a id="a299b24ca8478fefd9ed071e116f687b9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>KZInit</b> ()</td></tr>
 <tr class="separator:a299b24ca8478fefd9ed071e116f687b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a526ef8f5277b12be27b09a53b1a655d2"><td class="memItemLeft" align="right" valign="top"><a id="a526ef8f5277b12be27b09a53b1a655d2"></a>
+static <a class="el" href="classDataModel.html">DataModel</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>GetInstance</b> ()</td></tr>
+<tr class="separator:a526ef8f5277b12be27b09a53b1a655d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -178,12 +186,33 @@ BStore &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>eventVariable
 <tr class="memitem:a7f75a37f69f6da41c1b806d7598ebd1f"><td class="memItemLeft" align="right" valign="top"><a id="a7f75a37f69f6da41c1b806d7598ebd1f"></a>
 <a class="el" href="classEventTrueCaptures.html">EventTrueCaptures</a>&#160;</td><td class="memItemRight" valign="bottom"><b>eventTrueCaptures</b></td></tr>
 <tr class="separator:a7f75a37f69f6da41c1b806d7598ebd1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2550557d393075804435778eb720159f"><td class="memItemLeft" align="right" valign="top"><a id="a2550557d393075804435778eb720159f"></a>
+const TDatabasePDG *&#160;</td><td class="memItemRight" valign="bottom"><b>pdgdb</b> = TDatabasePDG::Instance()</td></tr>
+<tr class="separator:a2550557d393075804435778eb720159f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a03616103fc50a47961dad81523652a71"><td class="memItemLeft" align="right" valign="top"><a id="a03616103fc50a47961dad81523652a71"></a>
+std::vector&lt; <a class="el" href="classMParticle.html">MParticle</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>eventParticles</b></td></tr>
+<tr class="separator:a03616103fc50a47961dad81523652a71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0ad4f2fb4d85222f1d63a7d569673bd"><td class="memItemLeft" align="right" valign="top"><a id="ab0ad4f2fb4d85222f1d63a7d569673bd"></a>
+std::vector&lt; <a class="el" href="classMVertex.html">MVertex</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>eventVertices</b></td></tr>
+<tr class="separator:ab0ad4f2fb4d85222f1d63a7d569673bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4c92adf24ee3bfde854d2abb62a8104"><td class="memItemLeft" align="right" valign="top"><a id="aa4c92adf24ee3bfde854d2abb62a8104"></a>
+std::map&lt; std::string, std::vector&lt; <a class="el" href="classNCaptCandidate.html">NCaptCandidate</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NCaptureCandidates</b></td></tr>
+<tr class="separator:aa4c92adf24ee3bfde854d2abb62a8104"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dfe634a70a429b8c866ea014a925189"><td class="memItemLeft" align="right" valign="top"><a id="a2dfe634a70a429b8c866ea014a925189"></a>
+std::vector&lt; <a class="el" href="classNCapture.html">NCapture</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NCapturesTrue</b></td></tr>
+<tr class="separator:a2dfe634a70a429b8c866ea014a925189"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc4e01e3ae0cb17f41e7f1994257a9d6"><td class="memItemLeft" align="right" valign="top"><a id="adc4e01e3ae0cb17f41e7f1994257a9d6"></a>
 std::map&lt; std::string, Store * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>tool_configs</b></td></tr>
 <tr class="separator:adc4e01e3ae0cb17f41e7f1994257a9d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a61376b2b951b3360fd4f4c81e22e9bb2"><td class="memItemLeft" align="right" valign="top"><a id="a61376b2b951b3360fd4f4c81e22e9bb2"></a>
 <a class="el" href="classStoreToTTree.html">StoreToTTree</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StoreConverter</b></td></tr>
 <tr class="separator:a61376b2b951b3360fd4f4c81e22e9bb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:abc0c26148f3fd3ded873623daf4c0b57"><td class="memItemLeft" align="right" valign="top"><a id="abc0c26148f3fd3ded873623daf4c0b57"></a>
+static <a class="el" href="classDataModel.html">DataModel</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>thisptr</b> =0</td></tr>
+<tr class="separator:abc0c26148f3fd3ded873623daf4c0b57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This class Is a transient data model class for your Tools within the ToolChain. If Tools need to comunicate they pass all data objects through the data model. There fore inter tool data objects should be deffined in this class.</p>

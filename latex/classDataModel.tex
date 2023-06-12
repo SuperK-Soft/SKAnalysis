@@ -46,6 +46,12 @@ bool {\bfseries Free\+LUN} (int lun, std\+::string reader=\char`\"{}\char`\"{})
 \mbox{\Hypertarget{classDataModel_a299b24ca8478fefd9ed071e116f687b9}\label{classDataModel_a299b24ca8478fefd9ed071e116f687b9}} 
 void {\bfseries KZInit} ()
 \end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classDataModel_a526ef8f5277b12be27b09a53b1a655d2}\label{classDataModel_a526ef8f5277b12be27b09a53b1a655d2}} 
+static \mbox{\hyperlink{classDataModel}{Data\+Model}} $\ast$ {\bfseries Get\+Instance} ()
+\end{DoxyCompactItemize}
 \doxysubsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
@@ -103,11 +109,32 @@ BStore \& {\bfseries event\+Variables}
 \mbox{\Hypertarget{classDataModel_a7f75a37f69f6da41c1b806d7598ebd1f}\label{classDataModel_a7f75a37f69f6da41c1b806d7598ebd1f}} 
 \mbox{\hyperlink{classEventTrueCaptures}{Event\+True\+Captures}} {\bfseries event\+True\+Captures}
 \item 
+\mbox{\Hypertarget{classDataModel_a2550557d393075804435778eb720159f}\label{classDataModel_a2550557d393075804435778eb720159f}} 
+const TDatabase\+PDG $\ast$ {\bfseries pdgdb} = TDatabase\+PDG\+::\+Instance()
+\item 
+\mbox{\Hypertarget{classDataModel_a03616103fc50a47961dad81523652a71}\label{classDataModel_a03616103fc50a47961dad81523652a71}} 
+std\+::vector$<$ \mbox{\hyperlink{classMParticle}{MParticle}} $>$ {\bfseries event\+Particles}
+\item 
+\mbox{\Hypertarget{classDataModel_ab0ad4f2fb4d85222f1d63a7d569673bd}\label{classDataModel_ab0ad4f2fb4d85222f1d63a7d569673bd}} 
+std\+::vector$<$ \mbox{\hyperlink{classMVertex}{MVertex}} $>$ {\bfseries event\+Vertices}
+\item 
+\mbox{\Hypertarget{classDataModel_aa4c92adf24ee3bfde854d2abb62a8104}\label{classDataModel_aa4c92adf24ee3bfde854d2abb62a8104}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ \mbox{\hyperlink{classNCaptCandidate}{NCapt\+Candidate}} $>$ $>$ {\bfseries NCapture\+Candidates}
+\item 
+\mbox{\Hypertarget{classDataModel_a2dfe634a70a429b8c866ea014a925189}\label{classDataModel_a2dfe634a70a429b8c866ea014a925189}} 
+std\+::vector$<$ \mbox{\hyperlink{classNCapture}{NCapture}} $>$ {\bfseries NCaptures\+True}
+\item 
 \mbox{\Hypertarget{classDataModel_adc4e01e3ae0cb17f41e7f1994257a9d6}\label{classDataModel_adc4e01e3ae0cb17f41e7f1994257a9d6}} 
 std\+::map$<$ std\+::string, Store $\ast$ $>$ {\bfseries tool\+\_\+configs}
 \item 
 \mbox{\Hypertarget{classDataModel_a61376b2b951b3360fd4f4c81e22e9bb2}\label{classDataModel_a61376b2b951b3360fd4f4c81e22e9bb2}} 
 \mbox{\hyperlink{classStoreToTTree}{Store\+To\+TTree}} {\bfseries Store\+Converter}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classDataModel_abc0c26148f3fd3ded873623daf4c0b57}\label{classDataModel_abc0c26148f3fd3ded873623daf4c0b57}} 
+static \mbox{\hyperlink{classDataModel}{Data\+Model}} $\ast$ {\bfseries thisptr} =0
 \end{DoxyCompactItemize}
 
 

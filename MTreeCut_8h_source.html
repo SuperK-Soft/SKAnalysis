@@ -77,84 +77,85 @@ $(function() {
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160; </div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;TEntryList.h&quot;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;TTree.h&quot;</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;SerialisableObject.h&quot;</span>  <span class="comment">// so we can put these in a BStore</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;BinaryStream.h&quot;</span>        <span class="comment">// so we can put these in a BStore</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classMTreeCut.html">   13</a></span>&#160;<span class="keyword">class </span><a class="code" href="classMTreeCut.html">MTreeCut</a> : <span class="keyword">public</span> SerialisableObject {</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    </div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="comment">// for all types</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <a class="code" href="classMTreeCut.html">MTreeCut</a>(TFile* outfilein, std::string cutname);</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <a class="code" href="classMTreeCut.html">MTreeCut</a>(std::string cutname, TEntryList* inelist, TTree* intree);</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    ~<a class="code" href="classMTreeCut.html">MTreeCut</a>();</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    std::string mode=<span class="stringliteral">&quot;&quot;</span>;  <span class="comment">// can be &quot;read&quot; or &quot;write&quot;. Determines whether destructor performs cleanup.</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    std::string cut_name;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    std::string cut_description;   <span class="comment">// TODO store the cut values etc in here! if mu_time&lt;250, store the value 250!</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    TFile* outfile=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    TEntryList* ttree_entries=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    TTree* additional_indices=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">int</span> type=-1;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="comment">// -1; uninitialized,</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="comment">//  0: simple, an &quot;event&quot; is a TTree entry</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="comment">//  1: an &quot;event&quot; is described by a specific element of an array branch in TTree entry</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="comment">//  2: an &quot;event&quot; is described by a set of &gt;1 elements in various array branches in a TTree entry</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="comment">// </span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="comment">// e.g., if TTree has branches:</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="comment">// &quot;num_hits&quot; (float)</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="comment">// &quot;hit_charge&quot; (float[num_hits])</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="comment">// &quot;hit_time&quot; (float[num_hits])</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="comment">// then a cut &quot;num_hits&gt;5&quot; would be type 0</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="comment">//      a cut &quot;hit_charge&gt;5.f&quot; would be type 1 (an &quot;event&quot; represents a single hit that passes this cut)</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="comment">//      a cut &quot;hit_charge&gt;5.f &amp;&amp; hit_time&lt;25e3&quot; would be type 2</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="comment">// for type 1</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    std::string additional_branchname;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    std::vector&lt;std::string&gt; linked_branch_list;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::set&lt;size_t&gt; indexes_this_entry;               </div>
-<div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">   44</a></span>&#160;    std::set&lt;size_t&gt;* <a class="code" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">indexes_this_entry_p</a>=<span class="keyword">nullptr</span>;   <span class="comment">// required when reading, must stay in memory!</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="comment">// for type 2</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    std::vector&lt;std::string&gt; additional_branchnames;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    std::vector&lt;std::vector&lt;std::string&gt;&gt; linked_branch_lists;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; indices_this_entry;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt;* indices_this_entry_p=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    Long64_t current_entry=-1;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    Long64_t tlist_entry=-1;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    Long64_t total_entries=-1;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::string indexcutbranch, std::vector&lt;std::string&gt; linkedbranches);</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::vector&lt;std::string&gt; indexcutbranches, std::vector&lt;std::vector&lt;std::string&gt;&gt; linkedbranches);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordtype">void</span> SetEntryList(TEntryList* inelist);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">void</span> SetTree(TTree* intree);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordtype">void</span> SetSaveFile(TFile* outfilein);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">void</span> SetBranchAddresses();</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">bool</span> GetMetaInfo();</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordtype">bool</span> Enter(Long64_t entry_number, TTree* treeptr=<span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordtype">bool</span> Enter(Long64_t entry_number, <span class="keywordtype">size_t</span> index, TTree* treeptr=<span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">bool</span> Enter(Long64_t entry_number, std::vector&lt;size_t&gt;&amp; indices, TTree* treeptr=<span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">bool</span> Flush();</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">void</span> Write();</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    Long64_t GetCurrentEntry();</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    Long64_t GetNextEntry();</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    std::set&lt;size_t&gt; GetPassingIndexes();</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; GetPassingIndices();</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="comment">// required for SerialisableObjects</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">bool</span> Serialise(BinaryStream &amp;bs);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">bool</span> Print();</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    std::string GetVersion();</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;};</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassMTreeCut_html"><div class="ttname"><a href="classMTreeCut.html">MTreeCut</a></div><div class="ttdef"><b>Definition:</b> MTreeCut.h:13</div></div>
-<div class="ttc" id="aclassMTreeCut_html_a1962c19e22c32b2205996ff85005b7f6"><div class="ttname"><a href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">MTreeCut::indexes_this_entry_p</a></div><div class="ttdeci">std::set&lt; size_t &gt; * indexes_this_entry_p</div><div class="ttdoc">use a set to prevent duplicates.</div><div class="ttdef"><b>Definition:</b> MTreeCut.h:44</div></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;TObjString.h&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;SerialisableObject.h&quot;</span>  <span class="comment">// so we can put these in a BStore</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &quot;BinaryStream.h&quot;</span>        <span class="comment">// so we can put these in a BStore</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="classMTreeCut.html">   14</a></span>&#160;<span class="keyword">class </span><a class="code" href="classMTreeCut.html">MTreeCut</a> : <span class="keyword">public</span> SerialisableObject {</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="comment">// for all types</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <a class="code" href="classMTreeCut.html">MTreeCut</a>(TFile* outfilein, std::string cutname);</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <a class="code" href="classMTreeCut.html">MTreeCut</a>(std::string cutname, TEntryList* inelist, TTree* intree);</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    ~<a class="code" href="classMTreeCut.html">MTreeCut</a>();</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    std::string mode=<span class="stringliteral">&quot;&quot;</span>;  <span class="comment">// can be &quot;read&quot; or &quot;write&quot;. Determines whether destructor performs cleanup.</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    std::string cut_name;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    std::string cut_description;   <span class="comment">// TODO store the cut values etc in here! if mu_time&lt;250, store the value 250!</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    TFile* outfile=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    TEntryList* ttree_entries=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    TTree* additional_indices=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">int</span> type=-1;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="comment">// -1; uninitialized,</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="comment">//  0: simple, an &quot;event&quot; is a TTree entry</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="comment">//  1: an &quot;event&quot; is described by a specific element of an array branch in TTree entry</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="comment">//  2: an &quot;event&quot; is described by a set of &gt;1 elements in various array branches in a TTree entry</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="comment">// </span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="comment">// e.g., if TTree has branches:</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="comment">// &quot;num_hits&quot; (float)</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="comment">// &quot;hit_charge&quot; (float[num_hits])</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="comment">// &quot;hit_time&quot; (float[num_hits])</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="comment">// then a cut &quot;num_hits&gt;5&quot; would be type 0</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="comment">//      a cut &quot;hit_charge&gt;5.f&quot; would be type 1 (an &quot;event&quot; represents a single hit that passes this cut)</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="comment">//      a cut &quot;hit_charge&gt;5.f &amp;&amp; hit_time&lt;25e3&quot; would be type 2</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// for type 1</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    std::string additional_branchname;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::vector&lt;std::string&gt; linked_branch_list;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    std::set&lt;size_t&gt; indexes_this_entry;               </div>
+<div class="line"><a name="l00045"></a><span class="lineno"><a class="line" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">   45</a></span>&#160;    std::set&lt;size_t&gt;* <a class="code" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">indexes_this_entry_p</a>=<span class="keyword">nullptr</span>;   <span class="comment">// required when reading, must stay in memory!</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="comment">// for type 2</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    std::vector&lt;std::string&gt; additional_branchnames;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    std::vector&lt;std::vector&lt;std::string&gt;&gt; linked_branch_lists;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; indices_this_entry;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt;* indices_this_entry_p=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    Long64_t current_entry=-1;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    Long64_t tlist_entry=-1;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    Long64_t total_entries=-1;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    </div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::string indexcutbranch, std::vector&lt;std::string&gt; linkedbranches);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::vector&lt;std::string&gt; indexcutbranches, std::vector&lt;std::vector&lt;std::string&gt;&gt; linkedbranches);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">void</span> SetEntryList(TEntryList* inelist);</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordtype">void</span> SetTree(TTree* intree);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">void</span> SetSaveFile(TFile* outfilein);</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">void</span> SetBranchAddresses();</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordtype">bool</span> GetMetaInfo();</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordtype">bool</span> Enter(Long64_t entry_number, TTree* treeptr=<span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">bool</span> Enter(Long64_t entry_number, <span class="keywordtype">size_t</span> index, TTree* treeptr=<span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">bool</span> Enter(Long64_t entry_number, std::vector&lt;size_t&gt;&amp; indices, TTree* treeptr=<span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">bool</span> Flush();</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">void</span> Write();</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    Long64_t GetCurrentEntry();</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    Long64_t GetNextEntry();</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    std::set&lt;size_t&gt; GetPassingIndexes();</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; GetPassingIndices();</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="comment">// required for SerialisableObjects</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">bool</span> Serialise(BinaryStream &amp;bs);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">bool</span> Print();</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    std::string GetVersion();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;};</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassMTreeCut_html"><div class="ttname"><a href="classMTreeCut.html">MTreeCut</a></div><div class="ttdef"><b>Definition:</b> MTreeCut.h:14</div></div>
+<div class="ttc" id="aclassMTreeCut_html_a1962c19e22c32b2205996ff85005b7f6"><div class="ttname"><a href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">MTreeCut::indexes_this_entry_p</a></div><div class="ttdeci">std::set&lt; size_t &gt; * indexes_this_entry_p</div><div class="ttdoc">use a set to prevent duplicates.</div><div class="ttdef"><b>Definition:</b> MTreeCut.h:45</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

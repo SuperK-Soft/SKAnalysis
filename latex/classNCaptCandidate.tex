@@ -1,0 +1,90 @@
+\hypertarget{classNCaptCandidate}{}\doxysection{NCapt\+Candidate Class Reference}
+\label{classNCaptCandidate}\index{NCaptCandidate@{NCaptCandidate}}
+\doxysubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_ac84d70ec644906aa40461ee1b9e8a97b}\label{classNCaptCandidate_ac84d70ec644906aa40461ee1b9e8a97b}} 
+enum class {\bfseries match\+Type} \{ \newline
+{\bfseries k\+Not\+Set} =-\/1
+, {\bfseries k\+Mistag} =0
+, {\bfseries k\+HCapture} =1
+, {\bfseries k\+Gd\+Capture} =2
+, \newline
+{\bfseries k\+Unknown\+Capture} =3
+, {\bfseries k\+Decaye} =4
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_aa8c885592ee3c80f330e23d29681186e}\label{classNCaptCandidate_aa8c885592ee3c80f330e23d29681186e}} 
+std\+::string {\bfseries Get\+Match\+Type} ()
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_adffdf3651cf6587ec48c43ddd5b1c98a}\label{classNCaptCandidate_adffdf3651cf6587ec48c43ddd5b1c98a}} 
+bool {\bfseries Set\+True\+Capture\+Idx} (int idx)
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_ae4d5a28334de3698d02f85eac33b2e33}\label{classNCaptCandidate_ae4d5a28334de3698d02f85eac33b2e33}} 
+\mbox{\hyperlink{classNCapture}{NCapture}} $\ast$ {\bfseries Get\+True\+Capture} ()
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_ab4a2e94fc27a493efcfc60a5dc771920}\label{classNCaptCandidate_ab4a2e94fc27a493efcfc60a5dc771920}} 
+double $\ast$ {\bfseries Get\+Terr} ()
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a1d02127f043088c6d7e468b6b418e0b5}\label{classNCaptCandidate_a1d02127f043088c6d7e468b6b418e0b5}} 
+double $\ast$ {\bfseries Get\+Pos\+Err} ()
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a683720a5af4c66d1e4a294e8f9d877a7}\label{classNCaptCandidate_a683720a5af4c66d1e4a294e8f9d877a7}} 
+void {\bfseries Print} (bool print\+Feature\+Map=false, bool print\+Feature\+Map\+Values=false)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a3d6a1445289975341d9964ef2ddee8da}\label{classNCaptCandidate_a3d6a1445289975341d9964ef2ddee8da}} 
+std\+::string {\bfseries algo}
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_aca550471cbb53f8bd0dba1a370fa8214}\label{classNCaptCandidate_aca550471cbb53f8bd0dba1a370fa8214}} 
+double {\bfseries likelihood\+\_\+metric} = -\/1
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a2ca75bb4dffba277372cb4da6aea0f68}\label{classNCaptCandidate_a2ca75bb4dffba277372cb4da6aea0f68}} 
+double {\bfseries capture\+\_\+time} = -\/1
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a54ec5717881aeea66e3375eb6db66df4}\label{classNCaptCandidate_a54ec5717881aeea66e3375eb6db66df4}} 
+TVector3 {\bfseries capture\+\_\+pos}
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a54f7c49d4e35e4fc1f610b53d3892689}\label{classNCaptCandidate_a54f7c49d4e35e4fc1f610b53d3892689}} 
+match\+Type {\bfseries matchtype} =match\+Type\+::k\+Not\+Set
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a8478a7decc51f37f81fd568d37ef1d36}\label{classNCaptCandidate_a8478a7decc51f37f81fd568d37ef1d36}} 
+BStore {\bfseries feature\+Map} \{true,constants\+::\+BSTORE\+\_\+\+BINARY\+\_\+\+FORMAT\}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const std\+::map$<$ match\+Type, std\+::string $>$ {\bfseries match\+Types}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classNCaptCandidate_aab78cd72a69a7b9f90cc35e1669d248b}\label{classNCaptCandidate_aab78cd72a69a7b9f90cc35e1669d248b}} 
+\index{NCaptCandidate@{NCaptCandidate}!matchTypes@{matchTypes}}
+\index{matchTypes@{matchTypes}!NCaptCandidate@{NCaptCandidate}}
+\doxysubsubsection{\texorpdfstring{matchTypes}{matchTypes}}
+{\footnotesize\ttfamily const std\+::map$<$ NCapt\+Candidate\+::match\+Type, std\+::string $>$ NCapt\+Candidate\+::match\+Types\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{        \{NCaptCandidate::matchType::kNotSet,\textcolor{stringliteral}{"{}Unmatched"{}}\},}
+\DoxyCodeLine{        \{NCaptCandidate::matchType::kMistag,\textcolor{stringliteral}{"{}Mistag"{}}\},}
+\DoxyCodeLine{        \{NCaptCandidate::matchType::kHCapture,\textcolor{stringliteral}{"{}H-\/capture"{}}\},}
+\DoxyCodeLine{        \{NCaptCandidate::matchType::kGdCapture,\textcolor{stringliteral}{"{}Gd-\/capture"{}}\},}
+\DoxyCodeLine{        \{NCaptCandidate::matchType::kUnknownCapture,\textcolor{stringliteral}{"{}?-\/capture"{}}\},  }
+\DoxyCodeLine{        \{NCaptCandidate::matchType::kDecaye,\textcolor{stringliteral}{"{}Decay-\/e"{}}\}}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/NCapt\+Candidate.\+h\item 
+Data\+Model/NCapt\+Candidate.\+cpp\end{DoxyCompactItemize}
