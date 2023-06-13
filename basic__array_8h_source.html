@@ -161,7 +161,7 @@ $(function() {
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    </div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">const</span> W&amp; at(<span class="keywordtype">int</span> i)<span class="keyword"> const </span>{</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keywordflow">if</span>(i&lt;0||i&gt;a_size){</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="keywordflow">throw</span> std::out_of_range (<span class="stringliteral">&quot;out of range exception requesting element &quot;</span>+std::to_string(i)+<span class="stringliteral">&quot; in &quot;</span>+__FILE__+<span class="stringliteral">&quot;::&quot;</span>+std::to_string(__LINE__));</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="keywordflow">throw</span> std::out_of_range (<span class="stringliteral">&quot;out of range exception requesting element &quot;</span>+std::to_string(i)+<span class="stringliteral">&quot; of &quot;</span>+std::to_string(a_size)+<span class="stringliteral">&quot; in &quot;</span>+__FILE__+<span class="stringliteral">&quot;::&quot;</span>+std::to_string(__LINE__));</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        }</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordflow">return</span> addr[i];</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    }</div>
@@ -303,7 +303,7 @@ $(function() {
 <div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    </div>
 <div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    <span class="keyword">const</span> <a class="code" href="classbasic__array.html">V</a>&amp; at(<span class="keywordtype">int</span> i)<span class="keyword"> const </span>{</div>
 <div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;        <span class="keywordflow">if</span>(i&lt;0||i&gt;a_size){</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;            <span class="keywordflow">throw</span> std::out_of_range (<span class="stringliteral">&quot;out of range exception requesting element &quot;</span>+std::to_string(i)+<span class="stringliteral">&quot; in &quot;</span>+__FILE__+<span class="stringliteral">&quot;::&quot;</span>+std::to_string(__LINE__));</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;            <span class="keywordflow">throw</span> std::out_of_range (<span class="stringliteral">&quot;out of range exception requesting element &quot;</span>+std::to_string(i)+<span class="stringliteral">&quot; of &quot;</span>+std::to_string(a_size)+<span class="stringliteral">&quot; in &quot;</span>+__FILE__+<span class="stringliteral">&quot;::&quot;</span>+std::to_string(__LINE__));</div>
 <div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        }</div>
 <div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;        <span class="keywordflow">return</span> subarray.at(i);</div>
 <div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    }</div>

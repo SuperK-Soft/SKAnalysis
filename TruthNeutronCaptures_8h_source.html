@@ -125,7 +125,7 @@ $(function() {
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">void</span> CopyVariables();</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">int</span> CalculateVariables();</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">int</span> GenerateHistograms();</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">int</span> ReadEntryNtuple(<span class="keywordtype">long</span> entry_number);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">int</span> GetBranchValues();</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">int</span> CreateOutputFile(std::string outputFile);</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">void</span> ClearOutputTreeBranches();</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> PrintBranches();</div>
@@ -139,7 +139,7 @@ $(function() {
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    </div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="comment">// variables to read in</span></div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="comment">// ====================</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a> myTreeReader;                                   <span class="comment">// the TTree reader</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader = <span class="keyword">nullptr</span>;                        <span class="comment">// the TTree reader</span></div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="comment">// run meta info</span></div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="comment">//int simulation version??</span></div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keywordtype">double</span> water_transparency;                                  <span class="comment">// [cm]</span></div>
@@ -260,10 +260,10 @@ $(function() {
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:60</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
 <div class="ttc" id="aclassTruthNeutronCaptures_html"><div class="ttname"><a href="classTruthNeutronCaptures.html">TruthNeutronCaptures</a></div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.h:35</div></div>
-<div class="ttc" id="aclassTruthNeutronCaptures_html_a2e9c1c533addefc72deaf46fbb9de6aa"><div class="ttname"><a href="classTruthNeutronCaptures.html#a2e9c1c533addefc72deaf46fbb9de6aa">TruthNeutronCaptures::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.cpp:114</div></div>
+<div class="ttc" id="aclassTruthNeutronCaptures_html_a2e9c1c533addefc72deaf46fbb9de6aa"><div class="ttname"><a href="classTruthNeutronCaptures.html#a2e9c1c533addefc72deaf46fbb9de6aa">TruthNeutronCaptures::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.cpp:88</div></div>
 <div class="ttc" id="aclassTruthNeutronCaptures_html_a87ed6b17f0de977d09a4741cedca15ea"><div class="ttname"><a href="classTruthNeutronCaptures.html#a87ed6b17f0de977d09a4741cedca15ea">TruthNeutronCaptures::TruthNeutronCaptures</a></div><div class="ttdeci">TruthNeutronCaptures()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.cpp:15</div></div>
 <div class="ttc" id="aclassTruthNeutronCaptures_html_a9a0fd4fdfc555e08a62fc7b436b25858"><div class="ttname"><a href="classTruthNeutronCaptures.html#a9a0fd4fdfc555e08a62fc7b436b25858">TruthNeutronCaptures::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.cpp:20</div></div>
-<div class="ttc" id="aclassTruthNeutronCaptures_html_aa942a530fd88cefde6f3f714c8c4dd5b"><div class="ttname"><a href="classTruthNeutronCaptures.html#aa942a530fd88cefde6f3f714c8c4dd5b">TruthNeutronCaptures::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.cpp:61</div></div>
+<div class="ttc" id="aclassTruthNeutronCaptures_html_aa942a530fd88cefde6f3f714c8c4dd5b"><div class="ttname"><a href="classTruthNeutronCaptures.html#aa942a530fd88cefde6f3f714c8c4dd5b">TruthNeutronCaptures::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> TruthNeutronCaptures.cpp:52</div></div>
 <div class="ttc" id="aclassbasic__array_html"><div class="ttname"><a href="classbasic__array.html">basic_array&lt; float &gt;</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
