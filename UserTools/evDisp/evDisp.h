@@ -108,7 +108,7 @@ class evDisp: public Tool {
 	int v_warning=1;
 	int v_message=2;
 	int v_debug=3;
-	std::string logmessage="";
+	std::string logmsg="";
 	int get_ok=0;
 	
 };

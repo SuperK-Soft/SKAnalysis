@@ -1,8 +1,10 @@
-include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
+#include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
+include ./skofl.gmk  # pulls in libskroot.so as well
+# skofl.gmk is copy of aboe with rfa removed from SITE_LIRBRARIES
 PWD=`pwd`
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -21,7 +23,10 @@ FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none # -falign-commons
 SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe
 
 # lowe libraries - some of these may not be required in this list
-SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lrfa -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader
+SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader -lsnevtinfo
+BINLIB = -L ${RFA_ROOT} -lrfa
+#SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++ -L/opt/intel/cce/10.0.023/lib -lirc
+#SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++
 
 # Atmospheric, Muon and Proton Decay libraries (ATMPD) Headers & Libraries
 OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
@@ -52,23 +57,37 @@ LDLIBS += $(CERNLIB)
 ROOTINCLUDE= `root-config --cflags`
 ROOTLIB = `root-config --libs --evelibs --glibs` -lMinuit -lXMLIO -lMLP
 ROOTSTLLIBS = -L${HOME}/stllibs -lRootStl
+ROOTVER := `root-config --version | cut -b 1`
+CFLAGS += -DROOTVER=\"$(ROOTVER)\"
 
 TMVASYS = $(Dependencies)/TMVA
 TMVAINCLUDE = -I $(TMVASYS)/include
 TMVALIB = -L $(TMVASYS)/lib -lTMVA.1
 
+$(info Checking for python3 and pybind...)
 # Python Headers & Libraries
-HASPYTHON3 := $(shell python3-config --cflags >/dev/null 2>&1; echo $$?)
-ifeq ($(HASPYTHON3),0)
-    CXXFLAGS+= -DPYTHON=1 
+HASPYTHON3 := $(shell sh -c "PYBIN=$$(readlink -f `which python3`); PYCONF=\"${PYBIN}-config\"; eval \"${PYCONF}\" --cflags >/dev/null 2>&1; echo $$?")
+#$(info    HASPYTHON3 is $(HASPYTHON3))
+# check we also have required python modules: pybind11
+HASPYBIND11 := $(shell sh -c "python3 -m pybind11 >/dev/null 2>&1; echo $$?")
+# Random aside: these if's need to be indented with SPACES or you get 'recipe commences before first target' error
+#ifeq ($(HASPYTHON3),0)
+# NOTE: makefiles don't support combined conditionals (if A && B), so we use shell to evaluate it.
+# makefile if is SPACE SENSITIVE, so no spaces between whats on either side of the comma:
+# if(A,B) works, if(A, B) doesn't!
+ifeq ($(shell [[ $(HASPYTHON3) == 0 && $(HASPYBIND11) == 0 ]] && echo true ),true)
+    $(info Found python3 and pybind, attempting to enable python Tools)
+    CXXFLAGS+= -DPYTHON=1
     PythonInclude = `python3-config --cflags`
-    PythonLib = `python3-config --ldflags --libs`
+    # if python version is 3.8+ we need --embed after --ldflags
+    # for python <3.8, we should not have this (TODO: detect and modify?)
+    PythonLib = `python3-config --ldflags --embed --libs`
     # note that pybind11 documentation says the following
     # | it's better to (intentionally) *not* link against libpython.
     # | The symbols will be resolved when the extension library is loaded into a Python binary.
     # | This is preferable because you might have several different installations of a given Python version
     # | (e.g. the system-provided Python, and one that ships with a piece of commercial software).
-    # | In this way, the plugin will work with both versions, instead of possibly importing a second 
+    # | In this way, the plugin will work with both versions, instead of possibly importing a second
     # | Python library into a process that already contains one (which will lead to a segfault).
     # ...?? both `python3-config --ldflags` and `python3-config --libs` both pull in `libpython3.6m`,
     # so maybe it means "don't manually add `-lpython`"?
@@ -88,7 +107,9 @@ ifeq ($(HASPYTHON3),0)
     # ... MUST be placed at the top of the DataModel.h file.
     # Dunno why, but otherwise it complains "invalid conversion from 'int' to 'const char*'"
 else
-    $(warn "Did not find python3-config...")
+    $(info Did not find python3, Tools depending on python will not be enabled)
+    # for some reason the warning doesn't print for some make versions?
+    #$(warn "Did not find python3, Tools depending on python will not be enabled")
 endif
 
 # support compression in BStores
@@ -99,6 +120,9 @@ endif
 
 # Third Reduction Library (part of SRN analysis)
 THIRDREDLIB = -L${HOME}/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
+
+# SKG4 Library
+SKG4LIB = ${SKG4Dir}/lib/libSKG4Root.so
 
 # all user classes that the user may wish to write to ROOT files require a dictionary.
 # TODO maybe we should put these in a separate directory or something so they don't need to be listed explicitly
@@ -131,7 +155,7 @@ all: lib/libMyTools.so lib/libToolChain.so lib/libStore.so include/Tool.h lib/li
 
 main: src/main.cpp lib/libStore.so lib/libLogging.so lib/libToolChain.so | lib/libMyTools.so lib/libDataModel.so  lib/liblowfit_sk4_stripped.so lib/libRootDict.so lib/libBStore_RootDict.so $(UserLibs)
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
-	g++ $(CXXFLAGS) -L lib -llowfit_sk4_stripped -I include $(DataModelInclude) $(MyToolsInclude) src/main.cpp -o $@ $(DataModelLib) $(MyToolsLib) -L lib -lStore -lMyTools -lToolChain -lDataModel -lLogging -lpthread $(ROOTLIB) $(ATMPDLIB) $(SKOFLLIB) $(CERNLIB) -lRootDict $(USERLIBS2)
+	g++ $(CXXFLAGS) -no-pie -fno-pie -L lib -llowfit_sk4_stripped -I include $(DataModelInclude) $(MyToolsInclude) src/main.cpp -o $@ $(DataModelLib) $(MyToolsLib) -L lib -lStore -lMyTools -lToolChain -lDataModel -lLogging -lpthread $(ROOTLIB) $(ATMPDLIB) $(SKOFLLIB) $(CERNLIB) -lRootDict $(USERLIBS2) $(SKG4LIB) $(BINLIB)
 
 lib/libStore.so: $(Dependencies)/ToolFrameworkCore/src/Store/*
 	cd $(Dependencies)/ToolFrameworkCore && $(MAKE) lib/libStore.so
@@ -172,6 +196,13 @@ clean:
 	rm -f main
 	rm -f UserTools/*/*.o
 	rm -f DataModel/*.o
+	rm -f core.*
+	rm -f vector_*
+	rm -f DataModel/*Dict.cxx
+	rm -f BStore_RootDict.*
+	rm -f NTagDataModelDict.o
+	#rm -f map_string,string__LinkDef.h
+
 
 lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp)) lib/libRootDict.so
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"

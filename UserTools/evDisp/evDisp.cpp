@@ -47,7 +47,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("evtSrc",evtSrc);
 	m_variables.Get("plotStyle",plotStyle);
 	
-	if(dataSrc == 1 || (dataSrc == -1 && treeReaderName!=""){
+	if(dataSrc == 1 || (dataSrc == -1 && treeReaderName!="")){
 		// if getting data from TTree, check the TreeReader
 		 if(m_data->Trees.count(treeReaderName)==0){
 			Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
@@ -686,7 +686,7 @@ bool evDisp::Execute(){
 	runNum = 0;
 	subrunNum = 0;
 	eventNum = 0;
-	triggerID = nullptr;
+	triggerID = std::bitset<32>{};
 	readoutT0 = 0;
 	gateWidth = 0;
 	if(dataSrc==1){
@@ -730,7 +730,7 @@ bool evDisp::GetData(){
 }
 
 int evDisp::FindHits(){
-	Log(toolName+": Looking for data sources... ",v_debug,verbosity));
+	Log(toolName+": Looking for data sources... ",v_debug,verbosity);
 	// first check for TQReal
 	logmsg = toolName+": TQREAL branch is ";
 	if(myTreeReader->GetTree()->FindBranch("TQREAL")){
