@@ -1,0 +1,3 @@
+myGracefulStop GracefulStop configfiles/EventDisplay/GracefulStopConfig
+myTreeReader TreeReader configfiles/EventDisplay/TreeReaderConfig
+myevDisp evDisp configfiles/EventDisplay/evDispConfig
