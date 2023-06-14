@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <bitset>
 
 #include "Tool.h"
 #include "MTreeReader.h"
@@ -37,6 +38,8 @@ class evDisp: public Tool {
 	
 	private:
 	bool GetData();
+	int FindHits();
+	bool BranchCheck();
 	
 	// tool variables
 	// ==============
@@ -48,6 +51,7 @@ class evDisp: public Tool {
 	int dataSrc=0;    // 0=sktqz_ common block, 1=TQReal branch
 	int evtSrc=0;     // 0=SHE, 1=AFT
 	int plotStyle=0;  // 0=points, 1=histogram
+	int histSet=0;     // 0=time and charge, 1=T-TOF and charge (temporary)
 	int inGateOnly=0; // 0 = only plot in-gate hits
 	
 	float cap_rad=0;
@@ -56,6 +60,8 @@ class evDisp: public Tool {
 	
 	const Header* myHeader=nullptr;
 	const TQReal* myTQReal=nullptr;
+	const SecondaryInfo* mySecondary=nullptr;
+	const LoweInfo* myLowe=nullptr;
 	ConnectionTable* myConnectionTable=nullptr;
 	int totalPMTsActivated=0;
 	int cableNumber = 0;
@@ -68,6 +74,19 @@ class evDisp: public Tool {
 	float tubeAngularCoordinate;
 	int zMax = 1810;
 	int zMin = -1810;
+	int runNum = 0;
+	int subrunNum = 0;
+	int eventNum = 0;
+	int gateWidth = 0;
+	int loweFlag = 0;
+	unsigned int readoutT0;
+	
+	float recEnergy;
+	basic_array<float> recVertex;
+	basic_array<float> recDirection;
+	
+	std::bitset<sizeof(int)*8>  triggerID;
+	std::bitset<sizeof(int)*8> it0xskbitset;
 	
 	TH2D* topCapHeatMap=nullptr;
 	TH2D* bottomCapHeatMap=nullptr;
@@ -75,9 +94,13 @@ class evDisp: public Tool {
 	TGraph2D* topCapHitMap=nullptr;
 	TGraph2D* bottomCapHitMap=nullptr;
 	TGraph2D* barrelHitMap=nullptr;
+	TH1F* hitsVTimeHist=nullptr;
+	TH1F* hitsVChargeHist=nullptr;
 	
 	TCanvas* displayCanvas=nullptr;
 	TVirtualPad* displayPad=nullptr;
+	TVirtualPad* botDisplayPad=nullptr;
+	
 	
 	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
 	int verbosity=1;
@@ -85,7 +108,7 @@ class evDisp: public Tool {
 	int v_warning=1;
 	int v_message=2;
 	int v_debug=3;
-	std::string logmessage="";
+	std::string logmsg="";
 	int get_ok=0;
 	
 };

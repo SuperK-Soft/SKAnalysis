@@ -104,8 +104,8 @@ class DataModel {
   // wrapper to check if we've called this yet, since we should probably only call it the once?
   void KZInit();
   bool kz_initialized=false;
-
-
+  
+  
   // Event vars
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
   BStore &eventVariables;   // use references to preserve current behaviour...

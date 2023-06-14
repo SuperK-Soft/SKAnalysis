@@ -137,3 +137,9 @@ double PdgToMass(int code){
 	return particle->Mass()*1000.;      // converted to MeV
 }
 
+std::string TriggerIDToTrigger(int code){
+	if(constants::Trigger_ID_To_Trigger.count(code)){
+		return constants::Trigger_ID_To_Trigger.at(code);
+	}
+	return "unknown";
+}
