@@ -2,10 +2,10 @@
 verbosity 1                                    # tool verbosity (1)
 readerName demoReader                          # the name to give the MTreeReader in the DataModel
 #inputFile /disk02/usr6/han/gd/mc/out/atmnu/zbs/atmnu_2500_04.zbs
-#inputFile $HOME/ntag/atmnu_2500_04.zbs        # a single input file - if not specified, use FileListName
+inputFile $HOME/ntag/atmnu_2500_04.zbs        # a single input file - if not specified, use FileListName
 #inputFile $HOME/rfm_run074724.000001.root     # a single input file - if not specified, use FileListName
 #inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root # SKG4 gd water n gun sims
-inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root
+#inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root
 maxEntries -1                                  # max number of entries to process before stopping the ToolChain (-1)
 skFile 1                                       # whether to enable additional functionality (1)
 skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)

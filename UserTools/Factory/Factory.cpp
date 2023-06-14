@@ -40,6 +40,11 @@ if (tool=="vectgen") ret=new vectgen;
 if (tool=="SK2p2MeV_ntag") ret=new SK2p2MeV_ntag;
 if (tool=="ntag_BDT") ret=new ntag_BDT;
 if (tool=="SimplifyTree") ret=new SimplifyTree;
+if (tool=="NCaptInfo_NTag") ret=new NCaptInfo_NTag;
+if (tool=="NCaptInfo_BDT") ret=new NCaptInfo_BDT;
+if (tool=="TrueNCaptures") ret=new TrueNCaptures;
+if (tool=="ReadMCParticles") ret=new ReadMCParticles;
+
 return ret;
 }
 

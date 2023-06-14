@@ -35,3 +35,7 @@
 #include "SK2p2MeV_ntag.h"
 #include "ntag_BDT.h"
 #include "SimplifyTree.h"
+#include "NCaptInfo_NTag.h"
+#include "NCaptInfo_BDT.h"
+#include "TrueNCaptures.h"
+#include "ReadMCParticles.h"

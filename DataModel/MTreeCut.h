@@ -6,6 +6,7 @@
 
 #include "TEntryList.h"
 #include "TTree.h"
+#include "TObjString.h"
 
 #include "SerialisableObject.h"  // so we can put these in a BStore
 #include "BinaryStream.h"        // so we can put these in a BStore

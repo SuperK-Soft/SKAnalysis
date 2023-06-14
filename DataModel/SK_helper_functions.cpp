@@ -3,7 +3,7 @@
 #include "geotnkC.h"
 
 // helper function
-void set_rflist_zbs( int lun, const char *filename, bool write ) {
+void set_rflist_zbs( int& lun, const char *filename, bool write ) {
 	std::string file = filename;
 	std::string s1 = "LOCAL";
 	std::string s2 = " ";
@@ -17,7 +17,7 @@ void set_rflist_zbs( int lun, const char *filename, bool write ) {
 	s3 = "WRT";
 	s6 = "recl=5670 status=new";
 	}
-	set_rflist_( lun, file.data(),
+	set_rflist_( &lun, file.data(),
 	             s1.data(), s2.data(), s3.data(), s4.data(),
 	             s5.data(), s6.data(), s7.data(), s8.data(),
 	             file.length(),

@@ -2,7 +2,7 @@ verbosity 1
 readerName demoReader
 FileListName MyFileList             # the name of a set of files prepared by the LoadFileList tool
 treeName data                       # the name of the tree within the file (when reading ROOT file)
-maxEntries 20                       # max num input entries to process
+maxEntries 200                       # max num input entries to process
 skFile 1                            # required for zbs files
 #skrootMode 0                        # root2root copy mode, required by lf_allfit_new
 #outputFile lf_allfit_testout.root   # for skrootMode 0 or 1 where the TreeManager writes a file.

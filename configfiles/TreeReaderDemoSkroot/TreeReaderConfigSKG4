@@ -1,0 +1,17 @@
+verbosity 1                                    # tool verbosity (1)
+inputFile ~/disk02/ibd_bdt_eff/geantino_wnoise_added.root  # a single input file - if not specified, use FileListName
+#inputFile ~/disk02/ibd_bdt_eff/ibd_wnoise.root  # a single input file - if not specified, use FileListName
+#FileListName MyFileList                        # the name of a set of files prepared by the LoadFileList tool
+treeName data                                  # the name of the tree within the file
+readerName demoReader                          # the name to give the MTreeReader in the DataModel
+firstEntry 0                                   # the first entry to read (0)
+maxEntries 20                                  # max number of entries to process before stopping the ToolChain (-1)
+skFile 1                                       # whether to enable additional functionality (1)
+skrootMode 2                                   # 2=read, 1=write, 0=root2root copy. (2)
+skreadMode 0                                   # 3=`skrawread` and `skread`, 2=`skrawread`, 1=`skread`, 0=auto
+LUN 10                                         # LUN to assign to the file (10)
+skoptn 31,30                                   # options describing what to load via skread/skrawread (31)
+skbadopt 23                                    # which classes of channels to mask (23)
+SK_GEOMETRY 6                                  # which SK geometry this file relates to (4)
+skipPedestals 1                                # whether to skip pedestal and status entries (1)
+

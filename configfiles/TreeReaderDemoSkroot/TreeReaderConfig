@@ -6,8 +6,8 @@ readerName demoReader                          # the name to give the MTreeReade
 firstEntry 0                                   # the first entry to read (0)
 maxEntries 20                                  # max number of entries to process before stopping the ToolChain (-1)
 skFile 1                                       # whether to enable additional functionality (1)
-skrootMode 0                                   # 2=read, 1=write, 0=root2root copy. (2)
-outputFile test_toolchain.root                 # the output file, when using the TreeManager in root2root mode
+skrootMode 2                                   # 2=read, 1=write, 0=root2root copy. (2)
+#outputFile test_toolchain.root                 # the output file, when using the TreeManager in root2root mode
 skreadMode 0                                   # 3=`skrawread` and `skread`, 2=`skrawread`, 1=`skread`, 0=auto
 LUN 10                                         # LUN to assign to the file (10)
 skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)

@@ -438,15 +438,17 @@ int MTreeReader::GetEntry(long entry_number, bool skipTreeRead){
 		-5: Internal error, please report the circumstance when this happen as a ROOT issue.
 		-6: An error occurred within the notify callback.
 		*/
-		std::cerr<<"MTreeReader error loading next TTree from TChain! "
-				 <<"TChain::LoadTree returned "<<status<<"\n";
-		// 0 from GetEntry indicates entry does not exist      |
+		//  0 from GetEntry indicates entry does not exist     |
 		// -1 from LoadTree indicates empty tchain             | these 3 are roughly equivalent
 		// -2 from LoadTree indicates <0 or off end of chain   |
 		
 		// -1 from GetEntry indicates IO error                 | these 2 (5) are roughly equivalent
 		// -3->-6 from LoadTree indicate IO errors             | 
 		// first set: terminate toolchain, second set: maybe try to continue to next entry?
+		if(status<-2){
+			std::cerr<<"MTreeReader error loading next TTree from TChain! "
+					 <<"TChain::LoadTree returned "<<status<<"\n";
+		}
 		int bytesread;
 		if(status>-3) bytesread = 0;  // treat as "end of tchain" - merge "empty tchain" with "entry doesn't exist"
 		else bytesread = status;      // treat as "IO error" - no loss of info
@@ -468,6 +470,10 @@ int MTreeReader::GetEntry(long entry_number, bool skipTreeRead){
 		// The function returns the number of bytes read from the input buffer.
 		// If entry does not exist the function returns 0. If an I/O error occurs, the function returns -1.
 		bytesread = thetree->GetEntry(entry_number);
+		if(status<0){
+			std::cerr<<"MTreeReader error loading next TTree from TChain! "
+					 <<"TChain::GetEntry returned "<<status<<"\n";
+		}
 	}
 	if(bytesread>0) currentEntryNumber = entry_number;
 	return bytesread;
@@ -610,6 +616,13 @@ int MTreeReader::OnlyDisableBranches(std::vector<std::string> branchnames){
 			abranch.second->SetStatus(1);
 		}
 	}
+	// validation branch that we recognised all the branches
+	for(auto&& abranch : branchnames){
+		if(branch_pointers.count(abranch)==0){
+			std::cerr<<"Warning! Did not recognise branch "<<abranch
+			         <<" in active branches list!"<<std::endl;
+		}
+	}
 	// return whether we found all branches in the list given
 	return (num_named_branches==0);
 }
@@ -623,6 +636,13 @@ int MTreeReader::OnlyEnableBranches(std::vector<std::string> branchnames){
 			--num_named_branches;
 		} else {
 			abranch.second->SetStatus(0);
+		}
+	}
+	// validation branch that we recognised all the branches
+	for(auto&& abranch : branchnames){
+		if(branch_pointers.count(abranch)==0){
+			std::cerr<<"Warning! Did not recognise branch "<<abranch
+			         <<" in active branches list!"<<std::endl;
 		}
 	}
 	// return whether we found all branches in the list given

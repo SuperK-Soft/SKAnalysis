@@ -1,5 +1,6 @@
 /* vim:set noexpandtab tabstop=4 wrap filetype=cpp */
 #include "Constants.h"
+#include "DataModel.h"
 
 std::set<std::string> fundamental_types{
 	"bool",
@@ -130,7 +131,8 @@ int PdgToG3ParticleCode(int code){
 }
 
 double PdgToMass(int code){
-	auto particle = constants::particleDb->GetParticle(code);
+	DataModel* m_data = DataModel::GetInstance();
+	auto particle = m_data->pdgdb->GetParticle(code);
 	if(particle==nullptr) return -1;
 	return particle->Mass()*1000.;      // converted to MeV
 }

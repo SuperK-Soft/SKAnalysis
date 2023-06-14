@@ -5,4 +5,5 @@
 #$HOME/rfm_run074724.000001.root
 #$HOME/skdetsim/outputs/skdetsim.r77957.root
 #/host/SK_shared/liz_neutrons_skdetsim_sk6ex.root
-$HOME/rfm_run080008.000008.root
+#$HOME/rfm_run080008.000008.root
+/disk02/data7/sk5/run/0800/080008/rfm_run080008.000008.root

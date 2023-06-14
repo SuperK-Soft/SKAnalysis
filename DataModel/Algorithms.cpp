@@ -22,6 +22,16 @@
 #include "TLorentzVector.h"
 #include "TObjectTable.h"
 
+std::string toString(const TVector3& vec){
+	std::string s = "("+toString(vec.X())+", "+toString(vec.Y())+", "+toString(vec.Z())+")";
+	return s;
+}
+
+std::string toString(const TLorentzVector& vec){
+	std::string s = "("+toString(vec.T())+", "+toString(vec.X())+", "+toString(vec.Y())+", "+toString(vec.Z())+")";
+	return s;
+}
+
 int ReadListFromFile(std::string filename, std::vector<std::string> &lines, char commentchar, bool trim_whitespace){
 	// read each new line into a std::vector<string> and return
 	std::ifstream fin (filename.c_str());
@@ -219,6 +229,8 @@ int safeSystemCallVerbose(std::string cmd){
 // But ROOT 5 does not know about c++11 container types, so better to use this.
 // may also want to use TClassEdit::ShortType(const char* type_as_string) to discard qualifiers
 bool IsStlContainer(std::string type_as_string){
+	// remove any potential std:: prefix
+	if(type_as_string.substr(0,5)=="std::") type_as_string.erase(0,5);
 	size_t base_pos = type_as_string.find('<');
 	if(base_pos==std::string::npos) return false;
 	return (container_types.count(type_as_string.substr(0,base_pos)));

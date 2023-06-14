@@ -33,6 +33,8 @@ int safeSystemCallVerbose(std::string cmd);
 void PrintVector(TVector3& avec, bool newline=false);
 void PrintVector(TLorentzVector& avec, bool newline=false);
 bool IsStlContainer(std::string type_as_string);
+std::string toString(const TVector3& vec);
+std::string toString(const TLorentzVector& vec);
 
 namespace algorithms{
 	

@@ -131,7 +131,8 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 		// open output file
 		set_rflist_zbs( zbs_LUN, output_file.c_str(), true );
 		int ipt = 1;
-		skopenf_( zbs_LUN, ipt, "Z", get_ok, 1 );
+		int ihndl=1;
+		skopenf_( &zbs_LUN, &ipt, "Z",&get_ok, &ihndl );
 		if(get_ok!=0){   // based on skdump_new, this should be 0 for success...
 			Log(toolName+" Error opening output ZBS file!",v_error,verbosity);
 		}
@@ -282,12 +283,12 @@ float vectgen::CalculateLivetime(int run_number, std::string livetime_filename, 
 //	set_rflist_zbs(LUN,livetime_filename.c_str(),false);
 	// TODO currently the set_rflist_zbs helper hard-codes a format (s6) of 'recl=5670' (zbs file...?)
 	// whereas we need to use a format of 'form=unformatted', so just do it manually:
-	set_rflist_(LUN, livetime_filename.c_str(),"LOCAL","","RED","","","form=unformatted status=old","","",
+	set_rflist_(&LUN, livetime_filename.c_str(),"LOCAL","","RED","","","form=unformatted status=old","","",
 	                 livetime_filename.length(),  5,    0,  3,   0, 0,           27,                 0,0);
 	// 3. open the file (it's a fortran binary file, fyi)
 	int fileIndex = 1;
 	int ihndl=1;
-	skopenf_(LUN, fileIndex, "f", get_ok, ihndl);
+	skopenf_(&LUN, &fileIndex, "f", &get_ok, &ihndl);
 	
 	// ok ready to read the file contents.
 	// define variables to store line contents into

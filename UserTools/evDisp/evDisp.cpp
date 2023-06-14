@@ -94,36 +94,38 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	}
 	
 	// canvas for plotting
-	displayCanvas = new TCanvas();  // if we name it, name must be unique - prevents duplicate Tools.
-	((TRootCanvas*)displayCanvas->GetCanvasImp())->Resize(1024,700); // FIXME make unique names automatically
+  if(plotStyle==0 || plotStyle==1){
+		displayCanvas = new TCanvas();  // if we name it, name must be unique - prevents duplicate Tools.
+		((TRootCanvas*)displayCanvas->GetCanvasImp())->Resize(1024,700); // FIXME make unique names automatically
+		
+		/* divide up the canvas:
+		 __________
+		| ———  ——— |
+		||TOP||BOT||
+		| ———  ——— |
+		| ———————— |
+		|| BARREL ||
+		| ———————— |
+		| ———  ——— |
+		||HST||HST||
+		| ———  ——— |
+		 ‾‾‾‾‾‾‾‾‾‾
+		*/
+		displayCanvas->Divide(1,3);
+		displayPad = displayCanvas->cd(1);
+		displayPad->Divide(2,1);
+		displayCanvas->cd(1);
+		displayPad->cd(1);
+		gPad->SetFrameFillColor(1); // black fill
+		displayPad->cd(2);
+		gPad->SetFrameFillColor(1); // black fill
+		displayCanvas->cd(2);
+		gPad->SetFrameFillColor(1); // black fill
+		botDisplayPad = displayCanvas->cd(3);
+		botDisplayPad->Divide(2,1);
+ 	 gStyle->SetOptStat(0);   // disable stats box
+	}
 	
-	/* divide up the canvas:
-	 __________
-	| ———  ——— |
-	||TOP||BOT||
-	| ———  ——— |
-	| ———————— |
-	|| BARREL ||
-	| ———————— |
-	| ———  ——— |
-	||HST||HST||
-	| ———  ——— |
-	 ‾‾‾‾‾‾‾‾‾‾
-	*/
-	displayCanvas->Divide(1,3);
-	displayPad = displayCanvas->cd(1);
-	displayPad->Divide(2,1);
-	displayCanvas->cd(1);
-	displayPad->cd(1);
-	gPad->SetFrameFillColor(1); // black fill
-	displayPad->cd(2);
-	gPad->SetFrameFillColor(1); // black fill
-	displayCanvas->cd(2);
-	gPad->SetFrameFillColor(1); // black fill
-	botDisplayPad = displayCanvas->cd(3);
-	botDisplayPad->Divide(2,1);
-	
-	gStyle->SetOptStat(0);   // disable stats box
 //	gStyle->SetPalette(57);  // kBird doesn't seem to exist in ROOT 5, do it ourselves
 //	Double_t stops[9] = { 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000 };
 
@@ -583,7 +585,6 @@ bool evDisp::Execute(){
 		barrelHeatMap->Draw("COL");
 	}
 	
-	
 	// Print the event number, run number, sub run number and gate width for each event
 	std::cout << std::endl << "Event " << eventNum << " was from run " << runNum << ", subrun " << 
 	subrunNum << "." << std::endl;
@@ -675,7 +676,7 @@ bool evDisp::Execute(){
 		std::cout << "WARNING - There were no trigger flags set/found for this event." << std::endl;
 	}
 	
-	gPad->WaitPrimitive();
+	if(plotStyle==0 || plotStyle==1) gPad->WaitPrimitive();
 	
 	// reset the charge and time histograms, this is required or else the bins never empty and the histograms
 	// are filled with information from every event cummulatively

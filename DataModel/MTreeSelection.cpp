@@ -231,7 +231,7 @@ bool MTreeSelection::AddPassingEvent(std::string cutname, TTree* thetree, Long64
 
 //bool MTreeSelection::Write(std::string outfilename){
 //	if(outstore==nullptr){
-//		outstore = new BoostStore(true,BOOST_STORE_BINARY_FORMAT);   // typechecking enabled, single-entry binary
+//		outstore = new BoostStore(true,BSTORE_BINARY_FORMAT);   // typechecking enabled, single-entry binary
 //	}
 //	for(auto&& acut : cut_pass_entries){
 //		acut.Flush();  // must call before write

@@ -12,3 +12,6 @@ do
 done
 
 export SEGFAULT_SIGNALS="all"
+
+# new location of secret sauce on new sukap
+export RFA_ROOT='/opt/FJSVrdass/lib'

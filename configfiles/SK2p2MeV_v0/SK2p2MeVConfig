@@ -1,5 +1,12 @@
 verbosity 1
 treeReaderName sk2p2mevReader
-derived_classname relic
-outFile SK2p2MeV_testout.root
-SK_GEOMETRY 4
+#derived_classname relic
+derived_classname mc
+#outFile SK2p2MeV_testout.root
+#outFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_SK2p2.root
+#outFile SK2p2MeV_testout.root
+#outFile SK2p2MeV_atmnu_2500_04.root
+#outFile SK2p2MeV_SKG4_ngun.root
+#outFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_SK2p2.root
+outFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_SK2p2.root
+SK_GEOMETRY 6

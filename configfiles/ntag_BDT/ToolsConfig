@@ -1,2 +1,2 @@
-myTreeReader TreeReader configfiles/ntag_DBT/TreeReaderConfig
-myntag_BDT ntag_BDT configfiles/ntag_DBT/ntag_BDTConfig
+myTreeReader TreeReader configfiles/ntag_BDT/TreeReaderConfig
+myntag_BDT ntag_BDT configfiles/ntag_BDT/ntag_BDTConfig

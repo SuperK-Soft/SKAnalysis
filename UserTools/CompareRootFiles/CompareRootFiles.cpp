@@ -82,6 +82,7 @@ bool CompareRootFiles::Initialise(std::string configfile, DataModel &data){
 	
 	// do the same for our second file
 	// get a map of the contents of the file
+	key=nullptr;
 	getnextkey = TIter(file2->GetListOfKeys());
 	Log(toolName+" looping over keys in file 2", v_debug, verbosity);
 	while ((key = (TKey*)getnextkey())){
@@ -289,10 +290,10 @@ bool CompareRootFiles::Initialise(std::string configfile, DataModel &data){
 					// don't respect 'verbosity'. Also need to be able to debug print messages about the scan?
 					int verbosity_tmp = verbosity;
 					verbosity = -1;
-					std::cout<<"Scanning for index "<<index_name
-					         <<", any following inequality printouts can be ignored"<<std::endl;
+					Log(toolName+" Scanning for index "+index_name
+					         +", any following inequality printouts can be ignored",v_warning,verbosity);
 					CompareBranchMembers(file1_branch.held_data, file2_branch.held_data, &less);
-					std::cout<<"Scan complete.\n";
+					Log(toolName+" Scan complete.",v_warning,verbosity);
 					verbosity = verbosity_tmp;
 					if(file1_index!=nullptr) break; // found it
 					++file1_it;
@@ -658,7 +659,22 @@ bool CompareRootFiles::ObjectToDataInstance(data_instance& thedata){
 				Log(toolName+" pointer, double dereferencing address",v_debug,verbosity);
 				// in this case we will obtain the address of a pointer to the object
 				void** ptrptr = (void**)((char*)thedata.address + member_offset);
-				member_instance.address = *ptrptr;
+				// we have a gotcha here: if this parent object is an element of a container
+				// then its address (thedata.address) is actually an offset relative to the
+				// container address, which isn't known until the container is filled by an entry.
+				// in that case, we can't (yet) dereference the resulting pointer without segging.
+				// so, in such cases, we'll record the address of the pointer, and note it as such.
+				if(member_instance.name.find(".at(*)")!=std::string::npos ||
+				   member_instance.name.find(".At(*)")!=std::string::npos){
+					// it's a container element
+					Log(toolName+" this is a member of a container element, can't dereference yet",v_debug,verbosity);
+					// XXX FIXME this does not work!
+					member_instance.address = ptrptr;
+					member_instance.is_ptr = true;
+				} else {
+					// safe to reference
+					member_instance.address = *ptrptr;
+				}
 			} else {
 				member_instance.address = (void**)((char*)thedata.address + member_offset);
 			}
@@ -745,6 +761,9 @@ int CompareRootFiles::GetAllClassMembers(TClass* cl, std::vector<std::pair<TData
 	cl->BuildRealData();
 	for(int member_i=0; member_i<cl->GetListOfRealData()->GetEntries(); ++member_i){
 		TRealData* nextrealdata = (TRealData*)cl->GetListOfRealData()->At(member_i);
+		TClass* cl = nextrealdata->IsA();
+
+		
 		TDataMember* nextmember = nextrealdata->GetDataMember();
 		// it seems as though the following are part of ROOT's internal streamer functionality,
 		// and are very unlikely to be anything we care about being different
@@ -890,6 +909,26 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 			+", determined to be of instance_type "+toString(branch2.instance_type),v_error,verbosity);
 		return false;
 	}
+	// to compare the objects we'll also need their addresses.
+	// in some cases (pointer members of container objects) we only have a pointer to their address
+	// so we'll need to de-reference it now to get the underlying object
+	void* branch1_add = branch1.address;
+	void* branch2_add = branch2.address;
+	if(branch1.is_ptr){
+		//Log(toolName+" comparing objects by pointers",v_debug,verbosity);
+		Log(toolName+" skipping comparison of "+branch1.name
+		    +" as we do not yet support pointers to types (such as char*) in containers",v_debug,verbosity);
+		// this uhhh doesn't work.
+		/*
+		void** branch1_ptr = (void**)branch1_add;
+		void** branch2_ptr = (void**)branch2_add;
+		branch1_add = *branch1_ptr;
+		branch2_add = *branch2_ptr;
+		std::cout<<"dereferenced addresses are "<<branch1_add<<", and "<<branch2_add<<std::endl;
+		*/
+		return true; // TODO FIXME FIXME
+	}
+	
 	// ok, the way we compare will depend on the instance_type
 	bool are_equal=true;
 	std::string stype = branch1.type_as_string;
@@ -898,15 +937,15 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 		case 0: {
 			// basic type
 //			std::cout << toolName << " basic datatype comparison of type " << stype
-//			         << " at addresses " << branch1.address << " and " << branch2.address
+//			         << " at addresses " << branch1_add << " and " << branch2_add
 //			         << " for branch " << branch1.name<<std::endl;
 //			Log(smessage.str(),v_debug,verbosity);
 			std::string vname = GetVarName(stype);
 			TString cmd = TString::Format("bool* eq_ptr = (bool*)%p; ", (void*)&are_equal);
 			cmd += TString::Format("%s* %s_1 = (%s*)%p; ", 
-			         stype.c_str(), vname.c_str(), stype.c_str(),(void*)branch1.address);
+			         stype.c_str(), vname.c_str(), stype.c_str(),(void*)branch1_add);
 			cmd += TString::Format("%s* %s_2 = (%s*)%p; ",
-			         stype.c_str(), vname.c_str(), stype.c_str(), (void*)branch2.address);
+			         stype.c_str(), vname.c_str(), stype.c_str(), (void*)branch2_add);
 			if(stype!="string" && stype!= "bool"){
 				// assume numeric, and that this is suitable?
 				cmd += TString::Format("*eq_ptr = (std::fabs(*%s_1-*%s_2) < %f); ",
@@ -943,7 +982,7 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 		case 2: {
 			// dynamic array type
 //			std::cout  << toolName << " dynamic array comparison with element type " << stype
-//			          << " with array addresses " << branch1.address << " and " << branch2.address
+//			          << " with array addresses " << branch1_add << " and " << branch2_add
 //			          << " for branch " << branch1.name<<std::endl;
 //			Log(smessage.str(),v_debug,verbosity);
 			
@@ -990,7 +1029,7 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 		case 1: {
 			// static array type
 //			std::cout  << toolName << " static array comparison with element type " << stype
-//			          << " and array addresses " << branch1.address << " and " << branch2.address
+//			          << " and array addresses " << branch1_add << " and " << branch2_add
 //			          << " for branch " << branch1.name<<std::endl;
 //			Log(smessage.str(),v_debug,verbosity);
 			
@@ -1044,8 +1083,8 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 			int total_size = std::accumulate(array_dims.begin(), array_dims.end(), 1, std::multiplies<int>());
 			for(int i=0; i<total_size; ++i){
 				// compare element i
-				void* address_1 = (void*)((char*)branch1.address + (i*branch1.item_size));
-				void* address_2 = (void*)((char*)branch2.address + (i*branch1.item_size));
+				void* address_1 = (void*)((char*)branch1_add + (i*branch1.item_size));
+				void* address_2 = (void*)((char*)branch2_add + (i*branch1.item_size));
 				bool is_equal;
 				std::string vname = GetVarName(stype);
 				TString cmd = TString::Format("bool* eq_ptr = (bool*)%p; ", (void*)&is_equal);
@@ -1089,7 +1128,7 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 		case 3: {
 			// stl container.
 //			std::cout  << toolName << " stl container comparison with type " << stype
-//			          << " at addresses " << branch1.address << " and " << branch2.address
+//			          << " at addresses " << branch1_add << " and " << branch2_add
 //			          << " for branch " << branch1.name<<std::endl;
 //			Log(smessage.str(),v_debug,verbosity);
 			
@@ -1099,9 +1138,9 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 			std::string vname = GetVarName(stype);
 			TString cmd;
 			cmd  = TString::Format("%s* %s_1 = (%s*)%p; ",
-			                       stype.c_str(), vname.c_str(), stype.c_str(), (void*)branch1.address);
+			                       stype.c_str(), vname.c_str(), stype.c_str(), (void*)branch1_add);
 			cmd += TString::Format("%s* %s_2 = (%s*)%p; ",
-			                       stype.c_str(), vname.c_str(), stype.c_str(), (void*)branch2.address);
+			                       stype.c_str(), vname.c_str(), stype.c_str(), (void*)branch2_add);
 			cmd += TString::Format("size_t* s1 = (size_t*)%p; ", (void*)&size1);
 			cmd += TString::Format("size_t* s2 = (size_t*)%p; ", (void*)&size2);
 			cmd += TString::Format("*s1 = %s_1->size(); *s2 = %s_2->size();",
@@ -1122,10 +1161,10 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 				return false;
 			}
 			double retval;  // it returns a double, not an int...
-			sizecaller->Execute(branch1.address, retval);
+			sizecaller->Execute(branch1_add, retval);
 			Log(toolName+" retval1 is "+toString(retval),v_debug,verbosity);
 			size1 = retval;
-			sizecaller->Execute(branch2.address, retval);
+			sizecaller->Execute(branch2_add, retval);
 			Log(toolName+" retval2 is "+toString(retval),v_debug,verbosity);
 			size2 = retval;
 			
@@ -1204,8 +1243,8 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 					if(type_num==5  || type_num == 19){
 						// Float_t, Float16_t
 						Log(toolName+" float-like number",v_debug,verbosity);
-						atcaller->Execute(branch1.address, tmpdouble_1);
-						atcaller->Execute(branch2.address, tmpdouble_2);
+						atcaller->Execute(branch1_add, tmpdouble_1);
+						atcaller->Execute(branch2_add, tmpdouble_2);
 //						std::cout << toolName <<" tmpdouble_1 is "<<tmpdouble_1<<" at "<<&tmpdouble_1<<" "
 //						         <<"tmpdouble_2 is "<<tmpdouble_2<<" at "<<&tmpdouble_2<<std::endl;
 //						Log(smessage.str(),v_debug,verbosity);
@@ -1219,8 +1258,8 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 					} else if(type_num == 8 || type_num == 9){
 						// Double_t, Double32_t
 						Log(toolName+" double-like number",v_debug,verbosity);
-						atcaller->Execute(branch1.address, tmpdouble_1);
-						atcaller->Execute(branch2.address, tmpdouble_2);
+						atcaller->Execute(branch1_add, tmpdouble_1);
+						atcaller->Execute(branch2_add, tmpdouble_2);
 //						std::cout << toolName <<" tmpdouble_1 is "<<tmpdouble_1<<" at "<<&tmpdouble_1<<" "
 //						         <<"tmpdouble_2 is "<<tmpdouble_2<<" at "<<&tmpdouble_2<<std::endl;
 //						Log(smessage.str(),v_debug,verbosity);
@@ -1228,15 +1267,15 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 						add2=(void*)&tmpdouble_2;
 					} else {
 						// everything else is integer-like
-						atcaller->Execute(branch1.address, tmplong_1);
-						atcaller->Execute(branch2.address, tmplong_2);
+						atcaller->Execute(branch1_add, tmplong_1);
+						atcaller->Execute(branch2_add, tmplong_2);
 						add1=(void*)&tmplong_1;
 						add2=(void*)&tmplong_2;
 					}
 				} else {
 					// complex held type, return will be a pointer
-					atcaller->Execute(branch1.address, tmplong_1);
-					atcaller->Execute(branch2.address, tmplong_2);
+					atcaller->Execute(branch1_add, tmplong_1);
+					atcaller->Execute(branch2_add, tmplong_2);
 					add1=(void*)tmplong_1;
 					add2=(void*)tmplong_2;
 				}
@@ -1269,7 +1308,7 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 		case 4: {
 			// class case.
 //			std::cout  << toolName << " class comparison with type " << stype
-//			          << " at addresses " << branch1.address << " and " << branch2.address
+//			          << " at addresses " << branch1_add << " and " << branch2_add
 //			          << " for branch " << branch1.name<<std::endl;
 //			Log(smessage.str(),v_debug,verbosity);
 			
@@ -1280,8 +1319,8 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 				// First thing is we need to get the size
 				size_t size1, size2;
 				TString cmd;
-				cmd  = TString::Format("TObjArray* tc1 = (TObjArray*)%p; ", (void*)branch1.address);
-				cmd += TString::Format("TObjArray* tc2 = (TObjArray*)%p; ", (void*)branch2.address);
+				cmd  = TString::Format("TObjArray* tc1 = (TObjArray*)%p; ", (void*)branch1_add);
+				cmd += TString::Format("TObjArray* tc2 = (TObjArray*)%p; ", (void*)branch2_add);
 				cmd += TString::Format("size_t* s1 = (size_t*)%p; ", (void*)&size1);
 				cmd += TString::Format("size_t* s2 = (size_t*)%p; ", (void*)&size2);
 				cmd += TString("*s1 = tc1->GetEntriesFast(); *s2 = tc2->GetEntriesFast();");
@@ -1310,6 +1349,10 @@ bool CompareRootFiles::CompareBranchMembers(data_instance &branch1, data_instanc
 					// pass these addresses to the data_instance describing element types
 					branch1.contained_type->address = add1;
 					branch2.contained_type->address = add2;
+					// we need to recursively update all member addresses too,
+					// since they currently only hold offsets to the parent object
+					UpdateAddresses(*branch1.contained_type);
+					UpdateAddresses(*branch2.contained_type);
 					
 					// if it's a TObjArray each element may be of a different type
 					if(stype=="TObjArray"){
