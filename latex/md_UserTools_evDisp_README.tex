@@ -8,4 +8,39 @@ Describe any configuration variables for \mbox{\hyperlink{classevDisp}{ev\+Disp}
 \DoxyCodeLine{param2 value2}
 
 \end{DoxyCode}
- 
+\hypertarget{md_UserTools_evDisp_README_autotoc_md4}{}\doxysection{Functions}\label{md_UserTools_evDisp_README_autotoc_md4}
+\hypertarget{md_UserTools_evDisp_README_autotoc_md5}{}\doxysubsection{Initialise}\label{md_UserTools_evDisp_README_autotoc_md5}
+
+\begin{DoxyItemize}
+\item Instances the 2D graphs/histograms that are used to plot the top, bottom and barrel of the detector.
+\item Instances the histograms sued to plot the hits against time and the hits against charge.
+\item Instances the canvas and divides it into sections so that the top and bottom of the barrel can be plotted alongside each other with the barrel below and the charge/time histograms alongside each other below the barrel.
+\item Sets up the colour palette to use on the graphs that is used to plot the PMT charge distribution on the event display. The colour pallete emulates the following p.\+e ranges\+:
+\begin{DoxyItemize}
+\item $>$ 26.\+7 rgb(196, 032, 033)
+\item 23.\+3-\/26.\+7 rgb(219, 109, 040)
+\item 20.\+2-\/23.\+3 rgb(210, 148, 046)
+\item 17.\+3-\/20.\+2 rgb(220, 185, 055)
+\item 14.\+7-\/17.\+3 rgb(223, 187, 061)
+\item 12.\+2-\/14.\+7 rgb(236, 240, 072)
+\item 10.\+0-\/12.\+2 rgb(245, 252, 079)
+\item 08.\+0-\/10.\+0 rgb(206, 226, 067)
+\item 06.\+2-\/08.\+0 rgb(165, 186, 052)
+\item 04.\+7-\/06.\+2 rgb(146, 178, 052)
+\item 03.\+3-\/04.\+7 rgb(100, 140, 050)
+\item 02.\+2-\/03.\+3 rgb(094, 137, 117)
+\item 01.\+3-\/02.\+2 rgb(088, 107, 215)
+\item 00.\+7-\/01.\+3 rgb(029, 032, 205)
+\item 00.\+2-\/00.\+7 rgb(084, 043, 209)
+\item $<$ 0.\+2 rgb(121, 053, 207)
+\end{DoxyItemize}
+\item Note that ROOT does not plot over the full colour range for some reason so the palette values have been adjusted down to fix this.
+\end{DoxyItemize}\hypertarget{md_UserTools_evDisp_README_autotoc_md6}{}\doxysubsection{Execute}\label{md_UserTools_evDisp_README_autotoc_md6}
+
+\begin{DoxyItemize}
+\item Pull hit information from the relevant location as defined in the config file.
+\item The common block sktqz\+\_\+.
+\item The branch TQREAL.
+\item A combination of the common blocks skchnl\+\_\+, skq\+\_\+ and skt\+\_\+.
+\item Note that event information (run number, subrun number, event number and trigger ID) is pulled from the either the skhead\+\_\+ common block or the Header branch. 
+\end{DoxyItemize}

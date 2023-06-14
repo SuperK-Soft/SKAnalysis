@@ -74,7 +74,45 @@ Configuration</h1>
 <p>Describe any configuration variables for <a class="el" href="classevDisp.html">evDisp</a>.</p>
 <div class="fragment"><div class="line">param1 value1</div>
 <div class="line">param2 value2</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md4"></a>
+Functions</h1>
+<h2><a class="anchor" id="autotoc_md5"></a>
+Initialise</h2>
+<ul>
+<li>Instances the 2D graphs/histograms that are used to plot the top, bottom and barrel of the detector.</li>
+<li>Instances the histograms sued to plot the hits against time and the hits against charge.</li>
+<li>Instances the canvas and divides it into sections so that the top and bottom of the barrel can be plotted alongside each other with the barrel below and the charge/time histograms alongside each other below the barrel.</li>
+<li>Sets up the colour palette to use on the graphs that is used to plot the PMT charge distribution on the event display. The colour pallete emulates the following p.e ranges:<ul>
+<li>&gt; 26.7 rgb(196, 032, 033)</li>
+<li>23.3-26.7 rgb(219, 109, 040)</li>
+<li>20.2-23.3 rgb(210, 148, 046)</li>
+<li>17.3-20.2 rgb(220, 185, 055)</li>
+<li>14.7-17.3 rgb(223, 187, 061)</li>
+<li>12.2-14.7 rgb(236, 240, 072)</li>
+<li>10.0-12.2 rgb(245, 252, 079)</li>
+<li>08.0-10.0 rgb(206, 226, 067)</li>
+<li>06.2-08.0 rgb(165, 186, 052)</li>
+<li>04.7-06.2 rgb(146, 178, 052)</li>
+<li>03.3-04.7 rgb(100, 140, 050)</li>
+<li>02.2-03.3 rgb(094, 137, 117)</li>
+<li>01.3-02.2 rgb(088, 107, 215)</li>
+<li>00.7-01.3 rgb(029, 032, 205)</li>
+<li>00.2-00.7 rgb(084, 043, 209)</li>
+<li>&lt; 0.2 rgb(121, 053, 207)</li>
+</ul>
+</li>
+<li>Note that ROOT does not plot over the full colour range for some reason so the palette values have been adjusted down to fix this.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md6"></a>
+Execute</h2>
+<ul>
+<li>Pull hit information from the relevant location as defined in the config file.</li>
+<li>The common block sktqz_.</li>
+<li>The branch TQREAL.</li>
+<li>A combination of the common blocks skchnl_, skq_ and skt_.</li>
+<li>Note that event information (run number, subrun number, event number and trigger ID) is pulled from the either the skhead_ common block or the Header branch. </li>
+</ul>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
