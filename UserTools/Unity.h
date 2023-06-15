@@ -17,7 +17,7 @@
 #include "TruthNeutronCaptures_v3.h"
 #include "LoadFileList.h"
 #include "RootReadTest.h"
-#include "PlotNeutronCaptures.h"
+#include "MakeNCaptTree.h"
 #include "GracefulStop.h"
 #include "LoadBetaSpectraFluka.h"
 #include "PlotMuonDtDlt.h"

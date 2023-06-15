@@ -1,5 +1,5 @@
 /* vim:set noexpandtab tabstop=4 wrap */
-#include "PlotNeutronCaptures.h"
+#include "MakeNCaptTree.h"
 
 #include "Algorithms.h"
 #include "Constants.h"
@@ -27,12 +27,12 @@
 std::unique_ptr<TPie> GeneratePieFromHisto(TH1F* histo, int verbose=0);
 std::unique_ptr<TPie> GeneratePieFromHisto(std::string histoname, int verbose=0);
 
-PlotNeutronCaptures::PlotNeutronCaptures():Tool(){
+MakeNCaptTree::MakeNCaptTree():Tool(){
 	// get the name of the tool from its class name
 	toolName=type_name<decltype(this)>(); toolName.pop_back();
 }
 
-bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
+bool MakeNCaptTree::Initialise(std::string configfile, DataModel &data){
 	
 	if(configfile!="") m_variables.Initialise(configfile);
 	//m_variables.Print();
@@ -79,7 +79,7 @@ bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 }
 
 
-bool PlotNeutronCaptures::Execute(){
+bool MakeNCaptTree::Execute(){
 	
 	Log(toolName+" processing entry "+toString(entrynum),v_debug,verbosity);
 	
@@ -113,7 +113,7 @@ bool PlotNeutronCaptures::Execute(){
 	return get_ok;
 }
 
-int PlotNeutronCaptures::FillFriend(){
+int MakeNCaptTree::FillFriend(){
 	// don't carry anything over
 	Log(toolName+" clearing output ttree variables",v_debug,verbosity);
 	ClearOutputTreeBranches();
@@ -201,7 +201,7 @@ int PlotNeutronCaptures::FillFriend(){
 }
 
 
-bool PlotNeutronCaptures::Finalise(){
+bool MakeNCaptTree::Finalise(){
 	
 	// write out the friend tree
 	Log(toolName+" writing output TTree",v_debug,verbosity);
@@ -219,7 +219,7 @@ bool PlotNeutronCaptures::Finalise(){
 	return true;
 }
 
-int PlotNeutronCaptures::ReadEntry(long entry_number){
+int MakeNCaptTree::ReadEntry(long entry_number){
 	// load next entry data from TTree
 	int bytesread = myTreeReader.GetEntry(entry_number);
 	
@@ -240,7 +240,7 @@ int PlotNeutronCaptures::ReadEntry(long entry_number){
 	return bytesread;
 }
 
-int PlotNeutronCaptures::MakeHistos(){
+int MakeNCaptTree::MakeHistos(){
 	// the lazy way (proper would be to call TH1::Fill during FillFriend)
 	// ============
 	outfile->cd();
@@ -448,7 +448,7 @@ int PlotNeutronCaptures::MakeHistos(){
 }
 
 
-int PlotNeutronCaptures::GetBranches(){
+int MakeNCaptTree::GetBranches(){
 	int success = (
 //	(myTreeReader.GetBranchValue("filename",filename))                         &&
 //	(myTreeReader.GetBranchValue("water_transparency",water_transparency))     &&
@@ -479,7 +479,7 @@ int PlotNeutronCaptures::GetBranches(){
 	return success;
 }
 
-void PlotNeutronCaptures::ClearOutputTreeBranches(){
+void MakeNCaptTree::ClearOutputTreeBranches(){
 	neutrino_momentum.SetXYZ(0,0,0);
 	muon_momentum.SetXYZ(0,0,0);
 	neutron_longitudinal_travel.clear();
@@ -492,7 +492,7 @@ void PlotNeutronCaptures::ClearOutputTreeBranches(){
 	neutron_n_daughters.clear();
 }
 
-int PlotNeutronCaptures::WriteTree(){
+int MakeNCaptTree::WriteTree(){
 	Log(toolName+" writing TTree",v_debug,verbosity);
 	outfile->cd();
 	// TObject::Write returns the total number of bytes written to the file.

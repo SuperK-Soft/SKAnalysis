@@ -22,7 +22,7 @@ if (tool=="TruthNeutronCaptures_v2") ret=new TruthNeutronCaptures_v2;
 if (tool=="TruthNeutronCaptures_v3") ret=new TruthNeutronCaptures_v3;
 if (tool=="LoadFileList") ret=new LoadFileList;
 if (tool=="RootReadTest") ret=new RootReadTest;
-if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
+if (tool=="MakeNCaptTree") ret=new MakeNCaptTree;
 if (tool=="GracefulStop") ret=new GracefulStop;
 if (tool=="LoadBetaSpectraFluka") ret=new LoadBetaSpectraFluka;
 if (tool=="PlotMuonDtDlt") ret=new PlotMuonDtDlt;
