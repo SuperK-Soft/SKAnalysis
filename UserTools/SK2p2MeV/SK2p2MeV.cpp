@@ -14,6 +14,15 @@ SK2p2MeV::SK2p2MeV (const Float_t (*geomxyz)[3])
     
     // Geometry
     xyz = geomxyz;
+
+    // const int max_pmt = 10;
+    // for (int i = 0; i < max_pmt; ++i){
+    //   std::cout << "pmt: " << i << "\n";
+    //   std::cout << "xyz[pmt][0]: " << xyz[i][0] << " ";
+    //   std::cout << "xyz[pmt][1]: " << xyz[i][1] << " ";
+    //   std::cout << "xyz[pmt][1]: " << xyz[i][2] << "\n\n";
+    // }
+
     
     // After trig. gate
     AFT_GATE = 500000; // ns
@@ -110,6 +119,7 @@ void SK2p2MeV::SetPrompt (Float_t tmin, Float_t tmax){
     const Int_t nhits = TQI->nhits;
     Int_t sel_hits = 0;
     for(int i = 0; i < nhits; i++){
+      if (i >= MAXHITS) break;
         if ((TQI->T[i] < tmax) && (TQI->T[i] > 0)){
             //prompt.cab[sel_hits] = TQI->cables[i]&0xFFFF;
             //prompt.t[sel_hits] = TQI->T[i];
@@ -222,7 +232,7 @@ bool SK2p2MeV::GetBranchValues(){
         get_ok &= (myTreeReader->Get("TQREAL",    TQI));
         get_ok &= (myTreeReader->Get("TQAREAL",   TQA));
         get_ok &= (myTreeReader->Get("LOWE",      LOWE));;
-        get_ok &= (myTreeReader->Get("issignal",  is_signal));
+        //get_ok &= (myTreeReader->Get("issignal",  is_signal)); //
     }
     
     return get_ok;
@@ -349,6 +359,7 @@ Int_t SK2p2MeV::N200Max (Float_t tstart, Float_t tend)
     nhits = 0;
     Int_t i;
     for (i=0; i<TQI->nhits; i++) {
+      if (i >= MAXHITS) break;
         // Exclude non-ingate hit
         // Exclude bad ch.
         // Although bad & missing ch are masked in extract.cc, it's
@@ -366,14 +377,17 @@ Int_t SK2p2MeV::N200Max (Float_t tstart, Float_t tend)
     // Sort hits by raw time
     TMath::Sort(nhits, tiskz2, index, kFALSE); // In increasing order
     for (i=0; i<nhits; i++){
-        cabiz[i] = cabiz2[ index[i] ];
-        tiskz[i] = tiskz2[ index[i] ];
+      if (i >= MAXHITS) break;
+      if (i > MAXHITS){std::cout << "i > MAXHITS!!" << std::endl;}
+	  cabiz[i] = cabiz2[ index[i] ];
+      tiskz[i] = tiskz2[ index[i] ];
     }
     
     // Search N200 peak in sorted time arry tiskz2
     Int_t n200, n200max;
     n200max = 0;
     for (i=0; i<nhits; i++) {
+      if(i >= MAXHITS) break;
         if ( tiskz[i] < tstart ) continue;
         if ( tiskz[i] > tend-200.) break;
         n200  = GetNhits(tiskz, i, 200., nhits);
@@ -404,6 +418,7 @@ Int_t SK2p2MeV::N200Max (Float_t tstart, Float_t tend, Float_t & t200m)
     nhits = 0;
     Int_t i;
     for (i=0; i<TQI->nhits; i++) {
+      if (i >= MAXHITS) break;
         // Exclude non-ingate hit
         // Exclude bad ch.
         // Although bad & missing ch are masked in extract.cc, it's
@@ -421,6 +436,7 @@ Int_t SK2p2MeV::N200Max (Float_t tstart, Float_t tend, Float_t & t200m)
     // Sort hits by raw time
     TMath::Sort(nhits, tiskz2, index, kFALSE); // In increasing order
     for (i=0; i<nhits; i++){
+      if (i >= MAXHITS) break;
         cabiz[i] = cabiz2[ index[i] ];
         tiskz[i] = tiskz2[ index[i] ];
     }
@@ -429,8 +445,9 @@ Int_t SK2p2MeV::N200Max (Float_t tstart, Float_t tend, Float_t & t200m)
     Int_t n200, n200max;
     n200max = 0;
     for (i=0; i<nhits; i++) {
-        if ( tiskz[i] < tstart ) continue;
-        if ( tiskz[i] > tend-200.) break;
+      if (i >= MAXHITS) break;
+      if ( tiskz[i] < tstart ) continue;
+      if ( tiskz[i] > tend-200.) break;
         n200  = GetNhits(tiskz, i, 200., nhits);
         if ( n200 > n200max ) {
             n200max = n200;
@@ -457,7 +474,19 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
         v[0] = VX;
         v[1] = VY;
         v[2] = VZ;
-        wt[i] = GetWeight(xyz[i], v);
+	try {
+	  wt[i] = GetWeight(xyz[i], v);
+	}
+	catch (const std::exception& e){
+	  std::cout << e.what() << "\n";
+	  std::cout << "pmt: " << i << "\n";
+	  for (int j = -5; j < 5; ++j){ 
+	    std::cout << "xyz[pmt][0]: " << xyz[i+j][0] << " ";
+	    std::cout << "xyz[pmt][1]: " << xyz[i+j][1] << " ";
+	    std::cout << "xyz[pmt][1]: " << xyz[i+j][2] << "\n\n";
+	  }
+	  exit(0);
+	}
     }
     Float_t maxwt = TMath::MaxElement(MAXPMT, wt);
     Float_t tot_wt = 0.;
@@ -490,6 +519,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
     Int_t i;
     res.nhits = TQI->nhits;
     for (i=0; i<TQI->nhits; i++) {  //nhits in defined to be the # of total hits(not only in 1.3us in extract)
+      if (i > MAXHITS) break;
         // Exclude non-ingate hit
         // Exclude bad ch.
         // Although bad & missing ch are masked in extract.cc, it's
@@ -582,6 +612,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
     
     // TOF
     for (i=0; i<nhits; i++) {
+      if (i > MAXHITS) break;
         Float_t tof;
         tof = TMath::Sqrt((VX - xyz[cabiz2[i]-1][0]) * (VX - xyz[cabiz2[i]-1][0])
                 +(VY - xyz[cabiz2[i]-1][1]) * (VY - xyz[cabiz2[i]-1][1])
@@ -592,6 +623,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
     // Sort hits by TOF-corrected time
     TMath::Sort(nhits, tiskz2, index, kFALSE); // In increasing order
     for (i=0; i<nhits; i++){
+      if (i > MAXHITS) break;
         cabiz[i] = cabiz2[ index[i] ];
         tiskz[i] = tiskz2[ index[i] ];
         qiskz[i] = qiskz2[ index[i] ];
@@ -601,6 +633,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
     
     // Calculate hit vectors
     for (i=0; i<nhits; i++) {
+      if (i > MAXHITS) break;
         Float_t pmt_r;
         pmt_r = TMath::Sqrt((VX - xyz[cabiz[i]-1][0]) * (VX - xyz[cabiz[i]-1][0])
                 +(VY - xyz[cabiz[i]-1][1]) * (VY - xyz[cabiz[i]-1][1])
@@ -649,6 +682,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
     Int_t  tindex=0, n40hits=0;
     //************************************
     for ( i=0; i<nhits; i++) {
+      if (i > MAXHITS) break;
         if ( tiskz[i] < tstart ) continue;
         if ( tiskz[i] > tend-twin ) continue;
         
@@ -1169,6 +1203,7 @@ Int_t SK2p2MeV::GetNXX(Int_t nhits, Float_t *t, Float_t twin, Float_t tcenter)
 {
     Int_t nxx = 0;
     for (Int_t i=0; i<nhits; i++){
+            if (i > MAXHITS) break;
         if ( t[i] < tcenter - twin/2. ) continue;
         if ( t[i] > tcenter + twin/2. ) break;
         nxx ++;
@@ -1196,41 +1231,44 @@ Float_t SK2p2MeV::EffCos ( Float_t costh )
     // Cal effective cos theta
     // See also: /usr/local/sklib_g77/skofl_12a/src/sklib/coseffsk.F
     
-    if ( costh < -0.001 || costh > 1.001 ) {
+  //    if ( costh < -0.001 || costh > 1.001 ) {
+      if ( costh < -1.001 || costh > 1.001 ) {
         std::cerr << " Invalid cos theta: " << costh << std::endl;
-        
-        exit (0);
+        throw std::runtime_error("bad angle");
+        //exit (0);
     }
     
     return 0.205349 + 0.523981*costh + 0.389951*costh*costh
         - 0.131959 *costh*costh*costh;
 }
 
-Float_t SK2p2MeV::GetWeight (const Float_t xyz[3], const Float_t v[3])
-{
-    // Cal weight for PMT #cab, v[] is the vertex
-    // NOTE: the constant is not considered here since it's the same
-    //       for all cables, only the relative value is important.
-    
-    const Float_t ATT_LEN = 9000.; // temporary
-    Float_t costh, r, w;
-    r = sqrt( (xyz[0] - v[0])*(xyz[0] - v[0])
-            + (xyz[1] - v[1])*(xyz[1] - v[1])
-            + (xyz[2] - v[2])*(xyz[2] - v[2]) );
-    if ( xyz[2] > -1800 && xyz[2] < 1800 ) {
-        // Barrel, costh is positivie
-        costh = (xyz[0]*(xyz[0] - v[0]) + xyz[1]*(xyz[1] - v[1]))/sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/r;
-        //can not be calculated by
-        // costh = sqrt((xyz[0] - v[0])*(xyz[0] - v[0])+(xyz[1] - v[1])*(xyz[1] - v[1]))/r;
-    }
-    else {
-        // Top or Bottom
-        costh = fabs( (xyz[2] - v[2]) ) / r;
-    }
-    
-    w = EffCos( costh ) * exp(-r/ATT_LEN)/r/r;
-    
-    return w;
+Float_t SK2p2MeV::GetWeight(const Float_t pmt_coords[3], const Float_t vertex_coords[3]){
+  const Float_t ATT_LEN = 9000.;
+
+  const Float_t pmt_x = pmt_coords[0], pmt_y = pmt_coords[1], pmt_z = pmt_coords[2];
+  const Float_t vertex_x = vertex_coords[0], vertex_y = vertex_coords[1], vertex_z = vertex_coords[2];
+
+  const Float_t radius = sqrt(pow(pmt_x - vertex_x,2) +
+			      pow(pmt_y - vertex_y,2) +
+			      pow(pmt_z - vertex_z,2));
+  
+  const auto is_on_barrel = [](Float_t z){
+    const double barrel_pmt_max_z = 1800;
+    return (fabs(z) < barrel_pmt_max_z);
+  };
+  
+  Float_t cos_theta = 0;
+  
+  if (is_on_barrel(pmt_z)){
+    cos_theta = ( pmt_x * (pmt_x - vertex_x) +
+		  pmt_y * (pmt_y - vertex_y) )
+      / (sqrt(pow(pmt_x,2) + pow(pmt_y, 2)) * radius);
+  }
+  else {
+    cos_theta  = (fabs(pmt_z - vertex_z) / radius);
+  }
+  
+  return EffCos(cos_theta) * exp(-radius / ATT_LEN) / pow(radius,2);
 }
 
 Float_t SK2p2MeV::GetWeightThreshold (const Float_t *w, const Float_t frac)
@@ -2127,6 +2165,7 @@ Float_t SK2p2MeV::BasicTof(Float_t* tiskz, Int_t* cabiz, Float_t VX, Float_t VY,
     Float_t trms = 0;
     for (int i=0; i<nhits; i++)
     {
+      if (i > MAXHITS)  break;
         Float_t tof;
         //std::cout << cabiz[i] << std::endl;
         tof = TMath::Sqrt((VX - xyz[cabiz[i]-1][0]) * (VX - xyz[cabiz[i]-1][0])
@@ -2144,6 +2183,7 @@ Float_t SK2p2MeV::BasicTof(Float_t* tiskz, Int_t* cabiz, Float_t VX, Float_t VY,
     
     for (Int_t i = 0; i<nhits; i++)
     {
+      if (i > MAXHITS) break;
         tiskz1[i] = tiskz[index[i]];
         cabiz1[i] = cabiz[index[i]];
         trms += (tiskz1[i] - tmean)*(tiskz1[i]-tmean);
@@ -2349,3 +2389,42 @@ void SK2p2MeV::SetDarkRate(Int_t run)
     //         std::cout << i << " " << dark_rate[i] << std::endl;
     //     }
 }
+
+// Float_t SK2p2MeV::GetWeight (const Float_t xyz[3], const Float_t v[3])
+// {
+//     // Cal weight for PMT #cab, v[] is the vertex
+//     // NOTE: the constant is not considered here since it's the same
+//     //       for all cables, only the relative value is important.
+    
+//     const Float_t ATT_LEN = 9000.; // temporary
+//     Float_t costh;
+    
+//     const Float_t r = sqrt( (xyz[0] - v[0])*(xyz[0] - v[0])
+//             + (xyz[1] - v[1])*(xyz[1] - v[1])
+//             + (xyz[2] - v[2])*(xyz[2] - v[2]) );
+    
+//     if ( xyz[2] > -1800 && xyz[2] < 1800 ) {
+//         // Barrel, costh is positivie
+//         costh = (
+// 		 xyz[0] * ( xyz[0] - v[0] ) +
+// 		 xyz[1] * ( xyz[1] - v[1] )
+// 		 )/sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/r;
+// 	if ( costh < -0.001 || costh > 1.001 ){
+// 	  // std::cout << "invalid costh (barrel): " << costh << std::endl;
+// 	  // std::cout << xyz[0] << std::endl;
+// 	  // std::cout << xyz[1] << std::endl;
+// 	  // std::cout << xyz[0] - v[0] << std::endl;
+// 	  // std::cout << xyz[1] - v[1] << std::endl;
+// 	}
+	
+//         //can not be calculated by
+//         // costh = sqrt((xyz[0] - v[0])*(xyz[0] - v[0])+(xyz[1] - v[1])*(xyz[1] - v[1]))/r;
+//     }
+//     else {
+//         // Top or Bottom
+//         costh = fabs( (xyz[2] - v[2]) ) / r;
+// 	if ( costh < -0.001 || costh > 1.001 ){std::cout << "invalid costh (barrel): " << costh << std::endl;}
+//     }
+    
+//     return (EffCos( costh ) * exp(-r/ATT_LEN)/r/r);
+// }

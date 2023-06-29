@@ -54,6 +54,7 @@ class lf_allfit_new: public Tool {
 	std::string readerName="";
 	int lun=0;
 	bool MC=false;
+	int writeout=0;
 	
 	// variables to write out
 	// ======================

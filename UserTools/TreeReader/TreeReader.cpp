@@ -56,7 +56,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// Get the Tool configuration variables
 	// ------------------------------------
 	LoadConfig(configfile);
-	toolName = toolName+" "+readerName;
 	m_data->tool_configs[toolName] = &m_variables;
 	
 	// safety check that we were given an input file
@@ -105,20 +104,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		return false;
 	}
 	
-	// safety check that if asked to read an SKROOT file, it has a TTree called 'data'
-	// if not, the TreeManager will segfault!
-	if(skrootMode==SKROOTMODE::READ || skrootMode==SKROOTMODE::COPY){
-		// i guess we can only pracitcally check the first file
-		// i don't think it'll seg as long as at least one file has a 'data' tree
-		// XXX although, perhaps it would be better to check all of them?
-		TFile* ftest = TFile::Open(firstfile.c_str(),"READ");
-		if(ftest->Get("data")==nullptr){
-			Log(toolName+" ERROR! input file "+firstfile+" has no 'data' TTree!",v_error,verbosity);
-			m_data->vars.Set("StopLoop",1);
-			return false;
-		}
-	}
-	
 	// warning check: see if we're given an input when we're in WRITE mode
 	if(skrootMode==SKROOTMODE::WRITE && (inputFile!="" || FileListName!="")){
 		Log(toolName+" warning! InputFile or FileListName given, but mode is skroot::write! "
@@ -148,6 +133,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// TODO fix the SuperManager.
 		// For now we'll just keep our own list of LUNs in the DataModel
 		LUN = m_data->GetNextLUN(LUN, readerName);
+		
 		
 		// slight change in initialization depending on SK root vs zebra
 		if(not (skrootMode==SKROOTMODE::ZEBRA)){
@@ -179,6 +165,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// so a subset of entries may be copied across.
 			
 			// create the treemanager, and in write mode, the output file
+			
 			switch(skrootMode){
 				case SKROOTMODE::READ:  skroot_open_read_(&LUN); break;
 				case SKROOTMODE::WRITE: skroot_open_write_(&LUN, outputFile.c_str(), outputFile.size()); break;
@@ -226,7 +213,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveInputBranches.begin(),ActiveInputBranches.end(),abranch) ==
 							ActiveInputBranches.end()){
-							if(abranch=="HEADER") continue; // always required
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -241,7 +227,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveOutputBranches.begin(),ActiveOutputBranches.end(),abranch) ==
 							ActiveOutputBranches.end()){
-							if(abranch=="HEADER") continue; // always required
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -445,7 +430,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					Log(toolName+" Error! skbadoptn contains 25 (mask bad channels) but not 26 "
 						+"(look up bad channels based on run number). In this case one needs to provide "
 						+"a reference run to use for the bad channel list! Please specify a run to use in "
-						+"option skbadchrefrun in TreeReader config",v_error,verbosity);
+						+"option skbadchrefrun in "+toolName+" config",v_error,verbosity);
 					return false;
 				}
 				Log(toolName+" masking bad channels with reference run "
@@ -464,8 +449,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				*        istat  ;+10 : normal end  additional read /skam/const/badch.dat
 				*/
 				if(istat<0){
-					Log(toolName+" Error applying skbadch with reference run "+
-					    toString(skroot_badch_ref_run),v_error,verbosity);
+					Log(toolName+" Error applying skbadch with reference run "+toString(skroot_badch_ref_run),
+					    v_error,verbosity);
 					return false;
 				}
 			}
@@ -488,11 +473,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			std::find(ActiveInputBranches.begin(), ActiveInputBranches.end(), "*")==ActiveInputBranches.end()){
 			// only disable unlisted branches if we have a non-empty list of active branches
 			// and the key "*" was not specified.
-			get_ok = myTreeReader.OnlyEnableBranches(ActiveInputBranches);
-			if(!get_ok){
-				Log(toolName+" Did not recognise some branches in active branches list!",
-				    v_error,verbosity);
-			}
+			myTreeReader.OnlyEnableBranches(ActiveInputBranches);
 		}
 	}
 	
@@ -504,7 +485,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	std::function<bool()> loadSHE = std::bind(std::mem_fn(&TreeReader::LoadSHE), std::ref(*this));
 	std::function<bool()> loadAFT = std::bind(std::mem_fn(&TreeReader::LoadAFT), std::ref(*this));
 	std::function<bool(int)> loadCommons = std::bind(std::mem_fn(&TreeReader::LoadCommons), std::ref(*this), std::placeholders::_1);
-	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons);
+	std::function<int(long, bool)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, std::placeholders::_2);
+	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons, getTreeEntry);
 	
 	// get first entry to process
 	if(firstEntry<0) firstEntry=0;
@@ -597,12 +579,21 @@ bool TreeReader::Execute(){
 				PrintTriggerBits();
 				
 				// apply our general check for required bits in the trigger mask
+				// ah! but this is only an and! Never an or! So we can't say we want SHE or AFT!
+				// for now hack it into an or.
+				bool passescheck=false;
 				for(int mask_i=0; mask_i<triggerMasks.size(); ++mask_i){
 					int required_bit = triggerMasks.at(mask_i);
+					/*
 					if(trigger_bits.test(required_bit)==false){
 						get_ok=-999; // skip this event
 					}
+					*/
+					if(trigger_bits.test(required_bit)){
+						passescheck=true;
+					}
 				}
+				if(!passescheck) get_ok=-999;
 				
 				// if we're reading *only* SHE+AFT pairs, skip the entry if it's not SHE
 				if(get_ok>0 && onlyPairs && !trigger_bits.test(28)){
@@ -1348,8 +1339,7 @@ bool TreeReader::LoadNextZbsFile(){
 	
 	set_rflist_zbs( LUN, next_file.c_str(), false );
 	int ipt = 1;
-	int ihndl=1;
-	skopenf_( &LUN, &ipt, "Z", &get_ok, &ihndl );
+	skopenf_( LUN, ipt, "Z", get_ok, 1 );
 	
 	if(get_ok!=0){
 		Log(toolName+" Error loading next ZBS file '"+next_file,v_error,verbosity);
@@ -1602,8 +1592,8 @@ bool TreeReader::HasAFT(){
 }
 
 bool TreeReader::LoadAFT(){
-	Log(toolName+" LoadAFT called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
-	    v_debug,verbosity);
+	Log(toolName+" LoadAFT called for tree "+readerName
+		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
 	if(has_aft && !aft_loaded){
 		aft_loaded = LoadCommons(0);
 		return aft_loaded;
@@ -1612,8 +1602,8 @@ bool TreeReader::LoadAFT(){
 }
 
 bool TreeReader::LoadSHE(){
-	Log(toolName+" LoadSHE called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
-	    v_debug,verbosity);
+	Log(toolName+" LoadSHE called for tree "+readerName
+		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
 	if(has_aft && aft_loaded){
 		aft_loaded = !LoadCommons(0);
 		return aft_loaded;

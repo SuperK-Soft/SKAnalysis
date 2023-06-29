@@ -21,9 +21,7 @@ c***  init water transparency table
       call skrunday
       call skwt
 c***  in the case of MC, assign dark counts based on run 62428
-! gain corr for SK4 only, and run must match.., 85000-88000 for SK6
-c      nrunsk = 62428
-      nrunsk = 86000
+      nrunsk = 62428
 cc*** init. bonsai 
       CALL cfbsinit(MAXPM,xyzpm)
       call lfwater(relapse(nrunsk), watert)
@@ -78,7 +76,7 @@ c*** branches to skip
       integer ii, cab, n10, nc, nback, nlow
       real*8  like
       real offset,total,avg,ntot
-      integer nhit, nbf, bsnsel, bonsaifit, enelf_version, enelf_sk4
+      integer nhit, nbf, bsnsel, bonsaifit, enelf_version, enelf_sk4, mc, log_level
       real qarray(MAXPM),tarray(MAXPM)
       external bonsaifit
 
@@ -113,8 +111,10 @@ c         print *, "Ready"
  
          nbf=bonsaifit(bsvertex,bsresult,bsgood,bsnsel,
      $        nhit,ihcab,tarray,qarray)
-         call lfneweff_sk6(bsvertex, bsdir, bseffhit, watert, 1)
-         enelf_version = 6
+         log_level = 1;
+         mc = 1
+         call lfneweff_sk4(bsvertex, bsdir, bseffhit, watert, log_level, mc)
+         enelf_version = 4
 c c*** save info
  
 c         print *,"bseffhit ", bseffhit(1)

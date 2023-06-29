@@ -37,7 +37,8 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	// ------------------------------------
 	std::string treeReaderName;
 	std::string derived_classname;
-	int sk_geometry=4;
+	//	int sk_geometry=4;
+	int sk_geometry=6;
 	std::string outFile = "SK2p2MeV.root";
 	m_variables.Get("verbosity",verbosity);                   // how verbose to be
 	m_variables.Get("treeReaderName",treeReaderName);         // reader for input tree

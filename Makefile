@@ -1,10 +1,8 @@
-#include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
-include ./skofl.gmk  # pulls in libskroot.so as well
-# skofl.gmk is copy of aboe with rfa removed from SITE_LIRBRARIES
+include $(SKOFL_ROOT)/config.gmk  # pulls in libskroot.so as well
 PWD=`pwd`
-
+Dependencies=Dependencies
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -23,10 +21,7 @@ FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none # -falign-commons
 SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe
 
 # lowe libraries - some of these may not be required in this list
-SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader -lsnevtinfo
-BINLIB = -L ${RFA_ROOT} -lrfa
-#SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++ -L/opt/intel/cce/10.0.023/lib -lirc
-#SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++
+SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lrfa -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader
 
 # Atmospheric, Muon and Proton Decay libraries (ATMPD) Headers & Libraries
 OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
@@ -56,9 +51,7 @@ LDLIBS += $(CERNLIB)
 # ROOT Headers & Libraries
 ROOTINCLUDE= `root-config --cflags`
 ROOTLIB = `root-config --libs --evelibs --glibs` -lMinuit -lXMLIO -lMLP
-ROOTSTLLIBS = -L${HOME}/stllibs -lRootStl
-ROOTVER := `root-config --version | cut -b 1`
-CFLAGS += -DROOTVER=\"$(ROOTVER)\"
+ROOTSTLLIBS = -L$(Dependencies)/RootStl -lRootStl
 
 TMVASYS = $(Dependencies)/TMVA
 TMVAINCLUDE = -I $(TMVASYS)/include

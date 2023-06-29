@@ -28,19 +28,29 @@ bool TruthNeutronCaptures_v3::Initialise(std::string configfile, DataModel &data
 	// Get the Tool configuration variables
 	// ------------------------------------
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("inputFile",inputFile);            // a single specific input file
 	m_variables.Get("outputFile",outputFile);          // output file to write
 	m_variables.Get("maxEvents",MAX_EVENTS);           // terminate after processing at most this many events
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY); // how many events to TTree::Fill between TTree::Writes
-	std::string treeReaderName;
-	m_variables.Get("treeReaderName",treeReaderName);  // reader name for input data
 	
-	// Get input TreeReader
-	// --------------------
-	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",0,0);
-		return false;
+	// get the list of input files from the CStore
+	// -------------------------------------------
+	// filled if using LoadFileList tool
+	// TODO yet to implement support for this in MTreeReader
+	if(inputFile==""){
+		get_ok = m_data->CStore.Get("InputFileList", input_file_names);
+		if(not get_ok){
+			Log(toolName+" Error: No inputFile given and no InputFileList in CStore!",v_error,verbosity);
+			return false;
+		}
 	}
-	myTreeReader = m_data->Trees.at(treeReaderName);
+	
+	// open the input TFile and TTree
+	// ------------------------------
+	get_ok = myTreeReader.Load(inputFile, "data"); // official ntuple TTree is descriptively known as 'h1'
+	DisableUnusedBranches();
+	entry_number = 0;
+	if(get_ok) ReadEntryNtuple(entry_number);
 	
 	// create the output TFile and TTree
 	// ---------------------------------
@@ -131,7 +141,7 @@ void TruthNeutronCaptures_v3::CopyVariables(){
 	// ---------------------------------------
 	// those we want to keep in the output tree without modification
 	
-	out_filename = myTreeReader->GetTree()->GetCurrentFile()->GetName();
+	out_filename = myTreeReader.GetTree()->GetCurrentFile()->GetName();
 	out_skdetsim_version =  -1;
 	out_tba_table_version = -1;
 	out_water_transparency = water_transparency;
@@ -273,36 +283,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			out_nuclide_daughter_pdg.push_back(-1);
 			out_nuclide_parent_pdg.push_back(-1);
 		}
-
-		else if(secondary_gen_process.at(secondary_i)==18 &&
-			    secondary_PDG_code_2.at(secondary_i)!=11  &&
-			    secondary_PDG_code_2.at(secondary_i)!=22 ){
-			std::cout<<"Found non-gamma non-electron product from ncapture!"<<std::endl;
-			std::cout<<"PDG: "+toString(secondary_PDG_code_2.at(secondary_i))
-					 <<" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))+") "
-					 <<" created at ("<<secondary_start_vertex_2.at(secondary_i).at(0)
-					 <<", "<<secondary_start_vertex_2.at(secondary_i).at(1)
-					 <<", "<<secondary_start_vertex_2.at(secondary_i).at(2)
-					 <<", "<<secondary_start_time_2.at(secondary_i)<<")"
-					 <<", terminated at (";
-			// ah, but to get termination info we need to find a daughter from its termination process aughh
-			auto it = std::find(parent_index.begin(),parent_index.end(),secondary_i);
-			if(it!=parent_index.end()){
-				int daughter_index = std::distance(parent_index.begin(),it);
-				std::cout<<secondary_start_vertex_2.at(daughter_index).at(0)
-				         <<", "<<secondary_start_vertex_2.at(daughter_index).at(1)
-				         <<", "<<secondary_start_vertex_2.at(daughter_index).at(2)
-				         <<", "<<secondary_start_time_2.at(daughter_index)<<")";
-			} else {
-				std::cout<<"?,?,?,?)";
-			}
-			std::cout<<std::endl;
-		}
-
 	}
 	Log(toolName+" found "+toString(out_neutron_start_energy.size())+" primary+secondary neutrons", v_debug,verbosity);
-	
-	DumpMCInfo();
 	
 	// ==================================
 	// SCAN FOR GAMMAS AND CAPTURE NUCLEI
@@ -325,47 +307,35 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// parent may either be a primary particle or secondary particle
 			// sanity check: it should have one or the other, but not both
 			int neutron_parent_loc = -1;
-			// secondary parent indexes should be fixed when PR is merged
-			int primary_parent_index = parent_trackid.at(secondary_i); // not yet implemented
+			// XXX HACK: for now it seems as though primary indices (iprntidx) are not stored,
+			// but secondary indices (iprnttrk) actually hold index of the primary parent...
+			// this seems broken??? XXX CRAP WORKAROUND SWAP 0 INDEX?
+			int primary_parent_index = 0; // parent_trackid.at(secondary_i); - not saved, presume 0
 			int secondary_parent_index = parent_index.at(secondary_i);
+			if(secondary_parent_index==0) secondary_parent_index=-1; // is it correct for >0??? do we need -1??
 			Log(toolName+" primary parent index "+toString(primary_parent_index)
 						+" secondary parent index "+toString(secondary_parent_index),v_debug,verbosity);
 			// first check if it has a valid SECONDARY parent
-			if(std::abs(secondary_parent_index)>0){
-				if(secondary_parent_index>0){
-					// its parent was a secondary: check if it's in our list of secondary neutrons
-					if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){
-						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
-					}
-					// else its parent was a secondary, but not one we know
-					else if(from_ncapture){
-						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
-						continue;
-					}
-				} else {
-					// its parent was a primary: check if it's in our list of primary neutrons
-					secondary_parent_index = std::abs(secondary_parent_index);
-					if(primary_n_ind_to_loc.count(secondary_parent_index-1)){
-						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
-					}
-					// else its parent was a primary, but not one we know
-					else if(from_ncapture){
-						// if it came from ncapture of a primary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
-						continue;
-					}
+			if(secondary_parent_index>=0){
+				// its parent was a secondary: check if it's in our list of secondary neutrons
+				if(secondary_n_ind_to_loc.count(secondary_parent_index)){
+					neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index);
+				}
+				// else its parent was a secondary, but not one we know
+				else if(from_ncapture){
+					// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
+					Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT INDEX "
+							+toString(secondary_parent_index),v_warning,verbosity);
+					continue;
 				}
 			}
-			// no known secondary parent: fall-back to getting parent PRIMARY
+			// only fall-back to getting parent PRIMARY if parent secondary index = 0
 			// this is because parent primary index is carried over, so daughters of secondaries
 			// will have the same primary parent index
-			else if(primary_parent_index>0){
+			else if(primary_parent_index>=0){
 				// its parent was a primary: check if it's in our list of primary neutrons
-				if(primary_n_ind_to_loc.count(primary_parent_index-1)){
-					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index-1);
+				if(primary_n_ind_to_loc.count(primary_parent_index)){
+					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index);
 				}
 				// else its parent was a primary, but not one we know
 				else if(from_ncapture){
@@ -429,7 +399,7 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					TVector3 parent_neutron_start_mom(parent_init_mom.at(secondary_i).at(0),
 													  parent_init_mom.at(secondary_i).at(1),
 													  parent_init_mom.at(secondary_i).at(2));
-					double nStartE = sqrt(parent_neutron_start_mom.Mag2() + pow(neutron_mass,2.)) - neutron_mass;
+					double nStartE = parent_neutron_start_mom.Mag2() / (2.*neutron_mass);
 					if(nStartE!=out_neutron_start_energy.at(neutron_parent_loc)){
 						std::cout<<"WARNING, NEUTRON START ENERGY FROM PARENT AT BIRTH ("<<nStartE
 								 <<") DIFFERS FROM NEUTRON START ENERGY FROM NEUTRON ITSELF ("
@@ -461,47 +431,35 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// parent may either be a primary particle or secondary particle
 			// sanity check: it should have one or the other, but not both
 			int neutron_parent_loc = -1;
-			// secondary parent indexes should be fixed when SKG4 PR is merged
-			int primary_parent_index = parent_trackid.at(secondary_i); // not yet implemented
+			// XXX HACK: for now it seems as though primary indices (iprntidx) are not stored,
+			// but secondary indices (iprnttrk) actually hold index of the primary parent...
+			// this seems broken??? XXX CRAP WORKAROUND SWAP 0 INDEX?
+			int primary_parent_index = 0; // parent_trackid.at(secondary_i); - not saved, presume 0
 			int secondary_parent_index = parent_index.at(secondary_i);
+			if(secondary_parent_index==0) secondary_parent_index=-1; // is it correct for >0??? do we need -1??
 			Log(toolName+" primary parent index "+toString(primary_parent_index)
 						+" secondary parent index "+toString(secondary_parent_index),v_debug,verbosity);
 			// first check if it has a valid SECONDARY parent
-			if(std::abs(secondary_parent_index)>0){
-				if(secondary_parent_index>0){
-					// its parent was a secondary: check if it's in our list of secondary neutrons
-					if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){
-						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
-					}
-					// else its parent was a secondary, but not one we know
-					else {
-						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT"
-								+toString(secondary_parent_index),v_warning,verbosity);
-						continue;
-					}
-				} else {
-					// its parent was a primary: check if it's in our list of primary neutrons
-					secondary_parent_index = std::abs(secondary_parent_index);
-					if(primary_n_ind_to_loc.count(secondary_parent_index-1)){
-						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
-					}
-					// else its parent was a secondary, but not one we know
-					else {
-						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT"
-								+toString(secondary_parent_index),v_warning,verbosity);
-						continue;
-					}
+			if(secondary_parent_index>=0){  // SKG4 doesn't use fortran indexing, it's 0-based afaict
+				// its parent was a secondary: check if it's in our list of secondary neutrons
+				if(secondary_n_ind_to_loc.count(secondary_parent_index)){
+					neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index);
+				}
+				// else its parent was a secondary, but not one we know
+				else {
+					// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
+					Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT"
+							+toString(secondary_parent_index),v_warning,verbosity);
+					continue;
 				}
 			}
 			// only fall-back to getting parent PRIMARY if parent secondary index = 0
 			// this is because parent primary index is carried over, so daughters of secondaries
 			// will have the same primary parent index
-			else if(primary_parent_index>0){
+			else if(primary_parent_index>=0){  // it seems SKG4 doesn't populate this...
 				// its parent was a primary: check if it's in our list of primary neutrons
-				if(primary_n_ind_to_loc.count(primary_parent_index-1)){
-					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index-1);
+				if(primary_n_ind_to_loc.count(primary_parent_index)){
+					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index);
 				}
 				// else its parent was a primary, but not one we know
 				else {
@@ -587,37 +545,25 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// but came from neutron capture it's the daughter nuclide
 			// its parent will also be the captured neutron, same as the decay gamma.
 			int neutron_parent_loc=-1;
-			// secondary parent indexes should be fixed when SKG4 PR is merged
-			int primary_parent_index = parent_trackid.at(secondary_i); // not yet implemented
+			// XXX HACK: for now it seems as though primary indices (iprntidx) are not stored,
+			// but secondary indices (iprnttrk) actually hold index of the primary parent...
+			// this seems broken??? XXX CRAP WORKAROUND SWAP 0 INDEX?
+			int primary_parent_index = 0; // parent_trackid.at(secondary_i); - not saved, presume 0
 			int secondary_parent_index = parent_index.at(secondary_i);
-			if(std::abs(secondary_parent_index)>0){
-				if(secondary_parent_index>0){
-					// secondary parent
-					if(secondary_n_ind_to_loc.count(secondary_parent_index-1)){
-						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
-					} else {
-						// came from capture of a neutron we don't know?
-						Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
-							+" FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT (NEUTRON) INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
-						continue;
-					}
+			if(secondary_parent_index==0) secondary_parent_index=-1; // is it correct for >0??? do we need -1??
+			if(secondary_parent_index>=0){
+				if(secondary_n_ind_to_loc.count(secondary_parent_index)){
+					neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index);
 				} else {
-					// primary parent
-					secondary_parent_index = std::abs(secondary_parent_index);
-					if(primary_n_ind_to_loc.count(secondary_parent_index-1)){
-						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
-					} else {
-						// came from capture of a neutron we don't know?
-						Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
-							+" FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT (NEUTRON) INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
-						continue;
-					}
+					// came from capture of a neutron we don't know?
+					Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+						+" FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT (NEUTRON) INDEX "
+							+toString(secondary_parent_index),v_warning,verbosity);
+					continue;
 				}
-			} else if(primary_parent_index>0){
-				if(primary_n_ind_to_loc.count(primary_parent_index-1)){
-					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index-1);
+			} else if(primary_parent_index>=0){
+				if(primary_n_ind_to_loc.count(primary_parent_index)){
+					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index);
 				} else {
 					// came from capture of a neutron we don't know?
 					Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
@@ -667,19 +613,12 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 	return 1;
 }
 
-// for comparison of our results with those extracted by the ReadMCInfo Tool.
-int TruthNeutronCaptures_v3::DumpMCInfo(){
-	m_data->eventPrimaries.DumpAllElements();
-	m_data->eventSecondaries.DumpAllElements();
-	return 0;
-}
-
 int TruthNeutronCaptures_v3::ReadEntryNtuple(long entry_number){
-	int bytesread = myTreeReader->GetEntry(entry_number);
+	int bytesread = myTreeReader.GetEntry(entry_number);
 	if(bytesread<=0) return bytesread;
 	
-	int success = (myTreeReader->GetBranchValue("SECONDARY",sec_info)) &&
-				  (myTreeReader->GetBranchValue("MC",mc_info));
+	int success = (myTreeReader.GetBranchValue("SECONDARY",sec_info)) &&
+				  (myTreeReader.GetBranchValue("MC",mc_info));
 	
 	// Print method should have been const-qualified. Hack around it.
 	//MCInfo* mci = const_cast<MCInfo*>(mc_info);
@@ -731,7 +670,7 @@ int TruthNeutronCaptures_v3::ReadEntryNtuple(long entry_number){
 	parent_mom_at_sec_creation = basic_array<float(*)[3]>(intptr_t(sec_info->pprnt),n_secondaries_2);
 	parent_init_pos = basic_array<float(*)[3]>(intptr_t(sec_info->vtxprnt),n_secondaries_2);
 	parent_init_mom = basic_array<float(*)[3]>(intptr_t(sec_info->pprntinit),n_secondaries_2);
-	parent_trackid = basic_array<int*>(intptr_t(sec_info->iprnttrk),n_secondaries_2); // not implemented in SKG4
+	parent_trackid = basic_array<int*>(intptr_t(sec_info->iprnttrk),n_secondaries_2);  // not populated by SKG4
 	
 	return success;
 }
@@ -742,7 +681,7 @@ int TruthNeutronCaptures_v3::DisableUnusedBranches(){
 	"SECONDARY"
 	};
 	
-	return myTreeReader->OnlyEnableBranches(used_branches);
+	return myTreeReader.OnlyEnableBranches(used_branches);
 }
 
 int TruthNeutronCaptures_v3::CreateOutputFile(std::string filename){

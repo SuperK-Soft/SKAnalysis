@@ -74,15 +74,13 @@ class TruthNeutronCaptures_v3: public Tool {
 	void CloseFile();
 	int DisableUnusedBranches();
 	
-	int DumpMCInfo();
-	
 	// Member variables
 	// ================
 	int entry_number=0; // input TTree entry, potentially different to event_number, which is a branch variable
 	
 	// variables to read in
 	// ====================
-	MTreeReader* myTreeReader;                                   // the TTree reader
+	MTreeReader myTreeReader;                                   // the TTree reader
 	
 	const MCInfo* mc_info = nullptr;
 	const SecondaryInfo* sec_info = nullptr;
