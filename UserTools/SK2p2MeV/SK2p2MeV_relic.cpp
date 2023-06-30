@@ -14,13 +14,13 @@ SK2p2MeV_relic::SK2p2MeV_relic (const Float_t (*geomxyz)[3])
     : SK2p2MeV (geomxyz)
 {
     MU = new MuInfo;
-    //    thirdred = new ThirdRed;
+    thirdred = new ThirdRed;
     
     // additional branches
     head0   = new Header;
     lowe0   = new LoweInfo;
     mu0     = new MuInfo;
-    //    third0  = new ThirdRed;
+    third0  = new ThirdRed;
     //tq0   = new TQReal;
     //tqa0  = new TQReal;
     
@@ -30,12 +30,12 @@ SK2p2MeV_relic::~SK2p2MeV_relic(){
     theOTree->ResetBranchAddresses();
     
     delete MU;
-    //delete thirdred;
+    delete thirdred;
     
     delete head0;
     delete lowe0;
     delete mu0;
-    //delete third0;
+    delete third0;
     //delete tq0;
     //delete tqa0;
     
@@ -65,7 +65,7 @@ bool SK2p2MeV_relic::GetBranchValues(){
     // get additional branch variables - MU and ThirdRed propagated to output TTree
     get_ok &= (myTreeReader->Get("MU", MU));
   //get_ok &= (myTreeReader->Get("multispa_dist", &multispa));
-    //    get_ok &= (myTreeReader->Get("ThirdRed", thirdred));
+    get_ok &= (myTreeReader->Get("ThirdRed", thirdred));
     
     return get_ok;
 }
@@ -80,7 +80,7 @@ bool SK2p2MeV_relic::Initialise(MTreeReader* reader, bool fake, int seed, const 
     theOTree->Branch("HEADER", "Header", &head0, 1024*1024, 0);
     theOTree->Branch("LOWE", "LoweInfo", &lowe0, 1024*1024, 0);
     theOTree->Branch("MU", "MuInfo", &mu0, 1024*1024, 0);
-    //    theOTree->Branch("ThirdRed", "ThirdRed", &third0, 1024*1024, 0);
+    theOTree->Branch("ThirdRed", "ThirdRed", &third0, 1024*1024, 0);
     //theOTree->Branch("multispa_dist", &multispa, "multispa_dist/I");
     //theOTree->Branch("TQREAL", "TQReal", &tq0, 1024*1024, 0);
     //theOTree->Branch("TQAREAL", "TQReal", &tqa0, 1024*1024, 0);
@@ -244,7 +244,7 @@ void SK2p2MeV_relic::Analyze(long entry, bool last_entry)
         *head0 = *HEADER;
         *lowe0 = *LOWE;
         *mu0   = *MU;
-	//        *third0 = *thirdred;
+        *third0 = *thirdred;
         float tmax = AFT_GATE + 35000;
 #endif
         //*******************************/
@@ -354,7 +354,7 @@ void SK2p2MeV_relic::Analyze(long entry, bool last_entry)
         *head0 = *HEADER;
         *lowe0 = *LOWE;
         *mu0   = *MU;
-	//        *third0 = *thirdred;
+        *third0 = *thirdred;
         type = 0;
         
         // Cal totpe

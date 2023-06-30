@@ -8,91 +8,66 @@ ntag_BDT::ntag_BDT():Tool(){
 }
 
 bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
-
-  std::cout << "INITIALISING" << std::endl;
-  
-  if(configfile!="") m_variables.Initialise(configfile);
+	
+	if(configfile!="") m_variables.Initialise(configfile);
 	//m_variables.Print();
-
-  std::cout << "d1" << std::endl;
+	
 	m_data= &data;
 	m_log= m_data->Log;
 	m_verbose=1;
 	
 	m_variables.Get("verbosity",m_verbose);
-
-	
 	
 	// get the reader for inputs
 	std::string treeReaderName;
 	m_variables.Get("treeReaderName",treeReaderName);
-	  std::cout << "d2" << std::endl;
 	if(m_data->Trees.count(treeReaderName)==0){
-	    std::cout << "d3" << std::endl;
 		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
-	std::cout << "d4" << std::endl;
 	myTreeReader = m_data->Trees.at(treeReaderName);
 	
 	// intermittently write to disk every N events, so we don't lose everything in case of a crash
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY);
-	  std::cout << "d5" << std::endl;
-	std::cout << "write frequency: " <<  WRITE_FREQUENCY << std::endl;
 	
 	// BDT variables
 	NLOWINDEX = 5;
 	m_variables.Get("NLOWINDEX",NLOWINDEX);
-	  std::cout << "d6" << std::endl;
 	N10TH = 6;
 	m_variables.Get("n10_threshold",N10TH);
-	std::cout << "d7" << std::endl;
 	
 	// BDT model
 	std::string BDT_model= "051_10M.joblib";
 	m_variables.Get("BDT_model",BDT_model);
-	  std::cout << "d8" << std::endl;
 	
 	// Import Python modules
 	// when do we need to call this?
 //	py::scoped_interpreter guard{};  // XXX
-	  try {
-	    std::cout << "e1" << std::endl;
 	py::object numpy = py::module::import("numpy");
-	std::cout << "e2" << std::endl;
 	py::object joblib = py::module::import("joblib");
-	  std::cout << "e3" << std::endl;
-	  py::object jobload = joblib.attr("load");
-	std::cout << "d9" << std::endl;
+	py::object jobload = joblib.attr("load");
 	
-	  
 	// load pre-trained BDT
 	py::object bdt5 = jobload(BDT_model);
 	predict_proba5 = bdt5.attr("predict_proba");
-	  std::cout << "d10" << std::endl;
+	
 	// make output file
 	// FIXME move output to datamodel
 	std::string outfilepath = "ntag_BDT_out.root";
-	
 	m_variables.Get("outfile",outfilepath);
-	
-	std::cout << "outfile path is " << outfilepath << std::endl;
 	outfile = new TFile(outfilepath.c_str(), "RECREATE");
-	  std::cout << "d11" << std::endl;
+	
 	// make output tree with same branch structure as input tree
 	treeout = myTreeReader->GetTree()->CloneTree(0);
 	
 	// make output branch arrays
 	neutron5 = new float[MAX_EVENTS];
 	nlow = new int[MAX_EVENTS];
-	std::cout << "d12" << std::endl;
 	treeout->Branch("neutron5",  neutron5, "neutron5[np]/F");
 	treeout->Branch("nlow",      nlow,     "nlow[np]/I");
-	std::cout << "d13" << std::endl;
-	  } catch( std::exception& e){
-	    std::cout << e.what() << std::endl;
-	  }
-	  return true;
+	
+	
+	return true;
 }
 
 
@@ -253,37 +228,37 @@ bool ntag_BDT::Finalise(){
 
 bool ntag_BDT::GetBranchValues(){
 	
-  get_ok  = (myTreeReader->Get( "HEADER",          HEADER        )); //X
-  get_ok &= (myTreeReader->Get( "LOWE",            LOWE          )); //X
-  get_ok &= (myTreeReader->Get( "np",              np            )); //X
-  //	get_ok &= (myTreeReader->Get( "type",            type          )); // this isn't in th atmos MC file, not sure if we need it
-	get_ok &= (myTreeReader->Get( "nhits",           nnhits        )); //X
-	get_ok &= (myTreeReader->Get( "N10",             n10           )); //X
-	get_ok &= (myTreeReader->Get( "N200M",           N200M         )); //X
-	get_ok &= (myTreeReader->Get( "T200M",           T200M         )); //X
-	get_ok &= (myTreeReader->Get( "Nc",              nc            )); //X
-	get_ok &= (myTreeReader->Get( "Nback",           nnback        )); //X
-	get_ok &= (myTreeReader->Get( "N300",            n300          )); //X
-	get_ok &= (myTreeReader->Get( "NhighQ",          nnhighq       )); //X
-	get_ok &= (myTreeReader->Get( "NLowtheta",       nnlowtheta    )); //X
-	get_ok &= (myTreeReader->Get( "trms",            trmsold       )); //X
-	get_ok &= (myTreeReader->Get( "phirms",          phi           )); //X
-	get_ok &= (myTreeReader->Get( "thetam",          theta         )); //X
-	get_ok &= (myTreeReader->Get( "thetarms",        dthetarms     )); //X
-	get_ok &= (myTreeReader->Get( "Qrms",            dqrms         )); //X
-	get_ok &= (myTreeReader->Get( "Qmean",           dqmean        )); //X
-	get_ok &= (myTreeReader->Get( "trmsdiff",        trmsdiff      )); //X
-	get_ok &= (myTreeReader->Get( "mintrms_6",       mintrms6      )); //X
-	get_ok &= (myTreeReader->Get( "mintrms_3",       mintrms3      )); //X
-	get_ok &= (myTreeReader->Get( "bwall",           bswall        )); //X
-	get_ok &= (myTreeReader->Get( "bse",             bse           )); //X
-	get_ok &= (myTreeReader->Get( "fpdist",          fpdist        )); //X
-	get_ok &= (myTreeReader->Get( "bpdist",          bfdist        )); //X
-	get_ok &= (myTreeReader->Get( "fwall",           fwall         )); //X
-	get_ok &= (myTreeReader->Get( "N10d",            n10d          )); //X
-	get_ok &= (myTreeReader->Get( "dt",              dt            )); //X
-	get_ok &= (myTreeReader->Get( "smearedvertex",   smearedvertex )); //X optional, MC only
-	//	get_ok &= (myTreeReader->Get("neutron5",       neutron5      ));
+	get_ok  = (myTreeReader->Get( "HEADER",          HEADER        ));
+	get_ok &= (myTreeReader->Get( "LOWE",            LOWE          ));
+	get_ok &= (myTreeReader->Get( "np",              np            ));
+	get_ok &= (myTreeReader->Get( "type",            type          ));
+	get_ok &= (myTreeReader->Get( "nhits",           nnhits        ));
+	get_ok &= (myTreeReader->Get( "N10",             n10           ));
+	get_ok &= (myTreeReader->Get( "N200M",           N200M         ));
+	get_ok &= (myTreeReader->Get( "T200M",           T200M         ));
+	get_ok &= (myTreeReader->Get( "Nc",              nc            ));
+	get_ok &= (myTreeReader->Get( "Nback",           nnback        ));
+	get_ok &= (myTreeReader->Get( "N300",            n300          ));
+	get_ok &= (myTreeReader->Get( "NhighQ",          nnhighq       ));
+	get_ok &= (myTreeReader->Get( "NLowtheta",       nnlowtheta    ));
+	get_ok &= (myTreeReader->Get( "trms",            trmsold       ));
+	get_ok &= (myTreeReader->Get( "phirms",          phi           ));
+	get_ok &= (myTreeReader->Get( "thetam",          theta         ));
+	get_ok &= (myTreeReader->Get( "thetarms",        dthetarms     ));
+	get_ok &= (myTreeReader->Get( "Qrms",            dqrms         ));
+	get_ok &= (myTreeReader->Get( "Qmean",           dqmean        ));
+	get_ok &= (myTreeReader->Get( "trmsdiff",        trmsdiff      ));
+	get_ok &= (myTreeReader->Get( "mintrms_6",       mintrms6      ));
+	get_ok &= (myTreeReader->Get( "mintrms_3",       mintrms3      ));
+	get_ok &= (myTreeReader->Get( "bwall",           bswall        ));
+	get_ok &= (myTreeReader->Get( "bse",             bse           ));
+	get_ok &= (myTreeReader->Get( "fpdist",          fpdist        ));
+	get_ok &= (myTreeReader->Get( "bpdist",          bfdist        ));
+	get_ok &= (myTreeReader->Get( "fwall",           fwall         ));
+	get_ok &= (myTreeReader->Get( "N10d",            n10d          ));
+	get_ok &= (myTreeReader->Get( "dt",              dt            ));
+	get_ok &= (myTreeReader->Get( "smearedvertex",   smearedvertex )); // optional, MC only
+	//get_ok &= (myTreeReader->Get("neutron5",       neutron5      ));
 	//get_ok &= (myTreeReader->Get("pvx",            vx            ));
 	//get_ok &= (myTreeReader->Get("pvy",            vy            ));
 	//get_ok &= (myTreeReader->Get("pvz",            vz            ));

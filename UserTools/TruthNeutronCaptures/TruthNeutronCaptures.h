@@ -68,7 +68,7 @@ class TruthNeutronCaptures: public Tool {
 	void CopyVariables();
 	int CalculateVariables();
 	int GenerateHistograms();
-	int ReadEntryNtuple(long entry_number);
+	int GetBranchValues();
 	int CreateOutputFile(std::string outputFile);
 	void ClearOutputTreeBranches();
 	void PrintBranches();
@@ -82,7 +82,7 @@ class TruthNeutronCaptures: public Tool {
 	
 	// variables to read in
 	// ====================
-	MTreeReader myTreeReader;                                   // the TTree reader
+	MTreeReader* myTreeReader = nullptr;                        // the TTree reader
 	// run meta info
 	//int simulation version??
 	double water_transparency;                                  // [cm]

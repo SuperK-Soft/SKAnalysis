@@ -61,13 +61,6 @@ bool lf_allfit_new::Initialise(std::string configfile, DataModel &data){
 
 bool lf_allfit_new::Execute(){
 	
-/*	bool muon = false;
-	m_data->vars.Get("newMuon", muon);
-	
-	if(muon){
-		return true;
-	}*/
-	
 	if((nread%10000)==0){
 		Log(toolName+" read loop "+toString(nread)+", current run "+toString(skhead_.nrunsk),v_message,verbosity);
 	}
@@ -87,7 +80,6 @@ bool lf_allfit_new::Execute(){
 		nrunsk_last = skhead_.nrunsk;
 	}
 	
-	
 	if(MC){
 		if(skhead_.nrunsk!=nrunsk_last || skhead_.nsubsk!=nsubsk_last){
 			int ierr;
@@ -104,18 +96,16 @@ bool lf_allfit_new::Execute(){
 	// apply lowfit
 	int NHITCUT = (MC) ? 800 : 1000;  //  number of hit limit for clusfit (changed for relic analysis)
 	
-	
 	int lfflag;
 	int log_level;
 	int flag_skip=0;
-	
 	if(MC){
-	  lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
-	  //lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, 0, &log_level, &lfflag);
+		lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
+		//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, 0, &log_level, &lfflag);
 	} else {
-	  //lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
-	  //lfallfit_sk4_gain_corr(&watert, &NHITCUT, 0, &log_level, &lfflag);
-	  lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+		//lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
+		//lfallfit_sk4_gain_corr(&watert, &NHITCUT, 0, &log_level, &lfflag);
+		lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 	}
 	
 	//if the writeout variable is set then pass reconstructed information from the skroot_lowe_ common block

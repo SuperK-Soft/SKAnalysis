@@ -14,15 +14,6 @@ SK2p2MeV::SK2p2MeV (const Float_t (*geomxyz)[3])
     
     // Geometry
     xyz = geomxyz;
-
-    // const int max_pmt = 10;
-    // for (int i = 0; i < max_pmt; ++i){
-    //   std::cout << "pmt: " << i << "\n";
-    //   std::cout << "xyz[pmt][0]: " << xyz[i][0] << " ";
-    //   std::cout << "xyz[pmt][1]: " << xyz[i][1] << " ";
-    //   std::cout << "xyz[pmt][1]: " << xyz[i][2] << "\n\n";
-    // }
-
     
     // After trig. gate
     AFT_GATE = 500000; // ns
@@ -2389,42 +2380,3 @@ void SK2p2MeV::SetDarkRate(Int_t run)
     //         std::cout << i << " " << dark_rate[i] << std::endl;
     //     }
 }
-
-// Float_t SK2p2MeV::GetWeight (const Float_t xyz[3], const Float_t v[3])
-// {
-//     // Cal weight for PMT #cab, v[] is the vertex
-//     // NOTE: the constant is not considered here since it's the same
-//     //       for all cables, only the relative value is important.
-    
-//     const Float_t ATT_LEN = 9000.; // temporary
-//     Float_t costh;
-    
-//     const Float_t r = sqrt( (xyz[0] - v[0])*(xyz[0] - v[0])
-//             + (xyz[1] - v[1])*(xyz[1] - v[1])
-//             + (xyz[2] - v[2])*(xyz[2] - v[2]) );
-    
-//     if ( xyz[2] > -1800 && xyz[2] < 1800 ) {
-//         // Barrel, costh is positivie
-//         costh = (
-// 		 xyz[0] * ( xyz[0] - v[0] ) +
-// 		 xyz[1] * ( xyz[1] - v[1] )
-// 		 )/sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1])/r;
-// 	if ( costh < -0.001 || costh > 1.001 ){
-// 	  // std::cout << "invalid costh (barrel): " << costh << std::endl;
-// 	  // std::cout << xyz[0] << std::endl;
-// 	  // std::cout << xyz[1] << std::endl;
-// 	  // std::cout << xyz[0] - v[0] << std::endl;
-// 	  // std::cout << xyz[1] - v[1] << std::endl;
-// 	}
-	
-//         //can not be calculated by
-//         // costh = sqrt((xyz[0] - v[0])*(xyz[0] - v[0])+(xyz[1] - v[1])*(xyz[1] - v[1]))/r;
-//     }
-//     else {
-//         // Top or Bottom
-//         costh = fabs( (xyz[2] - v[2]) ) / r;
-// 	if ( costh < -0.001 || costh > 1.001 ){std::cout << "invalid costh (barrel): " << costh << std::endl;}
-//     }
-    
-//     return (EffCos( costh ) * exp(-r/ATT_LEN)/r/r);
-// }
