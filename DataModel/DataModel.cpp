@@ -74,7 +74,7 @@ bool DataModel::RegisterReader(std::string readerName, MTreeReader* reader, std:
 	loadSHEs.emplace(readerName, loadSHE);
 	loadAFTs.emplace(readerName, loadAFT);
 	loadCommons.emplace(readerName, loadCommon);
-	getEntries.emplace(readerName, getTreeEntry);
+	getEntrys.emplace(readerName, getTreeEntry);
 	return true;
 }
 
@@ -83,8 +83,8 @@ int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
 		// if no name given but we have only one TreeReader Tool, use that
 		if(hasAFTs.size()) ReaderName = hasAFTs.begin()->first;
 	}
-	if(getEntries.count(ReaderName)){
-		return getEntries.at(ReaderName)(entrynum, true);
+	if(getEntrys.count(ReaderName)){
+		return getEntrys.at(ReaderName)(entrynum, true);
 	} else {
 		std::cerr << "getTreeEntry requested for Unknown reader "<<ReaderName<<std::endl;
 	}
