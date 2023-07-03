@@ -464,8 +464,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				*        istat  ;+10 : normal end  additional read /skam/const/badch.dat
 				*/
 				if(istat<0){
-					Log(toolName+" Error applying skbadch with reference run "+toString(skroot_badch_ref_run),
-					    v_error,verbosity);
+					Log(toolName+" Error applying skbadch with reference run "+
+					    toString(skroot_badch_ref_run),v_error,verbosity);
 					return false;
 				}
 			}
@@ -504,7 +504,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	std::function<bool()> loadSHE = std::bind(std::mem_fn(&TreeReader::LoadSHE), std::ref(*this));
 	std::function<bool()> loadAFT = std::bind(std::mem_fn(&TreeReader::LoadAFT), std::ref(*this));
 	std::function<bool(int)> loadCommons = std::bind(std::mem_fn(&TreeReader::LoadCommons), std::ref(*this), std::placeholders::_1);
-	std::function<int(long, bool)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, std::placeholders::_2);
+	std::function<int(long)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, false);
 	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons, getTreeEntry);
 	
 	// get first entry to process
@@ -1603,8 +1603,8 @@ bool TreeReader::HasAFT(){
 }
 
 bool TreeReader::LoadAFT(){
-	Log(toolName+" LoadAFT called for tree "+readerName
-		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
+	Log(toolName+" LoadAFT called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,verbosity);
 	if(has_aft && !aft_loaded){
 		aft_loaded = LoadCommons(0);
 		return aft_loaded;
@@ -1613,8 +1613,8 @@ bool TreeReader::LoadAFT(){
 }
 
 bool TreeReader::LoadSHE(){
-	Log(toolName+" LoadSHE called for tree "+readerName
-		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
+	Log(toolName+" LoadSHE called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,verbosity);
 	if(has_aft && aft_loaded){
 		aft_loaded = !LoadCommons(0);
 		return aft_loaded;

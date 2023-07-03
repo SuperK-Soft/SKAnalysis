@@ -108,40 +108,39 @@ bool lf_allfit_new::Execute(){
 		lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 	}
 	
-	//if the writeout variable is set then pass reconstructed information from the skroot_lowe_ common block
-	//to the skroot file and set the tree using skroot_set_tree_
-
 	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
 	skroot_set_lowe_(&lun,                      &skroot_lowe_.bsvertex[0], &skroot_lowe_.bsresult[0],
-			 &skroot_lowe_.bsdir[0],    &skroot_lowe_.bsgood[0],   &skroot_lowe_.bsdirks,
-			 &skroot_lowe_.bseffhit[0], &skroot_lowe_.bsenergy,    &skroot_lowe_.bsn50,
-			 &skroot_lowe_.bscossun,    &skroot_lowe_.clvertex[0], &skroot_lowe_.clresult[0],
-			 &skroot_lowe_.cldir[0],    &skroot_lowe_.clgoodness,  &skroot_lowe_.cldirks,
-			 &skroot_lowe_.cleffhit[0], &skroot_lowe_.clenergy,    &skroot_lowe_.cln50,
-			 &skroot_lowe_.clcossun,    &skroot_lowe_.latmnum,     &skroot_lowe_.latmh,
-			 &skroot_lowe_.lmx24,       &skroot_lowe_.ltimediff,   &skroot_lowe_.lnsratio,
-			 &skroot_lowe_.lsdir[0],    &skroot_lowe_.spaevnum,    &skroot_lowe_.spaloglike,
-			 &skroot_lowe_.sparesq,     &skroot_lowe_.spadt,       &skroot_lowe_.spadll,
-			 &skroot_lowe_.spadlt,      &skroot_lowe_.spamuyn,     &skroot_lowe_.spamugdn,
-			 &skroot_lowe_.posmc[0],    &skroot_lowe_.dirmc[0],    &skroot_lowe_.pabsmc[0],
-			 &skroot_lowe_.energymc[0], &skroot_lowe_.darkmc,      &skroot_lowe_.islekeep,
-			 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
-			 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
-
-	if(writeout){
-	  // remove hits outside 1.3 microsec
-	  delete_outside_hits_();
-               
-	  // store header & TQ info.
-	  // skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
-	  // that simply pull variables from fortran common blocks and pass them to the TreeManager
-	  skroot_set_tree_(&lun);
-		  
-	  // invokes TTree::Fill. Only use it in SKROOT mode WRITE or COPY!
-	  skroot_fill_tree_(&lun);
-	}
-	return true;
+	                 &skroot_lowe_.bsdir[0],    &skroot_lowe_.bsgood[0],   &skroot_lowe_.bsdirks,
+	                 &skroot_lowe_.bseffhit[0], &skroot_lowe_.bsenergy,    &skroot_lowe_.bsn50,
+	                 &skroot_lowe_.bscossun,    &skroot_lowe_.clvertex[0], &skroot_lowe_.clresult[0],
+	                 &skroot_lowe_.cldir[0],    &skroot_lowe_.clgoodness,  &skroot_lowe_.cldirks,
+	                 &skroot_lowe_.cleffhit[0], &skroot_lowe_.clenergy,    &skroot_lowe_.cln50,
+	                 &skroot_lowe_.clcossun,    &skroot_lowe_.latmnum,     &skroot_lowe_.latmh,
+	                 &skroot_lowe_.lmx24,       &skroot_lowe_.ltimediff,   &skroot_lowe_.lnsratio,
+	                 &skroot_lowe_.lsdir[0],    &skroot_lowe_.spaevnum,    &skroot_lowe_.spaloglike,
+	                 &skroot_lowe_.sparesq,     &skroot_lowe_.spadt,       &skroot_lowe_.spadll,
+	                 &skroot_lowe_.spadlt,      &skroot_lowe_.spamuyn,     &skroot_lowe_.spamugdn,
+	                 &skroot_lowe_.posmc[0],    &skroot_lowe_.dirmc[0],    &skroot_lowe_.pabsmc[0],
+	                 &skroot_lowe_.energymc[0], &skroot_lowe_.darkmc,      &skroot_lowe_.islekeep,
+	                 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
+	                 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
 	
+	// if the writeout variable is set then pass reconstructed information
+	// from the skroot_lowe_ common block to the output skroot file
+	if(writeout){
+		// remove hits outside 1.3 microsec
+		delete_outside_hits_();
+		
+		// store header & TQ info.
+		// skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
+		// that simply pull variables from fortran common blocks and pass them to the TreeManager
+		skroot_set_tree_(&lun);
+		
+		// invokes TTree::Fill. Only use it in SKROOT mode WRITE or COPY!
+		skroot_fill_tree_(&lun);
+	}
+	
+	return true;
 	
 }
 

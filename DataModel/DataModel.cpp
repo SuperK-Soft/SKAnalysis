@@ -84,7 +84,7 @@ int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
 		if(hasAFTs.size()) ReaderName = hasAFTs.begin()->first;
 	}
 	if(getEntrys.count(ReaderName)){
-		return getEntrys.at(ReaderName)(entrynum, true);
+		return getEntrys.at(ReaderName)(entrynum);
 	} else {
 		std::cerr << "getTreeEntry requested for Unknown reader "<<ReaderName<<std::endl;
 	}
