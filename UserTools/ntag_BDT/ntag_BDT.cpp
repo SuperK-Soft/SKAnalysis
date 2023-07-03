@@ -83,8 +83,8 @@ bool ntag_BDT::Execute(){
 	
 	// unlikely to have >500 neutron candidates in an event,
 	// but still better not to segfault if we can avoid it
-	std::cout << "number of candidates: " << np << std::endl;
-	std::cout << "max events: " << MAX_EVENTS << std::endl;
+	//std::cout << "number of candidates: " << np << std::endl;
+	//std::cout << "max events: " << MAX_EVENTS << std::endl;
 	if  (np > MAX_EVENTS){
 		Log(toolName+": expanding output arrays",v_debug,m_verbose);
 		delete[] neutron5;
@@ -204,7 +204,6 @@ bool ntag_BDT::Execute(){
 	
 	unsigned long num_entries = treeout->GetEntries();
 	if(num_entries%WRITE_FREQUENCY){
-	  std::cout << "outfile write reached" << std::endl;
 		// write out intermittently for safety
 		Log(toolName+": Updating output TTree",v_debug,m_verbose);
 		outfile->Write("*",TObject::kOverwrite);
