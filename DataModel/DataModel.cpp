@@ -68,7 +68,7 @@ TApplication* DataModel::GetTApp(){
 	return rootTApp;
 }
 
-bool DataModel::RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long, bool)> getTreeEntry){
+bool DataModel::RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long)> getTreeEntry){
 	Trees.emplace(readerName, reader);
 	hasAFTs.emplace(readerName, hasAFT);
 	loadSHEs.emplace(readerName, loadSHE);

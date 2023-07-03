@@ -1,0 +1,432 @@
+#
+#  check CERN_ROOT
+#
+ifndef CERN_ROOT
+   TMP := $(shell echo " ========================================= " 1>&2 )
+   TMP := $(shell echo "         ERROR: set CERN_ROOT              " 1>&2 )
+   TMP := $(shell echo " ========================================= " 1>&2 )
+   THIS_MUST_CRASH
+endif
+
+#
+#  check ROOTSYS
+#
+ifndef ROOTSYS
+   TMP := $(shell echo " ========================================= " 1>&2 )
+   TMP := $(shell echo "         ERROR: set ROOTSYS                " 1>&2 )
+   TMP := $(shell echo " ========================================= " 1>&2 )
+   THIS_MUST_CRASH
+endif
+
+ROOTCFLAGS   := $(shell root-config --cflags) 
+ROOTLIBS     := $(shell root-config --glibs) -lTreePlayer
+ROOTLIBDIR   := $(shell root-config --libdir)
+
+#
+#  SKOFL top directory
+#
+#SKOFL_ROOT := /usr/local/sklib_gcc8/skofl-trunk
+
+#
+#  System name
+#
+SYSTEM := $(shell uname -s)
+
+#
+#  Hardware platform
+#
+PLATFORM := $(shell uname -p)
+HOSTNAME := $(shell hostname)
+
+#
+#  Compiler setting
+#
+#   select among the followings if you want to set by hand 
+#
+#      UseG77 := true
+#      UseGFORTRAN := true
+#      UseIFORT := true
+#
+#      UseGCC34 := true
+#      UseGCC := true
+#      UseGCC4 := true
+#      UseICC := true
+#      UseAbsoft := true
+#
+UseGFORTRAN := true
+UseGCC := true
+
+
+ifneq ($(findstring sukap,$(HOSTNAME)),)
+  KAMIOKA_SUKAP64 := true 
+endif
+
+ifneq ($(findstring sukonh,$(HOSTNAME)),)
+  KAMIOKA_SUKAP64 := true 
+endif
+
+ifneq ($(findstring sukrl,$(HOSTNAME)),)
+  KAMIOKA_SUKAP64 := true 
+endif
+######################################################################
+#
+#  Directory setting
+#
+
+SKOFL_LIBDIR         = $(SKOFL_ROOT)/lib/
+SKOFL_OBJDIR         = $(SKOFL_ROOT)/obj/
+SKOFL_BINDIR         = $(SKOFL_ROOT)/bin/
+SKOFL_SCRIPTDIR      = $(SKOFL_ROOT)/bin/
+SKOFL_DATADIR        = $(SKOFL_ROOT)/lib/
+SKOFL_CONSTDIR       = $(SKOFL_ROOT)/const/
+SKOFL_INCDIR         = $(SKOFL_ROOT)/include/
+SKOFL_FORTRAN_INCDIR = $(SKOFL_ROOT)/inc/
+SKOFL_CONFIGDIR      = $(SKOFL_ROOT)/config/
+
+LIBDIR         = $(SKOFL_LIBDIR)
+OBJDIR         = $(SKOFL_OBJDIR)
+BINDIR         = $(SKOFL_BINDIR)
+SCRIPTDIR      = $(SKOFL_SCRIPTDIR)
+DATADIR        = $(SKOFL_DATADIR)
+CONSTDIR       = $(SKOFL_CONSTDIR)
+INCDIR         = $(SKOFL_INCDIR)
+FORTRAN_INCDIR = $(SKOFL_FORTRAN_INCDIR)
+CONFIGDIR      = $(SKOFL_CONFIGDIR)
+
+SKAMCONSTDIR   = /usr/local/sklib_gcc8/skam/const
+
+######################################################################
+#
+#  set ATMPD directory
+#
+ifdef ATMPD_ROOT
+  A_LIBDIR         = $(ATMPD_ROOT)/lib/
+  A_BINDIR         = $(ATMPD_ROOT)/bin/
+  A_CONSTDIR       = $(ATMPD_ROOT)/const/
+  A_INCDIR         = $(ATMPD_ROOT)/include/
+  A_FORTRAN_INCDIR = $(ATMPD_ROOT)/inc/
+else
+  A_LIBDIR         = $(LIBDIR)
+  A_BINDIR         = $(BINDIR)
+  A_CONSTDIR       = $(CONSTDIR)
+  A_INCDIR         = $(INCDIR)
+  A_FORTRAN_INCDIR = $(FORTRAN_INCDIR)
+endif
+
+
+######################################################################
+#
+#  Site libraries
+#
+
+SITE_LDOPTIONS = -L$(LIBDIR) -L$(A_LIBDIR)
+SITE_DEFINES   = -DSITE_HAS_RFA
+SITE_INCLUDES  = $(LOCAL_INC) -I$(CERN_ROOT)/include -I$(CERN_ROOT)/include/cfortran $(ROOTCFLAGS)
+#SITE_LIBRARIES = -lrfa  -lnsl -lm
+SITE_LIBRARIES = -lnsl -lm
+SITE_LDLIBS = 
+ALLDEFINES = 
+OBJFJT =
+
+#For Darwin/OSX
+ifeq ($(strip $(SYSTEM)),Darwin) 
+ SITE_LDOPTIONS += -Wl,-search_paths_first
+else
+ SITE_LDOPTIONS += -Wl,-z -Wl,muldefs
+endif 
+
+# for kamioka sukap 64bit linux machine
+ifdef KAMIOKA_SUKAP64
+# need to put "rfa_fujitsu" library under "skofl/src" directory
+# 2022/02/24 modified for new system y.takeuchi (src/rfa_fujitsu -> /opt/FJSVrdass/) 
+ SITE_HAS_REAL_RFA := true
+ SITE_INCLUDES  += -I/opt/FJSVrdass/include
+# SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa   << this one
+#  SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++ -L/opt/intel/cce/10.0.023/lib -lirc
+#  SITE_LIBRARIES += -L/opt/FJSVrdass/lib -lrfa -lsupc++
+#  OBJFJT = $(SKOFL_OBJDIR)/cfclos.o $(SKOFL_OBJDIR)/cfget.o $(SKOFL_OBJDIR)/cfopei.o $(SKOFL_OBJDIR)/cfput.o  
+endif
+
+# for Linux, x86_64
+ifeq ($(strip $(SYSTEM)),Linux) 
+  ifeq ($(strip $(PLATFORM)),x86_64) 
+    ifdef UseG77
+      SITE_LDLIBS += /usr/lib64/libg2c.so.0  
+    endif
+  endif
+endif
+
+# for CERNLIB, etc.
+CLIB = `cernlib graflib grafX11 packlib mathlib kernlib lapack3 blas`
+
+##ifeq ($(strip $(PLATFORM)),x86_64) 
+##  CLIB = -L/usr/X11R6/lib64 -lgraflib -lgrafX11 -lpacklib -lnsl -lcrypt -lX11 
+##else
+##   CLIB = -L/usr/X11R6/lib -lgeant321 -lgraflib -lgrafX11 -lpacklib \
+##	-lmathlib -lkernlib -lnsl -lcrypt -lX11
+##endif
+
+ifeq ($(strip $(SYSTEM)),Linux) 
+  ALLDEFINES = -Dlinux -D__linux__
+endif
+
+ifeq ($(strip $(SYSTEM)),SunOS) 
+  ALLDEFINES = -Dsun -DSolaris
+endif
+
+##########################################################################
+### for sample programs
+##########################################################################
+LIBS	= -lskroot -lDataDefinition -lRoot2zbs -ltqrealroot -lloweroot \
+        -latmpdroot -lmcinfo -lsnevtinfo -lsofttrgroot -lidod_xtlk_root \
+	-lmufitpe -lskrd -lgeom -lsklib -llibrary -lmon \
+	-lastro -liolib -lzbs -lsklib -lsofttrg \
+	-lm -lstdc++
+
+LDOPTS	= $(SITE_LDOPTIONS)
+
+## some sample programs require $(LIBS) $(LIBS) on sukapXXX 
+## may be the order isn't optimized.. y.takeuchi (02-JAN-2009)
+LDLIBS	=  $(LDOPTS) $(OBJFJT) $(LOCAL_LIBS) $(LIBS) $(LIBS) $(CLIB) $(ROOTLIBS) \
+	   $(SITE_LIBRARIES) $(FORTRANLIBRARIES) $(SITE_LDLIBS)
+
+######################################################################
+# Set the global debug level here.  You can override this for a particular
+# compiler by overriding that flag (for example FDEBUGFLAGS)
+
+SKDEBUGFLAGS = -g -O
+
+######################################################################
+#
+#  Fortran Compiler setting
+#
+
+ifdef UseG77
+FC = g77
+FDEBUGFLAGS = $(SKDEBUGFLAGS)
+FCOPTIONS = -fno-backslash -fno-automatic -finit-local-zero -fno-second-underscore -fugly-complex -ffixed-line-length-132 -fno-globals -fdollar-ok -fpic
+ALLDEFINES += -Df2cFortran 
+FORTRANLIBRARIES =  -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. -lgfortran -lm -lquadmath
+endif
+
+ifdef UseGFORTRAN
+FC = gfortran
+FDEBUGFLAGS = $(SKDEBUGFLAGS)
+FCOPTIONS = -finit-local-zero -fno-backslash -fno-automatic -fno-second-underscore -ffixed-line-length-132 -fdollar-ok -fpic
+ALLDEFINES += -DgFortran -Df2cFortran 
+FORTRANLIBRARIES =  -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. -lgfortran -lm -lquadmath
+endif
+
+ifdef UseIFORT
+FC = ifort
+FDEBUGFLAGS = $(SKDEBUGFLAGS)
+FCOPTIONS = -132 -zero -save
+ALLDEFINES += -DIntelFortran 
+FORTRANLIBRARIES =  -L/usr/lib/gcc/x86_64-redhat-linux/8 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/8/../../.. -lgfortran -lm -lquadmath
+endif
+
+# is this ok?
+ifdef UseAbsoft
+FC = f77
+FDEBUGFLAGS = $(SKDEBUGFLAGS)
+FCOPTIONS = -f -N110 -N109 -N116 -W -N90 -N22 -N34 -B108 -s -B19 -B111 -Dabsoft
+ALLDEFINES += -DAbsoftUNIXFortran
+FORTRANLIBRARIES = -lU77 -lV77 -lfio -lf77math -lf2c -lm
+SITE_LDOPTIONS += -Wl,-defsym,MAIN__=main
+endif
+
+
+FORTRANDEFINES = $(ALLDEFINES) $(SITE_DEFINES)
+FORTRANINCLUDES = $(SITE_INCLUDES) -I. -I$(SKOFL_FORTRAN_INCDIR) -I$(SKOFL_FORTRAN_INCDIR)/lowe -I$(A_FORTRAN_INCDIR) 
+FCFLAGS = $(FDEBUGFLAGS) $(FCOPTIONS) $(FORTRANINCLUDES) $(FORTRANDEFINES) 
+##FCFLAGS = $(FCOPTIONS) $(FORTRANINCLUDES) $(FORTRANDEFINES) 
+FFLAGS = $(FCFLAGS)
+
+######################################################################
+#
+#  C Compiler setting
+#
+
+#
+# 2016/03/23 The following CCOPTIONS are defined in COPTIONS, but COPTIONS 
+# are not used. Modified COPTIONS -> CCOPTIONS, but comment them out to 
+# keep consistensy, for now. (M. Jiang / Y. Takeuchi)
+#
+
+ifdef UseGCC34
+CC = gcc34
+CDEBUGFLAGS = $(SKDEBUGFLAGS) 
+COPTIONS  = -Wall -Wno-unused -fpic
+endif
+
+ifdef UseGCC
+CC = gcc
+CDEBUGFLAGS = $(SKDEBUGFLAGS)
+COPTIONS  = -Wall -Wno-unused -fpic
+endif
+
+ifdef UseGCC4
+CC = gcc4
+CDEBUGFLAGS = $(SKDEBUGFLAGS) 
+COPTIONS  = -Wall -Wno-unused -fpic
+endif
+
+ifdef UseICC
+CC = icc
+CDEBUGFLAGS = $(SKDEBUGFLAGS)
+COPTIONS = -ansi -mp -no-gcc -w1
+endif
+
+CDEFINES = $(ALLDEFINES) $(SITE_DEFINES)
+CINCLUDES = $(SITE_INCLUDES) -I. -I$(SKOFL_INCDIR) -I$(SKOFL_INCDIR)/skonl -I$(SKOFL_INCDIR)/lowe -I$(A_INCDIR) 
+CFLAGS = $(CDEBUGFLAGS) $(COPTIONS) $(CINCLUDES) $(CDEFINES)
+
+
+######################################################################
+#
+#  C++ Compiler setting
+#
+
+ifdef UseGCC34
+CXX = g++34
+CXXDEBUGFLAGS = $(SKDEBUGFLAGS)
+CXXOPTIONS = -Wall -Wno-unused -fpic
+endif
+
+ifdef UseGCC
+CXX = g++
+CXXDEBUGFLAGS = $(SKDEBUGFLAGS)
+CXXOPTIONS = -Wall -Wno-unused -fpic
+endif
+
+ifdef UseGCC4
+CXX = g++
+CXXDEBUGFLAGS = $(SKDEBUGFLAGS)
+CXXOPTIONS = -Wall -Wno-unused -fpic
+endif
+
+ifdef UseICC
+CXX = icc
+CXXDEBUGFLAGS = $(SKDEBUGFLAGS)
+CXXOPTIONS = -ansi -mp -no-gcc -w1 -fpic
+endif
+
+CXXDEFINES = $(ALLDEFINES) $(SITE_DEFINES)
+CXXINCLUDES = $(SITE_INCLUDES) -I. -I$(SKOFL_INCDIR) -I$(SKOFL_INCDIR)/skonl -I$(SKOFL_INCDIR)/lowe -I$(A_INCDIR) 
+CXXFLAGS =  $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(CXXINCLUDES) $(CXXDEFINES)
+
+
+
+######################################################################
+#
+#  variable setting
+#
+
+SHELL   = /bin/sh
+AR      = ar clq
+CPP     = /lib/cpp
+MKDIR   = mkdir -p
+SED     = sed
+TOUCH   = touch
+RANLIB  = ranlib
+MV      = mv
+LN      = ln -s
+CP      = cp
+MAKE    = /usr/bin/gmake
+
+# The yacc command
+#YACC	= bison -y
+# If you installed Fedora12, you have to use byacc instead of bison. See $SKOFL/doc/Fedora.txt
+#YACC	= byacc
+# 2009/12/10 bison or byacc is set by autoconf
+YACC	= bison -y
+
+YACCLIB	=
+# 2009/12/10 seems not used
+#CCYACC	= bison -y
+
+# The lex command.
+LEX	= flex -l
+LEXLIB	= -lfl
+
+
+INSTALL     = $(SHELL) $(CONFIGDIR)/install-sh
+INSTALL_BIN = $(INSTALL) -c -m 0755
+INSTALL_LIB = $(INSTALL) -c -m 0644
+INSTALL_INC = $(INSTALL) -c -m 0444
+INSTALL_DAT = $(INSTALL) -c -m 0444
+INSTALL_MAN = $(INSTALL) -c -m 0444
+
+FH2H    = $(CONFIGDIR)/fh2h.pl
+FH2H_IGNORE_EQUIVALENCE    = $(CONFIGDIR)/fh2h_ignore_equivalence.pl
+
+### ROOT macro (.C) is moved to the lowest priority
+.SUFFIXES:
+.SUFFIXES: .o .f .F .cxx .cc .c .cpp .so .h .C .l
+
+.f.o :
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) -o $@ $(CURDIR)/$< 
+
+.F.o :
+	$(RM) $@
+	$(FC) -c $(FCFLAGS) -o $@ $(CURDIR)/$< 
+
+.c.o :
+	$(RM) $@
+	$(CC) -c $(CFLAGS) -o $@ $(CURDIR)/$< 
+
+.cc.o :
+	$(RM) $@
+	$(CXX) -c $(CXXFLAGS) -o $@ $(CURDIR)/$< 
+
+.cpp.o :
+	$(RM) $@
+	$(CXX) -c $(CXXFLAGS) -o $@ $(CURDIR)/$< 
+
+.C.o :
+	$(RM) $@
+	$(CXX) -c $(CXXFLAGS) -o $@ $(CURDIR)/$< 
+
+.cxx.o :
+	$(RM) $@
+	$(CXX) -c $(CXXFLAGS) -o $@ $(CURDIR)/$< 
+
+### for sample programs
+.F:
+	$(RM) $@.o $@
+	$(FC)  $(FCFLAGS)  -c  $(CURDIR)/$<
+	LD_RUN_PATH=$(SKOFL_LIBDIR):$(A_LIBDIR) $(CXX) $(CXXFLAGS) -o $* $*.o $(LDLIBS) 
+
+.cc:
+	$(RM) $@.o $@
+	$(CXX) $(CXXFLAGS) -c  $(CURDIR)/$< 
+	LD_RUN_PATH=$(SKOFL_LIBDIR):$(A_LIBDIR) $(CXX) $(CXXFLAGS) -o $* $*.o $(LDLIBS) 
+
+.c:
+	$(RM) $@.o $@
+	$(CC) $(CFLAGS) -c  $(CURDIR)/$< 
+	LD_RUN_PATH=$(SKOFL_LIBDIR):$(A_LIBDIR) $(CC) $(CFLAGS) -o $* $*.o $(LDLIBS) 
+
+.o:
+	LD_RUN_PATH=$(SKOFL_LIBDIR):$(A_LIBDIR) $(CXX) $(CXXFLAGS) -o $* $*.o $(LDLIBS) 
+
+
+ _NULLCMD_ = @ echo -n
+
+# Define the command used for recursive cases in the makefiles.
+# Please note that even with an error this will keep building
+# without stopping. So, be careful. Don't use this for the library
+# targets.  Use a phony target instead.  See CWW if you have a
+# question.  
+
+define recursive-command
+        list='$(SUBDIRS)'; for subdir in $$list; do \
+	( if test -d $$subdir; then cd "$$subdir" && $(MAKE) $@; fi ); \
+        done
+endef
+
+# You must use this with a phony subdirectory target.
+define recursive-library-build
+if test -d $@; then $(MAKE) -C $@ lib; fi
+endef
