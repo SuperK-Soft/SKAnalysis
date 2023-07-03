@@ -2128,13 +2128,13 @@ Float_t SK2p2MeV::MinimizeTrms(Float_t* tiskz, Int_t* cabiz, Int_t startindex, I
         VZ = tVZ;
         inc = inc / 2.;
     }
-    //        std::cout<<VX<<" "<<pVX<<" "<<mintrms<<std::endl;
+    //std::cout<<VX<<" "<<pVX<<" "<<mintrms<<std::endl;
     TMath::Sort(nhits, tiskzmin, index, kFALSE); // In increasing order
     for (int i = 0; i < nhits; i++)
     {
         tiskz[i] = tiskzmin[index[i]];
         cabiz[i] = cabizmin[index[i]];
-        //                std::cout<<tiskz[i]<<" "<<cabiz[i]<<std::endl;
+        //std::cout<<tiskz[i]<<" "<<cabiz[i]<<std::endl;
     }
     /*delete [] tiskz2;
       delete [] tiskzmin;
