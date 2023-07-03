@@ -30,6 +30,8 @@ bool lf_allfit_new::Initialise(std::string configfile, DataModel &data){
 	// ------------------------------------
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
 	m_variables.Get("readerName",readerName);          // name given to the TreeReader used for file handling
+	m_variables.Get("writeout",writeout);              // whether to write out to a new file or not (just reconstruction vs inline)
+	
 	
 	// use the readerName to find the LUN associated with this file
 	std::map<std::string,int> lunlist;
@@ -123,18 +125,23 @@ bool lf_allfit_new::Execute(){
 	                 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
 	                 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
 	
-	// remove hits outside 1.3 microsec
-	delete_outside_hits_();
-	
-	// store header & TQ info.
-	// skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
-	// that simply pull variables from fortran common blocks and pass them to the TreeManager
-	skroot_set_tree_(&lun);
-	
-	// invokes TTree::Fill. Only use it in SKROOT mode WRITE or COPY!
-	skroot_fill_tree_(&lun);
+	// if the writeout variable is set then pass reconstructed information
+	// from the skroot_lowe_ common block to the output skroot file
+	if(writeout){
+		// remove hits outside 1.3 microsec
+		delete_outside_hits_();
+		
+		// store header & TQ info.
+		// skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
+		// that simply pull variables from fortran common blocks and pass them to the TreeManager
+		skroot_set_tree_(&lun);
+		
+		// invokes TTree::Fill. Only use it in SKROOT mode WRITE or COPY!
+		skroot_fill_tree_(&lun);
+	}
 	
 	return true;
+	
 }
 
 

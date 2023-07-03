@@ -445,7 +445,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					Log(toolName+" Error! skbadoptn contains 25 (mask bad channels) but not 26 "
 						+"(look up bad channels based on run number). In this case one needs to provide "
 						+"a reference run to use for the bad channel list! Please specify a run to use in "
-						+"option skbadchrefrun in TreeReader config",v_error,verbosity);
+						+"option skbadchrefrun in "+toolName+" config",v_error,verbosity);
 					return false;
 				}
 				Log(toolName+" masking bad channels with reference run "
@@ -504,7 +504,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	std::function<bool()> loadSHE = std::bind(std::mem_fn(&TreeReader::LoadSHE), std::ref(*this));
 	std::function<bool()> loadAFT = std::bind(std::mem_fn(&TreeReader::LoadAFT), std::ref(*this));
 	std::function<bool(int)> loadCommons = std::bind(std::mem_fn(&TreeReader::LoadCommons), std::ref(*this), std::placeholders::_1);
-	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons);
+	std::function<int(long)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, false);
+	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons, getTreeEntry);
 	
 	// get first entry to process
 	if(firstEntry<0) firstEntry=0;

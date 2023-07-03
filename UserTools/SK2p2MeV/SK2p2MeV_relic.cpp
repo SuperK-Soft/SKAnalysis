@@ -212,7 +212,7 @@ void SK2p2MeV_relic::Analyze(long entry, bool last_entry)
       enethre=10.0;
       AFT_gate=500e3;
     }
-    if(68671 <= nrun && nrun <= 77958){
+    if(68671 <= nrun ){//&& nrun <= 77958){
       enethre=8.0;
       AFT_gate=500e3;
     }

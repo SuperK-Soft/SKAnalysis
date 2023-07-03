@@ -83,6 +83,7 @@ class DataModel {
   std::unordered_map<std::string, std::function<bool()>> loadSHEs;
   std::unordered_map<std::string, std::function<bool()>> loadAFTs;
   std::unordered_map<std::string, std::function<bool(int)>> loadCommons;
+  std::unordered_map<std::string, std::function<int(long)>> getEntrys;
   
   Store vars; ///< This Store can be used for any variables. It is an inefficent ascii based storage and command line arguments will be placed in here along with ToolChain variables
   BStore CStore; ///< This is a more efficent binary Store that can be used to store a dynamic set of inter Tool variables, very useful for constants and and flags hence the name CStore
@@ -90,7 +91,8 @@ class DataModel {
   
   // This function is used to register a TreeReader tool's member functions with the DataModel,
   // which provides access from other Tools
-  bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon);
+  bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long)> getTreeEntry);
+  int getTreeEntry(std::string ReaderName="", long entrynum);
   // These retain function pointers to call the corresponding TreeReader functions.
   // The TreeReader instance is obtained from the name specified in their config file.
   bool HasAFT(std::string ReaderName="");

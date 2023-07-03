@@ -56,7 +56,7 @@ LDLIBS += $(CERNLIB)
 # ROOT Headers & Libraries
 ROOTINCLUDE= `root-config --cflags`
 ROOTLIB = `root-config --libs --evelibs --glibs` -lMinuit -lXMLIO -lMLP
-ROOTSTLLIBS = -L${HOME}/stllibs -lRootStl
+ROOTSTLLIBS = -L/home/moflaher/stllibs -lRootStl
 ROOTVER := `root-config --version | cut -b 1`
 CFLAGS += -DROOTVER=\"$(ROOTVER)\"
 
@@ -119,7 +119,7 @@ endif
 #CXXFLAGS += $(ZLIBFLAG) $(ZLIB)
 
 # Third Reduction Library (part of SRN analysis)
-THIRDREDLIB = -L${HOME}/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
+THIRDREDLIB = -L/home/moflaher/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
 
 # SKG4 Library
 SKG4LIB = ${SKG4Dir}/lib/libSKG4Root.so

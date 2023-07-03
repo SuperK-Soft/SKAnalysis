@@ -1,9 +1,8 @@
 # vim: filetype=Makefile #
 # FindNeutronCaptures config file
-verbosity 100
+verbosity 10
 drawPlots 0    # whether to show root plots during execution
 treeReaderName demoReader
-
 #inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsim_r77957.viazbs.root
 #outputFile plotNeutronsTest.root
 #inputFile /HOME/LinuxSystemFiles/SK/skdetsim/outputs/skdetsimgd_sk4gdcard.root

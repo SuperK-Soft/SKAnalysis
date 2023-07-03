@@ -10,6 +10,13 @@ readerName sk2p2mevReader
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root              # after adding noise with NTag
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wonoise.root  # before adding noise with NTag
 inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise.root  # after adding noise with NTag
+#inputFile /home/mattnich/disk3stor/prepared_data/lowe/rfm_run086613.001134_lowe.root
+
 treeName data                                     # the name of the tree within the file
 maxEntries -1                                     # max num input entries to process
-skFile 0                                          # do not call SKREAD/SKRAWREAD - no need.
+skFile 1                                          # we do need to call SKREAD to invoke lfallfit
+triggerMasks 28 29                                # only pass on SHE (28) and AFT (29) triggers
+SK_GEOMETRY 6
+skreadMode 1
+skipPedestals 1
+skoptn 31,30,26,25

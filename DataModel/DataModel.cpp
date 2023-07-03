@@ -68,13 +68,27 @@ TApplication* DataModel::GetTApp(){
 	return rootTApp;
 }
 
-bool DataModel::RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon){
+bool DataModel::RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long)> getTreeEntry){
 	Trees.emplace(readerName, reader);
 	hasAFTs.emplace(readerName, hasAFT);
 	loadSHEs.emplace(readerName, loadSHE);
 	loadAFTs.emplace(readerName, loadAFT);
 	loadCommons.emplace(readerName, loadCommon);
+	getEntrys.emplace(readerName, getTreeEntry);
 	return true;
+}
+
+int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
+	if(ReaderName==""){
+		// if no name given but we have only one TreeReader Tool, use that
+		if(hasAFTs.size()) ReaderName = hasAFTs.begin()->first;
+	}
+	if(getEntrys.count(ReaderName)){
+		return getEntrys.at(ReaderName)(entrynum);
+	} else {
+		std::cerr << "getTreeEntry requested for Unknown reader "<<ReaderName<<std::endl;
+	}
+	return 0;
 }
 
 bool DataModel::HasAFT(std::string ReaderName){
