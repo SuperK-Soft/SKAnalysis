@@ -90,9 +90,12 @@ TApplication *&#160;</td><td class="memItemRight" valign="bottom"><b>GetTApp</b>
 <tr class="memitem:a13b7dd6941f0fb5c2645dc479c755bd1"><td class="memItemLeft" align="right" valign="top"><a id="a13b7dd6941f0fb5c2645dc479c755bd1"></a>
 ConnectionTable *&#160;</td><td class="memItemRight" valign="bottom"><b>GetConnectionTable</b> (int sk_geometry=-1)</td></tr>
 <tr class="separator:a13b7dd6941f0fb5c2645dc479c755bd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ee9fa6ca6b7e1996cc31205cd4fb972"><td class="memItemLeft" align="right" valign="top"><a id="a3ee9fa6ca6b7e1996cc31205cd4fb972"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReader</b> (std::string readerName, <a class="el" href="classMTreeReader.html">MTreeReader</a> *reader, std::function&lt; bool()&gt; hasAFT, std::function&lt; bool()&gt; loadSHE, std::function&lt; bool()&gt; loadAFT, std::function&lt; bool(int)&gt; loadCommon)</td></tr>
-<tr class="separator:a3ee9fa6ca6b7e1996cc31205cd4fb972"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addfebe7aa61055a479b32bba3b107ca7"><td class="memItemLeft" align="right" valign="top"><a id="addfebe7aa61055a479b32bba3b107ca7"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReader</b> (std::string readerName, <a class="el" href="classMTreeReader.html">MTreeReader</a> *reader, std::function&lt; bool()&gt; hasAFT, std::function&lt; bool()&gt; loadSHE, std::function&lt; bool()&gt; loadAFT, std::function&lt; bool(int)&gt; loadCommon, std::function&lt; int(long)&gt; getTreeEntry)</td></tr>
+<tr class="separator:addfebe7aa61055a479b32bba3b107ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a222b0e45c659e3e4a2d21a8d937c9877"><td class="memItemLeft" align="right" valign="top"><a id="a222b0e45c659e3e4a2d21a8d937c9877"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>getTreeEntry</b> (std::string ReaderName=&quot;&quot;, long entrynum)</td></tr>
+<tr class="separator:a222b0e45c659e3e4a2d21a8d937c9877"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c16f80901ce09e60f31e3cc49a9ef24"><td class="memItemLeft" align="right" valign="top"><a id="a5c16f80901ce09e60f31e3cc49a9ef24"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>HasAFT</b> (std::string ReaderName=&quot;&quot;)</td></tr>
 <tr class="separator:a5c16f80901ce09e60f31e3cc49a9ef24"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -150,6 +153,9 @@ std::unordered_map&lt; std::string, std::function&lt; bool()&gt; &gt;&#160;</td>
 <tr class="memitem:a9ec502d1b018fd91578dc44c676802ec"><td class="memItemLeft" align="right" valign="top"><a id="a9ec502d1b018fd91578dc44c676802ec"></a>
 std::unordered_map&lt; std::string, std::function&lt; bool(int)&gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>loadCommons</b></td></tr>
 <tr class="separator:a9ec502d1b018fd91578dc44c676802ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b60a22411c7d24e4f27fcdbca1fb7cd"><td class="memItemLeft" align="right" valign="top"><a id="a1b60a22411c7d24e4f27fcdbca1fb7cd"></a>
+std::unordered_map&lt; std::string, std::function&lt; int(long)&gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getEntrys</b></td></tr>
+<tr class="separator:a1b60a22411c7d24e4f27fcdbca1fb7cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4baac5fe364a7a23762d70d2c2216486"><td class="memItemLeft" align="right" valign="top"><a id="a4baac5fe364a7a23762d70d2c2216486"></a>
 Store&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataModel.html#a4baac5fe364a7a23762d70d2c2216486">vars</a></td></tr>
 <tr class="memdesc:a4baac5fe364a7a23762d70d2c2216486"><td class="mdescLeft">&#160;</td><td class="mdescRight">This Store can be used for any variables. It is an inefficent ascii based storage and command line arguments will be placed in here along with ToolChain variables. <br /></td></tr>

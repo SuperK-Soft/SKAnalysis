@@ -19,8 +19,11 @@ TApplication $\ast$ {\bfseries Get\+TApp} ()
 \mbox{\Hypertarget{classDataModel_a13b7dd6941f0fb5c2645dc479c755bd1}\label{classDataModel_a13b7dd6941f0fb5c2645dc479c755bd1}} 
 Connection\+Table $\ast$ {\bfseries Get\+Connection\+Table} (int sk\+\_\+geometry=-\/1)
 \item 
-\mbox{\Hypertarget{classDataModel_a3ee9fa6ca6b7e1996cc31205cd4fb972}\label{classDataModel_a3ee9fa6ca6b7e1996cc31205cd4fb972}} 
-bool {\bfseries Register\+Reader} (std\+::string reader\+Name, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader, std\+::function$<$ bool()$>$ has\+AFT, std\+::function$<$ bool()$>$ load\+SHE, std\+::function$<$ bool()$>$ load\+AFT, std\+::function$<$ bool(int)$>$ load\+Common)
+\mbox{\Hypertarget{classDataModel_addfebe7aa61055a479b32bba3b107ca7}\label{classDataModel_addfebe7aa61055a479b32bba3b107ca7}} 
+bool {\bfseries Register\+Reader} (std\+::string reader\+Name, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader, std\+::function$<$ bool()$>$ has\+AFT, std\+::function$<$ bool()$>$ load\+SHE, std\+::function$<$ bool()$>$ load\+AFT, std\+::function$<$ bool(int)$>$ load\+Common, std\+::function$<$ int(long)$>$ get\+Tree\+Entry)
+\item 
+\mbox{\Hypertarget{classDataModel_a222b0e45c659e3e4a2d21a8d937c9877}\label{classDataModel_a222b0e45c659e3e4a2d21a8d937c9877}} 
+int {\bfseries get\+Tree\+Entry} (std\+::string Reader\+Name=\char`\"{}\char`\"{}, long entrynum)
 \item 
 \mbox{\Hypertarget{classDataModel_a5c16f80901ce09e60f31e3cc49a9ef24}\label{classDataModel_a5c16f80901ce09e60f31e3cc49a9ef24}} 
 bool {\bfseries Has\+AFT} (std\+::string Reader\+Name=\char`\"{}\char`\"{})
@@ -75,6 +78,9 @@ std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ bool()$>$ $>$ {\b
 \item 
 \mbox{\Hypertarget{classDataModel_a9ec502d1b018fd91578dc44c676802ec}\label{classDataModel_a9ec502d1b018fd91578dc44c676802ec}} 
 std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ bool(int)$>$ $>$ {\bfseries load\+Commons}
+\item 
+\mbox{\Hypertarget{classDataModel_a1b60a22411c7d24e4f27fcdbca1fb7cd}\label{classDataModel_a1b60a22411c7d24e4f27fcdbca1fb7cd}} 
+std\+::unordered\+\_\+map$<$ std\+::string, std\+::function$<$ int(long)$>$ $>$ {\bfseries get\+Entrys}
 \item 
 \mbox{\Hypertarget{classDataModel_a4baac5fe364a7a23762d70d2c2216486}\label{classDataModel_a4baac5fe364a7a23762d70d2c2216486}} 
 Store \mbox{\hyperlink{classDataModel_a4baac5fe364a7a23762d70d2c2216486}{vars}}
