@@ -1,0 +1,5 @@
+verbosity 1
+time_match_tolerance 100000  # [ns]
+dist_match_tolerance 100     # [cm]
+match_mistags 0              # whether to look for non-neutron-capture true vertices that match
+treeReaderName ntagReader
