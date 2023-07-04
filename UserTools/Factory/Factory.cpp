@@ -45,6 +45,7 @@ if (tool=="NCaptInfo_BDT") ret=new NCaptInfo_BDT;
 if (tool=="TrueNCaptures") ret=new TrueNCaptures;
 if (tool=="ReadMCParticles") ret=new ReadMCParticles;
 
+  if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
 return ret;
 }
 
