@@ -17,9 +17,12 @@
 
 class TVector3;
 class TLorentzVector;
+class TPie;
+class TH1F;
 
 int ReadListFromFile(std::string filename, std::vector<std::string> &lines, char commentchar='#', bool trim_whitespace=true);
 std::string GetStdoutFromCommand(std::string cmd, int bufsize=500);
+int SystemCall(std::string cmd, std::string& errmsg);  // or use this one, maybe better?
 void SetRootColourPlotStyle();
 double MomentumToEnergy(basic_array<float[3]>& mom, int pdg);
 double MomentumToEnergy(TVector3& mom, int pdg);
@@ -35,6 +38,8 @@ void PrintVector(TLorentzVector& avec, bool newline=false);
 bool IsStlContainer(std::string type_as_string);
 std::string toString(const TVector3& vec);
 std::string toString(const TLorentzVector& vec);
+std::unique_ptr<TPie> GeneratePieFromHisto(TH1F* histo, int verbose=0);
+std::unique_ptr<TPie> GeneratePieFromHisto(std::string histoname, int verbose=0);
 
 namespace algorithms{
 	
@@ -51,9 +56,17 @@ std::string toString(const T a_value, const int n = 2){
 }
 
 template <typename T>
-std::string toString(T* a_ptr){
+std::string toString(T* a_ptr, bool deref=false){
+	if(!deref){
+		// print the address
+		std::stringstream out;
+		out<<a_ptr;
+		return out.str();
+	}
+	// try to print the object
+	if(a_ptr==nullptr) return "?";
 	std::stringstream out;
-	out<<a_ptr;
+	out<<*a_ptr;
 	return out.str();
 }
 

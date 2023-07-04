@@ -41,6 +41,8 @@ skreadMode 0                                   # which set of `skread` or `skraw
 skipPedestals 1                                # whether to skip pedestal and status entries (1)
 readSheAftTogether 1                           # whether to read AFT data for associated SHE events together (0)
 onlySheAftPairs 1                              # whether to only return SHE+AFT pairs (0)
+skippedTriggers 1,2,3                          # skip entries in which any of the trigger bits in this list are set (none)
+allowedTriggers 18,19                          # return only entries with one of the trigger bits in this list set (none)
 ```
 
 When processing SK ROOT files the following additional options are also available:

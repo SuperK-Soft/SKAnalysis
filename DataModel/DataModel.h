@@ -107,6 +107,10 @@ class DataModel {
   void KZInit();
   bool kz_initialized=false;
   
+  TFile* OpenFileForWriting(std::string file, bool alreadyopenonly=false);
+  TFile* OpenFileForReading(std::string file, bool fromdisk=true);
+  bool CloseFile(std::string file);
+  bool CloseFile(TFile* fptr);
   
   // Event vars
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
@@ -135,6 +139,12 @@ class DataModel {
   //std::map<std::string,TTree*> m_trees; 
   TApplication* rootTApp=nullptr;
   ConnectionTable* connectionTable=nullptr;
+  
+  // output ROOT files, for sharing between Tools
+  // use OpenFile and CloseFile functions to access this.
+  // key should be a full filepath (since it may be required to create the file)
+  // value first entry is file pointer, second is number of active users
+  std::map<std::string, std::pair<TFile*, int>> OutFiles;
   
   
   

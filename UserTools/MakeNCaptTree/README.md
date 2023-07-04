@@ -1,19 +1,4 @@
-# PlotNeutronCaptures
+# MakeNCaptTree
 
-PlotNeutronCaptures
+This Tool actually reads in a file created by one of the TruthNeutronCaptures Tools and creates an auxilliary file with a tree that adds some additional calculated information.
 
-## Data
-
-Describe any data formats PlotNeutronCaptures creates, destroys, changes, analyzes, or its usage.
-
-
-
-
-## Configuration
-
-Describe any configuration variables for PlotNeutronCaptures.
-
-```
-param1 value1
-param2 value2
-```

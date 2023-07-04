@@ -14,11 +14,10 @@ bool NCapture::SetNeutronIndex(int neutron_index){
 		// out of bounds, or not a neutron
 		return false;
 	}
-	MParticle& theneutron = m_data->eventParticles.at(neutron_index);
 	return true;
 }
 
-MParticle* NCapture::GetTrueNeutron(){
+MParticle* NCapture::GetNeutron(){
 	if(neutron_trackid>=0 && neutron_trackid<m_data->eventParticles.size()){
 		return &m_data->eventParticles.at(neutron_trackid);
 	}
@@ -134,20 +133,20 @@ bool NCapture::SumConversioneE(double& sumconvee){
 }
 
 double* NCapture::GetTime(){
-	MParticle* neutron = GetTrueNeutron();
+	MParticle* neutron = GetNeutron();
 	if(neutron==nullptr) return nullptr;
 	return neutron->GetEndTime();
 }
 
 TVector3* NCapture::GetPos(){
-	MParticle* neutron = GetTrueNeutron();
+	MParticle* neutron = GetNeutron();
 	if(neutron==nullptr) return nullptr;
 	return neutron->GetEndPos();
 }
 
 bool NCapture::NeutronTravelDist(double& ntraveldist){
 	ntraveldist=0;
-	MParticle* neutron = GetTrueNeutron();
+	MParticle* neutron = GetNeutron();
 	if(neutron==nullptr) return false;
 	TVector3* startpos = neutron->GetStartPos();
 	TVector3* endpos = neutron->GetEndPos();
@@ -161,28 +160,34 @@ bool NCapture::NeutronTravelDist(double& ntraveldist){
 
 bool NCapture::NeutronTravelTime(double& ntravelt){
 	ntravelt=0;
-	MParticle* neutron = GetTrueNeutron();
+	MParticle* neutron = GetNeutron();
 	if(neutron==nullptr) return false;
 	double* startt = neutron->GetStartTime();
 	double* endt = neutron->GetEndTime();
 	if(startt!=nullptr && endt!=nullptr){
-		ntravelt=(*endt-*startt);
+		ntravelt=((*endt-*startt)/1000.);
 	} else {
 		return false;
 	}
 	return true;
 }
 
-void NCapture::Print(){
+void NCapture::Print(bool verbose){
 	std::cout<<"\tcapture time [us]: "<<(GetTime() ? toString(*GetTime()/1000.) : "?")<<"\n"
 	         <<"\tcapture position [cm]: "<<(GetPos() ? toString(*GetPos()) : "(?,?,?)")<<"\n"
 	         <<"\tdaughter nuclide pdg: "<<(GetDaughterNuclide() ? toString(GetDaughterNuclide()->pdg) : "?")<<"\n";
 	int ng, ne;
 	double sge, see, ntd, ntt;
 	std::cout<<"\tnum gammas: "<<(NGammas(ng) ? toString(ng) : "?")<<"\n"
-	         <<"\ttotal gamma E [MeV]: "<<(SumGammaE(sge) ? toString(sge/1000.) : "?")<<"\n"
+	         <<"\ttotal gamma E [MeV]: "<<(SumGammaE(sge) ? toString(sge) : "?")<<"\n"
 	         <<"\tnum conversion electrons: "<<(NConversiones(ne) ? toString(ne) : "?")<<"\n"
-	         <<"\ttotal conversion election E [MeV]: "<<(SumConversioneE(see) ? toString(see/1000.) : "?")<<"\n"
+	         <<"\ttotal conversion election E [MeV]: "<<(SumConversioneE(see) ? toString(see) : "?")<<"\n"
 	         <<"\tneutron travel distance [cm]: "<<(NeutronTravelDist(ntd) ? toString(ntd) : "?")<<"\n"
-	         <<"\tneutron travel time [us]: "<<(NeutronTravelTime(ntt) ? toString(ntt/1000.) : "?")<<"\n";
+	         <<"\tneutron travel time [us]: "<<(NeutronTravelTime(ntt) ? toString(ntt) : "?")<<"\n";
+	if(verbose){
+		std::cout<<"Neutron MParticle: ";
+		MParticle* neutron = GetNeutron();
+		if(neutron) neutron->Print(true);
+		else std::cout<<"NOT FOUND\n";
+	}
 }

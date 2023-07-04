@@ -32,7 +32,8 @@ class ReadMCParticles: public Tool {
 	bool PrintSecondaryVectors(bool checkconsistency=false);
 	std::string m_unique_name;
 	MTreeReader* myTreeReader=nullptr;
-	int dataSrc=0;
+	int dataSrc=0; // 0= SecondaryInfo atmpd arrays, 1=SecondaryInfo vectors
+	int debugEntryNum=-1; // crank up verbosity for this event
 	
 	const SecondaryInfo * sec_info = nullptr;
 	const MCInfo* mc_info = nullptr;

@@ -598,12 +598,23 @@ bool TreeReader::Execute(){
 				PrintTriggerBits();
 				
 				// apply our general check for required bits in the trigger mask
-				for(int mask_i=0; mask_i<triggerMasks.size(); ++mask_i){
-					int required_bit = triggerMasks.at(mask_i);
-					if(trigger_bits.test(required_bit)==false){
+				// skip all events matching trigger types in skippedTriggers
+				for(int bit_i=0; bit_i<skippedTriggers.size(); ++bit_i){
+					int test_bit = skippedTriggers.at(bit_i);
+					if(trigger_bits.test(test_bit)){
 						get_ok=-999; // skip this event
 					}
 				}
+				// alternatively to specifying every type we don't want,
+				// we may choose to specify only the types we do want
+				bool skipit=(allowedTriggers.size()>0); // only apply if given
+				for(int bit_i=0; bit_i<allowedTriggers.size(); ++bit_i){
+					int test_bit = allowedTriggers.at(bit_i);
+					if(trigger_bits.test(test_bit)){
+						skipit=false;
+					}
+				}
+				if(skipit) get_ok=-999; // skip this event
 				
 				// if we're reading *only* SHE+AFT pairs, skip the entry if it's not SHE
 				if(get_ok>0 && onlyPairs && !trigger_bits.test(28)){
@@ -1198,7 +1209,8 @@ int TreeReader::LoadConfig(std::string configfile){
 	bool settingInputBranchNames=false;
 	bool settingOutputBranchNames=false;
 	bool skFile=false;
-	std::string triggerMasksString="";
+	std::string allowedTriggersString="";
+	std::string skippedTriggersString="";
 	
 	// scan over lines in the config file
 	while (getline(fin, Line)){
@@ -1268,7 +1280,8 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="readSheAftTogether") loadSheAftPairs = stoi(thevalue);
 		else if(thekey=="onlySheAftPairs") onlyPairs = stoi(thevalue);
 		else if(thekey=="entriesPerExecute") entriesPerExecute = stoi(thevalue);
-		else if(thekey=="triggerMasks") triggerMasksString = thevalue;
+		else if(thekey=="allowedTriggers") allowedTriggersString = thevalue;
+		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
 		else {
 			Log(toolName+" error parsing config file line: \""+LineCopy
 				+"\" - unrecognised variable \""+thekey+"\"",v_error,verbosity);
@@ -1292,14 +1305,24 @@ int TreeReader::LoadConfig(std::string configfile){
 		}
 	}
 	
-	// parse the triggerMasksString for trigger masks
+	// parse the allowedTriggersString for allowed triggers
 	while(true){
 		try{
 			size_t nextchar=0;
-			int next_bit = stoi(triggerMasksString,&nextchar);
-			triggerMasks.push_back(next_bit);
-			if(nextchar==triggerMasksString.length()) break;
-			triggerMasksString = triggerMasksString.substr(nextchar+1,std::string::npos);
+			int next_bit = stoi(allowedTriggersString,&nextchar);
+			allowedTriggers.push_back(next_bit);
+			if(nextchar==allowedTriggersString.length()) break;
+			allowedTriggersString = allowedTriggersString.substr(nextchar+1,std::string::npos);
+		} catch (...) { break; }
+	}
+	// same for skippedTriggerString
+	while(true){
+		try{
+			size_t nextchar=0;
+			int next_bit = stoi(skippedTriggersString,&nextchar);
+			skippedTriggers.push_back(next_bit);
+			if(nextchar==skippedTriggersString.length()) break;
+			skippedTriggersString = skippedTriggersString.substr(nextchar+1,std::string::npos);
 		} catch (...) { break; }
 	}
 	

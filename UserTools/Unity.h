@@ -39,3 +39,4 @@
 #include "NCaptInfo_BDT.h"
 #include "TrueNCaptures.h"
 #include "ReadMCParticles.h"
+#include "PlotNeutronCaptures.h"

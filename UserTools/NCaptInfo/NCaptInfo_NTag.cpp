@@ -1,5 +1,32 @@
 #include "NCaptInfo_NTag.h"
 
+bool NCaptInfo_NTag::InitCandidateReader(){
+	
+	// tree reader to retreive candidates
+	std::string candidateTreeReaderName="";
+	m_variables.Get("candidateTreeReaderName",candidateTreeReaderName);
+	 if(m_data->Trees.count(candidateTreeReaderName)==0){
+		Log(m_unique_name+" failed to find TreeReader "+candidateTreeReaderName+" in DataModel!",v_error,verbosity);
+		return false;
+	} else {
+		candidatesTreeReader = m_data->Trees.at(candidateTreeReaderName);
+	}
+	
+	candidates_file = candidatesTreeReader->GetFile()->GetName();
+	
+	// we need another tree reader to access the prompt vertex info
+	std::string variablesTreeReaderName="";
+	m_variables.Get("variablesTreeReaderName",variablesTreeReaderName);
+	 if(m_data->Trees.count(variablesTreeReaderName)==0){
+		Log(m_unique_name+" failed to find TreeReader "+variablesTreeReaderName+" in DataModel!",v_error,verbosity);
+		return false;
+	} else {
+		variablesTreeReader = m_data->Trees.at(variablesTreeReaderName);
+	}
+	
+	return true;
+}
+
 bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	
 	// get variables from Tree branches
@@ -9,12 +36,17 @@ bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	std::vector<float>* ys = nullptr;
 	std::vector<float>* zs = nullptr;
 	
-	get_ok  = myTreeReader->Get("TMVAOutput",metrics);
-	get_ok &= myTreeReader->Get("TrmsFitVertex_X",xs);
-	get_ok &= myTreeReader->Get("TrmsFitVertex_Y",ys);
-	get_ok &= myTreeReader->Get("TrmsFitVertex_Z",zs);
-	get_ok &= myTreeReader->Get("TRMS",times);       // RMS  of candidate hit times
-	//get_ok &= myTreeReader->Get("ReconCT",times);  // mean of candidate hit times
+	get_ok  = candidatesTreeReader->Get("TMVAOutput",metrics);
+	get_ok &= candidatesTreeReader->Get("TrmsFitVertex_X",xs);
+	get_ok &= candidatesTreeReader->Get("TrmsFitVertex_Y",ys);
+	get_ok &= candidatesTreeReader->Get("TrmsFitVertex_Z",zs);
+	get_ok &= candidatesTreeReader->Get("TRMS",times);       // RMS  of candidate hit times
+	//get_ok &= candidatesTreeReader->Get("ReconCT",times);  // mean of candidate hit times
+	
+	TVector3* prompt_vtx=nullptr;
+	float prompt_t;
+	get_ok &= variablesTreeReader->Get("prompt_vertex",prompt_vtx);
+	get_ok &= variablesTreeReader->Get("geant_t0",prompt_t);
 	
 	if(!get_ok){
 		Log(m_unique_name+": error getting candidates!",v_error,verbosity);
@@ -34,6 +66,10 @@ bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 		cand.capture_pos = TVector3(xs->at(icand),
 		                            ys->at(icand),
 		                            zs->at(icand));
+		
+		cand.prompt_pos = *prompt_vtx;
+		cand.prompt_time = prompt_t;
+		
 		// TODO
 		// populate feature variables used by the tagging algorithm?
 		//cand.featureMap = BStore(true, BSTORE_BINARY_FORMAT);

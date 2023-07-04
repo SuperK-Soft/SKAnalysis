@@ -329,9 +329,11 @@ bool evDisp::Execute(){
 			case 0: {
 				// sktqz_ common block
 				cableNumber = sktqz_.icabiz[pmtNumber];
-				charge = sktqz_.qiskz[pmtNumber];             // FIXME which, if any of these 3, should use
-				time = sktqz_.tiskz[pmtNumber];               // `cableNumber-1` instead of pmtNumber???
-				in_gate = sktqz_.ihtiflz[pmtNumber] & 0x02;   // sktqaz_.ihtflz[pmtNumber]  for OD
+				charge = sktqz_.qiskz[cableNumber-1];
+				time = sktqz_.tiskz[cableNumber-1];
+				in_gate = sktqz_.ihtiflz[pmtNumber-1] & 0x02;   // sktqaz_.ihtflz for OD
+				// from $SKOFL_ROOT/src/skrd/tqrealsk.F:L142 it looks like perhaps ihtiflz carries indexing
+				// over, so still uses (pmtNumber-1) instead of (cableNumber-1) as an index...maybe..
 				// skhead_ common block
 				runNum = skhead_.nrunsk;
 				subrunNum = skhead_.nsubsk;

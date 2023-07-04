@@ -596,7 +596,7 @@ void TruthNeutronCaptures_v2::CloseFile(){
 	// 2. they will not show up in TTree::Print(), so you need to know they're there...!
 	// Would it be better to store the redundant information? Is there a better way?
 	outtree->SetAlias("neutron_travel_dist","sqrt(pow(neutron_start_pos.X()-neutron_end_pos.X(),2)+pow(neutron_start_pos.Y()-neutron_end_pos.Y(),2)+pow(neutron_start_pos.Z()-neutron_end_pos.Z(),2))");
-	outtree->SetAlias("neutron_travel_time","neutron_end_pos.T()-neutron_start_pos.T()");
+	outtree->SetAlias("neutron_travel_time","(neutron_end_pos.T()-neutron_start_pos.T())/1000."); // [us]
 	outtree->SetAlias("neutron_n_daughters","Length$(gamma_energy[])");
 	outtree->SetAlias("neutron_tot_gammaE","Sum$(gamma_energy[])");
 	outfile->Write("*",TObject::kOverwrite);

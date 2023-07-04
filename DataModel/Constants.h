@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <map>
+#include <unordered_map>
 #include "TInterpreter.h" // TInterpreter::EErrorCode
 #include "TDatabasePDG.h"
 //#include <regex>    // std::regex doesn't work for older g++ versions
@@ -15,6 +16,7 @@ extern std::map<TInterpreter::EErrorCode, std::string> TInterpreterErrors;
 
 // functions
 std::string G3_process_code_to_string(int process_code);
+std::string G4_process_code_to_string(int process_code);
 std::string numnu_code_to_string(int numnu_code);
 std::string neut_mode_to_string(int neut_code);
 std::string PdgToString(int code);
@@ -25,6 +27,7 @@ int StringToG3ParticleCode(std::string name);
 std::string G3ParticleCodeToString(int code);
 double PdgToMass(int code);
 std::string TriggerIDToTrigger(int code);
+const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
 
@@ -35,7 +38,6 @@ namespace constants{
 	constexpr int BSTORE_ASCII_FORMAT = 1;
 	constexpr int BSTORE_MULTIEVENT_FORMAT = 2;
 	
-	static const TDatabasePDG* particleDb = TDatabasePDG::Instance();
 	// https://root.cern.ch/root/html532/src/TDatabasePDG.cxx.html
 	// https://root.cern/doc/v608/classTDatabasePDG.html
 	
@@ -81,6 +83,68 @@ namespace constants{
 		{107, "Cerenkov Refraction"},
 		{108, "Synchrotron Generation"},
 		{109, "PAI or ASHO model used for energy loss fuctuations"}
+	};
+	
+	static const std::map<int,std::string> G4_process_code_to_string{
+		{1,"CoulombScat"},
+		{2,"Ionisation"},
+		{3,"Brems"},
+		{4,"PairProdCharged"},
+		{5,"Annih"},
+		{6,"AnnihToMuMu"},
+		{7,"AnnihToHad"},
+		{8,"NuclearStopp"},
+		{9,"ElectronSuper"},
+		{10,"Msc"},
+		{11,"Rayleigh"},
+		{12,"PhotoElectric"},
+		{13,"Compton"},
+		{14,"Conv"},
+		{15,"ConvToMuMu"},
+		{16,"GammaSuper"},
+		{21,"Cerenkov"},
+		{22,"Scintillation"},
+		{23,"SynchRad"},
+		{24,"TransRad"},
+		{31,"OpAbsorb"},
+		{32,"OpBoundary"},
+		{33,"OpRayleigh"},
+		{34,"OpWLS"},
+		{35,"OpMieHG"},
+		{51,"DNAElastic"},
+		{52,"DNAExcit"},
+		{53,"DNAIonisation"},
+		{54,"DNAVibExcit"},
+		{55,"DNAAttachment"},
+		{56,"DNAChargeDec"},
+		{57,"DNAChargeInc"},
+		{58,"DNAElectronSolvatation"},
+		{59,"DNAMolecularDecay"},
+		{60,"ITTransportation"},
+		{61,"DNABrownianTransportation"},
+		{62,"DNADoubleIonisation"},
+		{63,"DNADoubleCapture"},
+		{64,"DNAIonisingTransfer"},
+		{91,"Transportation"},
+		{92,"CoupleTrans"},
+		{111,"HadElastic"},
+		{121,"HadInElastic"},
+		{131,"HadCapture"},
+		{132,"MuAtomicCapture"},
+		{141,"HadFission"},
+		{151,"HadAtRest"},
+		{161,"HadCEX"},
+		{201,"Decay"},
+		{202,"DecayWSpin"},
+		{203,"DecayPiSpin"},
+		{210,"DecayRadio"},
+		{211,"DecayUnKnown"},
+		{221,"DecayMuAtom"},
+		{231,"DecayExt"},
+		{401,"StepLimiter"},
+		{402,"UsrSepcCuts"},
+		{403,"NeutronKiller"},
+		{491,"ParallelWorld"}
 	};
 	
 	// from skdetsim source file 'gt2pd.h'
@@ -353,6 +417,9 @@ namespace constants{
 		{52, "NC elastic"}
 	};
 	
+	
+	const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();
+	/* populating this is now done in pdg_to_name_nuclei.cc, as its real big
 	static const std::map<int,std::string> pdg_to_string{
 		// FIXME use TParticlePDG for greater coverage, but need to add nuclei
 		{2212,"Proton"},
@@ -395,11 +462,7 @@ namespace constants{
 		{15,"Tau-"},
 		{100,"OpticalPhoton"},
 		// nuclei
-		{1000010020,"Deuterium"},
-		{1000010030,"Tritium"},
-		{1000020040,"Alpha"},
-		{1000020030,"He3"},
-		{1000080160,"O16"},
+		{1000641530,"Gd153"},
 		{1000641550,"Gd155"},     // ground state
 		{1000641550,"Gd155*"},    // excited 121.050 state
 		{1000641560,"Gd156"},     // ground state
@@ -407,6 +470,7 @@ namespace constants{
 		{1000641570,"Gd157"},     // ground state
 		{1000641571,"Gd157*"},    // excited 426.600 state
 		{1000641580,"Gd158"},     // ground state
+		{1000080170,"O17"},
 		// support skdetsim "custom" pdg codes
 		{100045,"Deuterium"},
 		{100046,"Tritium"},
@@ -415,6 +479,7 @@ namespace constants{
 		{100049,"He3"},
 		{100069,"O16"}
 	};
+	*/
 	
 	static const std::map<std::string,int> string_to_pdg{
 		// FIXME use TParticlePDG for greater coverage, but need to add nuclei

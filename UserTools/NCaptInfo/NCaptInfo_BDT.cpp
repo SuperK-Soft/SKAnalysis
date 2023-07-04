@@ -1,5 +1,22 @@
 #include "NCaptInfo_BDT.h"
 
+bool NCaptInfo_BDT::InitCandidateReader(){
+	
+	// tree reader to retreive candidates
+	std::string treeReaderName="";
+	m_variables.Get("treeReaderName",treeReaderName);
+	 if(m_data->Trees.count(treeReaderName)==0){
+		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		return false;
+	} else {
+		myTreeReader = m_data->Trees.at(treeReaderName);
+	}
+	
+	candidates_file = myTreeReader->GetFile()->GetName();
+	
+	return true;
+}
+
 bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	
 	// get variables from Tree branches
@@ -17,6 +34,10 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	// dt= time of prompt event, dtn=time of capture event
 	get_ok &= myTreeReader->Get("dtn",times);
 	
+	// prompt information is from upstream LOWE branch which gets propagated
+	LoweInfo* myLowE=nullptr;
+	get_ok &= myTreeReader->Get("LOWE",myLowE);
+	
 	if(!get_ok){
 		Log(m_unique_name+": error getting candidates!",v_error,verbosity);
 		return false;
@@ -31,12 +52,19 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 		cand.algo = "BDT";
 		
 		// likelihood metric should be defined such that 1 is high confidence and 0 is no confidence.
-		// the BDT algorithm assigns things the opposite way round, so flip it. XXX FIXME check XXX XXX
-		cand.likelihood_metric = 1-metrics.at(icand);
+		// didn't NTag and the BDT define metrics in the opposite way...? one might need `1-metrics.at(icand)`
+		cand.likelihood_metric = metrics.at(icand);
 		cand.capture_time = times.at(icand);
 		cand.capture_pos = TVector3(xs.at(icand),
 		                            ys.at(icand),
 		                            zs.at(icand));
+		if(myLowE){
+			cand.prompt_pos = TVector3(myLowE->bsvertex[0],
+			                           myLowE->bsvertex[1],
+			                           myLowE->bsvertex[2]);
+			cand.prompt_time = myLowE->bsvertex[3];
+		}
+		
 		// TODO
 		// populate feature variables used by the tagging algorithm?
 		//cand.featureMap = BStore(true, BSTORE_BINARY_FORMAT);

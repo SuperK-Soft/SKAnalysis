@@ -31,7 +31,8 @@ bool lf_allfit_new::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
 	m_variables.Get("readerName",readerName);          // name given to the TreeReader used for file handling
 	m_variables.Get("writeout",writeout);              // whether to write out to a new file or not (just reconstruction vs inline)
-	
+	reference_watert_run = 85609;                      // reference run for water transparency
+	m_variables.Get("reference_watert_run", reference_watert_run);
 	
 	// use the readerName to find the LUN associated with this file
 	std::map<std::string,int> lunlist;
@@ -66,12 +67,19 @@ bool lf_allfit_new::Execute(){
 	}
 	++nread;
 	
+	// FIXME should this whole water transparency / bad channel thing be part of e.g. the TreeReader?
+	
+	// lfallfit requires a water transparency
+	// we can look up a suitable value with lfwater_, but we need a run number
+	// for MC, if the run number hasn't already been overridden, use a suitably representative run
 	if(MC && skhead_.nrunsk==999999){
-		Log(toolName+" warning: no run number!!",v_warning,verbosity);
-		skhead_.nrunsk = 75000;
+		// nrunsk of 999999 is expected for MC...
+		Log(toolName+" using reference run "+toString(reference_watert_run)
+		    +" for water transparency",v_warning,verbosity);
+		skhead_.nrunsk = reference_watert_run;
 	}
 	
-	// once per run update the water transparency
+	// retreive new water transparency when changing runs
 	if(skhead_.nrunsk!=nrunsk_last){
 		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];  // defined in skdayC.h
 		lfwater_(&days_to_run_start, &watert);
@@ -80,6 +88,7 @@ bool lf_allfit_new::Execute(){
 		nrunsk_last = skhead_.nrunsk;
 	}
 	
+	// update the bad channel list when changing runs or subruns (MC only? FIXME does this make sense?)
 	if(MC){
 		if(skhead_.nrunsk!=nrunsk_last || skhead_.nsubsk!=nsubsk_last){
 			int ierr;
@@ -94,18 +103,94 @@ bool lf_allfit_new::Execute(){
 	lfclear_all_();
 	
 	// apply lowfit
-	int NHITCUT = (MC) ? 800 : 1000;  //  number of hit limit for clusfit (changed for relic analysis)
+	int NHITCUT = (MC) ? 800 : 1000;  //  number of hit limit for clusfit
 	
 	int lfflag;
 	int log_level;
 	int flag_skip=0;
+	
+	/* these have mostly the same signature:
+		inputs:
+			watert     water transparency for fit (will be stored in lwatert)
+			nhitcut    max. nqisk for clusfit
+			flag_skip  ==0  clear variables, then do everything
+				       ==1,others  just recalculate energy and related variables
+				       ==2  recalculate energy, clik, msg and related variables
+			flag_log   LOGLV in findconst
+				       1) Lots of output
+				       2) only prints filenames
+				       3) only prints when not found
+				       4) do not print
+				       5) only prints when found
+		outputs:
+			lfflag is output: 0=fit success, -1=too many hits for lowe, -2: no hits
+	*/
 	if(MC){
-		lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
-		//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, 0, &log_level, &lfflag);
+		switch skheadg_.sk_geometry {
+			case 1:  //lfallfit_sk1_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
+			case 2:  //lfallfit_sk2_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
+			case 3:  //lfallfit_sk3_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
+				Log(toolName+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
+				    +" MC!",v_error,verbosity);
+				return false;
+			case 4: {
+				// which lfallfit_sk4 would you prefer...?
+				//lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
+				//lfallfit_sk4_final_qe41_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk4_final_qe43_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				break;
+			}
+			case 5: {
+				lfallfit_sk5_mc(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				break;
+			}
+			case 6: {
+				lfallfit_sk6_mc(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				break;
+			}
+			default: {
+				Log(toolName+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
+				    +" MC!",v_error,verbosity);
+				return false;
+			}
+		}
 	} else {
-		//lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
-		//lfallfit_sk4_gain_corr(&watert, &NHITCUT, 0, &log_level, &lfflag);
-		lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+		switch skheadg_.sk_geometry {
+			case 1: {
+				lfallfit_sk1_data_(&watert, &NHITCUT, &lfflag);
+				break;
+			}
+			case 2: {
+				lfallfit_sk2_data_(&watert, &NHITCUT, &lfflag);
+				break;
+			}
+			case 3: {
+				// lfallfit_sk3_data_(&watert, &NHITCUT, &lfflag); // does not exist
+				Log(toolName+": Error! lfallfit does not exist for SK-III!",v_error,verbosity);
+				return false;
+			}
+			case 4: {
+				//lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
+				//lfallfit_sk4_final_qe41_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				//lfallfit_sk4_gain_corr_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				break;
+			}
+			case 5: {
+				lfallfit_sk5_data(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				break;
+			}
+			case 6: {
+				lfallfit_sk6_data(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				break;
+			}
+			default: {
+				Log(toolName+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
+				    +" data!",v_error,verbosity);
+				return false;
+			}
+		}
 	}
 	
 	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file

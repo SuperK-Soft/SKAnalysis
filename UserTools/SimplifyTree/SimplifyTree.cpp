@@ -76,6 +76,7 @@ bool SimplifyTree::Execute(){
 	if(infilename!=iTreeReader->GetFile()->GetName()){
 		
 		// new input file -> new output file
+		Log(toolName+": New input file, new output file",v_debug,verbosity);
 		
 		// write out and close the current output file, if there is one
 		if(fout){
@@ -94,6 +95,11 @@ bool SimplifyTree::Execute(){
 		if(outputdir!="") outfname=outputdir+"/"+outfname;
 		Log(toolName+": New output simple file: "+outfname,v_debug,verbosity);
 		fout = new TFile(outfname.c_str(), "recreate");
+		if(!fout || fout->IsZombie()){
+			Log(toolName+": Error making output file "+outfname,v_error,verbosity);
+			return false;
+		}
+		fout->cd();
 		
 		// make the output TTree
 		outtree = new TTree("data","SK Hits");

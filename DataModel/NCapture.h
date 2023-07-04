@@ -27,9 +27,9 @@ class NCapture {
 	bool NeutronTravelTime(double& ntravelt);
 	bool GetDaughters(); // sets internal variable only
 	bool GetDaughters(std::vector<int>& daughters);
-	MParticle* GetTrueNeutron();
+	MParticle* GetNeutron();
 	MParticle* GetDaughterNuclide();
-	void Print();
+	void Print(bool verbose=false);
 	
 	private:
 	// index in event particles vector

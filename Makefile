@@ -4,7 +4,7 @@ include ./skofl.gmk  # pulls in libskroot.so as well
 PWD=`pwd`
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fPIC -O3 -g -std=c++11 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fPIC -O3 -g -std=c++17 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -133,9 +133,12 @@ ROOTCLASSES = DataModel/Candidate.h DataModel/Cluster.h DataModel/EventCandidate
 DataModelInclude = $(ROOTINCLUDE) $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PybindInclude)
 DataModelLib = $(ROOTLIB)
 
+#
+EXTRALIBS= -lstdc++fs
+
 # Combine all external libraries and headers needed by user Tools
 MyToolsInclude = $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PythonInclude) $(TMVAINCLUDE)
-MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS)
+MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS) $(EXTRALIBS)
 
 # To add user classes:
 # 1. Add a rule to build them into a shared library (see libMyClass.so example)

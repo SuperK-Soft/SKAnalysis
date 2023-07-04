@@ -44,6 +44,97 @@ void DataModel::DeleteTTree(std::string name,TTree *tree){
 
 */
 
+// open a file, making it if necessary. Useful for adding data to the same file from multiple Tools.
+TFile* DataModel::OpenFileForWriting(std::string file, bool alreadyopenonly){
+	if(file==""){
+		std::cerr<<"DataModel::OpenFileForWriting Error! called with empty file name!"<<std::endl;
+		return nullptr;
+	}
+	// since we use the file path as a key we need to remove any ambiguity
+	file = GetStdoutFromCommand(std::string("readlink -f ")+file);
+	TFile* outfile=nullptr;
+	if(OutFiles.count(file)!=0){
+		outfile = OutFiles.at(file).first;
+		++OutFiles.at(file).second;
+	} else {
+		if(alreadyopenonly){
+			std::cout<<"DataModel::OpenFileForWriting file "<<file<<" not found"<<std::endl;
+			return nullptr;
+		}
+		outfile = new TFile(file.c_str(), "RECREATE");
+		if(outfile==nullptr || outfile->IsZombie()){
+			std::cerr<<"DataModel::OpenFileForWriting Error! Unable to open file "<<file<<std::endl;
+			if(outfile){ outfile->Close(); delete outfile; }
+			return nullptr;
+		}
+		OutFiles.emplace(file, std::pair<TFile*, int>{outfile,1});
+	}
+	return outfile;
+}
+
+// retrieve handle to a file already open by another Tool
+TFile* DataModel::OpenFileForReading(std::string file, bool fromdisk){
+	if(file==""){
+		std::cerr<<"DataModel::OpenFileForReading Error! called with empty file name!"<<std::endl;
+		return nullptr;
+	}
+	// since we use the file path as a key we need to remove any ambiguity
+	file = GetStdoutFromCommand(std::string("readlink -f ")+file);
+	TFile* outfile=nullptr;
+	if(OutFiles.count(file)!=0){
+		outfile = OutFiles.at(file).first;
+		++OutFiles.at(file).second;
+		return outfile;
+	}
+	if(!fromdisk){
+		std::cerr<<"DataModel::OpenFileForReading Error! file "<<file<<" not found in file list!"<<std::endl;
+		return nullptr;
+	}
+	return TFile::Open(file.c_str(), "READ");
+}
+
+bool DataModel::CloseFile(std::string file){
+	// since we use the file path as a key we need to remove any ambiguity
+	file = GetStdoutFromCommand(std::string("readlink -f ")+file);
+	if(OutFiles.count(file)==0){
+		std::cerr<<"DataModel::CloseFile Error! Unknown file "<<file<<std::endl;
+		return false;
+	} else {
+		int users = --OutFiles.at(file).second;
+		if(users==0){
+			TFile* f = OutFiles.at(file).first;
+			f->Close();
+			delete f;
+			OutFiles.erase(file);
+		}
+	}
+	return true;
+}
+
+bool DataModel::CloseFile(TFile* fptr){
+	if(fptr==nullptr){
+		std::cerr<<"DataModel::CloseFile Error! called with null file pointer!"<<std::endl;
+		return false;
+	}
+	std::string key=fptr->GetName();
+	return CloseFile(key);
+//	// scan for this file
+//	for(auto&& afile : OutFiles){
+//		if(afile.second.first==fptr){
+//			int users = --afile.second.second;
+//			if(users==0){
+//				TFile* f = afile.second.first;
+//				f->Close();
+//				delete f;
+//				OutFiles.erase(afile.first);
+//			}
+//			return true;
+//		}
+//	}
+//	std::cerr<<"DataModel::CloseFile Error! Unknown file "<<fptr->GetName()<<std::endl;
+//	return false;
+}
+
 ConnectionTable* DataModel::GetConnectionTable(int sk_geometry){
 	if(connectionTable==nullptr){
 		if(sk_geometry<0) sk_geometry = skheadg_.sk_geometry;

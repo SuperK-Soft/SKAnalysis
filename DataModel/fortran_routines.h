@@ -71,10 +71,26 @@ extern "C" void cfbsexit_();
 
 // the following are provided by libsklowe_7.0.a
 extern "C" void lfclear_all_();
-extern "C" void lfallfit_sk4_final_qe43_(float*, int*, int*, int*, int*);
-extern "C" void lfallfit_sk4_data_(float*, int*, int*);
-extern "C" void lfallfit_sk4_gain_corr_(float*, int*, int*, int*, int*);
-extern "C" void lfallfit_sk4_mc_(float*, int*, int*);
+extern "C" void lfallfit_sk1_data_(float watert*, int*nhitcut, int*lfflag);
+//extern "C" void lfallfit_sk1_mc_(float watert*, int*nhitcut, int*lfflag);    // does not exist
+extern "C" void lfallfit_sk2_data_(float watert*, int*nhitcut, int*lfflag);
+//extern "C" void lfallfit_sk2_mc_(float watert*, int*nhitcut, int*lfflag);    // does not exist
+// extern "C" void lfallfit_sk3_data_(float watert*, int*nhitcut, int*lfflag); // does not exist
+// extern "C" void lfallfit_sk3_mc_(float watert*, int*nhitcut, int*lfflag); // does not exist
+extern "C" void lfallfit_sk4_data_(float watert*, int*nhitcut, int*lfflag);
+extern "C" void lfallfit_sk4_mc_(float watert*, int*nhitcut, int*lfflag);
+extern "C" void lfallfit_sk5_mc(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk5_data(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk6_mc(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk6_data(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+// for some reason SK-IV has a bunch of extra versions...
+extern "C" void lfallfit_sk4_final_qe41_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_final_qe41_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_final_qe43_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_final_qe43_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_gain_corr_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_gain_corr_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+
 // skroot_lowe_ common block
 
 extern "C" void rluxgo_(int*, int*, int*, int*);

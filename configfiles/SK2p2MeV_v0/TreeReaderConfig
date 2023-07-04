@@ -1,4 +1,4 @@
-verbosity 10
+verbosity 3
 readerName sk2p2mevReader
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
@@ -7,16 +7,17 @@ readerName sk2p2mevReader
 #inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root # skdetsim gd water neutron gun sims
 #inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root # SKG4 neutron gun
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root            # before adding noise with NTag
-#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root              # after adding noise with NTag
-#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wonoise.root  # before adding noise with NTag
-inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise.root  # after adding noise with NTag
+inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root              # after adding noise with NTag
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wonoise.root       # before adding noise with NTag
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise.root        # after adding noise with NTag
 #inputFile /home/mattnich/disk3stor/prepared_data/lowe/rfm_run086613.001134_lowe.root
 
 treeName data                                     # the name of the tree within the file
 maxEntries -1                                     # max num input entries to process
-skFile 1                                          # we do need to call SKREAD to invoke lfallfit
+skFile 1                                          # must populate common blocks to run lfallfit
 triggerMasks 28 29                                # only pass on SHE (28) and AFT (29) triggers
 SK_GEOMETRY 6
 skreadMode 1
 skipPedestals 1
-skoptn 31,30,26,25
+skoptn 31,30,25                                   # add 26 to read bad ch from data file
+skbadchrun 85609                                  # reference run for SK6 from SKG4 template macro

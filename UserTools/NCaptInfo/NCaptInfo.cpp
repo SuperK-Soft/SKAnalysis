@@ -32,21 +32,16 @@ bool NCaptInfo::Initialise(std::string configfile, DataModel &data){
 	// whether to try to match candidates to non-neutron-capture truth vertices
 	m_variables.Get("match_mistags",match_mistags);
 	m_variables.Get("likelihood_threshold",likelihood_threshold);
+	m_variables.Get("outfilename",outfilename);
 	
-	// tree reader is used by derived classes to retreive candidates
-	std::string treeReaderName="";
-	m_variables.Get("treeReaderName",treeReaderName);
+	// initialisation required to read in
+	InitCandidateReader();
 	
-	// check the TreeReader
-	 if(m_data->Trees.count(treeReaderName)==0){
-		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
-		return false;
-	} else {
-		myTreeReader = m_data->Trees.at(treeReaderName);
-	}
+	// get name of MC truth file used for matching, if applicable
+	m_data->CStore.Get("mcparticlesfile",mctruth_file);
 	
 	// initialise histograms
-	MakePlots(0);
+	if(outfilename!="") MakePlots(0);
 	
 	return true;
 }
@@ -75,10 +70,10 @@ bool NCaptInfo::Execute(){
 	MatchToTrueCaptures();
 	if(match_mistags) MatchMistags();
 	
-	PrintCandidates();
+	//PrintCandidates();
 	
 	// fill histograms
-	MakePlots(1);
+	if(outfilename!="") MakePlots(1);
 	
 	//Log(m_unique_name+": "+toString(candidates.size())+" candidates this entry",v_debug,verbosity);
 	
@@ -89,7 +84,7 @@ bool NCaptInfo::Execute(){
 bool NCaptInfo::Finalise(){
 	
 	// draw histograms
-	MakePlots(2);
+	if(outfilename!="") MakePlots(2);
 	
 	return true;
 }
@@ -116,7 +111,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 	std::vector<NCaptCandidate>& candidates = m_data->NCaptureCandidates[m_unique_name];
 	
 	// make a map of match quality metrics, based on difference in time and position
-	std::vector<std::vector<double> > match_merits(candidates.size(), 
+	std::vector<std::vector<double> > match_merits(candidates.size(),
 	            std::vector<double>(m_data->NCapturesTrue.size(),999999));
 	
 	// loop over candidates
@@ -166,8 +161,8 @@ bool NCaptInfo::MatchToTrueCaptures(){
 			bool make_match=false;
 			if(candidate.GetTrueCapture()!=nullptr){
 				// see whether this true capture is a better match for this candidate
-				double* old_timediff = candidate.GetTerr();
-				double* old_posdiff = candidate.GetPosErr();
+				double* old_timediff = candidate.GetCaptTerr();
+				double* old_posdiff = candidate.GetCaptPosErr();
 				if(old_timediff==nullptr || old_posdiff==nullptr){
 					Log(m_unique_name+" Error! Existing true match for candidate "+toString(candi)
 					   +" returned nullptr for time or position!",v_error,verbosity);
@@ -201,10 +196,12 @@ bool NCaptInfo::MatchToTrueCaptures(){
 					candidate.matchtype = NCaptCandidate::matchType::kGdCapture;
 				}
 			} else {
+				// skdetsim doesn't record daughter Gds, so probably Gd if it's skdetsim...
 				candidate.matchtype = NCaptCandidate::matchType::kUnknownCapture;
 			}
 			
 			/*
+			// XXX Note 1
 			// if we wanted to ensure a matching of 1:1 from candidates to true captures,
 			// we would need to check whether the best match for this candidate
 			// already has a better match with another candidate.
@@ -220,6 +217,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 	
 	/*
 	// scan over the map to pull out the best matching pairs (optionally with a threshold on FOM)
+	// XXX see Note 1
 	Log(m_unique_name+" scanning for best matches",v_debug,verbosity);
 	double merit_threshold=999999; // a candidate must have at least this goodness metric to be matched
 	while(true){
@@ -285,78 +283,316 @@ bool NCaptInfo::MakePlots(int step){
 	
 	if(step==0){
 		// initialisation; make histograms
+		out_file = new TFile(outfilename.c_str(),"RECREATE");
+		if(out_file==nullptr || out_file->IsZombie()){
+			Log(m_unique_name+" Error making histogram file "+outfilename,v_error,verbosity);
+			return false;
+		}
+		out_file->cd();
+		// a tree for information about candidates
+		candtree = new TTree("candtree",m_unique_name.c_str());
+		// a tree for information on how well they match their best true n capture, if available
+		matchtree = new TTree("matchtree",m_unique_name.c_str());
 		
-		h_likelihood = new TH1D("h_likelihood","Likelihood;metric;num events",100,0,1);
-		h_tdiff = new TH1D("h_tdiff","Capture Time Error;Terr;num events",100,-10000,1000);
-		h_xdiff = new TH1D("h_xdiff","X Position Error;Xerr;num events",100,0,2000);
-		h_ydiff = new TH1D("h_ydiff","Y Position Error;Yerr;num events",100,0,2000);
-		h_zdiff = new TH1D("h_zdiff","Z Position Error;Zerr;num events",100,0,2000);
-		h_rdiff = new TH1D("h_rdiff","Total Position Error;Rerr;num events",100,0,2000);
-		h_tdiff_vs_metric = new TH2D("h_tdiff_vs_metric","Terr;Terr;Likelihood;N events",
-			                               100,-10000,10000,100,0,1);
-		h_rdiff_vs_metric = new TH2D("h_rdiff_vs_metric","Rerr;Rerr;Likelihood;N events",
-			                               100,0,2000,100,0,1);
-		// would also be good to plot against energy; true energy? but then we can only plot matched captures.
-		// reconstructed energy? can't see a suitable general metric... maybe we could calculate our own?
-		// e.g. calculate N200 based on the reconstructed time?
-		//TH2D h_tdiff_vs_metric("h_tdiff_vs_E","Terr;Terr;Likelihood;N events",100,-10000,10000,100,0,1);
-		//TH2D h_rdiff_vs_metric("h_rdiff_vs_E","Rerr;Rerr;Likelihood;N events",100,-10000,10000,100,0,1);
+		// note the input files in the TTree header
+		TNamed* candfile = new TNamed("candidates_file", candidates_file);
+		candtree->GetUserInfo()->Add(candfile);
+		
+		TNamed* mcfilename = new TNamed("mc_file", mctruth_file.c_str());
+		matchtree->GetUserInfo()->Add(mcfilename);
+		
+		// info about candidates
+		std::vector<std::string> civariables{"nrunsk", "nsubsk", "nevsk", "cand_num"};
+		std::vector<std::string> cdvariables{"prompt_t","prompt_x", "prompt_y", "prompt_z",
+		                                     "cap_t","cap_x", "cap_y", "cap_z",
+		                                     "n_travel_t", "n_travel_d","likelihood"};
+		// info about matches
+		std::vector<std::string> mivariables{"matchtype"};
+		std::vector<std::string> mdvariables{"prompt_terr", "prompt_derr", 
+		                                     "prompt_xerr", "prompt_yerr", "prompt_zerr",
+		                                     "cap_terr", "cap_derr",
+		                                     "cap_xerr", "cap_yerr", "cap_zerr",
+		                                     "n_travel_terr", "n_travel_derr"};
+		
+		// make branches in candidate tree
+		cibranchvars.reserve(civariables.size());
+		for(auto&& avar : civariables){
+			cibranchvars[avar] = 0;
+			candtree->Branch(avar.c_str(), &cibranchvars[avar]);
+		}
+		cdbranchvars.reserve(cdvariables.size());
+		for(auto&& avar : cdvariables){
+			cdbranchvars[avar] = 0;
+			candtree->Branch(avar.c_str(), &cdbranchvars[avar]);
+		}
+		
+		// make branches in match tree
+		mibranchvars.reserve(mivariables.size());
+		for(auto&& avar : mivariables){
+			mibranchvars[avar] = 0;
+			matchtree->Branch(avar.c_str(), &mibranchvars[avar]);
+		}
+		mdbranchvars.reserve(mdvariables.size());
+		for(auto&& avar : mdvariables){
+			mdbranchvars[avar] = 0;
+			matchtree->Branch(avar.c_str(), &mdbranchvars[avar]);
+		}
 		
 	} else if(step==1){
 		
-		// execution - fill histograms
-		std::vector<NCaptCandidate>& candidates = m_data->NCaptureCandidates[m_unique_name];
+		// execution - fill branches/histograms
+		cibranchvars["nrunsk"] = skhead_.nrunsk;
+		cibranchvars["nsubsk"] = skhead_.nsubsk;
+		cibranchvars["nevsk"] = skhead_.nevsk;
 		
-		for(NCaptCandidate& acand : candidates){
-			h_likelihood->Fill(acand.likelihood_metric);
-			if(acand.GetTerr()){
-				h_tdiff->Fill(*acand.GetTerr()/1000.);  // conver to us?
-				h_tdiff_vs_metric->Fill(*acand.GetTerr(),acand.likelihood_metric);
+		std::vector<NCaptCandidate>& candidates = m_data->NCaptureCandidates[m_unique_name];
+		for(int cand_i=0; cand_i<candidates.size(); ++cand_i){
+			cibranchvars["cand_num"] = cand_i;
+			NCaptCandidate& acand = candidates.at(cand_i);
+			
+			// candidate info
+			cdbranchvars["prompt_t"] = acand.prompt_time;     // FIXME always 0
+			cdbranchvars["prompt_x"] = acand.prompt_pos.X();  // FIXME always 0
+			cdbranchvars["prompt_y"] = acand.prompt_pos.Y();  // FIXME always 0
+			cdbranchvars["prompt_z"] = acand.prompt_pos.Z();  // FIXME always 0
+			cdbranchvars["cap_t"] = acand.capture_time;       // mostly flat out to 500E3?
+			cdbranchvars["cap_x"] = acand.capture_pos.X();    // strongly peaked at 0?
+			cdbranchvars["cap_y"] = acand.capture_pos.Y();    // strongly peaked at 0?
+			cdbranchvars["cap_z"] = acand.capture_pos.Z();    // strongly peaked at 0? also peaks at endcaps?
+			cdbranchvars["n_travel_t"] = (acand.capture_time - acand.prompt_time);
+			cdbranchvars["n_travel_d"] = (acand.capture_pos - acand.prompt_pos).Mag();
+			cdbranchvars["likelihood"] = acand.likelihood_metric;  // FIXME always 0
+			
+			candtree->Fill();
+			
+			// match info if available
+			NCapture* truecap = acand.GetTrueCapture();
+			if(truecap){
+				mibranchvars["matchtype"] = int(acand.matchtype);  // FIXME always -1
+				mdbranchvars["prompt_terr"] = (acand.GetPromptTerr() ? *acand.GetPromptTerr() : 0); // FIXME 0
+				mdbranchvars["prompt_derr"] = (acand.GetPromptPosErr() ? *acand.GetPromptPosErr() : 0);
+				MParticle* trueneutron = truecap->GetNeutron();
+				TVector3* truepromptpos = (trueneutron ? trueneutron->GetStartPos() : nullptr);
+				if(truepromptpos){
+					mdbranchvars["prompt_xerr"] = acand.prompt_pos.X() - truepromptpos->X();
+					mdbranchvars["prompt_yerr"] = acand.prompt_pos.Y() - truepromptpos->Y();
+					mdbranchvars["prompt_zerr"] = acand.prompt_pos.Z() - truepromptpos->Z();
+				} else {
+					mdbranchvars["prompt_xerr"] = 0;
+					mdbranchvars["prompt_yerr"] = 0;
+					mdbranchvars["prompt_zerr"] = 0;
+				}
+				mdbranchvars["cap_terr"] = (acand.GetCaptTerr() ? *acand.GetCaptTerr() : 0);
+				mdbranchvars["cap_derr"] = (acand.GetCaptPosErr() ? *acand.GetCaptPosErr() : 0);
+				TVector3* truecaptpos = truecap->GetPos();
+				if(truecaptpos){
+					mdbranchvars["cap_xerr"] = acand.capture_pos.X() - truecaptpos->X();
+					mdbranchvars["cap_yerr"] = acand.capture_pos.Y() - truecaptpos->Y();
+					mdbranchvars["cap_zerr"] = acand.capture_pos.Z() - truecaptpos->Z();
+				} else {
+					mdbranchvars["cap_xerr"] = 0;
+					mdbranchvars["cap_yerr"] = 0;
+					mdbranchvars["cap_zerr"] = 0;
+				}
+				double truetraveld = 0;
+				if(truecap->NeutronTravelDist(truetraveld)){
+					mdbranchvars["n_travel_derr"] = cdbranchvars["n_travel_d"] - truetraveld;
+				} else {
+					mdbranchvars["n_travel_derr"] = 0;
+				}
+				double truetravelt = 0;
+				if(truecap->NeutronTravelTime(truetravelt)){
+					mdbranchvars["n_travel_terr"] = cdbranchvars["n_travel_t"] - truetravelt;
+				} else {
+					mdbranchvars["n_travel_terr"] = 0;
+				}
 			}
-			if(acand.GetPosErr()){
-				h_xdiff->Fill(acand.capture_pos.X() - acand.GetTrueCapture()->GetPos()->X());
-				h_ydiff->Fill(acand.capture_pos.Y() - acand.GetTrueCapture()->GetPos()->Y());
-				h_zdiff->Fill(acand.capture_pos.Z() - acand.GetTrueCapture()->GetPos()->Z());
-				h_rdiff->Fill(*acand.GetPosErr());
-				h_rdiff_vs_metric->Fill(*acand.GetPosErr(), acand.likelihood_metric);
-			}
+			
+			matchtree->Fill();
+			
 		}
 		
 	} else if(step==2){
-		// finalise - make and save histograms
+		// finalise - write to file
+		out_file->cd();
+		candtree->Write();
+		matchtree->Write();
 		
-		std::string histfilename = m_unique_name+"_hists.root";
-		TFile* histogram_file = new TFile(histfilename.c_str(),"RECREATE");
-		
+		//make and save histograms
 		std::string canvasname = m_unique_name+"_candidates";
 		TCanvas* c1 = new TCanvas(canvasname.c_str(),canvasname.c_str(),1200,800);
+		std::string savename;
+		
+		/*
+		TH1D h_cap_t("h_cap_t","Capture Time;T;num events",100,-1000,1000);
+		TH1D h_cap_x("h_cap_x","Capture X Position;X;num events",100,0,2000);
+		TH1D h_cap_y("h_cap_y","Capture Y Position;Y;num events",100,0,2000);
+		TH1D h_cap_z("h_cap_z","Capture Z Position;Z;num events",100,0,2000);
+		
+		TH1D h_prompt_t("h_prompt_t","Prompt Time;T;num events",100,-1000,1000);
+		TH1D h_prompt_x("h_prompt_x","Prompt X Position;X;num events",100,0,2000);
+		TH1D h_prompt_y("h_prompt_y","Prompt Y Position;Y;num events",100,0,2000);
+		TH1D h_prompt_z("h_prompt_z","Prompt Z Position;Z;num events",100,0,2000);
+		
+		TH1D h_likelihood("h_likelihood","Likelihood;metric;num events",100,0,1);
+		TH1D h_n_travel_d("h_n_travel_d","Neutron Travel D;D;num events",100,0,2000);
+		TH1D h_n_travel_t("h_n_travel_t","Neutron Travel T;T;num events",100,0,2000);
+		
+		TH1D h_cap_terr("h_cap_terr","Capture Time Error;Terr;num events",100,-1000,1000);
+		TH1D h_cap_xerr("h_cap_xerr","Capture X Position Error;Xerr;num events",100,0,2000);
+		TH1D h_cap_yerr("h_cap_yerr","Capture Y Position Error;Yerr;num events",100,0,2000);
+		TH1D h_cap_zerr("h_cap_zerr","Capture Z Position Error;Zerr;num events",100,0,2000);
+		TH1D h_cap_derr("h_cap_derr","Capture Total Position Error;Rerr;num events",100,0,2000);
+		
+		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,-1000,1000);
+		TH1D h_prompt_xerr("h_prompt_xerr","Prompt X Position Error;Xerr;num events",100,0,2000);
+		TH1D h_prompt_yerr("h_prompt_yerr","Prompt Y Position Error;Yerr;num events",100,0,2000);
+		TH1D h_prompt_zerr("h_prompt_zerr","Prompt Z Position Error;Zerr;num events",100,0,2000);
+		TH1D h_prompt_derr("h_prompt_derr","Prompt Total Position Error;Rerr;num events",100,0,2000);
+		
+		TH2D h_capt_terr_vs_metric("h_capt_terr_vs_metric","Terr;Terr;Likelihood;N events",100,-1000,1000,100,0,1);
+		TH2D h_capt_derr_vs_metric("h_capt_derr_vs_metric","Rerr;Rerr;Likelihood;N events",100,0,2000,100,0,1);
+		
+		TH2D h_prompt_terr_vs_metric("h_prompt_terr_vs_metric","Terr;Terr;Likelihood;N events",100,-1000,1000,100,0,1);
+		TH2D h_prompt_derr_vs_metric("h_prompt_derr_vs_metric","Rerr;Rerr;Likelihood;N events",100,0,2000,100,0,1);
+		
+		// also plot against visible energy? need a suitable metric... N50? N200?
+		//TH2D h_capt_terr_vs_E("h_capt_terr_vs_E","Terr;Terr;Likelihood;N events",100,-10000,10000,100,0,1);
+		//TH2D h_capt_derr_vs_E("h_capt_derr_vs_E","Rerr;Rerr;Likelihood;N events",100,-10000,10000,100,0,1);
+		
+		candtree->Draw("cap_t>>h_cap_t");
+		candtree->Draw("cap_x>>h_cap_x");
+		candtree->Draw("cap_y>>h_cap_y");
+		candtree->Draw("cap_z>>h_cap_z");
+		
+		candtree->Draw("prompt_t>>h_prompt_t");
+		candtree->Draw("prompt_x>>h_prompt_x");
+		candtree->Draw("prompt_y>>h_prompt_y");
+		candtree->Draw("prompt_z>>h_prompt_z");
+		
+		candtree->Draw("likelihood>>h_likelihood");
+		candtree->Draw("n_travel_t>>h_n_travel_t");
+		candtree->Draw("n_travel_d>>h_n_travel_d");
+		
+		matchtree->Draw("cap_terr>>h_cap_terr");
+		matchtree->Draw("cap_xerr>>h_cap_xerr");
+		matchtree->Draw("cap_yerr>>h_cap_yerr");
+		matchtree->Draw("cap_zerr>>h_cap_zerr");
+		matchtree->Draw("cap_derr>>h_cap_derr");
+		
+		matchtree->Draw("prompt_terr>>h_prompt_terr");
+		matchtree->Draw("prompt_xerr>>h_prompt_xerr");
+		matchtree->Draw("prompt_yerr>>h_prompt_yerr");
+		matchtree->Draw("prompt_zerr>>h_prompt_zerr");
+		matchtree->Draw("prompt_derr>>h_prompt_derr");
+		
+		candtree->AddFriend(matchtree);
+		candtree->Draw("cap_terr:likelihood>>h_capt_terr_vs_metric");
+		candtree->Draw("cap_derr:likelihood>>h_capt_derr_vs_metric");
+		candtree->Draw("prompt_terr:likelihood>>h_prompt_terr_vs_metric");
+		candtree->Draw("prompt_derr:likelihood>>h_prompt_derr_vs_metric");
+		
+		c1->Divide(2,2);
+		c1->cd(1);
+		h_cap_t.Draw("goff");
+		c1->cd(2);
+		h_cap_x.Draw("goff");
+		c1->cd(3);
+		h_cap_y.Draw("goff");
+		c1->cd(4);
+		h_cap_z.Draw("goff");
+		savename = m_unique_name + "_captures.png";
+		c1->SaveAs(savename.c_str());
+		
+		c1->cd(1);
+		h_prompt_t.Draw("goff");
+		c1->cd(2);
+		h_prompt_x.Draw("goff");
+		c1->cd(3);
+		h_prompt_y.Draw("goff");
+		c1->cd(4);
+		h_prompt_z.Draw("goff");
+		savename = m_unique_name + "_prompts.png";
+		c1->SaveAs(savename.c_str());
+		
+		c1->cd(1);
+		h_likelihood.Draw("goff");
+		c1->cd(2);
+		h_n_travel_d.Draw("goff");
+		c1->cd(3);
+		h_n_travel_t.Draw("goff");
+		c1->cd(4);
+		gPad->Clear();
+		savename = m_unique_name + "_extras.png";
+		c1->SaveAs(savename.c_str());
+		
 		c1->Divide(4,2);
 		c1->cd(1);
-		h_xdiff->Draw();
+		h_cap_xerr.Draw("goff");
 		c1->cd(2);
-		h_ydiff->Draw();
+		h_cap_yerr.Draw("goff");
 		c1->cd(3);
-		h_zdiff->Draw();
+		h_cap_zerr.Draw("goff");
 		c1->cd(4);
-		h_rdiff->Draw();
+		h_cap_derr.Draw("goff");
 		c1->cd(5);
-		h_tdiff->Draw();
+		h_cap_terr.Draw("goff");
 		c1->cd(6);
-		h_likelihood->Draw();
+		h_likelihood.Draw("goff");
 		c1->cd(7);
-		h_tdiff_vs_metric->Draw("lego");
+		h_capt_terr_vs_metric.Draw("goff colz");
 		c1->cd(8);
-		h_rdiff_vs_metric->Draw("lego");
+		h_capt_derr_vs_metric.Draw("goff colz");
+		savename = m_unique_name + "_capture_errs.png";
+		c1->SaveAs(savename.c_str());
 		
-		histogram_file->cd();
-		h_xdiff->Write();
-		h_ydiff->Write();
-		h_zdiff->Write();
-		h_rdiff->Write();
-		h_tdiff->Write();
-		h_likelihood->Write();
-		h_tdiff_vs_metric->Write();
-		h_rdiff_vs_metric->Write();
+		c1->cd();
+		c1->Clear();
+		c1->Divide(4,2);
+		c1->cd(1);
+		h_prompt_xerr.Draw("goff");
+		c1->cd(2);
+		h_prompt_yerr.Draw("goff");
+		c1->cd(3);
+		h_prompt_zerr.Draw("goff");
+		c1->cd(4);
+		h_prompt_derr.Draw("goff");
+		c1->cd(5);
+		h_prompt_terr.Draw("goff");
+		c1->cd(6);
+		h_prompt_terr_vs_metric.Draw("goff");
+		c1->cd(7);
+		h_prompt_derr_vs_metric.Draw("goff");
+		savename = m_unique_name + "_prompt_errs.png";
+		c1->SaveAs(savename.c_str());
+		
+		h_cap_t.Write();
+		h_cap_x.Write();
+		h_cap_y.Write();
+		h_cap_z.Write();
+		h_prompt_t.Write();
+		h_prompt_x.Write();
+		h_prompt_y.Write();
+		h_prompt_z.Write();
+		h_likelihood.Write();
+		h_n_travel_d.Write();
+		h_n_travel_t.Write();
+		h_cap_xerr.Write();
+		h_cap_yerr.Write();
+		h_cap_zerr.Write();
+		h_cap_derr.Write();
+		h_cap_terr.Write();
+		h_likelihood.Write();
+		h_capt_terr_vs_metric.Write();
+		h_capt_derr_vs_metric.Write();
+		h_prompt_xerr.Write();
+		h_prompt_yerr.Write();
+		h_prompt_zerr.Write();
+		h_prompt_derr.Write();
+		h_prompt_terr.Write();
+		h_prompt_terr_vs_metric.Write();
+		h_prompt_derr_vs_metric.Write();
+		*/
 		
 		/*
 		std::cout<<"waiting for user to close canvas "<<canvasname<<std::endl;
@@ -367,12 +603,13 @@ bool NCaptInfo::MakePlots(int step){
 			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 		}
 		*/
-		// c1 is deleted when canvas is closed
+		// c1 is deleted when canvas is closed, so only delete if not shown & closed
+		if(gROOT->FindObject(canvasname.c_str())!=nullptr) delete c1;
 		
-		histogram_file->Close();
+		out_file->Close();
 		// hsitograms are deleted when file is closed
 		
-		delete histogram_file;
+		delete out_file;
 		
 	}
 	

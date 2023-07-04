@@ -19,6 +19,8 @@ class NCaptCandidate {
 	double likelihood_metric = -1;  // 0->1, 1 is high confidence, 0 is no confidence.
 	double capture_time = -1; // ns
 	TVector3 capture_pos;  // cm
+	double prompt_time = -1; // ns
+	TVector3 prompt_pos{999.,999.,999}; // cm
 	
 	matchType matchtype=matchType::kNotSet;
 	BStore featureMap{true,constants::BSTORE_BINARY_FORMAT};  // features used by tagging algorithm
@@ -26,18 +28,26 @@ class NCaptCandidate {
 	std::string GetMatchType();
 	bool SetTrueCaptureIdx(int idx);
 	NCapture* GetTrueCapture();
-	double* GetTerr();
-	double* GetPosErr();
+	double* GetCaptTerr();
+	double* GetCaptPosErr();
+	double* GetPromptTerr();
+	double* GetPromptPosErr();
 	void Print(bool printFeatureMap=false, bool printFeatureMapValues=false);
 	
 	private:
 	int truecap_idx=-1; // index in NCapturesTrue if matched to a true capture
-	bool got_pos_err=false;
-	bool got_t_err=false;
-	double t_err;
-	double pos_err;
-	double* t_err_p=nullptr;
-	double* pos_err_p=nullptr;
+	bool got_cap_pos_err=false;
+	bool got_cap_t_err=false;
+	bool got_prompt_pos_err=false;
+	bool got_prompt_t_err=false;
+	double cap_t_err;
+	double cap_pos_err;
+	double* cap_t_err_p=nullptr;
+	double* cap_pos_err_p=nullptr;
+	double prompt_t_err;
+	double prompt_pos_err;
+	double* prompt_t_err_p=nullptr;
+	double* prompt_pos_err_p=nullptr;
 	DataModel* m_data=nullptr;
 	
 };

@@ -75,7 +75,8 @@ class TreeReader: public Tool {
 	bool loadSheAftPairs=false;       // should we load and buffer the AFT for an SHE event, if there is one?
 	bool onlyPairs=false;             // should we only return pairs of SHE+AFT events
 	int entriesPerExecute=1;          // alternatively, read and buffer N entries per Execute call
-	std::vector<int> triggerMasks;    // trigger bits required to return an entry
+	std::vector<int> allowedTriggers; // one of these trigger bits must be set to return an entry
+	std::vector<int> skippedTriggers; // if any of these bits are set the entry will be skipped
 	
 	std::vector<std::string> list_of_files;
 	
