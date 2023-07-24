@@ -12,11 +12,11 @@
 #include "basic_array.h"
 #include "fortran_routines.h"
 
-#include "Bonsai/pmt_geometry.h"
-#include "Bonsai/bonsaifit.h"
-#include "Bonsai/likelihood.h"
-#include "Bonsai/goodness.h"
-#include "Bonsai/fourhitgrid.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/pmt_geometry.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/bonsaifit.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/likelihood.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/goodness.h"
+#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/fourhitgrid.h"
 
 #include <TH1.h>
 /**

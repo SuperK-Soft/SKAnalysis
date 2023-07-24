@@ -173,19 +173,19 @@ bool CombinedFitter::Execute(){
 	int evid = 0;
 	TBranch *ev_id = t->Branch("evid",&evid,"evid/D");
 
-	if((nread%100)==0){
-		Log(toolName+" read loop "+toString(nread)+", current run "+toString(skhead_.nrunsk),v_message,verbosity);
+	if((nread%1)==0){
+		Log(toolName+" recostructing event "+toString(nread),v_message,verbosity);
 	}
 	++nread;
 
 	// Set the run number if run number is not real/applicable
 	if(MC && skhead_.nrunsk==999999){
-		Log(toolName+" warning: no run number!!",v_warning,verbosity);
+		//Log(toolName+" warning: no run number!!",v_warning,verbosity);
 		skhead_.nrunsk = 75000;
 	}
 	// Putting this here temporarily for SKG4 sim
 	if(MC && skhead_.nrunsk==85000){
-		Log(toolName+" warning: no run number!!",v_warning,verbosity);
+		//Log(toolName+" warning: no run number!!",v_warning,verbosity);
 		skhead_.nrunsk = 75000;
 	}
 	// once per run update the water transparency and SLE threshold
@@ -193,7 +193,8 @@ bool CombinedFitter::Execute(){
 		// Get the SLE trigger threshold for this run
 		int idetector[32], ithr[32], it0_offset[32], ipret0[32] ,ipostt0[32];
 		softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
-		SLE_threshold = ithr[3];
+		SLE_threshold = ithr[2];
+		printf("SLE threshold %d\n",SLE_threshold);
 		
 		// Update the water transparency
 		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];
@@ -270,15 +271,16 @@ bool CombinedFitter::Execute(){
 		posmcAFT[i] = 9999;
 	}
 	// clear variables to be saved to the ntuples
-	x, y, z = 9999;
-	x_prev, y_prev, z_prev = 9999;
-	x_combined, y_combined, z_combined = 9999;
-	mcx, mcy, mcz = 9999;
-	mcx_prev, mcy_prev, mcz_prev = 9999;
-	pdg, pdg_prev = 9999;
-	mcx_ncapture, mcy_ncapture, mcz_ncapture = 9999;
-	mc_energy, mc_energy_prev = 9999;
+	x=9999; y=9999; z = 9999;
+	x_prev=9999; y_prev=9999; z_prev = 9999;
+	x_combined=9999; y_combined=9999; z_combined = 9999;
+	mcx=9999; mcy=9999; mcz = 9999;
+	mcx_prev=9999; mcy_prev=9999; mcz_prev = 9999;
+	pdg=9999; pdg_prev = 9999;
+	mcx_ncapture=9999; mcy_ncapture=9999; mcz_ncapture = 9999;
+	mc_energy=9999; mc_energy_prev = 9999;
 	mct_ncapture=9999;
+	tgood=9999; tgood_prev=9999; tgood_combined=9999; tgood_combined_prev=9999;
 
 	int NHITCUT = 800; //(MC) ? 800 : 1000;  //  max no. hits to reconstruct
 	
@@ -434,44 +436,19 @@ bool CombinedFitter::Execute(){
 		/*************************************************************/
 		// Reconstruct the prompt first
 
-		// We shouldn't have explicitly get the SHE but may need it for timing
-		// in data so leaving it here for now commented out. Seems to change
-		// the hits so care must be taken if reinstating.
-		// /////////////////////////////////////////////////
-		/*int in_gate_only = 0;
-		int hw_ctr = 0; // time of hw trigger (also SHE in MC) 
-		int max_trig = 500;
-		int num_trig = softtrg_inittrgtbl_(&skhead_.nrunsk, &hw_ctr, &in_gate_only, &max_trig); 
-		double t0_SHE=0;
-		// Get the time of the first trigger
-		for (int trig = 0; trig<num_trig; trig++) {
-			if (swtrgtbl_.swtrgtype[trig]==28){
-				t0_SHE = swtrgtbl_.swtrgt0ctr[trig];
-			}
-		}
-		
-		Shouldn't need to explicitly get the hits for the SHE as they
-		should already be loaded. Commenting out for now. Might be needed
-		if reinstating the above
-		Set the hits for the SHE trigger
-		int new_gate = skheadqb_.it0sk + t0_SHE;
-		set_timing_gate_(&new_gate);
-		do skread and get the sktq_
-		skread(-lun,*1003,*1003,*1003,*1003)
-		skroot_set_tree(&lun);
-		skroot_fill_tree(&lun);*/
-//		Log(toolName+"it0sk = "+toString(skheadqb_.it0sk/1.92/1000.),v_debug,verbosity);
-		// /////////////////////////////////////////////////////
-
-		
 		// Fill the arrays of hit info which will be passed to fitter
 		// Get the hits stored in the common blocks (skt_/skq_).
 		// These are in-gate hits with bad/missing channels removed.
 		SetPromptHits(charges,times,cableIDs,nhit);
 		// Get the last hit in the SHE event.
 		// This will be used to start the search for an AFT.
-		float endSHE = *max_element(begin(times),end(times));	
-		endSHE = mct_ncapture; // using the mc time for now, to check the fit
+		float first_prompt = *min_element(begin(times),end(times));
+		float last_prompt = *max_element(begin(times),end(times));	
+		last_prompt = mct_ncapture; // using the mc time for now, to check the fit
+		
+		// MCInfo.prim_pret0 saves the time difference between the trigger time and geant_t0
+		Log(toolName+": first prompt hit time "+toString(first_prompt)+", pret0 "+toString(mc->prim_pret0[0]),v_debug,verbosity);
+		float prompt_trigger_t0 = mc->prim_pret0[0]+500.;
 			
 		// Do the single-event BONSAI fit
 		int nsel;
@@ -496,7 +473,6 @@ bool CombinedFitter::Execute(){
 		vector<float> chargesRaw;
 		vector<float> timesRaw;
 		int nhitsRaw = 0;
-
 		for (int ihit = 0;ihit<nhitsAll;ihit++){
 
 			// Get the raw values from the tqreal branch
@@ -504,7 +480,7 @@ bool CombinedFitter::Execute(){
 			// of the hits, although in data some pre-processing
 			// has been done by this stage e.g. to convert charge
 			// to pe.(by skrawread)
-			if (tqreal->T[ihit] >= endSHE){
+			if (tqreal->T[ihit] >= last_prompt){
 				chargesRaw.push_back(tqreal->Q[ihit]);
 				cableIDsRaw.push_back(tqreal->cables[ihit] & ( (1<<16)-1));//cable ID (i.e. PMT number) is stored in 1st 16 bits
 				timesRaw.push_back(tqreal->T[ihit]);
@@ -518,15 +494,15 @@ bool CombinedFitter::Execute(){
 		vector<float> chargesAFT;
 		vector<float> timesAFT;
 		int nhitsAFT = 0;
-		if (nhitsRaw>SLE_threshold){
-			nhitsAFT = SetAftHits(SLE_threshold,addNoise,numPMTs,darkmc,endSHE,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
+		if (nhitsRaw>0){//SLE_threshold){
+			nhitsAFT = SetAftHits(prompt_trigger_t0,SLE_threshold,addNoise,numPMTs,darkmc,last_prompt,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
 		}
 		
 		Log(toolName+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,verbosity);
-		for (int hit=0;hit<nhitsAFT;hit++){
-			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
-		}
-		
+//		for (int hit=0;hit<nhitsAFT;hit++){
+//			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
+//			timesAFT[hit]-=(timesAFT[0]-bstimes[0]);
+//		}
 		// Do the single fit
 		float bschargesAFT[nhitsAFT];
 		float bstimesAFT[nhitsAFT];
@@ -535,10 +511,9 @@ bool CombinedFitter::Execute(){
 		std::copy(timesAFT.begin(),timesAFT.end(),bstimesAFT);
 		std::copy(cableIDsAFT.begin(),cableIDsAFT.end(),bscableIDsAFT);
 		nsel=0;
-		//TODO write a version of lf_clear_all_ to set these to 9999
-		if (nhitsAFT>9 && nhitsAFT<=NHITCUT) {
+		if (bsvertex[0]<9999 && nhitsAFT>9 && nhitsAFT<=NHITCUT) {
 			int nbf = bonsaifit_(&bsvertexAFT[0],&bsresultAFT[0],&bsgoodAFT[0],&nsel,&nhitsAFT,&bscableIDsAFT[0],&bstimesAFT[0],&bschargesAFT[0]);
-			tgood = bsgood[1];
+			tgood = bsgoodAFT[1];
 			
 			/*********************************************************/
 			// Now that we have done the single fit for each of the SHE and AFT,
@@ -559,44 +534,32 @@ bool CombinedFitter::Execute(){
 			bsvertexCombined[0] = bspairfit->xfit();
 			bsvertexCombined[1] = bspairfit->yfit();
 			bsvertexCombined[2] = bspairfit->zfit();
-			float goodn[2];
-			float bspairvertex[4];
-			bspairlike->ntgood(0,bspairvertex,0,goodn[0]);
-			bspairlike->ntgood(1,bspairvertex,0,goodn[1]);
-			tgood_combined = goodn[1];
-			tgood_combined_prev = goodn[0];
+			bspairlike->ntgood(0,bsvertexCombined,darkmc,tgood_combined_prev);
+			bspairlike->ntgood(1,bsvertexCombined,darkmc,tgood_combined);
 		}
 		
 		// Now get the n50 and n10 values from the combined fit
 		if (bsvertex[0]<9999){
 			vector<int> cableIDs_bsn50;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			bsn50 = CalculateNX(50,bsvertex,cableIDs,times,cableIDs_bsn50);
 		
 			vector<int> cableIDs_bsn10;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			bsn10 = CalculateNX(10,bsvertex,cableIDs,times,cableIDs_bsn10);
 		}
 		if (bsvertexAFT[0]<9999){
 			vector<int> cableIDs_bsn50AFT;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			bsn50AFT = CalculateNX(50,bsvertexAFT,cableIDsAFT,timesAFT,cableIDs_bsn50AFT);
 			vector<int> cableIDs_bsn10AFT;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			bsn10AFT = CalculateNX(10,bsvertexAFT,cableIDsAFT,timesAFT,cableIDs_bsn10AFT);
 		}
 		if (bsvertexCombined[0]<9999){
 			vector<int> cableIDs_n50_prev;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			n50_prev = CalculateNX(50,bsvertexCombined,cableIDs,times,cableIDs_n50_prev);
 			vector<int> cableIDs_n10_prev;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			n10_prev = CalculateNX(10,bsvertexCombined,cableIDs,times,cableIDs_n10_prev);
 			vector<int> cableIDs_n50_aft;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			n50_aft = CalculateNX(50,bsvertexCombined,cableIDsAFT,timesAFT,cableIDs_n50_aft);
 			vector<int> cableIDs_n10_aft;
-			Log(toolName+" calculating NX",v_debug,verbosity);
 			n10_aft = CalculateNX(10,bsvertexCombined,cableIDsAFT,timesAFT,cableIDs_n10_aft);
 		}
 
@@ -954,18 +917,15 @@ int CombinedFitter::CalculateNX(int timewindow, float* vertex, vector<int> cable
 	float cns2cm =21.58333; // speed of light in medium
 	// Find tof subtracted times for all hits at reconstructed vertex
 	vector<float> tof;
-	Log(toolName+" getting tof subtracted times for all hits",v_debug,verbosity);
 	for (int hit=0; hit<times.size(); hit++) {
 		   tof.push_back(times[hit]-sqrt(pow((vertex[0]-geopmt_.xyzpm[cableIDs[hit]-1][0]),2)+pow((vertex[1]-geopmt_.xyzpm[cableIDs[hit]-1][1]),2)+pow((vertex[2]-geopmt_.xyzpm[cableIDs[hit]-1][2]),2))/cns2cm);
 	}
 
-	Log(toolName+" sorting tof subtracted times",v_debug,verbosity);
 	// Sort in ascending order
 	auto tof_sorted = tof;
 	sort(tof_sorted.begin(),tof_sorted.end());
 		   
 	// Find the centre of the distribution
-	Log(toolName+" finding the centre of the tof subtracted times distribution",v_debug,verbosity);
 
 	int bsnwindow = 1;
 	int hstart_test = 0 ;
@@ -1062,7 +1022,7 @@ void CombinedFitter::SingleEventFit(vector<float> charges, vector<float> times, 
 
 }
 
-int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, float darkmc, float endSHE, vector<float> chargesRaw, vector<float> timesRaw, vector<int> cableIDsRaw, int nhitsRaw, vector<float>& chargesAFT, vector<float>& timesAFT, vector<int>& cableIDsAFT)
+int CombinedFitter::SetAftHits(float prompt_trigger_t0, int SLE_threshold, int addNoise, int numPMTs, float darkmc, float last_prompt, vector<float> chargesRaw, vector<float> timesRaw, vector<int> cableIDsRaw, int nhitsRaw, vector<float>& chargesAFT, vector<float>& timesAFT, vector<int>& cableIDsAFT)
 {
 	// Remove bad/missing channels and hits that were included in the prompt
 //	vector<float> charges_tmp;
@@ -1095,7 +1055,7 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 		if (cableIDsRaw[ihit]<0 || cableIDsRaw[ihit]>=numPMTs)
 			continue;
 		// ignore hits included in the prompt
-		if (timesRaw[ihit]<=endSHE)
+		if (timesRaw[ihit]<=last_prompt)
 			continue;
 		
 		// Remove bad channels TODO missing channels
@@ -1117,7 +1077,8 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 	// Sort the hits in order of ascending time
 	sort(hits_tmp.begin(),hits_tmp.end(),
 		[](HitInfo const& i, HitInfo const& j) {return i.time < j.time;});
-	
+
+
 	if (addNoise){
 		Log(toolName+" Warning, adding dark noise",v_debug,verbosity);
 		TRandom rnd;
@@ -1126,8 +1087,8 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 		float ndark = rnd.Poisson(darkRate); // dark rate
 		ndark *= 1e-9;
 		Log(toolName+" Dark hits per ns "+toString(ndark),v_debug,verbosity);
-		float tstartNoise = hits_tmp[0].time-1000;
-		float tendNoise = hits_tmp.back().time+1000;
+		float tstartNoise = hits_tmp[0].time-300;
+		float tendNoise = hits_tmp[hits_tmp.size()-1].time+100;
 		float noiseWindow = tendNoise - tstartNoise; // total in the AFT
 		ndark *= noiseWindow;// total 
 		Log(toolName+" Dark rate "+toString(darkRate),v_debug,verbosity);
@@ -1165,43 +1126,42 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 	
 	
 	// Find the 200 ns window with the maximum number of hits (n200Max)
-	int n200max = 0;
-	float t_gate_start = -99999;
-	float t_trigger = -99999;
-	float t_gate_end = -99999;
+	int n200max = 0.;
+	float t_trigger = hits_tmp[0].time;
+	float t_gate_start = t_trigger;
+	float t_gate_end = t_trigger+1300;
 	int triggerwindow = 200; //ns
-	int n200;
+	
 	// loop over all of the hits after the prompt event to see if there is 
 	// a SLE trigger
 	int nhitsAFT = hits_tmp.size();
+	int iend_tmp=0;
+
 	for (int istart=0; istart< nhitsAFT-1; istart++){
-		n200=0;
-		int iend = istart+1;
-		while (fabs(hits_tmp[iend].time-hits_tmp[istart].time)<triggerwindow){
-			iend++;
+		int n200=0;
+		for (int iend=istart+1; iend<nhitsAFT; iend++){
+			if ( (hits_tmp[iend].time - hits_tmp[istart].time) > triggerwindow )
+				break;
+			else{
+				n200++;
+				iend_tmp = iend;
+			}
 		}
-		iend--;
-		n200 = iend-istart;
+				
 		if (n200>n200max){
 			n200max = n200;
 			// Set the gate width (1.3 usec gate):
 			// 	 |---------|---------------------------------------------|
 			//-0.3usec  t_trigger                                   +1usec
-			t_gate_start = hits_tmp[istart].time - 300;
-			t_trigger = hits_tmp[istart].time;
-			t_gate_end = hits_tmp[istart].time + 1000;
+			t_trigger = hits_tmp[iend_tmp].time;
+			t_gate_start = t_trigger-300;
+			t_gate_end = t_trigger + 1000;
 		}
 	}
 
-	// Just using the neutron-capture time to get the trigger time for now.
-	t_gate_start = endSHE-100;
-	t_gate_end = endSHE+1200;
-	n200max = hits_tmp.size();
+	if (addNoise && n200max<SLE_threshold) return(0);
+	if (!addNoise) n200max = hits_tmp.size();
 
-	if (n200max<SLE_threshold) return(0);
-
-	// TODO which hits do we want to use????
-	// I think we want just the hits in 1300 ns (1.3 usec gate)
 	// Remove hits outside the 1.3 usec gate
 	hits_tmp.erase(remove_if(begin(hits_tmp),end(hits_tmp),
 		[t_gate_start,t_gate_end](HitInfo const& hit){
@@ -1210,15 +1170,13 @@ int CombinedFitter::SetAftHits(int SLE_threshold, int addNoise, int numPMTs, flo
 	),hits_tmp.end());
 
 	// Save the in-gate AFT hits 
-	// TODO there is currently no dark noise in the MC between the prompt and delayed. 
-	// Is there any around the neutron capture??
+//	float offset = t_trigger+prompt_trigger_t0+500;
 	for ( auto ihit : hits_tmp) {
 		cableIDsAFT.push_back(ihit.cableID);
 		chargesAFT.push_back(ihit.charge);
-		timesAFT.push_back(ihit.time-t_gate_start+100); // times offset
+		timesAFT.push_back(ihit.time-t_trigger + prompt_trigger_t0); // 500 time offset and make prompt and delayed trigger times the same
 	}
-	Log(toolName+"End of AFT hits for this event",v_debug,verbosity);
-	
-	
+	Log(toolName+": prompt trigger "+toString(prompt_trigger_t0)+", delayed trigger time "+toString(t_trigger)+", time of first hit in delayed trigger "+toString(timesAFT[0]),v_debug,verbosity);
+
 	return(hits_tmp.size());
 }
