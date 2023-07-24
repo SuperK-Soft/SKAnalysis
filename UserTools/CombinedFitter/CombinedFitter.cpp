@@ -19,12 +19,13 @@
 
 #include "SuperManager.h"
 
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/searchgrid.h"
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/bscalls.h"
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/pairlikelihood.h"
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/fourhitgrid.h"
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/combinedgrid.h"
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/goodness.h"
+// including bonsai in skofl rather than putting it all in the DataModel
+#include "searchgrid.h"
+#include "bscalls.h"
+#include "pairlikelihood.h"
+#include "fourhitgrid.h"
+#include "combinedgrid.h"
+#include "goodness.h"
 
 #include <TCanvas.h>
 #include <TRandom.h>
@@ -136,15 +137,12 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	//------------------
 	
 	// Initialise bonsai for coincidence reconstruction
-	std::cout << "Initialising BONSAI direct." << std::endl;
 	bsgeom = new pmt_geometry(numPMTs,xyzpm);
 	bspairlike = new pairlikelihood(bsgeom->cylinder_radius(),bsgeom->cylinder_height());
 	bspairfit = new bonsaifit(bspairlike);
 	
 	// Use built-in BONSAI functions (bonsai/bscalls.cc::)
-	std::cout << "Initialising BONSAI using built-in function cfbsinit_." << std::endl;
 	cfbsinit_(&numPMTs, xyzpm);
-	std::cout << "BONSAI initialised" << std::endl;
 
 	// check where we are getting the hit info from
 	if (dataSrc==0) 
@@ -194,7 +192,7 @@ bool CombinedFitter::Execute(){
 		int idetector[32], ithr[32], it0_offset[32], ipret0[32] ,ipostt0[32];
 		softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
 		SLE_threshold = ithr[2];
-		printf("SLE threshold %d\n",SLE_threshold);
+		Log(toolName+": SLE threshold"+toString(SLE_threshold),v_debug,verbosity);
 		
 		// Update the water transparency
 		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];
@@ -882,7 +880,6 @@ bool CombinedFitter::Execute(){
 
 bool CombinedFitter::Finalise()
 {
-    std::cout << "Finished reconstructing event " << ev << std::endl;
 
     // terminate bonsai?
 	// plots for sanity check?
@@ -951,7 +948,9 @@ int CombinedFitter::CalculateNX(int timewindow, float* vertex, vector<int> cable
         cableIDs_twindow.push_back(cableIDs[hit]);
 		bsnwin++;
     }
-    if (bsnwin!=bsnwindow) printf("bsnwin error %d!=%d\n",bsnwin,bsnwindow);
+    if (bsnwin!=bsnwindow){
+       Log(toolName+": bsnwin error, "+toString(bsnwin)+" != "+toString(bsnwindow),v_error,verbosity);
+    }
     return(bsnwindow);
 }
 
@@ -992,7 +991,6 @@ void CombinedFitter::SingleEventFit(vector<float> charges, vector<float> times, 
 		goodness *bshits = new goodness(bslike->sets(),bslike->chargebins(),bsgeom,nhit,bscableIDs,bstimes,bscharges);
 		int nsel = bshits->nselected();
 		if (bshits->nselected()<4) { 
-			std::cout << "Event " << ev << ", " << bshits->nselected() << " selected hits not enough." << std::endl;
 			return false;
 		}
 		fourhitgrid* bsgrid = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bshits);

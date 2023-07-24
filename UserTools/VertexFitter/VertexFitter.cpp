@@ -20,8 +20,8 @@
 
 #include "SuperManager.h"
 
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/searchgrid.h"
-#include "/home/skofl/sklib_gcc4.8.5/skofl-trunk/lowe/bonsai/bscalls.h"
+#include "searchgrid.h"
+#include "bscalls.h"
 #include "TCanvas.h"
 
 // declarations and #includes for SK fortran routines
@@ -59,7 +59,7 @@ bool VertexFitter::Initialise(std::string configfile, DataModel &data){
     std::map<std::string,int> lunlist;
     m_data->CStore.Get("LUNList",lunlist);
     if(lunlist.count(readerName)==0){
-        Log(toolName+" error! No LUN associated with readerName "+readerName,v_error,verbosity);
+        Log(toolName+": error! No LUN associated with readerName "+readerName,v_error,verbosity);
         return false;
     }
     lun = lunlist.at(readerName);
@@ -84,17 +84,17 @@ bool VertexFitter::Initialise(std::string configfile, DataModel &data){
     //------------------
     // Use built-in BONSAI functions (bonsai/bscalls.cc::)
     if (bonsaiSrc==0) {
-        std::cout << "Initialising BONSAI using built-in function cfbsinit_." << std::endl;
+        Log(toolName+": Initialising BONSAI using built-in function cfbsinit_.",v_message,verbosity);
         cfbsinit_(&numPMTs, xyzpm);
     }
     // Use BONSAI direct (currently local)
     else{
-        std::cout << "Initialising BONSAI direct." << std::endl;
+        Log(toolName+": Initialising BONSAI direct.",v_message,verbosity);
         bsgeom = new pmt_geometry(numPMTs,xyzpm);
         bslike = new likelihood(bsgeom->cylinder_radius(),bsgeom->cylinder_height());
         bsfit = new bonsaifit(bslike);
     }
-    std::cout << "BONSAI initialised" << std::endl;
+    Log(toolName+": BONSAI initialised.",v_message,verbosity);
 
     // check where we are getting the hit info from
     if (dataSrc==0) 
@@ -160,7 +160,7 @@ bool VertexFitter::Execute(){
                     darkmc = mc->darkds*0.7880; // (1/1.269) lfallfit_sk4_mc.F::112
                 }
                 else{
-                    std::cout << "SK_GEOMETRY=" << sk_geometry << ". Not set up for earlier than SKIV" << std::endl;
+                    Log(toolName+": SK_GEOMETRY="+toString(sk_geometry)+". Not set up for earlier than SKIV.",v_error,verbosity);
                 }
             }
     }
@@ -407,13 +407,11 @@ bool VertexFitter::Execute(){
                 //BTEST returns logical true if bit a POS in I is set: BTEST(I,POS)
                 //std::bitset < sizeof(int)*32 > iskbit;
                 //iskbit = skopt_.iskbit;
-                //std::cout << "mc? " << iskbit.test(31-25) << std::endl;
                 //if ( iskbit.test(31-25) ){
                 // save the selected hits into arrays
                 cableIDs[nhit]=cableIDs_raw[i];
                 times[nhit] = times_relative[i];
                 charges[nhit] = charges_raw[i];
-                //std::cout << "cable " << cableIDs[nhit] << ": " << charges[i] << ", " << times[i] << std::endl;
                 nhit++;
                 //}
             }
@@ -473,7 +471,7 @@ bool VertexFitter::Execute(){
             goodness *bshits = new goodness(bslike->sets(),bslike->chargebins(),bsgeom,nhit,cableIDs,times,charges);
             int nsel = bshits->nselected();
             if (bshits->nselected()<4) {
-                std::cout << "Event " << ev << ", " << bshits->nselected() << " selected hits not enough." << std::endl;
+                Log(toolName+": Event "+toString(ev)+", "+toString(bshits->nselected())+" selected hits not enough, not reconstructed.",v_warning,verbosity);
                 return false;
             }
             fourhitgrid* bsgrid = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bshits);
@@ -512,7 +510,7 @@ bool VertexFitter::Execute(){
         // output: nhit (maximal number of hits in timing window), ihitcab[nhit] (array with cable numbers of these hits)
         if (bsvertex[0]<9999) {
             int cableIDs_n50[500];
-            Log(toolName+" calculating NX",v_debug,verbosity);
+            Log(toolName+": calculating NX",v_debug,verbosity);
             skroot_lowe_.bsn50 = CalculateNX(50,bsvertex,cableIDs,times,cableIDs_n50);
             
             // TODO can we avoid using more of the fortran routines?
@@ -762,7 +760,6 @@ bool VertexFitter::Execute(){
 
 
 bool VertexFitter::Finalise(){
-    std::cout << "Finished reconstructing event " << ev << std::endl;
 
     // terminate bonsai?
     // plots for sanity check?
@@ -794,19 +791,19 @@ int VertexFitter::CalculateNX(int timewindow, float* vertex, int cableIDs[], flo
 	float cns2cm =21.58333; // speed of light in medium
 	// Find tof subtracted times for all hits at reconstructed vertex
 	vector<float> tof;
-	Log(toolName+" getting tof subtracted times for all hits",v_debug,verbosity);
+	Log(toolName+": getting tof subtracted times for all hits",v_debug,verbosity);
 	for (int hit=0; hit<skq_.nqisk; hit++)
 	{
 		   tof.push_back(times[hit]-sqrt(pow((vertex[0]-geopmt_.xyzpm[cableIDs[hit]-1][0]),2)+pow((vertex[1]-geopmt_.xyzpm[cableIDs[hit]-1][1]),2)+pow((vertex[2]-geopmt_.xyzpm[cableIDs[hit]-1][2]),2))/cns2cm);
 	}
 
-	Log(toolName+" sorting tof subtracted times",v_debug,verbosity);
+	Log(toolName+": sorting tof subtracted times",v_debug,verbosity);
 	// Sort in ascending order
 	auto tof_sorted = tof;
 	sort(tof_sorted.begin(),tof_sorted.end());
 		   
 	// Find the centre of the distribution
-	Log(toolName+" finding the centre of the tof subtracted times distribution",v_debug,verbosity);
+	Log(toolName+": finding the centre of the tof subtracted times distribution",v_debug,verbosity);
 
 	int bsnwindow = 1;
 	int hstart_test = 0 ;
@@ -833,7 +830,9 @@ int VertexFitter::CalculateNX(int timewindow, float* vertex, int cableIDs[], flo
         if (tof[hit]>tof_sorted[hstop]) continue;
         cableIDs_twindow[bsnwin++]=cableIDs[hit];
     }
-    if (bsnwin!=bsnwindow) printf("bsnwin error %d!=%d\n",bsnwin,bsnwindow);
+    if (bsnwin!=bsnwindow){
+        Log(toolName+": bsnwin error "+toString(bsnwin)+" != "+toString(bsnwindow),v_error,verbosity);
+	}
     return(bsnwindow);
 }
 
