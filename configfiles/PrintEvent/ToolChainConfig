@@ -13,7 +13,7 @@ log_local_path ./log 	# file to store logs to if local is active
 log_split_files 0 	# seperate output and error log files (named x.o and x.e)
 
 ##### Tools To Add #####
-Tools_File configfiles/ToolsConfig  # list of tools to run and their config files
+Tools_File configfiles/PrintEvent/ToolsConfig  # list of tools to run and their config files
 
 ##### Run Type #####
 Inline -1		# number of Execute steps in program, -1 infinite loop that is ended by user 

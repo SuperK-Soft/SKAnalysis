@@ -94,7 +94,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	}
 	
 	// canvas for plotting
-  if(plotStyle==0 || plotStyle==1){
+	if(plotStyle==0 || plotStyle==1){
 		displayCanvas = new TCanvas();  // if we name it, name must be unique - prevents duplicate Tools.
 		((TRootCanvas*)displayCanvas->GetCanvasImp())->Resize(1024,700); // FIXME make unique names automatically
 		
@@ -123,7 +123,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 		gPad->SetFrameFillColor(1); // black fill
 		botDisplayPad = displayCanvas->cd(3);
 		botDisplayPad->Divide(2,1);
- 	 gStyle->SetOptStat(0);   // disable stats box
+		gStyle->SetOptStat(0);   // disable stats box
 	}
 	
 //	gStyle->SetPalette(57);  // kBird doesn't seem to exist in ROOT 5, do it ourselves
@@ -329,9 +329,9 @@ bool evDisp::Execute(){
 			case 0: {
 				// sktqz_ common block
 				cableNumber = sktqz_.icabiz[pmtNumber];
-				charge = sktqz_.qiskz[cableNumber-1];
-				time = sktqz_.tiskz[cableNumber-1];
-				in_gate = sktqz_.ihtiflz[pmtNumber-1] & 0x02;   // sktqaz_.ihtflz for OD
+				charge = sktqz_.qiskz[pmtNumber];
+				time = sktqz_.tiskz[pmtNumber];
+				in_gate = sktqz_.ihtiflz[pmtNumber] & 0x02;   // sktqaz_.ihtflz for OD
 				// from $SKOFL_ROOT/src/skrd/tqrealsk.F:L142 it looks like perhaps ihtiflz carries indexing
 				// over, so still uses (pmtNumber-1) instead of (cableNumber-1) as an index...maybe..
 				// skhead_ common block

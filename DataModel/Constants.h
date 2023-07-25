@@ -6,9 +6,12 @@
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <unordered_map>
 #include "TInterpreter.h" // TInterpreter::EErrorCode
 #include "TDatabasePDG.h"
 //#include <regex>    // std::regex doesn't work for older g++ versions
+
+#include "fortran_routines.h"
 
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
@@ -19,6 +22,11 @@ std::string G3_process_code_to_string(int process_code);
 std::string G4_process_code_to_string(int process_code);
 std::string numnu_code_to_string(int numnu_code);
 std::string neut_mode_to_string(int neut_code);
+std::string RunModeToName(int mdrnsk);
+std::string EventFlagToString(int ifevsk, int sk_geometry=-1);
+std::string GetEventFlagNames(int32_t flagid);
+std::unordered_map<std::string,int> GetHitFlagNames(int32_t ihtiflz, std::string* list=nullptr);
+std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& adc_counts, int32_t& flags, std::string* list=nullptr);
 std::string PdgToString(int code);
 int StringToPdg(std::string name);
 int PdgToG3ParticleCode(int code);
@@ -27,6 +35,7 @@ int StringToG3ParticleCode(std::string name);
 std::string G3ParticleCodeToString(int code);
 double PdgToMass(int code);
 std::string TriggerIDToTrigger(int code);
+std::string GetTriggerNames(int32_t trigid);
 const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
@@ -83,6 +92,18 @@ namespace constants{
 		{107, "Cerenkov Refraction"},
 		{108, "Synchrotron Generation"},
 		{109, "PAI or ASHO model used for energy loss fuctuations"}
+	};
+	
+	// from skheadC.h
+	static const std::map<int,std::string> mdrnsk_to_runtype{
+		{0,"Monte Carlo"},
+		{1,"Normal Data"},
+		{2,"Laser Calibration"},
+		{3,"Pedestal"},
+		{4,"Xenon Lamp"},
+		{5,"Nickel Calibration"},
+		{6,"Random Trigger"},
+		{7,"Linac Calibration"}
 	};
 	
 	static const std::map<int,std::string> G4_process_code_to_string{
@@ -558,19 +579,19 @@ namespace constants{
 	};
 	
 	static const std::map<int, std::string> Trigger_ID_To_Trigger{
-		// from skhead.h
-		// "BLANK #" entries are empty ID numbers in skhead.h
-		{0, "LE (sftw. trig.)"},
-		{1, "HE (sftw. trig.)"},
-		{2, "SLE (sftw. trig.)"},
-		{3, "OD (sftw. trig.)"},
-		{4, "Periodic (SKI-III)"},
-		{5, "After/CAL (SKI-III)"},
-		{6, "VETO START"},
-		{7, "VETO STOP"},
-		{8, "BLANK 8"},
-		{9, "BLANK 9"},
-		{10, "BLANK 10"},
+		// from skheadC.h
+		// "# (Unknown)" entries are empty ID numbers in skheadC.h
+		{0, "LE"},
+		{1, "HE"},
+		{2, "SLE"},
+		{3, "OD or Fission"},  // in normal run/SK-IV+: OD trigger. in SKI-III Nickel run: fission trigger
+		{4, "Periodic"},       // one of {nothing (null) trigger, TQ map laser, water atten. laser, Xenon ball}
+		{5, "AFT or Cal"},     // in normal run: AFT trigger, in calib run, one of: {laser, Xenon, Nickel, Linac}
+		{6, "Veto Start"},
+		{7, "Veto Stop"},
+		{8, "8 (15005)"},
+		{9, "9 (15006)"},
+		{10, "10 (15007)"},
 		{11, "Random Wide Trigger"},
 		{12, "Laser (ID, Usho Laser)"},
 		{13, "LED"},
@@ -580,19 +601,106 @@ namespace constants{
 		{17, "HE (histum)"},
 		{18, "SLE (hitsum)"},
 		{19, "OD (hitsum)"},
-		{20, "BLANK 20"},
-		{21, "BLANK 21"},
+		{20, "20 (unknown)"},
+		{21, "21 (unknown)"},
 		{22, "SN Burst"},
 		{23, "mu->e Decay"},
 		{24, "LINAC"},
 		{25, "LINAC Microwave"},
-		{26, "BLANK 26"},
+		{26, "26 (15023)"},
 		{27, "Periodic (simple)"},
-		{28, "SHE"},
-		{29, "AFT"},
-		{30, "Pedestal"},
-		{31, "T2K"}
+		{28, "SHE (SW)"},
+		{29, "AFT (SW)"},
+		{30, "Pedestal (SW)"},
+		{31, "T2K (SW)"}
 	};
+	
+	static const std::map<int, std::string> flag_to_string_SKI_III{
+		{0,"ATM"},
+		{1,"TRG"},
+		{2,"SMP REGISTER"},
+		{3,"SCALER"},
+		{4,"PEDESTAL START"},
+		{5,"PEDESTAL DATA(ATM)"},
+		{6,"PEDESTAL HISTOGRAM"},
+		{7,"PEDESTAL END"},
+		{8,"END OF RUN"},
+		{9,"PEDESTAL(ON)"},
+		{10,"10 (unknown)"},
+		{11,"GPS DATA"},
+		{12,"CAMAC ADC"},
+		{13,"ANTI DATA"},
+		{14,"INNER SLOW DATA"},
+		{15,"RUN INFORMATION"},
+		{16,"ERROR (TKO-PS)"},
+		{17,"ERROR (HV-PS)"},
+		{18,"ERROR (TEMPERARTURE)"},
+		{19,"19 (unknown)"},
+		{20,"UNCOMPLETED ATM DATA"},
+		{21,"INVALID ATM DATA"},
+		{22,"22 (unknown)"},
+		{23,"23 (unknown)"},
+		{24,"ERROR (DATA)"},
+		{25,"UNREASONABLE DATA"},
+		{26,"LED BURST ON"},
+		{27,"27 (unknown)"},
+		{28,"INNER DETECTOR OFF"},
+		{29,"ANTI  DETECTOR OFF"},
+		{30,"30 (unknown)"},
+		{31,"TRG IS AVAILABLE"}
+	};
+	
+	static const std::map<int, std::string> flag_to_string_SKIV{
+		{0,"QBEE TQ"},
+		{1,"HARD TRG"},
+		{2,"QBEE STAT"},
+		{3,"DB_STAT_BLOCK"},
+		{4,"CORRUPTED_CHECKSUM"},
+		{5,"MISSING SPACER"},
+		{6,"PED_HIST_BLOCK"},
+		{7,"7 (unknown)"},
+		{8,"8 (unknown)"},
+		{9,"PEDESTAL ON"},
+		{10,"RAW_AMT_BLOCK"},
+		{11,"GPS DATA"},
+		{12,"PEDESTAL_CHECK"},
+		{13,"SEND_BLOCK"},
+		{14,"INNER SLOW DATA"},
+		{15,"RUN INFORMATION"},
+		{16,"PREV T0 BLOCK"},
+		{17,"17 (unknown)"},
+		{18,"FE_TRL_BLOCK"},
+		{19,"SPACER_BLOCK"},
+		{20,"INCOMPLETE TQ"},
+		{21,"CORRUPT TQ BLOCK"},
+		{22,"TRG MISMATCH TQ"},
+		{23,"QBEE ERROR"},
+		{24,"SORT_BLOCK"},
+		{25,"CORRUPTED_BLOCK"},
+		{26,"LED BURST ON"},
+		{27,"EVNT TRAILER"},
+		{28,"INNER DETECTOR OFF"},
+		{29,"ANTI  DETECTOR OFF"},
+		{30,"T2K GPS"},
+		{31,"(EVNT HDR)&(SOFTWARE TRG)"}
+	};
+	
+	// geometry information from geotnkC.h: #define'd constants
+	// ah... but we can't #include geotnkC.h because it conflicts with SK2p2MeV.h.... -__-
+	// someone reused the #define'd macro names as variables
+	// (e.g. `const Float_t RINTK`, when geotnkC.h does `#define RINTK`)
+	/*
+	double SK_TANK_DIAMETER = DITKTK;
+	double SK_TANK_HEIGHT = HITKTK;  // height of water volume
+	double SK_ID_DIAMETER = DIINTK;
+	double SK_ID_HEIGHT = HIINTK;
+	double SK_OD_THICKNESS_BOTTOM = TBATTK;
+	double SK_OD_THICKNESS_BARREL = TWATTK;
+	double SK_OD_THICKNESS_TOP = TTATTK;
+	*/
+	
+	// TODO: mapping of calibration / veto PMT numbers in skvetoC.h
+	
 	
 	// maps of regular expression error codes to descriptive strings
 	// -------------------------------------------------------------

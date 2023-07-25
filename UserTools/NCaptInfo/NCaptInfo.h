@@ -67,9 +67,9 @@ class NCaptInfo: public Tool {
 	TTree* candtree = nullptr;
 	TTree* matchtree = nullptr;
 	std::unordered_map<std::string, int> cibranchvars;
-	std::unordered_map<std::string, int> cdbranchvars;
+	std::unordered_map<std::string, double> cdbranchvars;
 	std::unordered_map<std::string, int> mibranchvars;
-	std::unordered_map<std::string, int> mdbranchvars;
+	std::unordered_map<std::string, double> mdbranchvars;
 	
 	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
 	int verbosity=1;

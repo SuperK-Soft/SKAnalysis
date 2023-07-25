@@ -17,14 +17,14 @@ class NCapture {
 	//=========//
 	
 	// following are calculated on demand from event particles vector
-	double* GetTime();
-	TVector3* GetPos();
+	double* GetTime();  // [us]
+	TVector3* GetPos(); // [cm]
 	bool NGammas(int& ngammas);
 	bool NConversiones(int& nconve);
-	bool SumGammaE(double& sumgammae);
-	bool SumConversioneE(double& sumconvee);
-	bool NeutronTravelDist(double& ntraveldist);
-	bool NeutronTravelTime(double& ntravelt);
+	bool SumGammaE(double& sumgammae); // [MeV]
+	bool SumConversioneE(double& sumconvee);  // [MeV]
+	bool NeutronTravelDist(double& ntraveldist); // [cm]
+	bool NeutronTravelTime(double& ntravelt); // [us]
 	bool GetDaughters(); // sets internal variable only
 	bool GetDaughters(std::vector<int>& daughters);
 	MParticle* GetNeutron();
@@ -32,6 +32,8 @@ class NCapture {
 	void Print(bool verbose=false);
 	
 	private:
+	bool got_capture_t=false;
+	double capture_time=999;
 	// index in event particles vector
 	int neutron_trackid=-1;
 	int daughter_nuclide_idx=-1;

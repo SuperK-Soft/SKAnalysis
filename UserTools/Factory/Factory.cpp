@@ -45,7 +45,7 @@ if (tool=="NCaptInfo_BDT") ret=new NCaptInfo_BDT;
 if (tool=="TrueNCaptures") ret=new TrueNCaptures;
 if (tool=="ReadMCParticles") ret=new ReadMCParticles;
 if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
-
+if (tool=="PrintEvent") ret=new PrintEvent;
 return ret;
 }
 

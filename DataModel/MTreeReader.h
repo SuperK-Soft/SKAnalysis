@@ -17,8 +17,8 @@ class TLeaf;
 class MTreeReader {
 	public:
 	
-	MTreeReader(std::string filename, std::string treename);
-	MTreeReader(){};
+	MTreeReader(std::string iname, std::string filename, std::string treename);
+	MTreeReader(std::string iname="myReader");
 	~MTreeReader();
 	int Load(std::string filename, std::string treename);
 	int LoadFile(std::string filename);
@@ -212,6 +212,8 @@ class MTreeReader {
 	void SetVerbosity(int verbin);
 	
 	// file/tree level getters
+	std::string GetName();
+	void SetName(std::string iname);
 	TFile* GetFile();
 	TTree* GetTree();
 	TTree* GetCurrentTree();
@@ -269,6 +271,7 @@ class MTreeReader {
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;
+	std::string name="";
 	
 };
 

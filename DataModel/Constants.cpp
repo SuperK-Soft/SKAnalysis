@@ -1,6 +1,7 @@
 /* vim:set noexpandtab tabstop=4 wrap filetype=cpp */
 #include "Constants.h"
 #include "DataModel.h"
+#include <bitset>
 
 std::set<std::string> fundamental_types{
 	"bool",
@@ -162,9 +163,131 @@ double PdgToMass(int code){
 	return -1;
 }
 
+std::string RunModeToName(int mdrnsk){
+	if(constants::mdrnsk_to_runtype.count(mdrnsk)){
+		return constants::mdrnsk_to_runtype.at(mdrnsk);
+	}
+	std::cerr<<"RunModeToName: unkown mdrnsk "<<mdrnsk<<std::endl;
+	return std::to_string(mdrnsk);
+}
+
 std::string TriggerIDToTrigger(int code){
 	if(constants::Trigger_ID_To_Trigger.count(code)){
 		return constants::Trigger_ID_To_Trigger.at(code);
 	}
 	return "?";
+}
+
+std::string GetTriggerNames(int32_t trigid){
+	std::bitset<32> triggerID{trigid};
+	std::string Trigs="";
+	for(int i=0; i<=31; i++){
+		if(triggerID.test(i)){
+			if(Trigs!="") Trigs += ", ";
+			Trigs += TriggerIDToTrigger(i);
+		}
+	}
+	Trigs = "[" + Trigs + "]";
+	return Trigs;
+}
+
+std::string EventFlagToString(int ifevsk, int sk_geometry){
+	if(sk_geometry<0){
+		// autodetect based on Header
+		sk_geometry = skheadg_.sk_geometry;
+	}
+	const std::map<int,std::string>* flag_to_string = nullptr;
+	if(sk_geometry>0 && sk_geometry<4){
+		flag_to_string = &constants::flag_to_string_SKI_III;
+	} else if(sk_geometry>3){
+		flag_to_string = &constants::flag_to_string_SKIV;
+	} else {
+		std::cerr<<"EventFlagToString: unknown sk_geometry "<<sk_geometry<<std::endl;
+	}
+	if(flag_to_string){
+		if(flag_to_string->count(ifevsk)) return flag_to_string->at(ifevsk);
+		else std::cerr<<"EventFlagToString: unknown ifevsk "<<ifevsk<<std::endl;
+	}
+	return std::to_string(ifevsk);
+}
+
+std::string GetEventFlagNames(int32_t flagid){
+	std::bitset<32> flagID{flagid};
+	std::string Flags="";
+	for(int i=0; i<=31; i++){
+		if(flagID.test(i)){
+			if(Flags!="") Flags += ", ";
+			Flags += EventFlagToString(i);
+		}
+	}
+	Flags = "[" + Flags + "]";
+	return Flags;
+}
+
+std::unordered_map<std::string,int> GetHitFlagNames(int32_t ihtiflz, std::string* list){
+	// from $SKOFL_ROOT/inc/sktq.h, meaning of bits of hitflags:
+	// n.b. ihtiflz = ID, ihtflz = OD
+	std::unordered_map<std::string,int> labels;
+	labels.emplace("in 1.3us",(ihtiflz & 1));
+	labels.emplace("in gate",(ihtiflz & 2));
+	// bits 2->3 define trigger ID; only vals 0,1,2 used.
+	int tmp = (ihtiflz >> 2) & 3;
+	labels.emplace("narrow trigger",(tmp==0));
+	labels.emplace("wide trigger",(tmp==1));
+	labels.emplace("pedestal trigger",(tmp==2));
+	// bits 4->5 define charge range
+	tmp = (ihtiflz >> 4) & 3;
+	labels.emplace("small charge range",(tmp==0));
+	labels.emplace("medium charge range",(tmp==1));
+	labels.emplace("large charge range",(tmp==2));
+	// bits 6->11 are "(# of TRG EVENT COUNTER - 1) * 64 (0-63)" ...
+	tmp = (ihtiflz >> 6);
+	labels.emplace("trigger event counter",tmp);
+	
+	// TODO ehh, this mixes up all the ordering if that matters
+	if(list!=nullptr){
+		// combine flags
+		for(auto&& label : labels){
+			if(label.second==0) continue;
+			if((*list)!="") *list+=", ";
+			*list+=label.first;
+		}
+		*list="["+*list+"]";
+	}
+	return labels;
+}
+
+std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& adc_counts, int32_t& flags, std::string* list){
+	// from $SKOFL_ROOT/inc/sktq.h
+	// iqiskz combines raw ADC charge in bits 0-10...
+	adc_counts = iqiskz & 0x7FF;
+	// ...and hit flags in bits 11-15
+	flags = iqiskz >> 11;
+	// these flags are a subset of the flags in ihtiflz
+	// (no 1.3us flag in bit 0, no TRG event counter in upper bits)
+	
+	std::unordered_map<std::string,int> labels;
+	labels.emplace("in gate",(flags & 1));
+	// bits 1->2 define trigger ID; only vals 0,1,2 used.
+	int tmp = (iqiskz >> 1) & 3;
+	labels.emplace("narrow trigger",(tmp==0));
+	labels.emplace("wide trigger",(tmp==1));
+	labels.emplace("pedestal trigger",(tmp==2));
+	// bits 4->5 define charge range
+	tmp = (iqiskz >> 4) & 3;
+	labels.emplace("small charge range",(tmp==0));
+	labels.emplace("medium charge range",(tmp==1));
+	labels.emplace("large charge range",(tmp==2));
+	
+	// TODO ehh, this mixes up all the ordering if that matters
+	if(list!=nullptr){
+		// combine flags
+		for(auto&& label : labels){
+			if(label.second==0) continue;
+			if((*list)!="") *list+=", ";
+			*list+=label.first;
+		}
+		*list="["+*list+"]";
+	}
+	return labels;
 }

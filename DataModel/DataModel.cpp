@@ -19,30 +19,11 @@ DataModel::DataModel() : eventVariables_p(new BStore(false,true)), eventVariable
 DataModel::~DataModel(){
 	//if(rootTApp) delete rootTApp;                 // segfaults on application termination, maybe?
 	//if(connectionTable) delete connectionTable;   // segfaults on application termination, maybe?
+	eventParticles.clear();
+	eventVertices.clear();
+	NCaptureCandidates.clear();
+	NCapturesTrue.clear();
 }
-
-/*
-TTree* DataModel::GetTTree(std::string name){
-
-  return m_trees[name];
-
-}
-
-
-void DataModel::AddTTree(std::string name,TTree *tree){
-
-  m_trees[name]=tree;
-
-}
-
-
-void DataModel::DeleteTTree(std::string name,TTree *tree){
-
-  m_trees.erase(name);
-
-}
-
-*/
 
 // open a file, making it if necessary. Useful for adding data to the same file from multiple Tools.
 TFile* DataModel::OpenFileForWriting(std::string file, bool alreadyopenonly){
@@ -169,6 +150,24 @@ bool DataModel::RegisterReader(std::string readerName, MTreeReader* reader, std:
 	return true;
 }
 
+MTreeReader* DataModel::GetTreeReader(){
+	// most of the time there's one primary TreeReader associated with an SKROOT file which is
+	// populating common blocks, and possibly further TreeReaders for auxiliary info we can identify
+	// the primary TreeReader as its LUN will be set in the common block variable skheadf_.root_id
+	int file_lun = skheadf_.root_id;
+	std::map<std::string,int> lunlist;
+	CStore.Get("LUNList",lunlist);
+	for(auto&& apair : lunlist){
+		if(apair.second==file_lun){
+			if(Trees.count(apair.first)) return Trees.at(apair.first);
+			break;
+		}
+	}
+	std::cerr<<"DataModel::GetTreeReader no reader associated with skheadf_.root_id LUN "
+	         <<file_lun<<std::endl;
+	return nullptr;
+}
+
 int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
 	if(ReaderName==""){
 		// if no name given but we have only one TreeReader Tool, use that
@@ -177,7 +176,7 @@ int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
 	if(getEntrys.count(ReaderName)){
 		return getEntrys.at(ReaderName)(entrynum);
 	} else {
-		std::cerr << "getTreeEntry requested for Unknown reader "<<ReaderName<<std::endl;
+		std::cerr << "DataModel::getTreeEntry requested for Unknown reader "<<ReaderName<<std::endl;
 	}
 	return 0;
 }
@@ -190,7 +189,7 @@ bool DataModel::HasAFT(std::string ReaderName){
 	if(hasAFTs.count(ReaderName)){
 		return hasAFTs.at(ReaderName)();
 	} else {
-		std::cerr<<"HasAFT requested for Unknown reader "<<ReaderName<<std::endl;
+		std::cerr<<"DataModel::HasAFT requested for Unknown reader "<<ReaderName<<std::endl;
 	}
 	return false;
 }
@@ -203,7 +202,7 @@ bool DataModel::LoadSHE(std::string ReaderName){
 	if(loadSHEs.count(ReaderName)){
 		return loadSHEs.at(ReaderName)();
 	} else {
-		std::cerr<<"LoadSHE requested for Unknown reader "<<ReaderName<<std::endl;
+		std::cerr<<"DataModel::LoadSHE requested for Unknown reader "<<ReaderName<<std::endl;
 	}
 	return false;
 }
@@ -216,7 +215,7 @@ bool DataModel::LoadAFT(std::string ReaderName){
 	if(loadAFTs.count(ReaderName)){
 		return loadAFTs.at(ReaderName)();
 	} else {
-		std::cerr<<"LoadAFT requested for Unknown reader "<<ReaderName<<std::endl;
+		std::cerr<<"DataModel::LoadAFT requested for Unknown reader "<<ReaderName<<std::endl;
 	}
 	return false;
 }
@@ -229,7 +228,7 @@ bool DataModel::LoadEntry(int entry_i, std::string ReaderName){
 	if(loadCommons.count(ReaderName)){
 		return loadCommons.at(ReaderName)(entry_i);
 	} else {
-		std::cerr<<"LoadEntry requested for Unknown reader "<<ReaderName<<std::endl;
+		std::cerr<<"DataModel::LoadEntry requested for Unknown reader "<<ReaderName<<std::endl;
 	}
 	return false;
 }

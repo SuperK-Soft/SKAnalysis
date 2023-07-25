@@ -13,6 +13,7 @@ class NCaptCandidate {
 	// XXX if modifying matchType be sure to modify the matchTypes map accordingly!
 	enum class matchType {kNotSet=-1,kMistag=0,kHCapture=1,kGdCapture=2,kUnknownCapture=3,kDecaye=4};
 	static const std::map<matchType, std::string> matchTypes;
+	friend std::ostream& operator << (std::ostream& os, const NCaptCandidate::matchType& obj);
 	
 	// generated from n-tagger
 	std::string algo;
@@ -51,4 +52,5 @@ class NCaptCandidate {
 	DataModel* m_data=nullptr;
 	
 };
+
 #endif

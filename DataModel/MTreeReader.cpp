@@ -23,8 +23,19 @@
 
 // TODO constructor/loader for tchains or tree pointers
 
-MTreeReader::MTreeReader(std::string fpath, std::string treename){
+MTreeReader::MTreeReader(std::string iname, std::string fpath, std::string treename){
+	name = iname;
 	Load(fpath, treename);
+}
+
+MTreeReader::MTreeReader(std::string iname) : name(iname){};
+
+std::string MTreeReader::GetName(){
+	return name;
+}
+
+void MTreeReader::SetName(std::string iname){
+	name=iname;
 }
 
 int MTreeReader::Load(std::string filename, std::string treename){

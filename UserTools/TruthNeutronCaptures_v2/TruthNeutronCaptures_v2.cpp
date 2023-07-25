@@ -2,6 +2,7 @@
 #include "TruthNeutronCaptures_v2.h"
 #include "Algorithms.h"
 #include "Constants.h"
+#include "MTreeReader.h"
 #include "type_name_as_string.h"
 
 #include <algorithm> // std::find
@@ -28,28 +29,18 @@ bool TruthNeutronCaptures_v2::Initialise(std::string configfile, DataModel &data
 	// Get the Tool configuration variables
 	// ------------------------------------
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
-	m_variables.Get("inputFile",inputFile);            // a single specific input file
+	m_variables.Get("treeReaderName",treeReaderName);  // input TTree Reader
 	m_variables.Get("outputFile",outputFile);          // output file to write
 	m_variables.Get("maxEvents",MAX_EVENTS);           // terminate after processing at most this many events
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY); // how many events to TTree::Fill between TTree::Writes
 	
-	// get the list of input files from the CStore
-	// -------------------------------------------
-	// filled if using LoadFileList tool
-	// TODO yet to implement support for this in MTreeReader
-	if(inputFile==""){
-		get_ok = m_data->CStore.Get("InputFileList", input_file_names);
-		if(not get_ok){
-			Log(toolName+" Error: No inputFile given and no InputFileList in CStore!",v_error,verbosity);
-			return false;
-		}
+	// Get the TreeReader
+	// ------------------
+	if(m_data->Trees.count(treeReaderName)==0){
+		Log(toolName+": Failed to find TreeReader "+treeReaderName+" in DataModel!",0,0);
+		return false;
 	}
-	
-	// open the input TFile and TTree
-	// ------------------------------
-	get_ok = myTreeReader.Load(inputFile, "data"); // SKROOT TTree is named descriptively 'data'
-	DisableUnusedBranches();
-	if(get_ok) ReadEntry(0);
+	myTreeReader = m_data->Trees.at(treeReaderName);
 	
 	// note a couple of file-wise constants
 	out_skdetsim_version = mc_info->ivmcp;    // version of monte carlo program (SK_GEOMETRY+1000)
@@ -67,6 +58,8 @@ bool TruthNeutronCaptures_v2::Initialise(std::string configfile, DataModel &data
 bool TruthNeutronCaptures_v2::Execute(){
 	
 	Log(toolName+" processing entry "+toString(entry_number),v_debug,verbosity);
+	get_ok = GetBranchValues();
+	if(!get_ok) return false;
 	
 	// clear output vectors so we don't carry anything over
 	Log(toolName+" clearing output vectors",v_debug,verbosity);
@@ -88,27 +81,6 @@ bool TruthNeutronCaptures_v2::Execute(){
 	
 	// stop at user-defined limit to the number of events to process
 	++entry_number;
-	if((MAX_EVENTS>0)&&(entry_number>=MAX_EVENTS)){
-		Log(toolName+" reached MAX_EVENTS, setting StopLoop",v_error,verbosity);
-		m_data->vars.Set("StopLoop",1);
-	} else {
-		// Pre-Load next input entry so we can stop the toolchain
-		// if we're about to run off the end of the tree or encounter a read error
-		Log(toolName+" reading entry "+toString(entry_number),v_debug,verbosity);
-		get_ok = ReadEntry(entry_number);
-		if(get_ok<1&&get_ok>-3){
-			m_data->vars.Set("StopLoop",1);
-			Log(toolName+" Hit end of input file, stopping loop",v_warning,verbosity);
-		}
-		else if(get_ok==-10){
-			Log(toolName+" Error during AutoClear while loading next input ntuple entry!",v_error,verbosity);
-			return false;
-		}
-		else if(get_ok<0){
-			Log(toolName+" IO error loading next input ntuple entry!",v_error,verbosity);
-			return false;
-		}
-	}
 	
 	// handy constants
 	neutron_mass = PdgToMass(StringToPdg("Neutron"));
@@ -135,7 +107,7 @@ bool TruthNeutronCaptures_v2::Finalise(){
 
 int TruthNeutronCaptures_v2::CalculateVariables(){
 	
-	out_filename = myTreeReader.GetTree()->GetCurrentFile()->GetName();
+	out_filename = myTreeReader->GetTree()->GetCurrentFile()->GetName();
 	out_run_number = mc_info->mcrun;
 	out_entry_number = entry_number;    // TTree entry number to be able to identify the source event
 	
@@ -340,61 +312,13 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 	return 1;
 }
 
-int TruthNeutronCaptures_v2::ReadEntry(long entry_number){
-	int bytesread = myTreeReader.GetEntry(entry_number);
-	if(bytesread<=0) return bytesread;
-	
+int TruthNeutronCaptures_v2::GetBranchValues(){
 	int success = 
-	(myTreeReader.GetBranchValue("HEADER",run_header)) &&
-	(myTreeReader.GetBranchValue("MC",mc_info)) &&
-	(myTreeReader.GetBranchValue("SECONDARY",sec_info));
-	
-	
-	// XXX for efficiency, add all used branches to DisableUnusedBranches XXX
+	(myTreeReader->GetBranchValue("HEADER",run_header)) &&
+	(myTreeReader->GetBranchValue("MC",mc_info)) &&
+	(myTreeReader->GetBranchValue("SECONDARY",sec_info));
 	
 	return success;
-}
-
-int TruthNeutronCaptures_v2::DisableUnusedBranches(){
-	std::vector<std::string> used_branches{
-		// branchname     || classname
-		// ---------------------------
-		"HEADER",         // Header
-//		"TQREAL",         // TQReal
-//		"TQAREAL",        // TQReal
-//		"LOWE",           // LoweInfo
-//		"ATMPD",          // AtmpdInfo
-//		"UPMU",           // UpmuInfo
-//		"MU",             // MuInfo
-//		"SLE",            // SLEInfo
-//		"SWTRGLIST",      // SoftTrgList
-//		"IDODXTLK",       // IDOD_Xtlk
-		"MC",             // MCInfo
-		"SECONDARY"       // SecondaryInfo
-		// ---------------------------
-		// the following branches are added during analysis
-//		"TQLIST",         // TClonesArray
-//		"ODTQLIST",       // TClonesArray
-//		"HWTRGLIST",      // TClonesArray
-//		"PEDESTALS",      // Pedestal
-//		"EVENTHEADER",    // EventHeader
-//		"EVENTTRAILER",   // EventTrailer
-//		"SOFTWARETRG",    // SoftwareTrigger
-//		"QBEESTATUS",     // QBeeStatus
-//		"DBSTATUS",       // QBeeStatus
-//		"SPACERS",        // Spacer
-//		"PREVT0",         // PrevT0
-//		"MISMATCHEDHITS", // MismatchedHit
-//		"GPSLIST",        // TClonesArray
-//		"T2KGPSLIST"      // TClonesArray
-		// N.B. RunInfo (RINFO) from 'RareList' is extracted
-		// from TTree UserInfo during TreeManager::Initialize;
-		// probably easiest to use TreeManager for this.
-		// N.B. SlowControl (SLWCTRL) TreeManager Getter
-		// returns a nullptr so is not included here.
-	};
-	
-	return myTreeReader.OnlyEnableBranches(used_branches);
 }
 
 int TruthNeutronCaptures_v2::CreateOutputFile(std::string filename){

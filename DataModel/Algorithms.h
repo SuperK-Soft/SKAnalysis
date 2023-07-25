@@ -15,6 +15,9 @@
 // TODO what's the best way of pulling these both in without introducing circular dependencies?
 #include "SK_helper_functions.h"
 
+// n.b. there are a bunch of routines in $SKOFL_ROOT/include/timesub.h for claculating
+// e.g. astronomical positions, angles, and date/time stuff. none seem super useful for now.
+
 class TVector3;
 class TLorentzVector;
 class TPie;
@@ -44,6 +47,12 @@ std::unique_ptr<TPie> GeneratePieFromHisto(std::string histoname, int verbose=0)
 namespace algorithms{
 	
 } // end namespace algorithms
+
+template<typename T>
+std::ostream& operator<<(typename std::enable_if<std::is_enum<T>::value, std::ostream>::type& stream, const T& e)
+{
+	return stream << static_cast<typename std::underlying_type<T>::type>(e);
+}
 
 // helper function: to_string with a precision
 // particularly useful for printing doubles and floats in the Log function

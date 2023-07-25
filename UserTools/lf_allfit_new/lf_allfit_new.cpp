@@ -30,6 +30,7 @@ bool lf_allfit_new::Initialise(std::string configfile, DataModel &data){
 	// ------------------------------------
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
 	m_variables.Get("readerName",readerName);          // name given to the TreeReader used for file handling
+	m_variables.Get("delete_outside_hits",delete_outside_hits); // should we call this after reconstruction
 	m_variables.Get("writeout",writeout);              // whether to write out to a new file or not (just reconstruction vs inline)
 	reference_watert_run = 85609;                      // reference run for water transparency
 	m_variables.Get("reference_watert_run", reference_watert_run);
@@ -56,6 +57,11 @@ bool lf_allfit_new::Initialise(std::string configfile, DataModel &data){
 	float* xyzpm = &geopmt_.xyzpm[0][0];
 	cfbsinit_(&MAXPM_var, xyzpm);
 	
+	if(MC && skhead_.nrunsk==999999){
+		Log(toolName+" using reference run "+toString(reference_watert_run)
+		    +" for water transparency",v_warning,verbosity);
+	}
+	
 	return true;
 }
 
@@ -74,8 +80,9 @@ bool lf_allfit_new::Execute(){
 	// for MC, if the run number hasn't already been overridden, use a suitably representative run
 	if(MC && skhead_.nrunsk==999999){
 		// nrunsk of 999999 is expected for MC...
-		Log(toolName+" using reference run "+toString(reference_watert_run)
-		    +" for water transparency",v_warning,verbosity);
+		// this gets printed every time as SKREAD overwrites nrunsk with each new event
+		//Log(toolName+" using reference run "+toString(reference_watert_run)
+		//    +" for water transparency",v_debug,verbosity);
 		skhead_.nrunsk = reference_watert_run;
 	}
 	
@@ -126,7 +133,7 @@ bool lf_allfit_new::Execute(){
 			lfflag is output: 0=fit success, -1=too many hits for lowe, -2: no hits
 	*/
 	if(MC){
-		switch skheadg_.sk_geometry {
+		switch (skheadg_.sk_geometry) {
 			case 1:  //lfallfit_sk1_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
 			case 2:  //lfallfit_sk2_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
 			case 3:  //lfallfit_sk3_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
@@ -142,11 +149,11 @@ bool lf_allfit_new::Execute(){
 				break;
 			}
 			case 5: {
-				lfallfit_sk5_mc(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk5_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 				break;
 			}
 			case 6: {
-				lfallfit_sk6_mc(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 				break;
 			}
 			default: {
@@ -156,7 +163,7 @@ bool lf_allfit_new::Execute(){
 			}
 		}
 	} else {
-		switch skheadg_.sk_geometry {
+		switch (skheadg_.sk_geometry) {
 			case 1: {
 				lfallfit_sk1_data_(&watert, &NHITCUT, &lfflag);
 				break;
@@ -178,11 +185,11 @@ bool lf_allfit_new::Execute(){
 				break;
 			}
 			case 5: {
-				lfallfit_sk5_data(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk5_data_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 				break;
 			}
 			case 6: {
-				lfallfit_sk6_data(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
 				break;
 			}
 			default: {
@@ -210,17 +217,17 @@ bool lf_allfit_new::Execute(){
 	                 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
 	                 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
 	
+	// remove hits outside 1.3 microsec - FIXME should we.... do this??? here???
+	if(delete_outside_hits) delete_outside_hits_();
+	
+	// pass reconstructed info back to the LoweInfo class object
+	// skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
+	// that simply pull variables from fortran common blocks and pass them to the TreeManager
+	skroot_set_tree_(&lun);
+	
 	// if the writeout variable is set then pass reconstructed information
 	// from the skroot_lowe_ common block to the output skroot file
 	if(writeout){
-		// remove hits outside 1.3 microsec
-		delete_outside_hits_();
-		
-		// store header & TQ info.
-		// skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
-		// that simply pull variables from fortran common blocks and pass them to the TreeManager
-		skroot_set_tree_(&lun);
-		
 		// invokes TTree::Fill. Only use it in SKROOT mode WRITE or COPY!
 		skroot_fill_tree_(&lun);
 	}

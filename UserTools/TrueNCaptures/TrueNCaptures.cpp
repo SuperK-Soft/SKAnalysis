@@ -135,7 +135,10 @@ bool TrueNCaptures::MakePlots(int step){
 		if(fplots==nullptr || fplots->IsZombie()) return false;
 		fplots->cd();
 		tplots = new TTree("eventtree","True Neutron Capture Variables");
-		std::vector<std::string> dvars{"neutron_travel_time","neutron_travel_dist",
+		std::vector<std::string> dvars{"prompt_x","prompt_y","prompt_z","prompt_t",
+		                               "capt_x","capt_y","capt_z","capt_t",
+		                               /*"prompt_dwall", "prompt_deffwall", ... other? same for capt..*/
+		                               "neutron_travel_time","neutron_travel_dist",
 		                               "xtravel","ytravel","ztravel","neutron_start_energy",
 		                               "neutron_tot_gammaE","neutron_tot_electronE","neutron_tot_daughterE"};
 		// not sure whether the entries in a std::map may be moved around when new entries are added
@@ -174,7 +177,29 @@ bool TrueNCaptures::MakePlots(int step){
 			double* startE = acap.GetNeutron() ? acap.GetNeutron()->GetStartE() : nullptr;
 			dbranchvars.at("neutron_start_energy") = (startE) ? *startE : 0.;
 			TVector3* cappos = acap.GetPos();
+			if(cappos){
+				dbranchvars.at("capt_x") = cappos->X();
+				dbranchvars.at("capt_y") = cappos->Y();
+				dbranchvars.at("capt_z") = cappos->Z();
+			} else {
+				dbranchvars.at("capt_x") = 9999;
+				dbranchvars.at("capt_y") = 9999;
+				dbranchvars.at("capt_z") = 9999;
+			}
+			double* cap_t = acap.GetTime();
+			dbranchvars.at("capt_t") = (cap_t ? *cap_t : 9999);
 			TVector3* startpos = (acap.GetNeutron()) ? acap.GetNeutron()->GetStartPos() : nullptr;
+			if(startpos){
+				dbranchvars.at("prompt_x") = startpos->X();
+				dbranchvars.at("prompt_y") = startpos->Y();
+				dbranchvars.at("prompt_z") = startpos->Z();
+			} else {
+				dbranchvars.at("prompt_x") = 9999;
+				dbranchvars.at("prompt_y") = 9999;
+				dbranchvars.at("prompt_z") = 9999;
+			}
+			double* prompt_t = (acap.GetNeutron()) ? acap.GetNeutron()->GetStartTime() : nullptr;
+			dbranchvars.at("prompt_t") = (prompt_t ? *prompt_t : 9999);
 			double x=0,y=0,z=0;
 			if(cappos && startpos){
 				x = startpos->X() - cappos->X();
@@ -257,7 +282,7 @@ bool TrueNCaptures::MakePlots(int step){
 	} else if(step==2){
 		
 		// finalise - write out file
-		fplots->Write("*",TObject::kOverwrite);
+		fplots->Write(nullptr,TObject::kOverwrite);
 		if(tplots) tplots->ResetBranchAddresses();
 		m_data->CloseFile(plotsfile);
 		

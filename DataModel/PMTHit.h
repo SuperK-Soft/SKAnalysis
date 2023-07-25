@@ -23,6 +23,7 @@ class PMTHit
         PMTHit(): T(0), Q(0), I(0), S(0), ToF(0), pmtPosition(), hitDirection() {}
         PMTHit(float t, float q, int i);
         PMTHit(PMTHit const& hit);
+        virtual ~PMTHit();
 
         inline const float& t() const { return T; }
         inline const float& q() const { return Q; }

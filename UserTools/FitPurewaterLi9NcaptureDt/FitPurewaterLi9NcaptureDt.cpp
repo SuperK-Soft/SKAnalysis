@@ -139,7 +139,7 @@ bool FitPurewaterLi9NcaptureDt::PlotNcaptureDt(){
 		// XXX FIXME REMOVE AFTER REPROCESSING IN ANALYSE XXX XXX XXX XXX XXX XXX 
 		double ncap_time_adjusted = aval < 50000 ? aval : aval - 65000;
 		ncap_time_adjusted /= 1E9;
-		if(ncpi<100) std::cout<<ncap_time_adjusted<<", "; ++ncpi;
+		if(ncpi<100){ std::cout<<ncap_time_adjusted<<", "; ++ncpi; }
 		li9_ncap_dt_hist.Fill(ncap_time_adjusted);  // FIXME weight by num_post_muons and num neutrons
 	}
 	std::cout<<"}"<<std::endl;

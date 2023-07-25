@@ -124,6 +124,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 		// for each candidate, loop over all true captures
 		// and match to the best one
 		int best_match_index=-1;
+		//std::cout<<"scanning "<<m_data->NCapturesTrue.size()<<" true captures"<<std::endl;
 		for(int truecapi=0; truecapi<m_data->NCapturesTrue.size(); ++truecapi){
 			NCapture& truecap = m_data->NCapturesTrue.at(truecapi);
 			double* truetime = truecap.GetTime();
@@ -157,7 +158,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 			// i.e. timediff > 0 (within some uncertainty from PMT timing resolution and
 			// a combination of noise + true hits gives a candidate time a little negative)
 			// FIXME should we / how do we incorporate this into the match metric?
-			double match_metric = std::sqrt(pow(timediff/1000.,2.)+pow(posdiff,2.));
+			double match_metric = std::sqrt(pow(timediff,2.)+pow(posdiff,2.));
 			bool make_match=false;
 			if(candidate.GetTrueCapture()!=nullptr){
 				// see whether this true capture is a better match for this candidate
@@ -168,10 +169,12 @@ bool NCaptInfo::MatchToTrueCaptures(){
 					   +" returned nullptr for time or position!",v_error,verbosity);
 					return false;
 				}
-				double old_match_metric = std::sqrt(pow(*old_timediff/1000.,2.)+pow(*old_posdiff,2.));
+				double old_match_metric = std::sqrt(pow(*old_timediff,2.)+pow(*old_posdiff,2.));
 				if(match_metric<old_match_metric){
 					// this is a better match
 					make_match=true;
+					//std::cout<<"found better match metric "<<match_metric
+					//         <<" than old one "<<old_match_metric<<std::endl;
 				}
 			} else {
 				// no current match
@@ -179,11 +182,24 @@ bool NCaptInfo::MatchToTrueCaptures(){
 			}
 			
 			if(make_match){
+				//std::cout<<"matching candidate "<<candi<<" to true capture "<<truecapi<<std::endl;
+				//std::cout<<"which is:"<<std::endl;
+				//m_data->NCapturesTrue.at(truecapi).Print();
 				candidate.SetTrueCaptureIdx(truecapi);
+				//std::cout<<"this is now matched to true capture:"<<std::endl;
+				m_data->NCapturesTrue.at(truecapi).Print();
+				//std::cout<<"which is at "<<&m_data->NCapturesTrue.at(truecapi)<<std::endl;
+				//std::cout<<"compared to "<<candidate.GetTrueCapture()<<std::endl;
+				//std::cout<<"and printing one more time "<<std::endl;
+				//candidate.GetTrueCapture()->Print();
 			}
 			
 			// we'll only set the 'matchType' for candidates passing some qualifying limit.
-			if(timediff < 1000 || timediff>time_match_tolerance) continue;
+			Log(m_unique_name+"checking if candidate passes cuts:\n"+
+			    +"timediff: "+toString(timediff)+" vs tolerance "+toString(time_match_tolerance)
+			    +"\nposdiff: "+toString(posdiff)+" vs tolerance "+toString(dist_match_tolerance),
+			    v_debug,verbosity);
+			if(timediff>time_match_tolerance) continue;
 			if(posdiff>dist_match_tolerance) continue;
 			
 			// try to set a specific match type based on isotope, if known
@@ -351,25 +367,27 @@ bool NCaptInfo::MakePlots(int step){
 			NCaptCandidate& acand = candidates.at(cand_i);
 			
 			// candidate info
-			cdbranchvars["prompt_t"] = acand.prompt_time;     // FIXME always 0
-			cdbranchvars["prompt_x"] = acand.prompt_pos.X();  // FIXME always 0
-			cdbranchvars["prompt_y"] = acand.prompt_pos.Y();  // FIXME always 0
-			cdbranchvars["prompt_z"] = acand.prompt_pos.Z();  // FIXME always 0
+			cdbranchvars["prompt_t"] = acand.prompt_time;     // ignore 9999
+			cdbranchvars["prompt_x"] = acand.prompt_pos.X();  // ignore 9999
+			cdbranchvars["prompt_y"] = acand.prompt_pos.Y();  // ignore 9999
+			cdbranchvars["prompt_z"] = acand.prompt_pos.Z();  // ignore 9999
 			cdbranchvars["cap_t"] = acand.capture_time;       // mostly flat out to 500E3?
-			cdbranchvars["cap_x"] = acand.capture_pos.X();    // strongly peaked at 0?
-			cdbranchvars["cap_y"] = acand.capture_pos.Y();    // strongly peaked at 0?
-			cdbranchvars["cap_z"] = acand.capture_pos.Z();    // strongly peaked at 0? also peaks at endcaps?
+			cdbranchvars["cap_x"] = acand.capture_pos.X();    // these have peaks at edges
+			cdbranchvars["cap_y"] = acand.capture_pos.Y();    // 
+			cdbranchvars["cap_z"] = acand.capture_pos.Z();    // especially z
 			cdbranchvars["n_travel_t"] = (acand.capture_time - acand.prompt_time);
 			cdbranchvars["n_travel_d"] = (acand.capture_pos - acand.prompt_pos).Mag();
-			cdbranchvars["likelihood"] = acand.likelihood_metric;  // FIXME always 0
+			cdbranchvars["likelihood"] = acand.likelihood_metric;
 			
 			candtree->Fill();
 			
 			// match info if available
 			NCapture* truecap = acand.GetTrueCapture();
+			std::cout<<"candidate "<<cand_i<<" has true cap at: "<<truecap<<std::endl;
 			if(truecap){
-				mibranchvars["matchtype"] = int(acand.matchtype);  // FIXME always -1
-				mdbranchvars["prompt_terr"] = (acand.GetPromptTerr() ? *acand.GetPromptTerr() : 0); // FIXME 0
+				truecap->Print();
+				mibranchvars["matchtype"] = int(acand.matchtype);
+				mdbranchvars["prompt_terr"] = (acand.GetPromptTerr() ? *acand.GetPromptTerr() : 0);
 				mdbranchvars["prompt_derr"] = (acand.GetPromptPosErr() ? *acand.GetPromptPosErr() : 0);
 				MParticle* trueneutron = truecap->GetNeutron();
 				TVector3* truepromptpos = (trueneutron ? trueneutron->GetStartPos() : nullptr);
@@ -423,16 +441,16 @@ bool NCaptInfo::MakePlots(int step){
 		TCanvas* c1 = new TCanvas(canvasname.c_str(),canvasname.c_str(),1200,800);
 		std::string savename;
 		
-		/*
-		TH1D h_cap_t("h_cap_t","Capture Time;T;num events",100,-1000,1000);
-		TH1D h_cap_x("h_cap_x","Capture X Position;X;num events",100,0,2000);
-		TH1D h_cap_y("h_cap_y","Capture Y Position;Y;num events",100,0,2000);
-		TH1D h_cap_z("h_cap_z","Capture Z Position;Z;num events",100,0,2000);
+		///*
+		TH1D h_cap_t("h_cap_t","Capture Time;T;num events",100,-1000,60000);
+		TH1D h_cap_x("h_cap_x","Capture X Position;X;num events",100,-2000,2000);
+		TH1D h_cap_y("h_cap_y","Capture Y Position;Y;num events",100,-2000,2000);
+		TH1D h_cap_z("h_cap_z","Capture Z Position;Z;num events",100,-2000,2000);
 		
-		TH1D h_prompt_t("h_prompt_t","Prompt Time;T;num events",100,-1000,1000);
-		TH1D h_prompt_x("h_prompt_x","Prompt X Position;X;num events",100,0,2000);
-		TH1D h_prompt_y("h_prompt_y","Prompt Y Position;Y;num events",100,0,2000);
-		TH1D h_prompt_z("h_prompt_z","Prompt Z Position;Z;num events",100,0,2000);
+		TH1D h_prompt_t("h_prompt_t","Prompt Time;T;num events",100,-100,2000);
+		TH1D h_prompt_x("h_prompt_x","Prompt X Position;X;num events",100,-2000,2000);
+		TH1D h_prompt_y("h_prompt_y","Prompt Y Position;Y;num events",100,-2000,2000);
+		TH1D h_prompt_z("h_prompt_z","Prompt Z Position;Z;num events",100,-2000,2000);
 		
 		TH1D h_likelihood("h_likelihood","Likelihood;metric;num events",100,0,1);
 		TH1D h_n_travel_d("h_n_travel_d","Neutron Travel D;D;num events",100,0,2000);
@@ -444,7 +462,7 @@ bool NCaptInfo::MakePlots(int step){
 		TH1D h_cap_zerr("h_cap_zerr","Capture Z Position Error;Zerr;num events",100,0,2000);
 		TH1D h_cap_derr("h_cap_derr","Capture Total Position Error;Rerr;num events",100,0,2000);
 		
-		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,-1000,1000);
+		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,-1000,2000);
 		TH1D h_prompt_xerr("h_prompt_xerr","Prompt X Position Error;Xerr;num events",100,0,2000);
 		TH1D h_prompt_yerr("h_prompt_yerr","Prompt Y Position Error;Yerr;num events",100,0,2000);
 		TH1D h_prompt_zerr("h_prompt_zerr","Prompt Z Position Error;Zerr;num events",100,0,2000);
@@ -460,37 +478,45 @@ bool NCaptInfo::MakePlots(int step){
 		//TH2D h_capt_terr_vs_E("h_capt_terr_vs_E","Terr;Terr;Likelihood;N events",100,-10000,10000,100,0,1);
 		//TH2D h_capt_derr_vs_E("h_capt_derr_vs_E","Rerr;Rerr;Likelihood;N events",100,-10000,10000,100,0,1);
 		
-		candtree->Draw("cap_t>>h_cap_t");
-		candtree->Draw("cap_x>>h_cap_x");
-		candtree->Draw("cap_y>>h_cap_y");
-		candtree->Draw("cap_z>>h_cap_z");
+		/*
+		std::cout<<"candtree: "<<std::endl;
+		candtree->Print();
+		std::cout<<"matchtree: "<<std::endl;
+		matchtree->Print();
+		*/
 		
-		candtree->Draw("prompt_t>>h_prompt_t");
-		candtree->Draw("prompt_x>>h_prompt_x");
-		candtree->Draw("prompt_y>>h_prompt_y");
-		candtree->Draw("prompt_z>>h_prompt_z");
+		candtree->Draw("cap_t>>h_cap_t","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_x>>h_cap_x","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_y>>h_cap_y","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_z>>h_cap_z","prompt_t!=9999 && cap_t!=9999");
 		
-		candtree->Draw("likelihood>>h_likelihood");
-		candtree->Draw("n_travel_t>>h_n_travel_t");
-		candtree->Draw("n_travel_d>>h_n_travel_d");
+		candtree->Draw("prompt_t>>h_prompt_t","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_x>>h_prompt_x","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_y>>h_prompt_y","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_z>>h_prompt_z","prompt_t!=9999 && cap_t!=9999");
 		
-		matchtree->Draw("cap_terr>>h_cap_terr");
-		matchtree->Draw("cap_xerr>>h_cap_xerr");
-		matchtree->Draw("cap_yerr>>h_cap_yerr");
-		matchtree->Draw("cap_zerr>>h_cap_zerr");
-		matchtree->Draw("cap_derr>>h_cap_derr");
-		
-		matchtree->Draw("prompt_terr>>h_prompt_terr");
-		matchtree->Draw("prompt_xerr>>h_prompt_xerr");
-		matchtree->Draw("prompt_yerr>>h_prompt_yerr");
-		matchtree->Draw("prompt_zerr>>h_prompt_zerr");
-		matchtree->Draw("prompt_derr>>h_prompt_derr");
+		candtree->Draw("likelihood>>h_likelihood","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("n_travel_t>>h_n_travel_t","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("n_travel_d>>h_n_travel_d","prompt_t!=9999 && cap_t!=9999");
 		
 		candtree->AddFriend(matchtree);
-		candtree->Draw("cap_terr:likelihood>>h_capt_terr_vs_metric");
-		candtree->Draw("cap_derr:likelihood>>h_capt_derr_vs_metric");
-		candtree->Draw("prompt_terr:likelihood>>h_prompt_terr_vs_metric");
-		candtree->Draw("prompt_derr:likelihood>>h_prompt_derr_vs_metric");
+		
+		candtree->Draw("cap_terr>>h_cap_terr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_xerr>>h_cap_xerr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_yerr>>h_cap_yerr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_zerr>>h_cap_zerr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_derr>>h_cap_derr","prompt_t!=9999 && cap_t!=9999");
+		
+		candtree->Draw("prompt_terr>>h_prompt_terr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_xerr>>h_prompt_xerr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_yerr>>h_prompt_yerr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_zerr>>h_prompt_zerr","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_derr>>h_prompt_derr","prompt_t!=9999 && cap_t!=9999");
+		
+		candtree->Draw("cap_terr:likelihood>>h_capt_terr_vs_metric","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("cap_derr:likelihood>>h_capt_derr_vs_metric","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_terr:likelihood>>h_prompt_terr_vs_metric","prompt_t!=9999 && cap_t!=9999");
+		candtree->Draw("prompt_derr:likelihood>>h_prompt_derr_vs_metric","prompt_t!=9999 && cap_t!=9999");
 		
 		c1->Divide(2,2);
 		c1->cd(1);
@@ -582,7 +608,6 @@ bool NCaptInfo::MakePlots(int step){
 		h_cap_zerr.Write();
 		h_cap_derr.Write();
 		h_cap_terr.Write();
-		h_likelihood.Write();
 		h_capt_terr_vs_metric.Write();
 		h_capt_derr_vs_metric.Write();
 		h_prompt_xerr.Write();
@@ -592,7 +617,7 @@ bool NCaptInfo::MakePlots(int step){
 		h_prompt_terr.Write();
 		h_prompt_terr_vs_metric.Write();
 		h_prompt_derr_vs_metric.Write();
-		*/
+		//*/
 		
 		/*
 		std::cout<<"waiting for user to close canvas "<<canvasname<<std::endl;
@@ -604,12 +629,19 @@ bool NCaptInfo::MakePlots(int step){
 		}
 		*/
 		// c1 is deleted when canvas is closed, so only delete if not shown & closed
+		std::cout<<"deleting c1 if it exists: "<<gROOT->FindObject(canvasname.c_str())<<std::endl;
 		if(gROOT->FindObject(canvasname.c_str())!=nullptr) delete c1;
 		
+		std::cout<<"closing file"<<std::endl;
+		matchtree->RemoveFriend(candtree);
+		candtree->ResetBranchAddresses();
+		matchtree->ResetBranchAddresses();
 		out_file->Close();
 		// hsitograms are deleted when file is closed
 		
+		std::cout<<"deleting file"<<std::endl;
 		delete out_file;
+		std::cout<<"done"<<std::endl;
 		
 	}
 	

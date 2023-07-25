@@ -103,6 +103,9 @@ class ntag_BDT : public Tool {
 	basic_array<float*> vz;
 	// vector for branches 'Nlow1','Nlow2','Nlow3'... unknown number of such branches
 	std::vector<basic_array<int*>> Nlow;
+	// check for optional branches once and then propagate only if they exist
+	bool got_type;
+	bool got_smeared_vtx;
 	
 	// output variables - arrays of size defined by branch 'np'
 	int MAX_EVENTS=500;

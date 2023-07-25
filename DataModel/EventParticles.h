@@ -8,6 +8,7 @@ class EventParticles : public Cluster<Particle>
 {
     public:
         EventParticles() {}
+        virtual ~EventParticles();
         
         void DumpAllElements();
     

@@ -256,7 +256,7 @@ bool SimplifyTree::Execute(){
 				# -- for muon VETO(11151,11152,11153,11154)
 				# -- for calibration ID (11155-?, see skveto.h for details)
 				# -- for muon chamber(only hut3 and hut4)
-				# -- for trigger ID QB (15001-15240, see skhead.h for details)
+				# -- for trigger ID QB (15001-15024, see skhead.h IDTGSK cable # for details)
 				# -- for anti-PMT(20001-21885)
 			
 			 from $SKOFL_ROOT/inc/sktq.h, meaning of bits of hitflags (IHTIFLZ):

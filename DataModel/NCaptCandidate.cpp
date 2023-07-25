@@ -112,3 +112,10 @@ void NCaptCandidate::Print(bool printFeatureMap, bool printFeatureMapValues){
 		}
 	}
 }
+
+std::ostream& operator << (std::ostream& os, const NCaptCandidate::matchType& obj){
+	///os << static_cast<std::underlying_type<A>::type>(obj);
+	if(NCaptCandidate::matchTypes.count(obj)) os << NCaptCandidate::matchTypes.at(obj);
+	else os << "?";
+	return os;
+}

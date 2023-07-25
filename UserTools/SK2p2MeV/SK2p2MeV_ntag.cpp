@@ -37,14 +37,12 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	// ------------------------------------
 	std::string treeReaderName;
 	std::string derived_classname;
-	int sk_geometry=4;
 	std::string outFile = "SK2p2MeV.root";
 	m_variables.Get("verbosity",verbosity);                   // how verbose to be
 	m_variables.Get("treeReaderName",treeReaderName);         // reader for input tree
 	m_variables.Get("derived_classname", derived_classname);  // derived class of SK2p2MeV
 	m_variables.Get("outFile",outFile);                       // output file for TTree
 	m_variables.Get("isWIT",isWIT);                           // is the input file a WIT file?
-	m_variables.Get("SK_GEOMETRY",sk_geometry);               // is the input file a WIT file?
 	
 	
 	if(m_data->Trees.count(treeReaderName)==0){
@@ -56,10 +54,6 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	// make output file
 	if(outFile == nullptr) outFile = "SK2p2MeV_output.root";
 	fout = new TFile(outFile.c_str(), "RECREATE");
-	
-	// TODO centralise calling this in the DataModel
-	skheadg_.sk_geometry = sk_geometry;
-	geoset_();
 	
 	// make the SK2p2MeV class instance
 	// XXX base class constructor initializes bonsai - will this interfere with other Tools using bonsai?

@@ -95,7 +95,7 @@ bool SK2p2MeV_mc::GetBranchValues(){
     
     // get additional branch variables - MU and ThirdRed propagated to output TTree
     get_ok  = (myTreeReader->Get("MC", MC));                   //&&
-    get_ok &= (myTreeReader->Get("ThirdRed", thirdred));
+    if(got_third_red) get_ok &= (myTreeReader->Get("ThirdRed", thirdred));
     
     return get_ok;
 }
@@ -107,7 +107,8 @@ bool SK2p2MeV_mc::Initialise(MTreeReader* reader){
     theOTree->Branch("HEADER", "Header", &head0, 1024*1024, 0);
     theOTree->Branch("LOWE", "LoweInfo", &lowe0, 1024*1024, 0);
     theOTree->Branch("MC", "MCInfo", &MC, 1024*1024, 0);
-    theOTree->Branch("ThirdRed", "ThirdRed", &third0, 1024*1024, 0);
+    got_third_red = (myTreeReader->Get("ThirdRed", thirdred));
+    if(got_third_red) theOTree->Branch("ThirdRed", "ThirdRed", &third0, 1024*1024, 0);
     theOTree->Branch("smearedvertex", smearedvertex, "smearedvertex[3]/F");
     
     prevrun = 0;
@@ -185,7 +186,6 @@ void SK2p2MeV_mc::Analyze (long entry, bool last_entry)
         VY = LOWE->bsvertex[1];
         VZ = LOWE->bsvertex[2];
     }
-    std::cout << VX << " " << VY << " " << VZ << std::endl;
     // Fiducial volume check
     if (sqrt(VX*VX + VY*VY) > 1690 || fabs(VZ) > 1810) return;
     if ( useMC && fSmear ) {
@@ -208,11 +208,9 @@ void SK2p2MeV_mc::Analyze (long entry, bool last_entry)
         do {
             gRandom->Sphere(dx, dy, dz, rshift);
         } while ( sqrt((VX+dx)*(VX+dx)+(VY+dy)*(VY+dy)) > 1640 || fabs(VZ+dz) > 1760 ); // inside detector
-        std::cout << VX << " " << VY << " " << VZ << std::endl;
         VX += dx;
         VY += dy;
         VZ += dz;
-        std::cout << VX << " " << VY << " " << VZ << std::endl;
     }
     
     // Clear previous results
@@ -221,7 +219,7 @@ void SK2p2MeV_mc::Analyze (long entry, bool last_entry)
     // New results
     *head0 = *HEADER;
     *lowe0 = *LOWE;
-    *third0 = *thirdred;
+    if(got_third_red) *third0 = *thirdred;
     smearedvertex[0]= VX;
     smearedvertex[1]= VY;
     smearedvertex[2]= VZ;

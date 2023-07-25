@@ -60,6 +60,10 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	// make output tree with same branch structure as input tree
 	treeout = myTreeReader->GetTree()->CloneTree(0);
 	
+	// check if we have the 'type' or 'smearedvertex' branches (old relic analysis MC)
+	got_type = myTreeReader->Get("type",type);
+	got_smeared_vtx = myTreeReader->Get("smearedvertex", smearedvertex);
+	
 	// make output branch arrays
 	neutron5 = new float[MAX_EVENTS];
 	nlow = new int[MAX_EVENTS];
@@ -228,7 +232,6 @@ bool ntag_BDT::GetBranchValues(){
 	get_ok  = (myTreeReader->Get( "HEADER",          HEADER        ));
 	get_ok &= (myTreeReader->Get( "LOWE",            LOWE          ));
 	get_ok &= (myTreeReader->Get( "np",              np            ));
-	get_ok &= (myTreeReader->Get( "type",            type          ));
 	get_ok &= (myTreeReader->Get( "nhits",           nnhits        ));
 	get_ok &= (myTreeReader->Get( "N10",             n10           ));
 	get_ok &= (myTreeReader->Get( "N200M",           N200M         ));
@@ -254,11 +257,14 @@ bool ntag_BDT::GetBranchValues(){
 	get_ok &= (myTreeReader->Get( "fwall",           fwall         ));
 	get_ok &= (myTreeReader->Get( "N10d",            n10d          ));
 	get_ok &= (myTreeReader->Get( "dt",              dt            ));
-	get_ok &= (myTreeReader->Get( "smearedvertex",   smearedvertex )); // optional, MC only
 	//get_ok &= (myTreeReader->Get("neutron5",       neutron5      ));
 	//get_ok &= (myTreeReader->Get("pvx",            vx            ));
 	//get_ok &= (myTreeReader->Get("pvy",            vy            ));
 	//get_ok &= (myTreeReader->Get("pvz",            vz            ));
+	
+	// extra optional branches, exist only for MC w/ old relic analysis
+	if(got_smeared_vtx) get_ok &= (myTreeReader->Get( "smearedvertex", smearedvertex ));
+	if(got_type) get_ok &= (myTreeReader->Get( "type",type ));
 	
 	// we have a variable number of 'Nlow' branches.
 	// the current apply_ntag.C code defined the number of such branches

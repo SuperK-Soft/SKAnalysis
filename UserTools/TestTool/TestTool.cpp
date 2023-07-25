@@ -467,6 +467,7 @@ bool TestTool::RegisterType(std::string thetype){
         // This is handled in the Makefile by linking the same libraries
         // defining user classes to both main and libBStore_RootDict.so
     } // else it's from stl, we can skip the #includes
+    return true;
 }
 
 bool TestTool::FillBranches(TTree* tree, Store* store){
@@ -505,6 +506,7 @@ bool TestTool::FillBranches(TTree* tree, Store* store){
     }
     tree->SetEntries(num_entries);
     tree->ResetBranchAddresses();
+    return true;
 }
 
 bool TestTool::FillBranches(TTree* tree, BStore* store){
@@ -752,4 +754,5 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
     }
     tree->SetEntries(num_entries);
     tree->ResetBranchAddresses();
+    return true;
 }

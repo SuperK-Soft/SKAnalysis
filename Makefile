@@ -226,7 +226,8 @@ UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so inclu
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	cp UserTools/Factory/Factory.h include
 	cp UserTools/Unity.h include
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelib)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	#-L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelib)
 
 update:
 	@echo -e "\e[38;5;51m\n*************** Updating ****************\e[0m"
@@ -236,12 +237,14 @@ update:
 UserTools/%.o: UserTools/%.cpp lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so | include/Tool.h
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	-cp $(shell dirname $<)/*.h include
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelLib)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	#-L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelLib)
 
 UserTools/%.o: UserTools/%.cc lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so
 	@echo -e "\e[38;5;214m\n*************** Making c++ Tool " $@ "****************\e[0m"
 	-cp $(shell dirname $<)/*.h include 2>/dev/null || :
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelLib)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	# -L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelLib)
 
 UserTools/%.o: UserTools/%.F lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so
 	@echo -e "\e[38;5;214m\n*************** Making fortran Tool " $@ "****************\e[0m"

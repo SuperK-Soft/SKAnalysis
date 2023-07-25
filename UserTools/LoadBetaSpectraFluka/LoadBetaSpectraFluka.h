@@ -58,7 +58,7 @@ class LoadBetaSpectraFluka: public Tool {
 	
 	// variables to read in
 	// ====================
-	MTreeReader myTreeReader; // the TTree reader
+	MTreeReader myTreeReader{"betaReader"}; // the TTree reader
 	// input branch variables
 //	int muonID;
 //	int event_num;

@@ -29,18 +29,12 @@ class MyToolRoot: public Tool {
 	private:
 	// functions
 	// =========
-	int ReadEntry(long entry_number);
 	int GetBranches();
 	bool Analyse();
-	int DisableUnusedBranches();
 	
 	// tool variables
 	// ==============
 	std::string toolName;
-	std::string inputFile;
-	std::string treeName;
-	std::string outputFile;
-	int maxEvents;
 	int entrynum=0;
 	
 	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
@@ -54,7 +48,7 @@ class MyToolRoot: public Tool {
 	
 	// variables to read in
 	// ====================
-	MTreeReader myTreeReader; // the TTree reader
+	MTreeReader* myTreeReader=nullptr; // the TTree reader
 	
 	// variables to write out
 	// ======================

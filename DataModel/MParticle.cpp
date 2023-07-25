@@ -86,7 +86,7 @@ TVector3* MParticle::GetStartPos(){
 		return &m_data->eventVertices.at(start_vtx_idx).pos;
 	}
 	// else no associated vertex
-	return nullptr; //TVector3{999,999,999};
+	return nullptr;
 }
 
 double* MParticle::GetStartTime(){
@@ -94,7 +94,7 @@ double* MParticle::GetStartTime(){
 		return &m_data->eventVertices.at(start_vtx_idx).time;
 	}
 	// else no associated vertex
-	return nullptr; //-999;
+	return nullptr;
 }
 
 TVector3* MParticle::GetStartMom(){
@@ -122,7 +122,7 @@ std::vector<int>* MParticle::GetStartProcesses(){
 		return &m_data->eventVertices.at(start_vtx_idx).processes;
 	}
 	// else no associated vertex
-	return nullptr; //std::vector<int>{};
+	return nullptr;
 }
 
 MVertex* MParticle::GetEndVertex(){
@@ -138,7 +138,7 @@ TVector3* MParticle::GetEndPos(){
 		return &m_data->eventVertices.at(end_vtx_idx).pos;
 	}
 	// else no associated vertex
-	return nullptr; //TVector3{999,999,999};
+	return nullptr;
 }
 
 double* MParticle::GetEndTime(){
@@ -146,7 +146,7 @@ double* MParticle::GetEndTime(){
 		return &m_data->eventVertices.at(end_vtx_idx).time;
 	}
 	// else no associated vertex
-	return nullptr; //-999;
+	return nullptr;
 }
 
 TVector3* MParticle::GetEndMom(){
@@ -174,7 +174,7 @@ std::vector<int>* MParticle::GetEndProcesses(){
 		return &m_data->eventVertices.at(end_vtx_idx).processes;
 	}
 	// else no associated vertex
-	return nullptr; //std::vector<int>{};
+	return nullptr;
 }
 
 MParticle* MParticle::GetParent(){
@@ -196,7 +196,6 @@ int MParticle::GetNearestParentIndex(){
 std::string MParticle::PrintStartPos(){
 	std::string ret;
 	TVector3* sp = GetStartPos();
-	//if(start_vtx_idx!=TVector3{999,999,999}){
 	if(sp!=nullptr){
 		ret = "(" + toString(sp->X())+", "+toString(sp->Y())
 			             +", "+ toString(sp->Z())+")";
@@ -262,7 +261,6 @@ std::string MParticle::PrintStartProcesses(){
 std::string MParticle::PrintEndPos(){
 	std::string ret;
 	TVector3* ep = GetEndPos();
-	//if(end_vtx_idx!=TVector3{999,999,999}){
 	if(ep!=nullptr){
 		ret = "(" + toString(ep->X())+", "+toString(ep->Y())
 			             +", "+ toString(ep->Z())+")";

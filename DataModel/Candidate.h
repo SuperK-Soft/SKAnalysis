@@ -10,6 +10,7 @@ class Candidate
 {
     public:
         Candidate(const unsigned int iHit=0);
+        virtual ~Candidate();
 
         inline unsigned int HitID() const { return hitID; }
         

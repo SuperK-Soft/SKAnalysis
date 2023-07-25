@@ -6,6 +6,8 @@
 TrueCapture::TrueCapture()
 : t(0), E(0), nGamma(0), v() {}
 
+TrueCapture::~TrueCapture() = default;
+
 void TrueCapture::Append(const Particle& gamma)
 {
     // 22: gamma-ray

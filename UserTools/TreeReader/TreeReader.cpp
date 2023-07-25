@@ -58,6 +58,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	LoadConfig(configfile);
 	toolName = toolName+" "+readerName;
 	m_data->tool_configs[toolName] = &m_variables;
+	myTreeReader.SetName(readerName);
 	
 	// safety check that we were given an input file
 	if(inputFile=="" && FileListName==""){
@@ -505,6 +506,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	std::function<bool()> loadAFT = std::bind(std::mem_fn(&TreeReader::LoadAFT), std::ref(*this));
 	std::function<bool(int)> loadCommons = std::bind(std::mem_fn(&TreeReader::LoadCommons), std::ref(*this), std::placeholders::_1);
 	std::function<int(long)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, false);
+	// TODO we could remove the first argument now that the MTreeReader knows its name
 	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons, getTreeEntry);
 	
 	// get first entry to process

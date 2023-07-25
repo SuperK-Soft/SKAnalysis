@@ -14,6 +14,9 @@ bool NCapture::SetNeutronIndex(int neutron_index){
 		// out of bounds, or not a neutron
 		return false;
 	}
+	got_capture_t=false;
+	got_daughters = false;
+	got_daughter_nuclide = false;
 	return true;
 }
 
@@ -133,9 +136,12 @@ bool NCapture::SumConversioneE(double& sumconvee){
 }
 
 double* NCapture::GetTime(){
+	if(got_capture_t) return &capture_time;
 	MParticle* neutron = GetNeutron();
 	if(neutron==nullptr) return nullptr;
-	return neutron->GetEndTime();
+	capture_time = (*neutron->GetEndTime()) / 1000.; // [ns -> us]
+	got_capture_t = true;
+	return &capture_time;
 }
 
 TVector3* NCapture::GetPos(){
@@ -173,7 +179,7 @@ bool NCapture::NeutronTravelTime(double& ntravelt){
 }
 
 void NCapture::Print(bool verbose){
-	std::cout<<"\tcapture time [us]: "<<(GetTime() ? toString(*GetTime()/1000.) : "?")<<"\n"
+	std::cout<<"\tcapture time [us]: "<<(GetTime() ? toString(*GetTime()) : "?")<<"\n"
 	         <<"\tcapture position [cm]: "<<(GetPos() ? toString(*GetPos()) : "(?,?,?)")<<"\n"
 	         <<"\tdaughter nuclide pdg: "<<(GetDaughterNuclide() ? toString(GetDaughterNuclide()->pdg) : "?")<<"\n";
 	int ng, ne;
