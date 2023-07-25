@@ -101,48 +101,54 @@ $(function() {
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="comment">// start or end momentum set (as not all sources record them)</span></div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="comment">// require the use of setters, and provide getters</span></div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    TVector3 start_mom{0,0,0};</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    TVector3 end_mom{0,0,0};</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keywordtype">double</span>* nums);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keywordtype">double</span>* nums);</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keywordtype">float</span>* nums);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keywordtype">float</span>* nums);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keyword">const</span> TVector3&amp; nums);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keyword">const</span> TVector3&amp; nums);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">double</span> z);</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">double</span> z);</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">double</span>* GetStartTime();</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    TVector3* GetStartPos();</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    TVector3* GetStartMom();</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">double</span>* GetEndTime();</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    TVector3* GetEndPos();</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    TVector3* GetEndMom();</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    std::vector&lt;int&gt;* GetStartProcesses();       <span class="comment">// XXX is int ok?</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    std::vector&lt;int&gt;* GetEndProcesses();         <span class="comment">// XXX is int ok?</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">bool</span> IsParentDirect();</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    </div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <a class="code" href="classMVertex.html">MVertex</a>* GetStartVertex();</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <a class="code" href="classMVertex.html">MVertex</a>* GetEndVertex();</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <a class="code" href="classMParticle.html">MParticle</a>* GetParent();</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">int</span> GetNearestParentIndex();  <span class="comment">// should give a valid index or -1</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    std::string PrintStartPos();</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    std::string PrintStartTime();</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    std::string PrintStartMom();</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    std::string PrintStartProcesses();</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    std::string PrintEndPos();</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    std::string PrintEndTime();</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    std::string PrintEndMom();</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    std::string PrintEndProcesses();</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">void</span> Print();</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <a class="code" href="classDataModel.html">DataModel</a>* m_data=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;};</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    TVector3 start_mom{0,0,0};  <span class="comment">// [MeV/c]</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    TVector3 end_mom{0,0,0};    <span class="comment">// [MeV/c]</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">double</span> startE;              <span class="comment">// [MeV]</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">double</span> endE;                <span class="comment">// [MeV]</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keywordtype">double</span>* nums);</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keywordtype">double</span>* nums);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keywordtype">float</span>* nums);</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keywordtype">float</span>* nums);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keyword">const</span> TVector3&amp; nums);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keyword">const</span> TVector3&amp; nums);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">void</span> SetStartMom(<span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">double</span> z);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> SetEndMom(<span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">double</span> z);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">double</span>* GetStartTime();</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    TVector3* GetStartPos();</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    TVector3* GetStartMom();</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordtype">double</span>* GetStartE();</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">double</span>* GetEndTime();</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    TVector3* GetEndPos();</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    TVector3* GetEndMom();</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">double</span>* GetEndE();</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    std::vector&lt;int&gt;* GetStartProcesses();</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    std::vector&lt;int&gt;* GetEndProcesses();</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">bool</span> IsParentDirect();</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <a class="code" href="classMVertex.html">MVertex</a>* GetStartVertex();</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <a class="code" href="classMVertex.html">MVertex</a>* GetEndVertex();</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="classMParticle.html">MParticle</a>* GetParent();</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">int</span> GetNearestParentIndex();  <span class="comment">// should give a valid index or -1</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    std::string PrintStartPos();</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    std::string PrintStartTime();</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    std::string PrintStartMom();</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    std::string PrintStartE();</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    std::string PrintStartProcesses();</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    std::string PrintEndPos();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    std::string PrintEndTime();</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    std::string PrintEndMom();</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    std::string PrintEndE();</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    std::string PrintEndProcesses();</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> Print(<span class="keywordtype">bool</span> verbose=<span class="keyword">false</span>);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <a class="code" href="classDataModel.html">DataModel</a>* m_data=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;};</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:60</div></div>
 <div class="ttc" id="aclassMParticle_html"><div class="ttname"><a href="classMParticle.html">MParticle</a></div><div class="ttdef"><b>Definition:</b> MParticle.h:10</div></div>
 <div class="ttc" id="aclassMVertex_html"><div class="ttname"><a href="classMVertex.html">MVertex</a></div><div class="ttdef"><b>Definition:</b> MVertex.h:10</div></div>

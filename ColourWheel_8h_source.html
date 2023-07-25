@@ -104,7 +104,7 @@ $(function() {
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">void</span> Reset(){ colourindex=1; }</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    EColor GetNextColour(){</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        colourindex++;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keywordflow">if</span>(colourindex&gt;=colours.size()) colourindex=0;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keywordflow">if</span>(colourindex&gt;=<span class="keywordtype">int</span>(colours.size())) colourindex=0;</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        currentcolour = colours.at(colourindex);</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="keywordflow">return</span> currentcolour;</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    };</div>
@@ -117,7 +117,7 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    EColor GetCurrentColour(){ <span class="keywordflow">return</span> currentcolour; }</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">int</span> GetCurrentIndex(){ <span class="keywordflow">return</span> colourindex; }</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">bool</span> SetCurrentColour(<span class="keywordtype">int</span> index){</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">if</span>(index&gt;0 &amp;&amp; (index+1)&lt;colours.size()){</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">if</span>(index&gt;0 &amp;&amp; (index+1)&lt;<span class="keywordtype">int</span>(colours.size())){</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            colourindex=index;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            currentcolour=colours.at(index);</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>

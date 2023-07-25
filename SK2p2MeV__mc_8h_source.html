@@ -113,28 +113,29 @@ $(function() {
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="comment">// additional input variables</span></div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    MCInfo *MC;</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <a class="code" href="classThirdRed.html">ThirdRed</a> *thirdred;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="comment">// configuration variables</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    Bool_t  fSmear;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    Bool_t  useMC;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    Float_t sigma_xyz[3]; <span class="comment">// vertex resolution</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    Bool_t  fShift;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    Float_t rshift;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">int</span> rseed;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// additional output variables</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    Header *head0 = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    LoweInfo *lowe0 = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    MCInfo *mc0 = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <a class="code" href="classThirdRed.html">ThirdRed</a> *third0 = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordtype">float</span> smearedvertex[3];</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="comment">// variables that need to be carried over between Analyze calls</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">int</span> prevrun = 0;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">int</span> prevsub = 0;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;};</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// __SK2P2MEV_MC_H__</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">bool</span> got_third_red=<span class="keyword">false</span>;  <span class="comment">// propagate only if input TTree has it</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="comment">// configuration variables</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    Bool_t  fSmear;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    Bool_t  useMC;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    Float_t sigma_xyz[3]; <span class="comment">// vertex resolution</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    Bool_t  fShift;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    Float_t rshift;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordtype">int</span> rseed;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="comment">// additional output variables</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    Header *head0 = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    LoweInfo *lowe0 = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    MCInfo *mc0 = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="classThirdRed.html">ThirdRed</a> *third0 = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">float</span> smearedvertex[3];</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// variables that need to be carried over between Analyze calls</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">int</span> prevrun = 0;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="keywordtype">int</span> prevsub = 0;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;};</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// __SK2P2MEV_MC_H__</span></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
 <div class="ttc" id="aclassSK2p2MeV__mc_html"><div class="ttname"><a href="classSK2p2MeV__mc.html">SK2p2MeV_mc</a></div><div class="ttdef"><b>Definition:</b> SK2p2MeV_mc.h:23</div></div>
 <div class="ttc" id="aclassSK2p2MeV_html"><div class="ttname"><a href="classSK2p2MeV.html">SK2p2MeV</a></div><div class="ttdef"><b>Definition:</b> SK2p2MeV.h:207</div></div>

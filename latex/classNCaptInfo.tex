@@ -20,10 +20,13 @@ bool \mbox{\hyperlink{classNCaptInfo_a96dc7d1c33378afd0b3c519d16b5badb}{Initiali
 \begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{classNCaptInfo_a54e08a5537991853e2c71778bdc68784}\label{classNCaptInfo_a54e08a5537991853e2c71778bdc68784}} 
 bool \mbox{\hyperlink{classNCaptInfo_a54e08a5537991853e2c71778bdc68784}{Execute}} ()
-\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool perpose. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool purpose. \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{classNCaptInfo_aa927e181c665793f4b192acc8fbb041c}\label{classNCaptInfo_aa927e181c665793f4b192acc8fbb041c}} 
 bool \mbox{\hyperlink{classNCaptInfo_aa927e181c665793f4b192acc8fbb041c}{Finalise}} ()
 \begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classNCaptInfo_a42d5f662884be524f69bf1eafbbbeca7}\label{classNCaptInfo_a42d5f662884be524f69bf1eafbbbeca7}} 
+virtual bool {\bfseries Init\+Candidate\+Reader} ()=0
+\item 
 \mbox{\Hypertarget{classNCaptInfo_afc9b2e48d156a51e21678a3cc642efff}\label{classNCaptInfo_afc9b2e48d156a51e21678a3cc642efff}} 
 virtual bool {\bfseries Get\+Candidates} (std\+::vector$<$ \mbox{\hyperlink{classNCaptCandidate}{NCapt\+Candidate}} $>$ \&candidates)=0
 \item 
@@ -36,8 +39,7 @@ bool {\bfseries Match\+Mistags} ()
 \mbox{\Hypertarget{classNCaptInfo_a09ba3727b589c21f6b2b37b3256c2381}\label{classNCaptInfo_a09ba3727b589c21f6b2b37b3256c2381}} 
 bool {\bfseries Print\+Candidates} ()
 \item 
-\mbox{\Hypertarget{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}\label{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}} 
-bool {\bfseries Make\+Plots} (int step)
+bool \mbox{\hyperlink{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}{Make\+Plots}} (int step)
 \end{DoxyCompactItemize}
 \doxysubsection*{Protected Attributes}
 \begin{DoxyCompactItemize}
@@ -51,6 +53,12 @@ std\+::string {\bfseries m\+\_\+unique\+\_\+name} =\char`\"{}\char`\"{}
 \mbox{\Hypertarget{classNCaptInfo_ab195e8a5bd20259be82cc90a9f835d8e}\label{classNCaptInfo_ab195e8a5bd20259be82cc90a9f835d8e}} 
 bool {\bfseries match\+\_\+mistags} =false
 \item 
+\mbox{\Hypertarget{classNCaptInfo_a33a96ec6b1b339e58cfc2b1eac06a342}\label{classNCaptInfo_a33a96ec6b1b339e58cfc2b1eac06a342}} 
+std\+::string {\bfseries candidates\+\_\+file} =\char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a60f69dac22b3437ac3494b2ea232dd78}\label{classNCaptInfo_a60f69dac22b3437ac3494b2ea232dd78}} 
+std\+::string {\bfseries mctruth\+\_\+file} =\char`\"{}\char`\"{}
+\item 
 \mbox{\Hypertarget{classNCaptInfo_a289f10dac5224de91a0c15d49a5364af}\label{classNCaptInfo_a289f10dac5224de91a0c15d49a5364af}} 
 double {\bfseries time\+\_\+match\+\_\+tolerance}
 \item 
@@ -58,7 +66,13 @@ double {\bfseries time\+\_\+match\+\_\+tolerance}
 double {\bfseries dist\+\_\+match\+\_\+tolerance}
 \item 
 \mbox{\Hypertarget{classNCaptInfo_a8bcc518286b55539a189c4454f878c07}\label{classNCaptInfo_a8bcc518286b55539a189c4454f878c07}} 
-double {\bfseries likelihood\+\_\+threshold}
+double {\bfseries likelihood\+\_\+threshold} =-\/999
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a36ccb4189f50579b090bfb5f6945d077}\label{classNCaptInfo_a36ccb4189f50579b090bfb5f6945d077}} 
+std\+::string {\bfseries outfilename} =\char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_ad675ef52004317a733aedbd4e445ac38}\label{classNCaptInfo_ad675ef52004317a733aedbd4e445ac38}} 
+TFile $\ast$ {\bfseries out\+\_\+file} = nullptr
 \item 
 \mbox{\Hypertarget{classNCaptInfo_a02ac3db6dc006e6a434c93177e8dcad6}\label{classNCaptInfo_a02ac3db6dc006e6a434c93177e8dcad6}} 
 TH1D $\ast$ {\bfseries h\+\_\+likelihood} = nullptr
@@ -84,6 +98,24 @@ TH2D $\ast$ {\bfseries h\+\_\+tdiff\+\_\+vs\+\_\+metric} = nullptr
 \mbox{\Hypertarget{classNCaptInfo_a8169e6f4a31b40e60be4ef384b011023}\label{classNCaptInfo_a8169e6f4a31b40e60be4ef384b011023}} 
 TH2D $\ast$ {\bfseries h\+\_\+rdiff\+\_\+vs\+\_\+metric} = nullptr
 \item 
+\mbox{\Hypertarget{classNCaptInfo_a584098a53c71cd54e3b861c8bcbe4796}\label{classNCaptInfo_a584098a53c71cd54e3b861c8bcbe4796}} 
+TTree $\ast$ {\bfseries candtree} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_afef7aba6ea29bbb503afa30c129cc995}\label{classNCaptInfo_afef7aba6ea29bbb503afa30c129cc995}} 
+TTree $\ast$ {\bfseries matchtree} = nullptr
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a54b5ac2ae3b799dae50f76c842b180d9}\label{classNCaptInfo_a54b5ac2ae3b799dae50f76c842b180d9}} 
+std\+::unordered\+\_\+map$<$ std\+::string, int $>$ {\bfseries cibranchvars}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a1d2d197f91323f37ddd1cb5d73fb0de6}\label{classNCaptInfo_a1d2d197f91323f37ddd1cb5d73fb0de6}} 
+std\+::unordered\+\_\+map$<$ std\+::string, double $>$ {\bfseries cdbranchvars}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a2e4750ca2fef0f13e66b2b469880b1e3}\label{classNCaptInfo_a2e4750ca2fef0f13e66b2b469880b1e3}} 
+std\+::unordered\+\_\+map$<$ std\+::string, int $>$ {\bfseries mibranchvars}
+\item 
+\mbox{\Hypertarget{classNCaptInfo_a6efdacc822934fd491eb07f4cdeffe3f}\label{classNCaptInfo_a6efdacc822934fd491eb07f4cdeffe3f}} 
+std\+::unordered\+\_\+map$<$ std\+::string, double $>$ {\bfseries mdbranchvars}
+\item 
 \mbox{\Hypertarget{classNCaptInfo_a1688c8995b6fff30e6c1cd2b97d2176d}\label{classNCaptInfo_a1688c8995b6fff30e6c1cd2b97d2176d}} 
 int {\bfseries verbosity} =1
 \item 
@@ -108,7 +140,7 @@ int {\bfseries get\+\_\+ok} =0
 
 
 \doxysubsection{Detailed Description}
-This is an abstract base class for a Tool that converts neutron tagging information into a generalised form. Add support for your own ntagger by making a class that derives from this, and overrides the pure virtual function Get\+Candidates. See existing cases for examples.
+This is an abstract base class for a Tool that converts neutron tagging information into a generalised form. Add support for your own ntagger by making a class that derives from this, and overrides the pure virtual functions Init\+Candidate\+Reader and Get\+Candidates. See existing cases for examples.
 
 \begin{DoxyParagraph}{Author}
 M.\+O 
@@ -136,7 +168,16 @@ Initialise Function for setting up Tool resorces.
 {\em data} & A reference to the transient data class used to pass information between Tools. \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}\label{classNCaptInfo_aac6e33be6fce35a32e3fdccbadf3ae99}} 
+\index{NCaptInfo@{NCaptInfo}!MakePlots@{MakePlots}}
+\index{MakePlots@{MakePlots}!NCaptInfo@{NCaptInfo}}
+\doxysubsubsection{\texorpdfstring{MakePlots()}{MakePlots()}}
+{\footnotesize\ttfamily bool NCapt\+Info\+::\+Make\+Plots (\begin{DoxyParamCaption}\item[{int}]{step }\end{DoxyParamCaption})}
 
+
+\begin{DoxyItemize}
+\item 
+\end{DoxyItemize}
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 

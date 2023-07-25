@@ -88,8 +88,8 @@ $(function() {
 <div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="classMTreeReader.html">   17</a></span>&#160;<span class="keyword">class </span><a class="code" href="classMTreeReader.html">MTreeReader</a> {</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    </div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>(std::string filename, std::string treename);</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>(){};</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>(std::string iname, std::string filename, std::string treename);</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>(std::string iname=<span class="stringliteral">&quot;myReader&quot;</span>);</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    ~<a class="code" href="classMTreeReader.html">MTreeReader</a>();</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">int</span> Load(std::string filename, std::string treename);</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">int</span> LoadFile(std::string filename);</div>
@@ -283,102 +283,105 @@ $(function() {
 <div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;    <span class="keywordtype">void</span> SetVerbosity(<span class="keywordtype">int</span> verbin);</div>
 <div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    </div>
 <div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    <span class="comment">// file/tree level getters</span></div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    TFile* GetFile();</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    TTree* GetTree();</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    TTree* GetCurrentTree();</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    TChain* GetChain();</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    uint64_t GetEntryNumber();</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    </div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    <span class="comment">// tree operations</span></div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="keywordtype">int</span> Clear();</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    <span class="keywordtype">void</span> SetAutoClear(<span class="keywordtype">bool</span> autoclearin);</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keywordtype">int</span> GetEntry(<span class="keywordtype">long</span> entry_number, <span class="keywordtype">bool</span> skipTreeRead=<span class="keyword">false</span>);</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="keywordtype">long</span> GetEntriesFast();</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    <span class="keywordtype">long</span> GetEntries();</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keywordtype">int</span> DisableBranches(std::vector&lt;std::string&gt; branchnames);</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    <span class="keywordtype">int</span> EnableBranches(std::vector&lt;std::string&gt; branchnames);</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="keywordtype">int</span> OnlyEnableBranches(std::vector&lt;std::string&gt; branchnames);</div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    <span class="keywordtype">int</span> OnlyDisableBranches(std::vector&lt;std::string&gt; branchnames);</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    </div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    <span class="comment">// maps of branch properties</span></div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    std::map&lt;std::string,std::string&gt; GetBranchTypes();</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    std::map&lt;std::string,intptr_t&gt; GetBranchAddresses();</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    std::map&lt;std::string, std::string&gt; GetBranchTitles();</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    </div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="comment">// specific branch properties</span></div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    TBranch* GetBranch(std::string branchname);</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    std::string GetBranchType(std::string branchname);</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    std::vector&lt;size_t&gt; GetBranchDims(std::string branchname);</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    </div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    <span class="comment">// random assistive functions</span></div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <span class="keywordtype">void</span> SetMCFlag(<span class="keywordtype">bool</span> MCin);</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <span class="keywordtype">bool</span> GetMCFlag();</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    </div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    <span class="comment">// functions</span></div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordtype">int</span> ParseBranches();</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keywordtype">int</span> ParseBranchDims(std::string branchname);</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keywordtype">int</span> UpdateBranchPointer(std::string branchname);</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    <span class="keywordtype">int</span> UpdateBranchPointers();</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    </div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    <span class="comment">// variables</span></div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    std::map&lt;std::string,TBranch*&gt; branch_pointers;  <span class="comment">// branch name to TBranch*</span></div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    std::map&lt;std::string,bool&gt; branch_istobject;     <span class="comment">// branch inherits from TObject so has Clear method</span></div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    std::map&lt;std::string,TLeaf*&gt; leaf_pointers;      <span class="comment">// branch name to TLeaf*</span></div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    std::map&lt;std::string,std::string&gt; branch_titles; <span class="comment">// branch name to title (including type string)</span></div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    std::map&lt;std::string,intptr_t&gt; branch_value_pointers; <span class="comment">// branch name to pointer to value, cast to intptr_t</span></div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    std::map&lt;std::string,std::string&gt; branch_types;  <span class="comment">// branch name to string describing type - not good for arrays</span></div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    std::map&lt;std::string,bool&gt; branch_isobject;      <span class="comment">// does branch hold an object</span></div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    std::map&lt;std::string,bool&gt; branch_isarray;       <span class="comment">// does branch hold a (c-style) array</span></div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    std::map&lt;std::string,std::vector&lt;std::pair&lt;std::string,int&gt;&gt;&gt; branch_dimensions; <span class="comment">// dims of variable size arrays</span></div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    std::map&lt;std::string,std::vector&lt;size_t&gt;&gt; branch_dims_cache; <span class="comment">// dims of constant sized arrays</span></div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    </div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    TFile* thefile=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    TTree* thetree=<span class="keyword">nullptr</span>;          <span class="comment">// generic, if working with a tchain we cast it to a TTree</span></div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keywordtype">bool</span> autoclear=<span class="keyword">false</span>;            <span class="comment">// call &#39;Clear&#39; method on all object branches before GetEntry</span></div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <span class="keywordtype">int</span> verbosity=1;                 <span class="comment">// TODO add to constructor</span></div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    uint64_t currentEntryNumber=0;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    <span class="keywordtype">int</span> currentTreeNumber=0;</div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    <span class="keywordtype">bool</span> isMC=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    </div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;};</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; </div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment">// mechanism to check if a given type has a Clear() method.</span></div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">// ROOT seems to flag both objects and stl containers as inheriting from TObject</span></div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment">// with InheritsFrom(&quot;TLeafElement&quot;)</span></div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment">// from https://stackoverflow.com/a/29772824</span></div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">template&lt;typename T&gt;</span></div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">struct has_clear {</span></div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">    // NOTE: sig_matches() must come before fn_exists() as it is used for its type.</span></div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">    // Also, no function bodies are needed as they are never called.</span></div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">    </span></div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">    // This matching sig results in a return type of true_type</span></div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">    template&lt;typename Q&gt;</span></div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">    static auto sig_matches(void(Q::*)()) -&gt; std::true_type;</span></div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">    </span></div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">    // If the member function Q::Clear exists and a sig_matches() function</span></div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">    // exists with the required sig, then the return type is the return type of</span></div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">    // sig_matches(), otherwise this function can&#39;t exist because at least one</span></div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">    // the types don&#39;t exist so match against fn_exists(...).</span></div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">    template &lt;typename Q&gt;</span></div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">    static auto fn_exists(std::nullptr_t) -&gt; decltype(sig_matches&lt;Q&gt;(&amp;Q::Clear));</span></div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">    </span></div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">    // Member function either doesn&#39;t exist or doesn&#39;t match against a </span></div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">    // sig_matches() function.</span></div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">    template&lt;typename Q&gt;</span></div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">    static auto fn_exists(...) -&gt; std::false_type;</span></div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment">    </span></div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">    // Intermediate storage of type for clarity</span></div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">    typedef decltype(fn_exists&lt;T&gt;(nullptr)) type;</span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    std::string GetName();</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    <span class="keywordtype">void</span> SetName(std::string iname);</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;    TFile* GetFile();</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;    TTree* GetTree();</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    TTree* GetCurrentTree();</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    TChain* GetChain();</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;    uint64_t GetEntryNumber();</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    </div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    <span class="comment">// tree operations</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    <span class="keywordtype">int</span> Clear();</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    <span class="keywordtype">void</span> SetAutoClear(<span class="keywordtype">bool</span> autoclearin);</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    <span class="keywordtype">int</span> GetEntry(<span class="keywordtype">long</span> entry_number, <span class="keywordtype">bool</span> skipTreeRead=<span class="keyword">false</span>);</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    <span class="keywordtype">long</span> GetEntriesFast();</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    <span class="keywordtype">long</span> GetEntries();</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <span class="keywordtype">int</span> DisableBranches(std::vector&lt;std::string&gt; branchnames);</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;    <span class="keywordtype">int</span> EnableBranches(std::vector&lt;std::string&gt; branchnames);</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;    <span class="keywordtype">int</span> OnlyEnableBranches(std::vector&lt;std::string&gt; branchnames);</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    <span class="keywordtype">int</span> OnlyDisableBranches(std::vector&lt;std::string&gt; branchnames);</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;    </div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    <span class="comment">// maps of branch properties</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;    std::map&lt;std::string,std::string&gt; GetBranchTypes();</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    std::map&lt;std::string,intptr_t&gt; GetBranchAddresses();</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    std::map&lt;std::string, std::string&gt; GetBranchTitles();</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    </div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    <span class="comment">// specific branch properties</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;    TBranch* GetBranch(std::string branchname);</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    std::string GetBranchType(std::string branchname);</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    std::vector&lt;size_t&gt; GetBranchDims(std::string branchname);</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    </div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <span class="comment">// random assistive functions</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    <span class="keywordtype">void</span> SetMCFlag(<span class="keywordtype">bool</span> MCin);</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;    <span class="keywordtype">bool</span> GetMCFlag();</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;    </div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="comment">// functions</span></div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;    <span class="keywordtype">int</span> ParseBranches();</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;    <span class="keywordtype">int</span> ParseBranchDims(std::string branchname);</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;    <span class="keywordtype">int</span> UpdateBranchPointer(std::string branchname);</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;    <span class="keywordtype">int</span> UpdateBranchPointers();</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    </div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="comment">// variables</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    std::map&lt;std::string,TBranch*&gt; branch_pointers;  <span class="comment">// branch name to TBranch*</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    std::map&lt;std::string,bool&gt; branch_istobject;     <span class="comment">// branch inherits from TObject so has Clear method</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    std::map&lt;std::string,TLeaf*&gt; leaf_pointers;      <span class="comment">// branch name to TLeaf*</span></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    std::map&lt;std::string,std::string&gt; branch_titles; <span class="comment">// branch name to title (including type string)</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    std::map&lt;std::string,intptr_t&gt; branch_value_pointers; <span class="comment">// branch name to pointer to value, cast to intptr_t</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    std::map&lt;std::string,std::string&gt; branch_types;  <span class="comment">// branch name to string describing type - not good for arrays</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    std::map&lt;std::string,bool&gt; branch_isobject;      <span class="comment">// does branch hold an object</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    std::map&lt;std::string,bool&gt; branch_isarray;       <span class="comment">// does branch hold a (c-style) array</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    std::map&lt;std::string,std::vector&lt;std::pair&lt;std::string,int&gt;&gt;&gt; branch_dimensions; <span class="comment">// dims of variable size arrays</span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    std::map&lt;std::string,std::vector&lt;size_t&gt;&gt; branch_dims_cache; <span class="comment">// dims of constant sized arrays</span></div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    </div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    TFile* thefile=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    TTree* thetree=<span class="keyword">nullptr</span>;          <span class="comment">// generic, if working with a tchain we cast it to a TTree</span></div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;    <span class="keywordtype">bool</span> autoclear=<span class="keyword">false</span>;            <span class="comment">// call &#39;Clear&#39; method on all object branches before GetEntry</span></div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;    <span class="keywordtype">int</span> verbosity=1;                 <span class="comment">// TODO add to constructor</span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    uint64_t currentEntryNumber=0;</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    <span class="keywordtype">int</span> currentTreeNumber=0;</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;    <span class="keywordtype">bool</span> isMC=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;    std::string name=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    </div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;};</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160; </div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment">// mechanism to check if a given type has a Clear() method.</span></div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">// ROOT seems to flag both objects and stl containers as inheriting from TObject</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">// with InheritsFrom(&quot;TLeafElement&quot;)</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">// from https://stackoverflow.com/a/29772824</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">template&lt;typename T&gt;</span></div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">struct has_clear {</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">    // NOTE: sig_matches() must come before fn_exists() as it is used for its type.</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">    // Also, no function bodies are needed as they are never called.</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">    </span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">    // This matching sig results in a return type of true_type</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">    template&lt;typename Q&gt;</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">    static auto sig_matches(void(Q::*)()) -&gt; std::true_type;</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">    </span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">    // If the member function Q::Clear exists and a sig_matches() function</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">    // exists with the required sig, then the return type is the return type of</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">    // sig_matches(), otherwise this function can&#39;t exist because at least one</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">    // the types don&#39;t exist so match against fn_exists(...).</span></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">    template &lt;typename Q&gt;</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">    static auto fn_exists(std::nullptr_t) -&gt; decltype(sig_matches&lt;Q&gt;(&amp;Q::Clear));</span></div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">    </span></div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">    // Member function either doesn&#39;t exist or doesn&#39;t match against a </span></div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment">    // sig_matches() function.</span></div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">    template&lt;typename Q&gt;</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">    static auto fn_exists(...) -&gt; std::false_type;</span></div>
 <div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment">    </span></div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">    // Storing the resulting value</span></div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">    static int const value = type::value;</span></div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">};</span></div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160; </div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160; </div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// defined MTreeReader_H</span></div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">    // Intermediate storage of type for clarity</span></div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">    typedef decltype(fn_exists&lt;T&gt;(nullptr)) type;</span></div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">    </span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment">    // Storing the resulting value</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment">    static int const value = type::value;</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">};</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160; </div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160; </div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// defined MTreeReader_H</span></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
 <div class="ttc" id="aclassbasic__array_html"><div class="ttname"><a href="classbasic__array.html">basic_array</a></div><div class="ttdef"><b>Definition:</b> basic_array.h:33</div></div>
 </div><!-- fragment --></div><!-- contents -->

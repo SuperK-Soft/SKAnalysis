@@ -93,12 +93,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a96dc7d1c33378afd0b3c519d16b5badb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54e08a5537991853e2c71778bdc68784"><td class="memItemLeft" align="right" valign="top"><a id="a54e08a5537991853e2c71778bdc68784"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNCaptInfo.html#a54e08a5537991853e2c71778bdc68784">Execute</a> ()</td></tr>
-<tr class="memdesc:a54e08a5537991853e2c71778bdc68784"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executre function used to perform Tool perpose. <br /></td></tr>
+<tr class="memdesc:a54e08a5537991853e2c71778bdc68784"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executre function used to perform Tool purpose. <br /></td></tr>
 <tr class="separator:a54e08a5537991853e2c71778bdc68784"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa927e181c665793f4b192acc8fbb041c"><td class="memItemLeft" align="right" valign="top"><a id="aa927e181c665793f4b192acc8fbb041c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNCaptInfo.html#aa927e181c665793f4b192acc8fbb041c">Finalise</a> ()</td></tr>
 <tr class="memdesc:aa927e181c665793f4b192acc8fbb041c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalise funciton used to clean up resorces. <br /></td></tr>
 <tr class="separator:aa927e181c665793f4b192acc8fbb041c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42d5f662884be524f69bf1eafbbbeca7"><td class="memItemLeft" align="right" valign="top"><a id="a42d5f662884be524f69bf1eafbbbeca7"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>InitCandidateReader</b> ()=0</td></tr>
+<tr class="separator:a42d5f662884be524f69bf1eafbbbeca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc9b2e48d156a51e21678a3cc642efff"><td class="memItemLeft" align="right" valign="top"><a id="afc9b2e48d156a51e21678a3cc642efff"></a>
 virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetCandidates</b> (std::vector&lt; <a class="el" href="classNCaptCandidate.html">NCaptCandidate</a> &gt; &amp;candidates)=0</td></tr>
 <tr class="separator:afc9b2e48d156a51e21678a3cc642efff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -111,8 +114,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>MatchMistags</b> ()</
 <tr class="memitem:a09ba3727b589c21f6b2b37b3256c2381"><td class="memItemLeft" align="right" valign="top"><a id="a09ba3727b589c21f6b2b37b3256c2381"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>PrintCandidates</b> ()</td></tr>
 <tr class="separator:a09ba3727b589c21f6b2b37b3256c2381"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac6e33be6fce35a32e3fdccbadf3ae99"><td class="memItemLeft" align="right" valign="top"><a id="aac6e33be6fce35a32e3fdccbadf3ae99"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>MakePlots</b> (int step)</td></tr>
+<tr class="memitem:aac6e33be6fce35a32e3fdccbadf3ae99"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNCaptInfo.html#aac6e33be6fce35a32e3fdccbadf3ae99">MakePlots</a> (int step)</td></tr>
 <tr class="separator:aac6e33be6fce35a32e3fdccbadf3ae99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
@@ -126,6 +128,12 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>m_unique_name<
 <tr class="memitem:ab195e8a5bd20259be82cc90a9f835d8e"><td class="memItemLeft" align="right" valign="top"><a id="ab195e8a5bd20259be82cc90a9f835d8e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>match_mistags</b> =false</td></tr>
 <tr class="separator:ab195e8a5bd20259be82cc90a9f835d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a33a96ec6b1b339e58cfc2b1eac06a342"><td class="memItemLeft" align="right" valign="top"><a id="a33a96ec6b1b339e58cfc2b1eac06a342"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>candidates_file</b> =&quot;&quot;</td></tr>
+<tr class="separator:a33a96ec6b1b339e58cfc2b1eac06a342"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60f69dac22b3437ac3494b2ea232dd78"><td class="memItemLeft" align="right" valign="top"><a id="a60f69dac22b3437ac3494b2ea232dd78"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>mctruth_file</b> =&quot;&quot;</td></tr>
+<tr class="separator:a60f69dac22b3437ac3494b2ea232dd78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a289f10dac5224de91a0c15d49a5364af"><td class="memItemLeft" align="right" valign="top"><a id="a289f10dac5224de91a0c15d49a5364af"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>time_match_tolerance</b></td></tr>
 <tr class="separator:a289f10dac5224de91a0c15d49a5364af"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -133,8 +141,14 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>time_match_toleranc
 double&#160;</td><td class="memItemRight" valign="bottom"><b>dist_match_tolerance</b></td></tr>
 <tr class="separator:a1b21ae3d68ae3ebbe275db273e840726"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bcc518286b55539a189c4454f878c07"><td class="memItemLeft" align="right" valign="top"><a id="a8bcc518286b55539a189c4454f878c07"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>likelihood_threshold</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>likelihood_threshold</b> =-999</td></tr>
 <tr class="separator:a8bcc518286b55539a189c4454f878c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36ccb4189f50579b090bfb5f6945d077"><td class="memItemLeft" align="right" valign="top"><a id="a36ccb4189f50579b090bfb5f6945d077"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>outfilename</b> =&quot;&quot;</td></tr>
+<tr class="separator:a36ccb4189f50579b090bfb5f6945d077"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad675ef52004317a733aedbd4e445ac38"><td class="memItemLeft" align="right" valign="top"><a id="ad675ef52004317a733aedbd4e445ac38"></a>
+TFile *&#160;</td><td class="memItemRight" valign="bottom"><b>out_file</b> = nullptr</td></tr>
+<tr class="separator:ad675ef52004317a733aedbd4e445ac38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02ac3db6dc006e6a434c93177e8dcad6"><td class="memItemLeft" align="right" valign="top"><a id="a02ac3db6dc006e6a434c93177e8dcad6"></a>
 TH1D *&#160;</td><td class="memItemRight" valign="bottom"><b>h_likelihood</b> = nullptr</td></tr>
 <tr class="separator:a02ac3db6dc006e6a434c93177e8dcad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,6 +173,24 @@ TH2D *&#160;</td><td class="memItemRight" valign="bottom"><b>h_tdiff_vs_metric</
 <tr class="memitem:a8169e6f4a31b40e60be4ef384b011023"><td class="memItemLeft" align="right" valign="top"><a id="a8169e6f4a31b40e60be4ef384b011023"></a>
 TH2D *&#160;</td><td class="memItemRight" valign="bottom"><b>h_rdiff_vs_metric</b> = nullptr</td></tr>
 <tr class="separator:a8169e6f4a31b40e60be4ef384b011023"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a584098a53c71cd54e3b861c8bcbe4796"><td class="memItemLeft" align="right" valign="top"><a id="a584098a53c71cd54e3b861c8bcbe4796"></a>
+TTree *&#160;</td><td class="memItemRight" valign="bottom"><b>candtree</b> = nullptr</td></tr>
+<tr class="separator:a584098a53c71cd54e3b861c8bcbe4796"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afef7aba6ea29bbb503afa30c129cc995"><td class="memItemLeft" align="right" valign="top"><a id="afef7aba6ea29bbb503afa30c129cc995"></a>
+TTree *&#160;</td><td class="memItemRight" valign="bottom"><b>matchtree</b> = nullptr</td></tr>
+<tr class="separator:afef7aba6ea29bbb503afa30c129cc995"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54b5ac2ae3b799dae50f76c842b180d9"><td class="memItemLeft" align="right" valign="top"><a id="a54b5ac2ae3b799dae50f76c842b180d9"></a>
+std::unordered_map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>cibranchvars</b></td></tr>
+<tr class="separator:a54b5ac2ae3b799dae50f76c842b180d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d2d197f91323f37ddd1cb5d73fb0de6"><td class="memItemLeft" align="right" valign="top"><a id="a1d2d197f91323f37ddd1cb5d73fb0de6"></a>
+std::unordered_map&lt; std::string, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>cdbranchvars</b></td></tr>
+<tr class="separator:a1d2d197f91323f37ddd1cb5d73fb0de6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e4750ca2fef0f13e66b2b469880b1e3"><td class="memItemLeft" align="right" valign="top"><a id="a2e4750ca2fef0f13e66b2b469880b1e3"></a>
+std::unordered_map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mibranchvars</b></td></tr>
+<tr class="separator:a2e4750ca2fef0f13e66b2b469880b1e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6efdacc822934fd491eb07f4cdeffe3f"><td class="memItemLeft" align="right" valign="top"><a id="a6efdacc822934fd491eb07f4cdeffe3f"></a>
+std::unordered_map&lt; std::string, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mdbranchvars</b></td></tr>
+<tr class="separator:a6efdacc822934fd491eb07f4cdeffe3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1688c8995b6fff30e6c1cd2b97d2176d"><td class="memItemLeft" align="right" valign="top"><a id="a1688c8995b6fff30e6c1cd2b97d2176d"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>verbosity</b> =1</td></tr>
 <tr class="separator:a1688c8995b6fff30e6c1cd2b97d2176d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -182,7 +214,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>get_ok</b> =0</td></tr
 <tr class="separator:aabdf096a52874a064fb68383e886e45a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This is an abstract base class for a Tool that converts neutron tagging information into a generalised form. Add support for your own ntagger by making a class that derives from this, and overrides the pure virtual function GetCandidates. See existing cases for examples.</p>
+<div class="textblock"><p>This is an abstract base class for a Tool that converts neutron tagging information into a generalised form. Add support for your own ntagger by making a class that derives from this, and overrides the pure virtual functions InitCandidateReader and GetCandidates. See existing cases for examples.</p>
 <dl class="section rcs"><dt>Author</dt><dd>M.O </dd></dl>
 <dl class="section rcs"><dt>Date</dt><dd>2023/05/09 </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
@@ -220,6 +252,27 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>get_ok</b> =0</td></tr
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aac6e33be6fce35a32e3fdccbadf3ae99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac6e33be6fce35a32e3fdccbadf3ae99">&#9670;&nbsp;</a></span>MakePlots()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool NCaptInfo::MakePlots </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>step</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<ul>
+<li></li>
+</ul>
 
 </div>
 </div>

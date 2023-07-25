@@ -74,67 +74,82 @@ $(function() {
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160; </div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;NCaptCandidate.h&quot;</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;MTreeReader.h&quot;</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">class </span>TH1D;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">class </span>TH2D;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classNCaptInfo.html">   26</a></span>&#160;<span class="keyword">class </span><a class="code" href="classNCaptInfo.html">NCaptInfo</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;unordered_map&gt;</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;NCaptCandidate.h&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;MTreeReader.h&quot;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">class </span>TFile;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="keyword">class </span>TH1D;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="keyword">class </span>TH2D;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classNCaptInfo.html">   28</a></span>&#160;<span class="keyword">class </span><a class="code" href="classNCaptInfo.html">NCaptInfo</a>: <span class="keyword">public</span> Tool {</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <a class="code" href="classNCaptInfo.html#ac55b6f1d52d3898af4cd9a56826b149c">NCaptInfo</a>(); </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#a96dc7d1c33378afd0b3c519d16b5badb">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#a54e08a5537991853e2c71778bdc68784">Execute</a>(); </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#aa927e181c665793f4b192acc8fbb041c">Finalise</a>(); </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> GetCandidates(std::vector&lt;NCaptCandidate&gt;&amp; candidates)=0;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">bool</span> MatchToTrueCaptures();</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordtype">bool</span> MatchMistags();</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">bool</span> PrintCandidates();</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">bool</span> MakePlots(<span class="keywordtype">int</span> step);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    </div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::string m_unique_name=<span class="stringliteral">&quot;&quot;</span>; <span class="comment">// TODO remove once we upgrade ToolFrameworkCore</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">bool</span> match_mistags=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">double</span> time_match_tolerance;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">double</span> dist_match_tolerance;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">double</span> likelihood_threshold;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">// histograms</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    TH1D* h_likelihood = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    TH1D* h_tdiff = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    TH1D* h_xdiff = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    TH1D* h_ydiff = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    TH1D* h_zdiff = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    TH1D* h_rdiff = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    TH2D* h_tdiff_vs_metric = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    TH2D* h_rdiff_vs_metric = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="comment">// verbosity levels: if &#39;verbosity&#39; &lt; this level, the message type will be logged.</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordtype">int</span> verbosity=1;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">int</span> v_error=0;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordtype">int</span> v_warning=1;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">int</span> v_message=2;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">int</span> v_debug=3;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    std::string logmessage=<span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordtype">int</span> get_ok=0;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;};</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <a class="code" href="classNCaptInfo.html#ac55b6f1d52d3898af4cd9a56826b149c">NCaptInfo</a>(); </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#a96dc7d1c33378afd0b3c519d16b5badb">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#a54e08a5537991853e2c71778bdc68784">Execute</a>(); </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#aa927e181c665793f4b192acc8fbb041c">Finalise</a>(); </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> InitCandidateReader()=0;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> GetCandidates(std::vector&lt;NCaptCandidate&gt;&amp; candidates)=0;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">bool</span> MatchToTrueCaptures();</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">bool</span> MatchMistags();</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">bool</span> PrintCandidates();</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classNCaptInfo.html#aac6e33be6fce35a32e3fdccbadf3ae99">MakePlots</a>(<span class="keywordtype">int</span> step);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::string m_unique_name=<span class="stringliteral">&quot;&quot;</span>; <span class="comment">// TODO remove once we upgrade ToolFrameworkCore</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">bool</span> match_mistags=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    std::string candidates_file=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    std::string mctruth_file=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">double</span> time_match_tolerance;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">double</span> dist_match_tolerance;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">double</span> likelihood_threshold=-999;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="comment">// histograms</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    std::string outfilename=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    TFile* out_file = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    TH1D* h_likelihood = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    TH1D* h_tdiff = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    TH1D* h_xdiff = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    TH1D* h_ydiff = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    TH1D* h_zdiff = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    TH1D* h_rdiff = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    TH2D* h_tdiff_vs_metric = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    TH2D* h_rdiff_vs_metric = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    TTree* candtree = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    TTree* matchtree = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    std::unordered_map&lt;std::string, int&gt; cibranchvars;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    std::unordered_map&lt;std::string, double&gt; cdbranchvars;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    std::unordered_map&lt;std::string, int&gt; mibranchvars;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    std::unordered_map&lt;std::string, double&gt; mdbranchvars;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="comment">// verbosity levels: if &#39;verbosity&#39; &lt; this level, the message type will be logged.</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordtype">int</span> verbosity=1;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">int</span> v_error=0;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">int</span> v_warning=1;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">int</span> v_message=2;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">int</span> v_debug=3;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    std::string logmessage=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keywordtype">int</span> get_ok=0;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;};</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:60</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
-<div class="ttc" id="aclassNCaptInfo_html"><div class="ttname"><a href="classNCaptInfo.html">NCaptInfo</a></div><div class="ttdef"><b>Definition:</b> NCaptInfo.h:26</div></div>
-<div class="ttc" id="aclassNCaptInfo_html_a54e08a5537991853e2c71778bdc68784"><div class="ttname"><a href="classNCaptInfo.html#a54e08a5537991853e2c71778bdc68784">NCaptInfo::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:55</div></div>
+<div class="ttc" id="aclassNCaptInfo_html"><div class="ttname"><a href="classNCaptInfo.html">NCaptInfo</a></div><div class="ttdef"><b>Definition:</b> NCaptInfo.h:28</div></div>
+<div class="ttc" id="aclassNCaptInfo_html_a54e08a5537991853e2c71778bdc68784"><div class="ttname"><a href="classNCaptInfo.html#a54e08a5537991853e2c71778bdc68784">NCaptInfo::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:50</div></div>
 <div class="ttc" id="aclassNCaptInfo_html_a96dc7d1c33378afd0b3c519d16b5badb"><div class="ttname"><a href="classNCaptInfo.html#a96dc7d1c33378afd0b3c519d16b5badb">NCaptInfo::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:21</div></div>
-<div class="ttc" id="aclassNCaptInfo_html_aa927e181c665793f4b192acc8fbb041c"><div class="ttname"><a href="classNCaptInfo.html#aa927e181c665793f4b192acc8fbb041c">NCaptInfo::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:89</div></div>
+<div class="ttc" id="aclassNCaptInfo_html_aa927e181c665793f4b192acc8fbb041c"><div class="ttname"><a href="classNCaptInfo.html#aa927e181c665793f4b192acc8fbb041c">NCaptInfo::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:84</div></div>
+<div class="ttc" id="aclassNCaptInfo_html_aac6e33be6fce35a32e3fdccbadf3ae99"><div class="ttname"><a href="classNCaptInfo.html#aac6e33be6fce35a32e3fdccbadf3ae99">NCaptInfo::MakePlots</a></div><div class="ttdeci">bool MakePlots(int step)</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:298</div></div>
 <div class="ttc" id="aclassNCaptInfo_html_ac55b6f1d52d3898af4cd9a56826b149c"><div class="ttname"><a href="classNCaptInfo.html#ac55b6f1d52d3898af4cd9a56826b149c">NCaptInfo::NCaptInfo</a></div><div class="ttdeci">NCaptInfo()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> NCaptInfo.cpp:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

@@ -93,57 +93,58 @@ $(function() {
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        <a class="code" href="classPMTHit.html">PMTHit</a>(): T(0), Q(0), I(0), S(0), ToF(0), pmtPosition(), hitDirection() {}</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <a class="code" href="classPMTHit.html">PMTHit</a>(<span class="keywordtype">float</span> t, <span class="keywordtype">float</span> q, <span class="keywordtype">int</span> i);</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        <a class="code" href="classPMTHit.html">PMTHit</a>(<a class="code" href="classPMTHit.html">PMTHit</a> <span class="keyword">const</span>&amp; hit);</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">float</span>&amp; t()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> T; }</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">float</span>&amp; q()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> Q; }</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>&amp; i()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> I; }</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">bool</span>&amp; s()<span class="keyword"> const </span>{<span class="keywordflow">return</span> S; }</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> SetSignalFlag(<span class="keywordtype">bool</span> b) { S=b; }</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> Dump()<span class="keyword"> const </span>{ std::cout &lt;&lt; <span class="stringliteral">&quot;T: &quot;</span> &lt;&lt; T &lt;&lt; <span class="stringliteral">&quot; Q: &quot;</span> &lt;&lt; Q &lt;&lt; <span class="stringliteral">&quot; I: &quot;</span> &lt;&lt; I &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>; }</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> SetToFAndDirection(<span class="keyword">const</span> TVector3&amp; vertex)</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        {</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;            TVector3 displacement = pmtPosition - vertex;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            hitDirection = displacement.Unit();</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;            ToF = displacement.Mag() / NTagConstant::C_WATER;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            T -= ToF;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        }</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> UnsetToFAndDirection()</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        {</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            T += ToF;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            ToF = 0;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            hitDirection = TVector3();</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        }</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">float</span>&amp; GetToF()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> ToF; }</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> TVector3&amp; GetDirection()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> hitDirection; }</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> TVector3&amp; GetPosition()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> pmtPosition; }</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a> &amp;hit)<span class="keyword"> const </span>{ <span class="keywordflow">return</span> T &lt; hit.t(); }</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        TVector3 pmtPosition;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        TVector3 hitDirection;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordtype">float</span> T, Q, ToF;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> I;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordtype">bool</span> S;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    ClassDef(<a class="code" href="classPMTHit.html">PMTHit</a>, 1)</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;};</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<a class="code" href="classPMTHit.html">PMTHit</a> operator+(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit1, <span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit2);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<a class="code" href="classPMTHit.html">PMTHit</a> operator-(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit1, <span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit2);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keyword">namespace </span>HitFunc</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;{</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">const</span> std::function&lt;float(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp;)&gt; T = [](<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit)-&gt;<span class="keywordtype">float</span> { <span class="keywordflow">return</span> hit.t(); };</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">const</span> std::function&lt;float(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp;)&gt; Q = [](<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit)-&gt;<span class="keywordtype">float</span> { <span class="keywordflow">return</span> hit.q(); };</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">const</span> std::function&lt;TVector3(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp;)&gt; Dir = [](<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit)-&gt;TVector3 { <span class="keywordflow">return</span> hit.GetDirection(); };</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        <span class="keyword">virtual</span> ~<a class="code" href="classPMTHit.html">PMTHit</a>();</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">float</span>&amp; t()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> T; }</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">float</span>&amp; q()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> Q; }</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>&amp; i()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> I; }</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">bool</span>&amp; s()<span class="keyword"> const </span>{<span class="keywordflow">return</span> S; }</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> SetSignalFlag(<span class="keywordtype">bool</span> b) { S=b; }</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> Dump()<span class="keyword"> const </span>{ std::cout &lt;&lt; <span class="stringliteral">&quot;T: &quot;</span> &lt;&lt; T &lt;&lt; <span class="stringliteral">&quot; Q: &quot;</span> &lt;&lt; Q &lt;&lt; <span class="stringliteral">&quot; I: &quot;</span> &lt;&lt; I &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>; }</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> SetToFAndDirection(<span class="keyword">const</span> TVector3&amp; vertex)</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            TVector3 displacement = pmtPosition - vertex;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;            hitDirection = displacement.Unit();</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            ToF = displacement.Mag() / NTagConstant::C_WATER;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            T -= ToF;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        }</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> UnsetToFAndDirection()</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            T += ToF;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            ToF = 0;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;            hitDirection = TVector3();</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        }</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">float</span>&amp; GetToF()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> ToF; }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> TVector3&amp; GetDirection()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> hitDirection; }</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> TVector3&amp; GetPosition()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> pmtPosition; }</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">bool</span> operator&lt;(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a> &amp;hit)<span class="keyword"> const </span>{ <span class="keywordflow">return</span> T &lt; hit.t(); }</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        TVector3 pmtPosition;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        TVector3 hitDirection;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordtype">float</span> T, Q, ToF;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> I;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordtype">bool</span> S;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    ClassDef(<a class="code" href="classPMTHit.html">PMTHit</a>, 1)</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;};</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<a class="code" href="classPMTHit.html">PMTHit</a> operator+(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit1, <span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit2);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<a class="code" href="classPMTHit.html">PMTHit</a> operator-(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit1, <span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit2);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="keyword">namespace </span>HitFunc</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;{</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">const</span> std::function&lt;float(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp;)&gt; T = [](<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit)-&gt;<span class="keywordtype">float</span> { <span class="keywordflow">return</span> hit.t(); };</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">const</span> std::function&lt;float(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp;)&gt; Q = [](<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit)-&gt;<span class="keywordtype">float</span> { <span class="keywordflow">return</span> hit.q(); };</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keyword">const</span> std::function&lt;TVector3(<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp;)&gt; Dir = [](<span class="keyword">const</span> <a class="code" href="classPMTHit.html">PMTHit</a>&amp; hit)-&gt;TVector3 { <span class="keywordflow">return</span> hit.GetDirection(); };</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;}</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassPMTHitCluster_html"><div class="ttname"><a href="classPMTHitCluster.html">PMTHitCluster</a></div><div class="ttdef"><b>Definition:</b> PMTHitCluster.h:15</div></div>
 <div class="ttc" id="aclassPMTHit_html"><div class="ttname"><a href="classPMTHit.html">PMTHit</a></div><div class="ttdef"><b>Definition:</b> PMTHit.h:21</div></div>
 </div><!-- fragment --></div><!-- contents -->

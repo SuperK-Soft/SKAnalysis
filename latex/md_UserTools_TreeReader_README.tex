@@ -4,7 +4,7 @@ A tool for reading in data from ROOT or ZEBRA files. Access to file data is prov
 \item For SK files (ROOT or ZEBRA), {\ttfamily skread} and/or {\ttfamily skrawread} will be called to populate fortran common blocks. For SK ROOT files both means of data access will be available.
 \end{DoxyEnumerate}
 
-Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md53}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md53}
+Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md54}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md54}
 The following options are available. Defaults, when applicable, are given in parentheses. 
 \begin{DoxyCode}{0}
 \DoxyCodeLine{verbosity 1                                    \# tool verbosity (1)}
@@ -36,6 +36,8 @@ When enabling additional functionality for SK files the following options are al
 \DoxyCodeLine{skipPedestals 1                                \# whether to skip pedestal and status entries (1)}
 \DoxyCodeLine{readSheAftTogether 1                           \# whether to read AFT data for associated SHE events together (0)}
 \DoxyCodeLine{onlySheAftPairs 1                              \# whether to only return SHE+AFT pairs (0)}
+\DoxyCodeLine{skippedTriggers 1,2,3                          \# skip entries in which any of the trigger bits in this list are set (none)}
+\DoxyCodeLine{allowedTriggers 18,19                          \# return only entries with one of the trigger bits in this list set (none)}
 
 \end{DoxyCode}
 

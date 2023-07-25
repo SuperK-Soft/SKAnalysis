@@ -79,25 +79,26 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;        <a class="code" href="classParticle.html">Particle</a>(): pid(0), parentPID(0), t(0), intID(0), v(), p() {}</div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;        <a class="code" href="classParticle.html">Particle</a>(<span class="keywordtype">int</span> <span class="keywordtype">id</span>, <span class="keywordtype">float</span> time, TVector3 vtx, TVector3 mom, <span class="keywordtype">int</span> parPID=0, <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> interactionID=0);</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> PID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> pid; }</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">float</span> Time()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> t; }</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;        <span class="keyword">inline</span> TVector3 Vertex()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> v; }</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <span class="keyword">inline</span> TVector3 Momentum()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> p; }</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> IntID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> intID; }</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> ParentPID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> parentPID; }</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        <span class="keywordtype">float</span> t;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keywordtype">int</span> pid;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        <span class="keywordtype">int</span> parentPID;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> intID;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        TVector3 v, p;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    ClassDef(<a class="code" href="classParticle.html">Particle</a>, 1)</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;};</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;        <span class="keyword">virtual</span> ~<a class="code" href="classParticle.html">Particle</a>();</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> PID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> pid; }</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">float</span> Time()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> t; }</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <span class="keyword">inline</span> TVector3 Vertex()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> v; }</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <span class="keyword">inline</span> TVector3 Momentum()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> p; }</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> IntID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> intID; }</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">int</span> ParentPID()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> parentPID; }</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keywordtype">float</span> t;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        <span class="keywordtype">int</span> pid;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        <span class="keywordtype">int</span> parentPID;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> intID;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        TVector3 v, p;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    ClassDef(<a class="code" href="classParticle.html">Particle</a>, 1)</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;};</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassParticle_html"><div class="ttname"><a href="classParticle.html">Particle</a></div><div class="ttdef"><b>Definition:</b> Particle.h:7</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

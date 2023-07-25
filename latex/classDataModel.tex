@@ -19,6 +19,9 @@ TApplication $\ast$ {\bfseries Get\+TApp} ()
 \mbox{\Hypertarget{classDataModel_a13b7dd6941f0fb5c2645dc479c755bd1}\label{classDataModel_a13b7dd6941f0fb5c2645dc479c755bd1}} 
 Connection\+Table $\ast$ {\bfseries Get\+Connection\+Table} (int sk\+\_\+geometry=-\/1)
 \item 
+\mbox{\Hypertarget{classDataModel_a50263d59b980d25cbf37eed273ce7c89}\label{classDataModel_a50263d59b980d25cbf37eed273ce7c89}} 
+\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$ {\bfseries Get\+Tree\+Reader} ()
+\item 
 \mbox{\Hypertarget{classDataModel_addfebe7aa61055a479b32bba3b107ca7}\label{classDataModel_addfebe7aa61055a479b32bba3b107ca7}} 
 bool {\bfseries Register\+Reader} (std\+::string reader\+Name, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader, std\+::function$<$ bool()$>$ has\+AFT, std\+::function$<$ bool()$>$ load\+SHE, std\+::function$<$ bool()$>$ load\+AFT, std\+::function$<$ bool(int)$>$ load\+Common, std\+::function$<$ int(long)$>$ get\+Tree\+Entry)
 \item 
@@ -48,6 +51,18 @@ bool {\bfseries Free\+LUN} (int lun, std\+::string reader=\char`\"{}\char`\"{})
 \item 
 \mbox{\Hypertarget{classDataModel_a299b24ca8478fefd9ed071e116f687b9}\label{classDataModel_a299b24ca8478fefd9ed071e116f687b9}} 
 void {\bfseries KZInit} ()
+\item 
+\mbox{\Hypertarget{classDataModel_a5588f608115ca6647726c4b612d291bc}\label{classDataModel_a5588f608115ca6647726c4b612d291bc}} 
+TFile $\ast$ {\bfseries Open\+File\+For\+Writing} (std\+::string file, bool alreadyopenonly=false)
+\item 
+\mbox{\Hypertarget{classDataModel_a8b1ac94078bd78d70f2daa1ec5624573}\label{classDataModel_a8b1ac94078bd78d70f2daa1ec5624573}} 
+TFile $\ast$ {\bfseries Open\+File\+For\+Reading} (std\+::string file, bool fromdisk=true)
+\item 
+\mbox{\Hypertarget{classDataModel_ae7330fc83be35ae5d28d36006a4df770}\label{classDataModel_ae7330fc83be35ae5d28d36006a4df770}} 
+bool {\bfseries Close\+File} (std\+::string file)
+\item 
+\mbox{\Hypertarget{classDataModel_ae940bc56dd0c3e00a6e0794bada7d5fa}\label{classDataModel_ae940bc56dd0c3e00a6e0794bada7d5fa}} 
+bool {\bfseries Close\+File} (TFile $\ast$fptr)
 \end{DoxyCompactItemize}
 \doxysubsection*{Static Public Member Functions}
 \begin{DoxyCompactItemize}

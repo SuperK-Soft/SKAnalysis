@@ -90,6 +90,9 @@ TApplication *&#160;</td><td class="memItemRight" valign="bottom"><b>GetTApp</b>
 <tr class="memitem:a13b7dd6941f0fb5c2645dc479c755bd1"><td class="memItemLeft" align="right" valign="top"><a id="a13b7dd6941f0fb5c2645dc479c755bd1"></a>
 ConnectionTable *&#160;</td><td class="memItemRight" valign="bottom"><b>GetConnectionTable</b> (int sk_geometry=-1)</td></tr>
 <tr class="separator:a13b7dd6941f0fb5c2645dc479c755bd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50263d59b980d25cbf37eed273ce7c89"><td class="memItemLeft" align="right" valign="top"><a id="a50263d59b980d25cbf37eed273ce7c89"></a>
+<a class="el" href="classMTreeReader.html">MTreeReader</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>GetTreeReader</b> ()</td></tr>
+<tr class="separator:a50263d59b980d25cbf37eed273ce7c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:addfebe7aa61055a479b32bba3b107ca7"><td class="memItemLeft" align="right" valign="top"><a id="addfebe7aa61055a479b32bba3b107ca7"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReader</b> (std::string readerName, <a class="el" href="classMTreeReader.html">MTreeReader</a> *reader, std::function&lt; bool()&gt; hasAFT, std::function&lt; bool()&gt; loadSHE, std::function&lt; bool()&gt; loadAFT, std::function&lt; bool(int)&gt; loadCommon, std::function&lt; int(long)&gt; getTreeEntry)</td></tr>
 <tr class="separator:addfebe7aa61055a479b32bba3b107ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,6 +123,18 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>FreeLUN</b> (int lun,
 <tr class="memitem:a299b24ca8478fefd9ed071e116f687b9"><td class="memItemLeft" align="right" valign="top"><a id="a299b24ca8478fefd9ed071e116f687b9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>KZInit</b> ()</td></tr>
 <tr class="separator:a299b24ca8478fefd9ed071e116f687b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5588f608115ca6647726c4b612d291bc"><td class="memItemLeft" align="right" valign="top"><a id="a5588f608115ca6647726c4b612d291bc"></a>
+TFile *&#160;</td><td class="memItemRight" valign="bottom"><b>OpenFileForWriting</b> (std::string file, bool alreadyopenonly=false)</td></tr>
+<tr class="separator:a5588f608115ca6647726c4b612d291bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b1ac94078bd78d70f2daa1ec5624573"><td class="memItemLeft" align="right" valign="top"><a id="a8b1ac94078bd78d70f2daa1ec5624573"></a>
+TFile *&#160;</td><td class="memItemRight" valign="bottom"><b>OpenFileForReading</b> (std::string file, bool fromdisk=true)</td></tr>
+<tr class="separator:a8b1ac94078bd78d70f2daa1ec5624573"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7330fc83be35ae5d28d36006a4df770"><td class="memItemLeft" align="right" valign="top"><a id="ae7330fc83be35ae5d28d36006a4df770"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>CloseFile</b> (std::string file)</td></tr>
+<tr class="separator:ae7330fc83be35ae5d28d36006a4df770"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae940bc56dd0c3e00a6e0794bada7d5fa"><td class="memItemLeft" align="right" valign="top"><a id="ae940bc56dd0c3e00a6e0794bada7d5fa"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>CloseFile</b> (TFile *fptr)</td></tr>
+<tr class="separator:ae940bc56dd0c3e00a6e0794bada7d5fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
