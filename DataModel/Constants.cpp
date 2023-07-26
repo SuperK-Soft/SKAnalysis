@@ -269,12 +269,12 @@ std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& ad
 	std::unordered_map<std::string,int> labels;
 	labels.emplace("in gate",(flags & 1));
 	// bits 1->2 define trigger ID; only vals 0,1,2 used.
-	int tmp = (iqiskz >> 1) & 3;
+	int tmp = (flags >> 1) & 3;
 	labels.emplace("narrow trigger",(tmp==0));
 	labels.emplace("wide trigger",(tmp==1));
 	labels.emplace("pedestal trigger",(tmp==2));
 	// bits 4->5 define charge range
-	tmp = (iqiskz >> 4) & 3;
+	tmp = (flags >> 4) & 3;
 	labels.emplace("small charge range",(tmp==0));
 	labels.emplace("medium charge range",(tmp==1));
 	labels.emplace("large charge range",(tmp==2));

@@ -42,6 +42,7 @@ class PrintEvent: public Tool {
 	bool PrintBadChannels();
 	bool PrintDarkInfo();
 	bool PrintTriggerInfo();
+	bool Print_sktrg();
 	bool PrintHits();
 	
 	std::string m_unique_name="";
