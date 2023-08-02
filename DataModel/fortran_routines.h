@@ -6,7 +6,6 @@
 #include "skbadcC.h"
 #include "geopmtC.h"
 #include "skruninfC.h"  // commented out in original lowfit_sk4
-//#include "geotnkC.h"  // this conflicts with SK2p2MeV.h because someone reused the #define'd macro names as variables (e.g. `const Float_t RINTK`, when geotnkC.h does `#define RINTK`)
 
 // these are from $SKOFL_ROOT/inc/lowe and have no official C version
 // the following two were done via automatic conversion done with fh2h
@@ -47,6 +46,24 @@ extern "C" void skcread_(int*, int*);
 extern "C" void skroot_set_tree_(int*);
 extern "C" void skroot_get_entry_(int*);
 
+extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*);
+extern "C" int softtrg_inittrgtbl(int , int, int, int);
+
+extern "C" void fix_maxqisk_();
+extern "C" void lfmufit_sk4_();
+
+extern "C" void newmufit_(float (*)[3], float (*)[3], float*);
+
+//extern "C" void makededx_(float (*)[4], float (*)[3], int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, float (*)[200]);
+
+extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, int*, float (*)[200], int (*)[334380], int*);
+
+extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
+
+extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
+
+extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
+
 // from $ATMPD_ROOT/src/programs/TreeBuilder/examples/fort_fopen.F
 extern "C" void fort_fopen_(int*, const char*, char*, int* ,int);
 
@@ -54,6 +71,8 @@ extern "C" void fort_fopen_(int*, const char*, char*, int* ,int);
 extern "C" void runinfsk_();
 
 //
+
+extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);
 extern "C" void softtrg_set_cond_(int*, int*, int*, int*, int*);
 extern "C" void get_sub_triggers_(int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
@@ -72,26 +91,11 @@ extern "C" void cfbsexit_();
 
 // the following are provided by libsklowe_7.0.a
 extern "C" void lfclear_all_();
-extern "C" void lfallfit_sk1_data_(float* watert, int*nhitcut, int*lfflag);
-//extern "C" void lfallfit_sk1_mc_(float* watert, int*nhitcut, int*lfflag);    // does not exist
-extern "C" void lfallfit_sk2_data_(float* watert, int*nhitcut, int*lfflag);
-//extern "C" void lfallfit_sk2_mc_(float* watert, int*nhitcut, int*lfflag);    // does not exist
-// extern "C" void lfallfit_sk3_data_(float* watert, int*nhitcut, int*lfflag); // does not exist
-// extern "C" void lfallfit_sk3_mc_(float* watert, int*nhitcut, int*lfflag); // does not exist
-extern "C" void lfallfit_sk4_data_(float* watert, int*nhitcut, int*lfflag);
-extern "C" void lfallfit_sk4_mc_(float* watert, int*nhitcut, int*lfflag);
-extern "C" void lfallfit_sk5_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk5_data_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk6_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk6_data_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-// for some reason SK-IV has a bunch of extra versions...
-extern "C" void lfallfit_sk4_final_qe41_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk4_final_qe41_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk4_final_qe43_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk4_final_qe43_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk4_gain_corr_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-extern "C" void lfallfit_sk4_gain_corr_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
-
+extern "C" void lfallfit_sk4_final_qe43_(float*, int*, int*, int*, int*);
+extern "C" void lfallfit_sk4_data_(float*, int*, int*);
+extern "C" void lfallfit_sk4_gain_corr_(float*, int*, int*, int*, int*);
+extern "C" void lfallfit_sk4_mc_(float*, int*, int*);
+extern "C" void lfallfit_sk6_mc_(float*, int*, int*, int*, int*);
 // skroot_lowe_ common block
 
 extern "C" void rluxgo_(int*, int*, int*, int*);
@@ -115,14 +119,14 @@ extern "C" {
     void zbsinit_();
     void kzwrit_(int&);
     void kzeclr_();
-    // void set_rflist_(int&, const char*, const char*, const char*, const char*,
-                     // const char*, const char*, const char*, const char*, const char*,
-                     // long, long,  long,  long,  long,  long,  long,  long,  long  );
-    // void skopenf_(int&, int&, const char*, int&, long);
-    void set_rflist_(int*, const char*, const char*, const char*, const char*,
+    void set_rflist_(int&, const char*, const char*, const char*, const char*,
                      const char*, const char*, const char*, const char*, const char*,
-                     int, int, int, int, int, int, int, int, int);
-    void skopenf_(int*, int*, const char*, int*, int*);
+                     long, long,  long,  long,  long,  long,  long,  long,  long  );
+    void skopenf_(int&, int&, const char*, int&, long);
+//////    void set_rflist_(int*, const char*, const char*, const char*, const char*,
+//////                     const char*, const char*, const char*, const char*, const char*,
+//////                     int, int, int, int, int, int, int, int, int);
+//////    void skopenf_(int*, int*, const char*, int*, int*);
 //    void skoptn_(const char*, int);
 //    void skbadopt_(int*);
 //    void skbadch_(int*, int*, int*);

@@ -24,22 +24,15 @@
 #include "Utilities.h"
 #include "StoreToTTree.h"
 #include "Constants.h"
-#include "Algorithms.h"
 
 #include "EventCandidates.h"
 #include "EventParticles.h"
 #include "EventTrueCaptures.h"
 #include "PMTHitCluster.h"
 
-#include "MParticle.h"
-#include "NCapture.h"
-#include "NCaptCandidate.h"
+#include "ParticleCand.h"
 
-#include "TParticlePDG.h"
-#include "TDatabasePDG.h"
-
-#include "MParticle.h"
-#include "MVertex.h"
+#include "skroot_loweC.h"
 
 class MTreeReader;
 class MTreeSelection;
@@ -64,11 +57,6 @@ class DataModel {
   
   DataModel(); ///< Simple constructor
   ~DataModel(); ///< Simple destructor
-  
-  // some of our helper classes in the DataModel dir could benefit from access
-  // to the datamodel. make it a singleton (we only have one anyway)
-  static DataModel* GetInstance(){ return thisptr; }
-  static DataModel* thisptr;
 
   //TTree* GetTTree(std::string name);
   //void AddTTree(std::string name,TTree *tree);
@@ -83,8 +71,7 @@ class DataModel {
   std::unordered_map<std::string, std::function<bool()>> loadSHEs;
   std::unordered_map<std::string, std::function<bool()>> loadAFTs;
   std::unordered_map<std::string, std::function<bool(int)>> loadCommons;
-  std::unordered_map<std::string, std::function<int(long)>> getEntrys;
-  MTreeReader* GetTreeReader();
+  std::unordered_map<std::string, std::function<int(long, bool)>> getEntries;
   
   Store vars; ///< This Store can be used for any variables. It is an inefficent ascii based storage and command line arguments will be placed in here along with ToolChain variables
   BStore CStore; ///< This is a more efficent binary Store that can be used to store a dynamic set of inter Tool variables, very useful for constants and and flags hence the name CStore
@@ -92,7 +79,7 @@ class DataModel {
   
   // This function is used to register a TreeReader tool's member functions with the DataModel,
   // which provides access from other Tools
-  bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long)> getTreeEntry);
+  bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long,bool)> getTreeEntry);
   int getTreeEntry(std::string ReaderName="", long entrynum=0);
   // These retain function pointers to call the corresponding TreeReader functions.
   // The TreeReader instance is obtained from the name specified in their config file.
@@ -108,32 +95,52 @@ class DataModel {
   void KZInit();
   bool kz_initialized=false;
   
-  TFile* OpenFileForWriting(std::string file, bool alreadyopenonly=false);
-  TFile* OpenFileForReading(std::string file, bool fromdisk=true);
-  bool CloseFile(std::string file);
-  bool CloseFile(TFile* fptr);
   
   // Event vars
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
   BStore &eventVariables;   // use references to preserve current behaviour...
   
-  // NTag classes
+  // Hits
   PMTHitCluster eventPMTHits;
+  // Candidates
   EventCandidates eventCandidates;
+  // Primaries (MC)
   EventParticles eventPrimaries;
+  // Secondaries (MC)
   EventParticles eventSecondaries;
+  // Neutron captures (MC)
   EventTrueCaptures eventTrueCaptures;
-  
-  const TDatabasePDG* pdgdb = TDatabasePDG::Instance();
-  std::vector<MParticle> eventParticles;
-  std::vector<MVertex> eventVertices;
-  // generalised neutron captures
-  std::map<std::string,std::vector<NCaptCandidate>> NCaptureCandidates;
-  std::vector<NCapture> NCapturesTrue;
   
   std::map<std::string, Store*> tool_configs;
   StoreToTTree StoreConverter;
-
+  
+  //flag for a new muon - used for the spallation reduction
+  bool newMuon = false;
+  
+  //flag for a new relic candidate - used for the spallation reduction
+  bool newRelic = false;
+  
+  //deques of the struct ParticleCand to store event info of ALL muon candidates and relic candidates
+  std::deque<ParticleCand> muonCandDeque;
+  std::deque<ParticleCand> relicCandDeque;
+  
+  //deque for muons that need to be reconstructed (if they have matched to a relic they need to be reconstructed)
+  std::vector<ParticleCand> muonsToRec;
+  
+  //vector for relic candidate events that needs to be written out - used for the spallation reduction
+  std::vector<ParticleCand> writeOutRelics;
+  
+  //map for lowe information to store when reconstructing events mid-chain and wanting to retrieve the information later
+  std::map<long, skroot_lowe_common> loweCommonBufferMap;
+  
+  //vector to store weightings in from various SRN models at energy intervals of 0.5 MeV.
+  std::vector<std::vector<float>> SRNWeights;
+  
+  //vector to store modelNames for the SRN Models in
+  std::vector<std::string> SRNModelNames;
+  
+  bool applyReweight = false;
+  
  private:
 
 
@@ -141,15 +148,10 @@ class DataModel {
   TApplication* rootTApp=nullptr;
   ConnectionTable* connectionTable=nullptr;
   
-  // output ROOT files, for sharing between Tools
-  // use OpenFile and CloseFile functions to access this.
-  // key should be a full filepath (since it may be required to create the file)
-  // value first entry is file pointer, second is number of active users
-  std::map<std::string, std::pair<TFile*, int>> OutFiles;
-  
   
   
 };
+
 
 
 #endif
