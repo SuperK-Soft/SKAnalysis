@@ -30,7 +30,7 @@ class HitsCut: public Tool {
 	private:
 	
 	int totalHits = 0;
-	int maxHits = 0;
+	int hitLimit = 999;
 	
 	
 	int m_verbose = 0;

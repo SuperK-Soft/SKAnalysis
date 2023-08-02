@@ -13,6 +13,7 @@ bool HitsCut::Initialise(std::string configfile, DataModel &data){
 	m_log= m_data->Log;
 	
 	if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+	m_variables.Get("hitLimit", hitLimit);
 	
 	return true;
 }
@@ -30,7 +31,7 @@ bool HitsCut::Execute(){
 		return true;
 	}
 	
-	if(totalHits > 999){
+	if(totalHits > hitLimit){
 		m_data->vars.Set("Skip", true);
 	}
 	
@@ -39,14 +40,6 @@ bool HitsCut::Execute(){
 	}
 	
 	totalHits = -1;
-	
-	//THIS IS TEMPORARY PLEASE DON'T===
-	//FORGET TO GET RID OF IT JACK=====
-	//=================================
-	//	m_data->vars.Set("newMuon", false);
-	//=================================
-	//=================================
-	//=================================
 	
 	return true;
 }
