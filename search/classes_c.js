@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['openinganglestats_281',['OpeningAngleStats',['../structOpeningAngleStats.html',1,'']]]
+  ['openinganglestats_285',['OpeningAngleStats',['../structOpeningAngleStats.html',1,'']]]
 ];
