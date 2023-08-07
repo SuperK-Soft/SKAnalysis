@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['selectors_386',['Selectors',['../classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d',1,'DataModel']]],
-  ['stores_387',['Stores',['../classDataModel.html#aaee04afd014c5339c4f3c536f6b7430b',1,'DataModel']]]
+  ['selectors_391',['Selectors',['../classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d',1,'DataModel']]],
+  ['stores_392',['Stores',['../classDataModel.html#aaee04afd014c5339c4f3c536f6b7430b',1,'DataModel']]]
 ];

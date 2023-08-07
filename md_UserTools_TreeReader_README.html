@@ -70,7 +70,7 @@ $(function() {
 <li>For SK files (ROOT or ZEBRA), <code>skread</code> and/or <code>skrawread</code> will be called to populate fortran common blocks. For SK ROOT files both means of data access will be available.</li>
 </ol>
 <p>Typically, one entry will be loaded per Execute call (i.e per ToolChain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling 'LoadAFT' or 'LoadSHE' the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.</p>
-<h1><a class="anchor" id="autotoc_md54"></a>
+<h1><a class="anchor" id="autotoc_md55"></a>
 Configuration</h1>
 <p>The following options are available. Defaults, when applicable, are given in parentheses. </p><div class="fragment"><div class="line">verbosity 1                                    # tool verbosity (1)</div>
 <div class="line">readerName MyReader                            # the name to associate to this reader instance in the DataModel</div>
@@ -147,7 +147,16 @@ Configuration</h1>
 <div class="line">16 : Read TQSKZ &amp; TQSKAZ in SKREAD</div>
 <div class="line">15 : Timing correction (TMQ) by Ikeda-san</div>
 <div class="line">14 : Do not remove q&lt;0 hits for OD (SK IV only)</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><p>skbadopt bits: (from skbadcC.h) </p><div class="fragment"><div class="line">no bits (skbadopt 0): mask all kinds of bad channels (used for high energy events, e.g. muon reconstruction)</div>
+<div class="line">bit 0: mask badch.dat</div>
+<div class="line">bit 1: mask dead ID PMTs (criterion 1)</div>
+<div class="line">bit 2: mask dead ID PMTs (criterion 2)</div>
+<div class="line">bit 3: mask ID noisy PMTs (should NOT be enabled for lowe event subtigger search or lowe reconstruction)</div>
+<div class="line">bit 4: mask OD PMTs</div>
+<div class="line">bit 5: mask ID HK PMTs</div>
+<div class="line">uppermost bit (skbadopt -1): mask only badch.00* and inner HK PMTs</div>
+</div><!-- fragment --><p> usual lowe option is 23: 10111; mask everything except noisy ID PMTs (says this masks OD PMTs, but from what? they're still read into the appropriate common blocks...) </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

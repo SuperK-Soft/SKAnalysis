@@ -23,8 +23,14 @@ std\+::string {\bfseries Get\+Match\+Type} ()
 \mbox{\Hypertarget{classNCaptCandidate_adffdf3651cf6587ec48c43ddd5b1c98a}\label{classNCaptCandidate_adffdf3651cf6587ec48c43ddd5b1c98a}} 
 bool {\bfseries Set\+True\+Capture\+Idx} (int idx)
 \item 
+\mbox{\Hypertarget{classNCaptCandidate_a498c8e653e0e4a671762c2a2b65ec2f1}\label{classNCaptCandidate_a498c8e653e0e4a671762c2a2b65ec2f1}} 
+bool {\bfseries Set\+Prompt\+Event} (int idx)
+\item 
 \mbox{\Hypertarget{classNCaptCandidate_ae4d5a28334de3698d02f85eac33b2e33}\label{classNCaptCandidate_ae4d5a28334de3698d02f85eac33b2e33}} 
 \mbox{\hyperlink{classNCapture}{NCapture}} $\ast$ {\bfseries Get\+True\+Capture} ()
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a1cde9e4875bb478af926b6ecf7b8cd5a}\label{classNCaptCandidate_a1cde9e4875bb478af926b6ecf7b8cd5a}} 
+\mbox{\hyperlink{classLoweCandidate}{Lowe\+Candidate}} $\ast$ {\bfseries Get\+Prompt\+Event} ()
 \item 
 \mbox{\Hypertarget{classNCaptCandidate_af01d2fd413888e474917c421d9dac720}\label{classNCaptCandidate_af01d2fd413888e474917c421d9dac720}} 
 double $\ast$ {\bfseries Get\+Capt\+Terr} ()
@@ -32,14 +38,11 @@ double $\ast$ {\bfseries Get\+Capt\+Terr} ()
 \mbox{\Hypertarget{classNCaptCandidate_ac747abca2e6c33586ebab222c8371273}\label{classNCaptCandidate_ac747abca2e6c33586ebab222c8371273}} 
 double $\ast$ {\bfseries Get\+Capt\+Pos\+Err} ()
 \item 
-\mbox{\Hypertarget{classNCaptCandidate_a7f3232e3e6fae15877b91f86c56d65c1}\label{classNCaptCandidate_a7f3232e3e6fae15877b91f86c56d65c1}} 
-double $\ast$ {\bfseries Get\+Prompt\+Terr} ()
+\mbox{\Hypertarget{classNCaptCandidate_a9f7e1601052e3fbcef0b27c544b4bb96}\label{classNCaptCandidate_a9f7e1601052e3fbcef0b27c544b4bb96}} 
+double $\ast$ {\bfseries Get\+Capt\+Energy\+Err} ()
 \item 
-\mbox{\Hypertarget{classNCaptCandidate_ac721c2b40767451102e6d41b55200714}\label{classNCaptCandidate_ac721c2b40767451102e6d41b55200714}} 
-double $\ast$ {\bfseries Get\+Prompt\+Pos\+Err} ()
-\item 
-\mbox{\Hypertarget{classNCaptCandidate_a683720a5af4c66d1e4a294e8f9d877a7}\label{classNCaptCandidate_a683720a5af4c66d1e4a294e8f9d877a7}} 
-void {\bfseries Print} (bool print\+Feature\+Map=false, bool print\+Feature\+Map\+Values=false)
+\mbox{\Hypertarget{classNCaptCandidate_a5cb82b6ed5c214b3a37fabb926cd77fd}\label{classNCaptCandidate_a5cb82b6ed5c214b3a37fabb926cd77fd}} 
+void {\bfseries Print} (bool print\+Prompt=true, bool print\+Reco\+Vars\+Map=false, bool print\+Reco\+Vars\+Map\+Values=false, bool print\+Feature\+Map=false, bool print\+Feature\+Map\+Values=false)
 \end{DoxyCompactItemize}
 \doxysubsection*{Public Attributes}
 \begin{DoxyCompactItemize}
@@ -47,8 +50,8 @@ void {\bfseries Print} (bool print\+Feature\+Map=false, bool print\+Feature\+Map
 \mbox{\Hypertarget{classNCaptCandidate_a3d6a1445289975341d9964ef2ddee8da}\label{classNCaptCandidate_a3d6a1445289975341d9964ef2ddee8da}} 
 std\+::string {\bfseries algo}
 \item 
-\mbox{\Hypertarget{classNCaptCandidate_aca550471cbb53f8bd0dba1a370fa8214}\label{classNCaptCandidate_aca550471cbb53f8bd0dba1a370fa8214}} 
-double {\bfseries likelihood\+\_\+metric} = -\/1
+\mbox{\Hypertarget{classNCaptCandidate_ab0f57e1777cfe14ae1c8c52a31e4f67b}\label{classNCaptCandidate_ab0f57e1777cfe14ae1c8c52a31e4f67b}} 
+double {\bfseries capture\+\_\+likelihood\+\_\+metric} = -\/1
 \item 
 \mbox{\Hypertarget{classNCaptCandidate_a2ca75bb4dffba277372cb4da6aea0f68}\label{classNCaptCandidate_a2ca75bb4dffba277372cb4da6aea0f68}} 
 double {\bfseries capture\+\_\+time} = -\/1
@@ -56,17 +59,17 @@ double {\bfseries capture\+\_\+time} = -\/1
 \mbox{\Hypertarget{classNCaptCandidate_a54ec5717881aeea66e3375eb6db66df4}\label{classNCaptCandidate_a54ec5717881aeea66e3375eb6db66df4}} 
 TVector3 {\bfseries capture\+\_\+pos}
 \item 
-\mbox{\Hypertarget{classNCaptCandidate_a864a118377b0dda3654ac977131433b7}\label{classNCaptCandidate_a864a118377b0dda3654ac977131433b7}} 
-double {\bfseries prompt\+\_\+time} = -\/1
-\item 
-\mbox{\Hypertarget{classNCaptCandidate_a6146c54b51715bfea9cb4dba87875f26}\label{classNCaptCandidate_a6146c54b51715bfea9cb4dba87875f26}} 
-TVector3 {\bfseries prompt\+\_\+pos} \{999.,999.,999\}
+\mbox{\Hypertarget{classNCaptCandidate_a303f7a942a32be70edc57f931d810b88}\label{classNCaptCandidate_a303f7a942a32be70edc57f931d810b88}} 
+double {\bfseries capture\+\_\+E} = -\/1
 \item 
 \mbox{\Hypertarget{classNCaptCandidate_a54f7c49d4e35e4fc1f610b53d3892689}\label{classNCaptCandidate_a54f7c49d4e35e4fc1f610b53d3892689}} 
 match\+Type {\bfseries matchtype} =match\+Type\+::k\+Not\+Set
 \item 
 \mbox{\Hypertarget{classNCaptCandidate_a8478a7decc51f37f81fd568d37ef1d36}\label{classNCaptCandidate_a8478a7decc51f37f81fd568d37ef1d36}} 
 BStore {\bfseries feature\+Map} \{true,constants\+::\+BSTORE\+\_\+\+BINARY\+\_\+\+FORMAT\}
+\item 
+\mbox{\Hypertarget{classNCaptCandidate_a32bddb910db978dcd2a429ab30942135}\label{classNCaptCandidate_a32bddb910db978dcd2a429ab30942135}} 
+BStore {\bfseries reco\+Vars} \{true,constants\+::\+BSTORE\+\_\+\+BINARY\+\_\+\+FORMAT\}
 \end{DoxyCompactItemize}
 \doxysubsection*{Static Public Attributes}
 \begin{DoxyCompactItemize}

@@ -1,0 +1,66 @@
+\hypertarget{classPlotHitTimes}{}\doxysection{Plot\+Hit\+Times Class Reference}
+\label{classPlotHitTimes}\index{PlotHitTimes@{PlotHitTimes}}
+
+
+{\ttfamily \#include $<$Plot\+Hit\+Times.\+h$>$}
+
+Inheritance diagram for Plot\+Hit\+Times\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classPlotHitTimes}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPlotHitTimes_a79a924adc0575f92ea30108ed40c3c86}\label{classPlotHitTimes_a79a924adc0575f92ea30108ed40c3c86}} 
+\mbox{\hyperlink{classPlotHitTimes_a79a924adc0575f92ea30108ed40c3c86}{Plot\+Hit\+Times}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classPlotHitTimes_a12b83b376eea8d96fce7812040389e46}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPlotHitTimes_a68c44df79ede202c125d688d8da8aba2}\label{classPlotHitTimes_a68c44df79ede202c125d688d8da8aba2}} 
+bool \mbox{\hyperlink{classPlotHitTimes_a68c44df79ede202c125d688d8da8aba2}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Executre function used to perform Tool perpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPlotHitTimes_a22b39684c67c5ac8647a5925999540d5}\label{classPlotHitTimes_a22b39684c67c5ac8647a5925999540d5}} 
+bool \mbox{\hyperlink{classPlotHitTimes_a22b39684c67c5ac8647a5925999540d5}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPlotHitTimes_ab35fc4b50ba7cdceb1b2035b76f2263f}\label{classPlotHitTimes_ab35fc4b50ba7cdceb1b2035b76f2263f}} 
+int {\bfseries Get\+Subtrigger\+Flags} (int subtrigtype, std\+::vector$<$ std\+::bitset$<$ 32 $>$$>$ \&in\+\_\+subtrigger\+\_\+flags, int n\+\_\+triggers)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+This Tool plots the times of hits, highlighting in-\/gate and out-\/of-\/gate hits, along with hits in the main and subtriggers
+
+\begin{DoxyParagraph}{Author}
+M.\+O\textquotesingle{}Flaherty 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2023/08/01 
+\end{DoxyParagraph}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPlotHitTimes_a12b83b376eea8d96fce7812040389e46}\label{classPlotHitTimes_a12b83b376eea8d96fce7812040389e46}} 
+\index{PlotHitTimes@{PlotHitTimes}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!PlotHitTimes@{PlotHitTimes}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool Plot\+Hit\+Times\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+Plot\+Hit\+Times/Plot\+Hit\+Times.\+h\item 
+User\+Tools/\+Plot\+Hit\+Times/Plot\+Hit\+Times.\+cpp\end{DoxyCompactItemize}

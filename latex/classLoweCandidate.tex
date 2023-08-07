@@ -1,0 +1,113 @@
+\hypertarget{classLoweCandidate}{}\doxysection{Lowe\+Candidate Class Reference}
+\label{classLoweCandidate}\index{LoweCandidate@{LoweCandidate}}
+\doxysubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a7595b3b4c44b1fa315680c12cf4c0280}\label{classLoweCandidate_a7595b3b4c44b1fa315680c12cf4c0280}} 
+enum class {\bfseries match\+Type} \{ \newline
+{\bfseries k\+Not\+Set} =-\/1
+, {\bfseries k\+Mistag} =0
+, {\bfseries k\+IBDPositron} =1
+, {\bfseries k\+Spallation} =2
+, \newline
+{\bfseries k\+Decaye} =3
+, {\bfseries k\+Other} =4
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a51b980707a7a82e18f55838ecc48b30a}\label{classLoweCandidate_a51b980707a7a82e18f55838ecc48b30a}} 
+std\+::string {\bfseries Get\+Match\+Type} ()
+\item 
+\mbox{\Hypertarget{classLoweCandidate_ad012ae1236a2c31d7bb0933880f412e8}\label{classLoweCandidate_ad012ae1236a2c31d7bb0933880f412e8}} 
+bool {\bfseries Set\+True\+Particle\+Idx} (int idx)
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a2167795b864e6268cbd1e2c0665ac247}\label{classLoweCandidate_a2167795b864e6268cbd1e2c0665ac247}} 
+\mbox{\hyperlink{classMParticle}{MParticle}} $\ast$ {\bfseries Get\+True\+Particle} ()
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a348f30e62b2a337770cc8a1f04dafd62}\label{classLoweCandidate_a348f30e62b2a337770cc8a1f04dafd62}} 
+double $\ast$ {\bfseries Get\+Terr} ()
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a551d95d9854ad31e45612345b628afe3}\label{classLoweCandidate_a551d95d9854ad31e45612345b628afe3}} 
+double $\ast$ {\bfseries Get\+Pos\+Err} ()
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a4249b3aff3d5c8520c143be147aa7fc2}\label{classLoweCandidate_a4249b3aff3d5c8520c143be147aa7fc2}} 
+double $\ast$ {\bfseries Get\+Energy\+Err} ()
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a8bc1f92856804ab21a3e54efc5a4670a}\label{classLoweCandidate_a8bc1f92856804ab21a3e54efc5a4670a}} 
+void {\bfseries Print} (bool print\+Reco\+Vars\+Map=false, bool print\+Reco\+Vars\+Map\+Values=false, bool print\+Feature\+Map=false, bool print\+Feature\+Map\+Values=false)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classLoweCandidate_aa8bc61fecb0d053f0dd800cfc9173287}\label{classLoweCandidate_aa8bc61fecb0d053f0dd800cfc9173287}} 
+std\+::string {\bfseries algo}
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a31b5577effb5f4dad0bfdf63435b7d03}\label{classLoweCandidate_a31b5577effb5f4dad0bfdf63435b7d03}} 
+double {\bfseries goodness\+\_\+metric} = -\/1
+\item 
+\mbox{\Hypertarget{classLoweCandidate_ada4f16958854289b822ee50e32497ab9}\label{classLoweCandidate_ada4f16958854289b822ee50e32497ab9}} 
+double {\bfseries event\+\_\+time} = 9999
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a59115aa927341d434b0be02be6a125a5}\label{classLoweCandidate_a59115aa927341d434b0be02be6a125a5}} 
+TVector3 {\bfseries event\+\_\+pos} \{9999,9999,9999\}
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a2c262dc5a6fe4f3ea5d41b4d8fe5f88e}\label{classLoweCandidate_a2c262dc5a6fe4f3ea5d41b4d8fe5f88e}} 
+double {\bfseries event\+\_\+energy} = 9999
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a3a84e1a8c2b491c590e3a70c71280292}\label{classLoweCandidate_a3a84e1a8c2b491c590e3a70c71280292}} 
+match\+Type {\bfseries matchtype} =match\+Type\+::k\+Not\+Set
+\item 
+\mbox{\Hypertarget{classLoweCandidate_af4a32e1d2d51e9f21deb83f47dd2edad}\label{classLoweCandidate_af4a32e1d2d51e9f21deb83f47dd2edad}} 
+BStore {\bfseries feature\+Map} \{true,constants\+::\+BSTORE\+\_\+\+BINARY\+\_\+\+FORMAT\}
+\item 
+\mbox{\Hypertarget{classLoweCandidate_a3119fea980571e443a39cf3a72ad4874}\label{classLoweCandidate_a3119fea980571e443a39cf3a72ad4874}} 
+BStore {\bfseries reco\+Vars} \{true,constants\+::\+BSTORE\+\_\+\+BINARY\+\_\+\+FORMAT\}
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+static const std\+::map$<$ match\+Type, std\+::string $>$ {\bfseries match\+Types}
+\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+std\+::ostream \& \mbox{\hyperlink{classLoweCandidate_adf2bd413c645488b0def8beb89bfb258}{operator$<$$<$}} (std\+::ostream \&os, const Lowe\+Candidate\+::match\+Type \&obj)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Friends And Related Function Documentation}
+\mbox{\Hypertarget{classLoweCandidate_adf2bd413c645488b0def8beb89bfb258}\label{classLoweCandidate_adf2bd413c645488b0def8beb89bfb258}} 
+\index{LoweCandidate@{LoweCandidate}!operator$<$$<$@{operator$<$$<$}}
+\index{operator$<$$<$@{operator$<$$<$}!LoweCandidate@{LoweCandidate}}
+\doxysubsubsection{\texorpdfstring{operator$<$$<$}{operator<<}}
+{\footnotesize\ttfamily std\+::ostream\& operator$<$$<$ (\begin{DoxyParamCaption}\item[{std\+::ostream \&}]{os,  }\item[{const Lowe\+Candidate\+::match\+Type \&}]{obj }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [friend]}}
+
+os $<$$<$ static\+\_\+cast$<$std\+::underlying\+\_\+type$<$\+A$>$\+::type$>$(obj);
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{classLoweCandidate_ac262987d2c82f193fdc0484cf6eac42c}\label{classLoweCandidate_ac262987d2c82f193fdc0484cf6eac42c}} 
+\index{LoweCandidate@{LoweCandidate}!matchTypes@{matchTypes}}
+\index{matchTypes@{matchTypes}!LoweCandidate@{LoweCandidate}}
+\doxysubsubsection{\texorpdfstring{matchTypes}{matchTypes}}
+{\footnotesize\ttfamily const std\+::map$<$ Lowe\+Candidate\+::match\+Type, std\+::string $>$ Lowe\+Candidate\+::match\+Types\hspace{0.3cm}{\ttfamily [static]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\{}
+\DoxyCodeLine{        \{LoweCandidate::matchType::kNotSet,\textcolor{stringliteral}{"{}Unmatched"{}}\},}
+\DoxyCodeLine{        \{LoweCandidate::matchType::kMistag,\textcolor{stringliteral}{"{}Mistag"{}}\},  }
+\DoxyCodeLine{        \{LoweCandidate::matchType::kIBDPositron,\textcolor{stringliteral}{"{}IBD Positron"{}}\},}
+\DoxyCodeLine{        \{LoweCandidate::matchType::kSpallation,\textcolor{stringliteral}{"{}Spallation"{}}\},}
+\DoxyCodeLine{        \{LoweCandidate::matchType::kDecaye,\textcolor{stringliteral}{"{}Decay-\/e"{}}\},}
+\DoxyCodeLine{        \{LoweCandidate::matchType::kOther,\textcolor{stringliteral}{"{}Other"{}}\} }
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Lowe\+Candidate.\+h\item 
+Data\+Model/Lowe\+Candidate.\+cpp\end{DoxyCompactItemize}

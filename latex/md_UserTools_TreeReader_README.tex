@@ -4,7 +4,7 @@ A tool for reading in data from ROOT or ZEBRA files. Access to file data is prov
 \item For SK files (ROOT or ZEBRA), {\ttfamily skread} and/or {\ttfamily skrawread} will be called to populate fortran common blocks. For SK ROOT files both means of data access will be available.
 \end{DoxyEnumerate}
 
-Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md54}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md54}
+Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md55}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md55}
 The following options are available. Defaults, when applicable, are given in parentheses. 
 \begin{DoxyCode}{0}
 \DoxyCodeLine{verbosity 1                                    \# tool verbosity (1)}
@@ -118,4 +118,18 @@ skoptn values\+:
 \DoxyCodeLine{14 : Do not remove q<0 hits for OD (SK IV only)}
 
 \end{DoxyCode}
- 
+
+
+skbadopt bits\+: (from skbadc\+C.\+h) 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{no bits (skbadopt 0): mask all kinds of bad channels (used for high energy events, e.g. muon reconstruction)}
+\DoxyCodeLine{bit 0: mask badch.dat}
+\DoxyCodeLine{bit 1: mask dead ID PMTs (criterion 1)}
+\DoxyCodeLine{bit 2: mask dead ID PMTs (criterion 2)}
+\DoxyCodeLine{bit 3: mask ID noisy PMTs (should NOT be enabled for lowe event subtigger search or lowe reconstruction)}
+\DoxyCodeLine{bit 4: mask OD PMTs}
+\DoxyCodeLine{bit 5: mask ID HK PMTs}
+\DoxyCodeLine{uppermost bit (skbadopt -\/1): mask only badch.00* and inner HK PMTs}
+
+\end{DoxyCode}
+ usual lowe option is 23\+: 10111; mask everything except noisy ID PMTs (says this masks OD PMTs, but from what? they\textquotesingle{}re still read into the appropriate common blocks...) 

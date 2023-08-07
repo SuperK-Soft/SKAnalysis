@@ -93,9 +93,9 @@ ConnectionTable *&#160;</td><td class="memItemRight" valign="bottom"><b>GetConne
 <tr class="memitem:a50263d59b980d25cbf37eed273ce7c89"><td class="memItemLeft" align="right" valign="top"><a id="a50263d59b980d25cbf37eed273ce7c89"></a>
 <a class="el" href="classMTreeReader.html">MTreeReader</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>GetTreeReader</b> ()</td></tr>
 <tr class="separator:a50263d59b980d25cbf37eed273ce7c89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addfebe7aa61055a479b32bba3b107ca7"><td class="memItemLeft" align="right" valign="top"><a id="addfebe7aa61055a479b32bba3b107ca7"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReader</b> (std::string readerName, <a class="el" href="classMTreeReader.html">MTreeReader</a> *reader, std::function&lt; bool()&gt; hasAFT, std::function&lt; bool()&gt; loadSHE, std::function&lt; bool()&gt; loadAFT, std::function&lt; bool(int)&gt; loadCommon, std::function&lt; int(long)&gt; getTreeEntry)</td></tr>
-<tr class="separator:addfebe7aa61055a479b32bba3b107ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a694065d292f183d70142c20ab271a1ac"><td class="memItemLeft" align="right" valign="top"><a id="a694065d292f183d70142c20ab271a1ac"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>RegisterReader</b> (std::string readerName, <a class="el" href="classMTreeReader.html">MTreeReader</a> *reader, std::function&lt; bool()&gt; hasAFT={}, std::function&lt; bool()&gt; loadSHE={}, std::function&lt; bool()&gt; loadAFT={}, std::function&lt; bool(int)&gt; loadCommon={}, std::function&lt; int(long)&gt; getTreeEntry={})</td></tr>
+<tr class="separator:a694065d292f183d70142c20ab271a1ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c20a8b569cec56649815ce2ae0498ee"><td class="memItemLeft" align="right" valign="top"><a id="a4c20a8b569cec56649815ce2ae0498ee"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>getTreeEntry</b> (std::string ReaderName=&quot;&quot;, long entrynum=0)</td></tr>
 <tr class="separator:a4c20a8b569cec56649815ce2ae0498ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -108,9 +108,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadSHE</b> (std::str
 <tr class="memitem:a85ad6fc3d5a0f2cba8fc27a2af15c17a"><td class="memItemLeft" align="right" valign="top"><a id="a85ad6fc3d5a0f2cba8fc27a2af15c17a"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadAFT</b> (std::string ReaderName=&quot;&quot;)</td></tr>
 <tr class="separator:a85ad6fc3d5a0f2cba8fc27a2af15c17a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d703bbf4d27f9652527c5b3403e07d6"><td class="memItemLeft" align="right" valign="top"><a id="a3d703bbf4d27f9652527c5b3403e07d6"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadEntry</b> (int entry_i, std::string ReaderName=&quot;&quot;)</td></tr>
-<tr class="separator:a3d703bbf4d27f9652527c5b3403e07d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87dcbcfd29a861c119bb292ad828d411"><td class="memItemLeft" align="right" valign="top"><a id="a87dcbcfd29a861c119bb292ad828d411"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadCommons</b> (int entry_i, std::string ReaderName=&quot;&quot;)</td></tr>
+<tr class="separator:a87dcbcfd29a861c119bb292ad828d411"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6023cca61b409a87652a119d37db3ffe"><td class="memItemLeft" align="right" valign="top"><a id="a6023cca61b409a87652a119d37db3ffe"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>GetNextLUN</b> (int lun=10, std::string reader=&quot;reader&quot;)</td></tr>
 <tr class="separator:a6023cca61b409a87652a119d37db3ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,6 +123,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>FreeLUN</b> (int lun,
 <tr class="memitem:a299b24ca8478fefd9ed071e116f687b9"><td class="memItemLeft" align="right" valign="top"><a id="a299b24ca8478fefd9ed071e116f687b9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>KZInit</b> ()</td></tr>
 <tr class="separator:a299b24ca8478fefd9ed071e116f687b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a408371d6ed7f88eaf3e43fda5a3985b4"><td class="memItemLeft" align="right" valign="top"><a id="a408371d6ed7f88eaf3e43fda5a3985b4"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>GeoSet</b> (int sk_geometry_in)</td></tr>
+<tr class="separator:a408371d6ed7f88eaf3e43fda5a3985b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5588f608115ca6647726c4b612d291bc"><td class="memItemLeft" align="right" valign="top"><a id="a5588f608115ca6647726c4b612d291bc"></a>
 TFile *&#160;</td><td class="memItemRight" valign="bottom"><b>OpenFileForWriting</b> (std::string file, bool alreadyopenonly=false)</td></tr>
 <tr class="separator:a5588f608115ca6647726c4b612d291bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -219,6 +222,9 @@ std::vector&lt; <a class="el" href="classMVertex.html">MVertex</a> &gt;&#160;</t
 <tr class="memitem:aa4c92adf24ee3bfde854d2abb62a8104"><td class="memItemLeft" align="right" valign="top"><a id="aa4c92adf24ee3bfde854d2abb62a8104"></a>
 std::map&lt; std::string, std::vector&lt; <a class="el" href="classNCaptCandidate.html">NCaptCandidate</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NCaptureCandidates</b></td></tr>
 <tr class="separator:aa4c92adf24ee3bfde854d2abb62a8104"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9faf46045e24bb1293819733fe2f991"><td class="memItemLeft" align="right" valign="top"><a id="af9faf46045e24bb1293819733fe2f991"></a>
+std::vector&lt; <a class="el" href="classLoweCandidate.html">LoweCandidate</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>LoweCandidates</b></td></tr>
+<tr class="separator:af9faf46045e24bb1293819733fe2f991"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2dfe634a70a429b8c866ea014a925189"><td class="memItemLeft" align="right" valign="top"><a id="a2dfe634a70a429b8c866ea014a925189"></a>
 std::vector&lt; <a class="el" href="classNCapture.html">NCapture</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>NCapturesTrue</b></td></tr>
 <tr class="separator:a2dfe634a70a429b8c866ea014a925189"><td class="memSeparator" colspan="2">&#160;</td></tr>

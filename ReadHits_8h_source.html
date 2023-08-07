@@ -74,15 +74,15 @@ $(function() {
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; </div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="keyword">enum</span> TriggerType</div>
+<div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="classReadHits.html">    6</a></span>&#160;<span class="keyword">class </span><a class="code" href="classReadHits.html">ReadHits</a> : <span class="keyword">public</span> Tool</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;{</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    tELSE,</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;    tSHE,</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    tAFT</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;};</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classReadHits.html">   13</a></span>&#160;<span class="keyword">class </span><a class="code" href="classReadHits.html">ReadHits</a> : <span class="keyword">public</span> Tool</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    <span class="keyword">enum</span> TrigType</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;    {</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;        tELSE,</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;        tSHE,</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;        tAFT</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    };</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    </div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <a class="code" href="classReadHits.html">ReadHits</a>(): prevEvTrigType(tELSE), currentEvTrigType(tELSE), isPrevEvProcessed(<span class="keyword">true</span>)</div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        { name = <span class="stringliteral">&quot;ReadHits&quot;</span>; }</div>
@@ -94,15 +94,15 @@ $(function() {
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        std::string name;</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        <span class="keywordtype">void</span> SetTriggerType();</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        TriggerType prevEvTrigType;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        TriggerType currentEvTrigType;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        TrigType prevEvTrigType;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        TrigType currentEvTrigType;</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keywordtype">bool</span> isPrevEvProcessed;</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;};</div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:60</div></div>
-<div class="ttc" id="aclassReadHits_html"><div class="ttname"><a href="classReadHits.html">ReadHits</a></div><div class="ttdef"><b>Definition:</b> ReadHits.h:14</div></div>
+<div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:61</div></div>
+<div class="ttc" id="aclassReadHits_html"><div class="ttname"><a href="classReadHits.html">ReadHits</a></div><div class="ttdef"><b>Definition:</b> ReadHits.h:7</div></div>
 <div class="ttc" id="aclassReadHits_html_a115ca586a4ee2882245e5ccf11b212f5"><div class="ttname"><a href="classReadHits.html#a115ca586a4ee2882245e5ccf11b212f5">ReadHits::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdef"><b>Definition:</b> ReadHits.cpp:15</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
