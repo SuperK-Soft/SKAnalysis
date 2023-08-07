@@ -47,7 +47,8 @@ if (tool=="ReadMCParticles") ret=new ReadMCParticles;
 if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
 if (tool=="PrintEvent") ret=new PrintEvent;
 if (tool=="PlotHitTimes") ret=new PlotHitTimes;
-
+if (tool=="VertexFitter") ret=new VertexFitter;
+//if (tool=="CombinedFitter") ret=new CombinedFitter;
 return ret;
 }
 

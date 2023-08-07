@@ -20,7 +20,7 @@ FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none # -falign-commons
 
 # SK Offline Library (SKOFL) Headers & Libraries
 # n.b. no spaces between -I and following path allowed here (rootcint doesn't like it)
-SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe
+SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe -I$(SKOFL_ROOT)/lowe/bonsai
 
 # lowe libraries - some of these may not be required in this list
 SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader -lsnevtinfo
