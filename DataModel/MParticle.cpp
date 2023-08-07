@@ -187,7 +187,7 @@ MParticle* MParticle::GetParent(){
 }
 
 int MParticle::GetNearestParentIndex(){
-	return parent_idx;
+	return std::abs(parent_idx);
 }
 
 // ===================

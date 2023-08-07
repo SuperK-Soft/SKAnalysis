@@ -171,7 +171,7 @@ std::string RunModeToName(int mdrnsk){
 	return std::to_string(mdrnsk);
 }
 
-std::string TriggerIDToTrigger(int code){
+std::string TriggerIDToName(int code){
 	if(constants::Trigger_ID_To_Trigger.count(code)){
 		return constants::Trigger_ID_To_Trigger.at(code);
 	}
@@ -184,7 +184,7 @@ std::string GetTriggerNames(int32_t trigid){
 	for(int i=0; i<=31; i++){
 		if(triggerID.test(i)){
 			if(Trigs!="") Trigs += ", ";
-			Trigs += TriggerIDToTrigger(i);
+			Trigs += TriggerIDToName(i);
 		}
 	}
 	Trigs = "[" + Trigs + "]";

@@ -15,6 +15,7 @@
 #include "TCanvas.h"
 #include "TH1.h"
 #include "THStack.h"
+#include "TH2.h"
 #include "TLegend.h"
 #include "TPie.h"
 #include "TStyle.h"
@@ -46,11 +47,15 @@ bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 	// -------------
 	TFile* infile = m_data->OpenFileForReading(inputFile);
 	if(infile==nullptr || infile->IsZombie()) return false;
+	
 	inTree = (TTree*)infile->Get("eventtree");
 	if(!inTree){
 		Log(m_unique_name+" Couldn't find 'eventtree' in file "+inputFile,v_error,verbosity);
 		return false;
 	}
+	
+	// depending on source (NCaptInfo or TruthNeutronCaptures) we may need another TTree
+	// with additional branches
 	if(friendFile!=""){
 		TFile* friendfile = m_data->OpenFileForReading(friendFile);
 		if(friendfile==nullptr || friendfile->IsZombie()) return false;
@@ -59,7 +64,6 @@ bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 			Log(m_unique_name+" Couldn't find 'ntree' in file "+friendFile,v_error,verbosity);
 			return false;
 		}
-		inTree->AddFriend(friendTree);
 	}
 	
 	outfile = m_data->OpenFileForWriting(outputFile);
@@ -88,12 +92,14 @@ int PlotNeutronCaptures::MakeHistos(){
 	
 	outfile->cd();
 	
+	if(friendTree) inTree->AddFriend(friendTree);
+	
 	// ======================
 	// cumulative plots
 	// ======================
 	Log(m_unique_name+" making aggregate plots",v_debug,verbosity);
 	// neutron energy
-	TH1D hNeutronE("hNeutronE","Neutron Energy;Neutron Energy [MeV];Num Events",100,0,250);
+	TH1D hNeutronE("hNeutronE","Neutron Energy;Neutron Energy [MeV];Num Events",100,0,25);
 	inTree->Draw("neutron_start_energy>>hNeutronE");
 	hNeutronE.Write();
 	
@@ -102,9 +108,14 @@ int PlotNeutronCaptures::MakeHistos(){
 	inTree->Draw("neutron_travel_dist>>hNeutronTravelDist");
 	hNeutronTravelDist.Write();
 	
+	// neutron travel distance vs energy
+	TH2D hNeutronTravelDistVsEnergy("hNeutronTravelDistVsEnergy","Neutron Travel Distance Vs Energy;Energy [MeV];Distance [cm]",200,0,25,200,0,125);
+	inTree->Draw("neutron_travel_dist:neutron_start_energy>>hNeutronTravelDistVsEnergy");
+	hNeutronTravelDistVsEnergy.Write();
+	
 	// neutron travel time
 	TH1D hNeutronTravelTime("hNeutronTravelTime","Neutron Travel Time;Time [us];Num Events",100,0,1200);
-	inTree->Draw("neutron_travel_time>>hNeutronTravelTime");
+	inTree->Draw("(neutron_travel_time/1000.)>>hNeutronTravelTime");
 	hNeutronTravelTime.Write();
 	
 	// gamma mulitiplicity
@@ -122,9 +133,10 @@ int PlotNeutronCaptures::MakeHistos(){
 	inTree->Draw("neutron_tot_gammaE>>hSumGammaE");
 	hSumGammaE.Write();
 	
-	// gamma emission time (parent lifetime)
+	// plot gamma emission time relative to neutron capture (parent lifetime)
+	// (n.b. currently Geant4 does not actually simulate this)
 	TH1D hGammaT("hGammaT", "Gamma Emission Time (All Nuclides);Gamma Emission Time [ns];Num Events",100,0,1800E3);
-	inTree->Draw("gamma_time>>hGammaT");
+	inTree->Draw("(gamma_time-capt_t)>>hGammaT");
 	hGammaT.Write();
 	
 	// electron mulitiplicity
@@ -144,7 +156,7 @@ int PlotNeutronCaptures::MakeHistos(){
 	
 	// electron emission time (parent lifetime)
 	TH1D hElectronT("hElectronT", "Electron Emission Time (All Nuclides);Electron Emission Time [ns];Num Events",100,0,1800E3);
-	inTree->Draw("electron_time>>hElectronT");
+	inTree->Draw("(electron_time-capt_t)>>hElectronT");
 	hElectronT.Write();
 	
 	// total daughter multiplicity
@@ -177,25 +189,32 @@ int PlotNeutronCaptures::MakeHistos(){
 	TPie pCaptureNuclidePdg = TPie("pCaptureNuclidePdg", "Captures by Nuclide",capture_nuclide_vs_count.size());
 	// OK the TPie class sucks - Google sheets is a much better alternative, but one of the biggest
 	// problems is that when we have two small slices next to each other, the labels don't have space so overlap.
-	// So let's try to fix this by alternating large and small contents
-	std::map<int, int> bins_by_entries;
+	// So let's try to fix this by alternating large and small contents. To do this, we need a sorted version
+	// of our bin counts. We can't just make a map with swapped key and value because we'd end up merging
+	// all nuclides with the same capture count. We can use a vector of pairs.
+	std::vector<std::pair<int, int>> bins_by_entries;
 	for(auto&& anuclide : capture_nuclide_vs_count){
-		bins_by_entries[anuclide.second] = anuclide.first; // just swap key and value, it'll sort by value
+		bins_by_entries.emplace_back(anuclide.first, anuclide.second);
 	}
+	std::sort(bins_by_entries.begin(), bins_by_entries.end(),
+	    [](std::pair<int,int>& a, std::pair<int,int>& b) -> bool { return a.second < b.second; });
 	auto fwit=bins_by_entries.cbegin();
 	auto bwit=bins_by_entries.crbegin();
-	for(int i=0; i<capture_nuclide_vs_count.size();++i){
+	for(int i=0; i<bins_by_entries.size();++i){
 		int anuclide; // pdg
+		int count;
 		if((i%2)==0){
-			anuclide = fwit->second;
+			anuclide = fwit->first;
+			count = fwit->second;
 			++fwit;
 		} else {
-			anuclide = bwit->second;
+			anuclide = bwit->first;
+			count = bwit->second;
 			++bwit;
 		}
+		Log(m_unique_name+": nuclide "+toString(anuclide)+" ("+PdgToString(anuclide)+") had "+toString(count)+" entries",v_debug,verbosity);
 		pCaptureNuclidePdg.SetEntryLabel(i,PdgToString(anuclide).c_str());
-		pCaptureNuclidePdg.SetEntryVal(i,capture_nuclide_vs_count.at(anuclide));
-		++i;
+		pCaptureNuclidePdg.SetEntryVal(i,count);
 	}
 	// making it look nice
 	/*
@@ -209,7 +228,8 @@ int PlotNeutronCaptures::MakeHistos(){
 		pCaptureNuclidePdg.SetEntryFillColor(i, i+2);    // for some reason default colors are all very similar
 		pCaptureNuclidePdg.SetEntryLineStyle(i,0);       // no line
 	}
-	pCaptureNuclidePdg.SetLabelFormat("%val"); // too much info and it all overlaps for small slices
+	//pCaptureNuclidePdg.SetLabelFormat("%val"); // too much info and it all overlaps for small slices
+	pCaptureNuclidePdg.SetLabelFormat("#splitline{%txt}{(%val)}"); // not sure this gets saved to file, but for reference
 	// since we don't draw the labels (isotopes), its then necessary to add a legend, but this is much clearer.
 	pCaptureNuclidePdg.SetCircle(0.5, 0.4702026, 0.3302274);
 	pCaptureNuclidePdg.SetTextSize(0.03455766);

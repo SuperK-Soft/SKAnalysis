@@ -46,6 +46,8 @@ if (tool=="TrueNCaptures") ret=new TrueNCaptures;
 if (tool=="ReadMCParticles") ret=new ReadMCParticles;
 if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
 if (tool=="PrintEvent") ret=new PrintEvent;
+if (tool=="PlotHitTimes") ret=new PlotHitTimes;
+
 return ret;
 }
 

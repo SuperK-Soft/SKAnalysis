@@ -146,7 +146,7 @@ bool PlotMuonDtDlt::PlotMuonDlt(){
 	// make histograms of transverse distance to muon for all pre- and post-muons
 	// and their difference to extract the spallation distributions
 	for(auto&& aclass : constants::muboy_class_to_name){  // we have 5 muboy classifications
-		int mu_class_i = aclass.first;
+		int mu_class_i = int(aclass.first);
 		const char* mu_class_name = aclass.second.c_str();
 		TH1F ahist_pre(TString::Format("dlt_pre_%d",mu_class_i),
 					     "All Pre-Muon to Low-E Transverse Distances",8,0,400);
@@ -206,7 +206,7 @@ bool PlotMuonDtDlt::PlotMuonDt(){
 	THStack my_spall_dts;
 	for(auto&& dt_max : dt_range_full){
 		for(auto&& aclass : constants::muboy_class_to_name){  // we have 5 muboy classifications
-			int mu_class_i = aclass.first;
+			int mu_class_i = int(aclass.first);
 			const char* mu_class_name = aclass.second.c_str();
 			// need to take the fabs of the time so time 0 is in bin 0 for both pre- and post-
 			// in order to be able to subtract the bin counts.

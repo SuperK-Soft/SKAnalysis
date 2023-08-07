@@ -56,6 +56,7 @@ extern "C" void runinfsk_();
 //
 extern "C" void softtrg_set_cond_(int*, int*, int*, int*, int*);
 extern "C" void get_sub_triggers_(int*, int*, int*, int*);
+extern "C" void get_sub_triggers_add_(int*, int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
 extern "C" void set_timing_gate_nsec_(float*);
 

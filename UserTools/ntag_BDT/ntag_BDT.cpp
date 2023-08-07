@@ -20,9 +20,9 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	
 	// get the reader for inputs
 	std::string treeReaderName;
-	m_variables.Get("treeReaderName",treeReaderName);
+	get_ok = m_variables.Get("treeReaderName",treeReaderName);
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
+		Log(toolName+": Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
 	myTreeReader = m_data->Trees.at(treeReaderName);
@@ -70,6 +70,11 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	treeout->Branch("neutron5",  neutron5, "neutron5[np]/F");
 	treeout->Branch("nlow",      nlow,     "nlow[np]/I");
 	
+	// So that downstream Tools can access our results without needing to run a second
+	// ToolChain that reads the results off disk, make a TreeReader that they can use to
+	// retrieve results as they're generated, equivalently to with an upstream TreeReader Tool
+	outTreeReader.Load(treeout);
+	m_data->RegisterReader("ntag_BDT_OutTree", &outTreeReader);
 	
 	return true;
 }
@@ -96,6 +101,8 @@ bool ntag_BDT::Execute(){
 		nlow = new int[MAX_EVENTS];
 		treeout->SetBranchAddress("neutron5",  neutron5);
 		treeout->SetBranchAddress("nlow",      nlow);
+		outTreeReader.UpdateBranchPointer("neutron5");
+		outTreeReader.UpdateBranchPointer("nlow");
 	}
 	
 	// Compute position in detector for Nlow calculation (neutron tagging)
@@ -207,7 +214,7 @@ bool ntag_BDT::Execute(){
 	unsigned long num_entries = treeout->GetEntries();
 	if(num_entries%WRITE_FREQUENCY){
 		// write out intermittently for safety
-		Log(toolName+": Updating output TTree",v_debug,m_verbose);
+		Log(toolName+": Updating output TTree",v_message,m_verbose);
 		outfile->Write("*",TObject::kOverwrite);
 	}
 	
@@ -223,6 +230,9 @@ bool ntag_BDT::Finalise(){
 		delete outfile;
 		outfile = nullptr;
 	}
+	
+	// inform the TreeReader not to close the file when the destructor is called.
+	outTreeReader.SetClosed();
 	
 	return true;
 }

@@ -1,14 +1,9 @@
 verbosity 1
 inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_bdt.root
-#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_added_bdt.root
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_bdt.root
 treeName sk2p2
 readerName bdtReader
 skFile 0                      # do not fill fortran common blocks
 firstEntry 0                  # first TTree entry to process
 maxEntries -1                 # max num input entries to process
 
-#StartInputBranchList
-###############
-#TQREAL
-#############
-#EndInputBranchList

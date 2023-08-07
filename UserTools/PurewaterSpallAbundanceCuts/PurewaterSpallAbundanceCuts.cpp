@@ -291,8 +291,8 @@ bool PurewaterSpallAbundanceCuts::Analyse(){
 		
 		// Apply nominal lt cut, unless muon type was misfit or a poorly fit single muon
 		Log(toolName+" checking nominal dlt cut",v_debug+2,verbosity);
-		if(not (dlt_mu_lowe[mu_i] < 200 || mu_class[mu_i] == constants::muboy_classes::misfit || 
-			   (mu_class[mu_i] == constants::muboy_classes::single_thru_going && mu_fit_goodness[mu_i] < 0.4)))
+		if(not (dlt_mu_lowe[mu_i] < 200 || mu_class[mu_i] == int(muboy_classes::misfit) || 
+			   (mu_class[mu_i] == int(muboy_classes::single_thru_going) && mu_fit_goodness[mu_i] < 0.4)))
 			    continue;
 		myTreeSelections.AddPassingEvent("dlt_mu_lowe>200cm", mu_i);
 		

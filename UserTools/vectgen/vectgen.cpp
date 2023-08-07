@@ -35,6 +35,8 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("random_seed", seed);              // for random generator used in generating events
 	m_variables.Get("min_energy", min_E);              // minimum neutrino energy (MeV)
 	m_variables.Get("max_energy", max_E);              // maximum neutrino energy (MeV)
+	int sk_geometry=6;
+	m_variables.Get("sk_geometry",sk_geometry);        // not sure if this is used. SK Phase.
 	get_ok =  m_variables.Get("pos_x", pos_x);         // position of the vertex
 	get_ok &= m_variables.Get("pos_y", pos_y);         // if not specified, will be random
 	get_ok &= m_variables.Get("pos_z", pos_z);
@@ -67,9 +69,7 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 	rluxgo_(&lux,&seed,&zero,&zero);
 	
 	// set the geometry. Not sure where this is used...
-	// TODO make a method in DataModel to set this, to ensure multiple Tools don't set conflicting values
-	skheadg_.sk_geometry = 4;
-	geoset_();
+	m_data->GeoSet(sk_geometry);
 	
 	// if user didn't specify the number of events to generate,
 	// scan livetime file to calculate number of events based on duration of given run

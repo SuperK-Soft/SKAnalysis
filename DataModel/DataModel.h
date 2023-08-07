@@ -34,6 +34,7 @@
 #include "MParticle.h"
 #include "NCapture.h"
 #include "NCaptCandidate.h"
+#include "LoweCandidate.h"
 
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
@@ -92,14 +93,14 @@ class DataModel {
   
   // This function is used to register a TreeReader tool's member functions with the DataModel,
   // which provides access from other Tools
-  bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT, std::function<bool()> loadSHE, std::function<bool()> loadAFT, std::function<bool(int)> loadCommon, std::function<int(long)> getTreeEntry);
+  bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT={}, std::function<bool()> loadSHE={}, std::function<bool()> loadAFT={}, std::function<bool(int)> loadCommon={}, std::function<int(long)> getTreeEntry={});
   int getTreeEntry(std::string ReaderName="", long entrynum=0);
   // These retain function pointers to call the corresponding TreeReader functions.
   // The TreeReader instance is obtained from the name specified in their config file.
   bool HasAFT(std::string ReaderName="");
   bool LoadSHE(std::string ReaderName="");
   bool LoadAFT(std::string ReaderName="");
-  bool LoadEntry(int entry_i, std::string ReaderName="");
+  bool LoadCommons(int entry_i, std::string ReaderName="");
   // tracking fortran logic unit numbers (LUNs, file handles)
   int GetNextLUN(int lun=10, std::string reader="reader");
   int GetLUN(std::string reader);
@@ -107,6 +108,7 @@ class DataModel {
   // wrapper to check if we've called this yet, since we should probably only call it the once?
   void KZInit();
   bool kz_initialized=false;
+  bool GeoSet(int sk_geometry_in);
   
   TFile* OpenFileForWriting(std::string file, bool alreadyopenonly=false);
   TFile* OpenFileForReading(std::string file, bool fromdisk=true);
@@ -129,6 +131,7 @@ class DataModel {
   std::vector<MVertex> eventVertices;
   // generalised neutron captures
   std::map<std::string,std::vector<NCaptCandidate>> NCaptureCandidates;
+  std::vector<LoweCandidate> LoweCandidates;
   std::vector<NCapture> NCapturesTrue;
   
   std::map<std::string, Store*> tool_configs;

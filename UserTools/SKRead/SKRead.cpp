@@ -37,7 +37,7 @@ bool SKRead::Initialise(std::string configfile, DataModel &data)
     //////////////////////////////////////////
 
     skoptn_(const_cast<char*>(skOptions.Data()), skOptions.Length());
-    skheadg_.sk_geometry = skGeometry; geoset_();
+    m_data->GeoSet(skGeometry);
     
     // Custom bad-channel masking (M. Harada)
     // 25: mask bad channel
@@ -63,7 +63,7 @@ bool SKRead::Initialise(std::string configfile, DataModel &data)
     }
     // ZEBRA
     else {
-        kzinit_(); // Initialise ZEBRA
+        m_data->KZInit(); // Initialise ZEBRA
 
         // Set rflist and open file
         int fileIndex = 1; // 1st file in rflist

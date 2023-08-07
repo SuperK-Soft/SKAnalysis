@@ -150,12 +150,13 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// For now we'll just keep our own list of LUNs in the DataModel
 		LUN = m_data->GetNextLUN(LUN, readerName);
 		
+		// "initialize data structures".
+		// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
+		m_data->KZInit();
+		
 		// slight change in initialization depending on SK root vs zebra
 		if(not (skrootMode==SKROOTMODE::ZEBRA)){
 			Log(toolName+" doing SKROOT initialization",v_debug,verbosity);
-			// "initialize data structures".
-			// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
-			m_data->KZInit();
 			
 			// There are 3 modes to the TreeManager:
 			// skroot_open_read_ calls the TreeManager constructor with mode = 2;
@@ -260,7 +261,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			Log(toolName+" doing zebra initialization",v_debug,verbosity);
 			skheadf_.sk_file_format = 0;    // set common block variable for ZBS format
 			
-			zbsinit_();
+			//zbsinit_();  THIS IS THE SAME ROUTINE AS KZINIT!!
 			
 			// Set rflist and open file
 			// '$SKOFL_ROOT/iolib/set_rflist.F' is used for setting the input file to open.
@@ -298,8 +299,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// So... modify if needed. Please explain any changes in comments.
 		
 		// need to set skgeometry in skheadg common block
-		skheadg_.sk_geometry = sk_geometry;
-		geoset_();
+		m_data->GeoSet(sk_geometry);
 		
 		// skoptn 25 indicates that skread should mask bad channels.
 		// As a base there is a manually maintained list of bad channels, $SKOFL_ROOT/const/badch.dat

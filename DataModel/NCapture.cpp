@@ -9,7 +9,7 @@ NCapture::NCapture(){
 bool NCapture::SetNeutronIndex(int neutron_index){
 	if(neutron_index>=0 && neutron_index<m_data->eventParticles.size()
 	  && m_data->eventParticles.at(neutron_index).pdg==2112){
-		neutron_trackid = neutron_index;
+		neutron_idx = neutron_index;
 	} else {
 		// out of bounds, or not a neutron
 		return false;
@@ -20,9 +20,27 @@ bool NCapture::SetNeutronIndex(int neutron_index){
 	return true;
 }
 
+bool NCapture::SetIBDPositronIndex(int positron_index){
+	if(positron_index>=0 && positron_index<m_data->eventParticles.size()
+	  && m_data->eventParticles.at(positron_index).pdg==-11){
+		positron_idx = positron_index;
+	} else {
+		// out of bounds, or not a positron
+		return false;
+	}
+	return true;
+}
+
 MParticle* NCapture::GetNeutron(){
-	if(neutron_trackid>=0 && neutron_trackid<m_data->eventParticles.size()){
-		return &m_data->eventParticles.at(neutron_trackid);
+	if(neutron_idx>=0 && neutron_idx<m_data->eventParticles.size()){
+		return &m_data->eventParticles.at(neutron_idx);
+	}
+	return nullptr;
+}
+
+MParticle* NCapture::GetIBDPositron(){
+	if(positron_idx>=0 && positron_idx<m_data->eventParticles.size()){
+		return &m_data->eventParticles.at(positron_idx);
 	}
 	return nullptr;
 }
@@ -58,11 +76,11 @@ bool NCapture::GetDaughters(){
 	// check we have corresponding MC info
 	if(m_data->eventParticles.size()==0) return false;
 	// check we have a valid index
-	if(neutron_trackid<0 || neutron_trackid>=m_data->eventParticles.size()) return false;
+	if(neutron_idx<0 || neutron_idx>=m_data->eventParticles.size()) return false;
 	// if we've already done this, no need to do it again
 	if(got_daughters) return true;
 	got_daughters = true;
-	daughters = m_data->eventParticles.at(neutron_trackid).daughters;
+	daughters = m_data->eventParticles.at(neutron_idx).daughters;
 	return true;
 }
 
@@ -139,7 +157,7 @@ double* NCapture::GetTime(){
 	if(got_capture_t) return &capture_time;
 	MParticle* neutron = GetNeutron();
 	if(neutron==nullptr) return nullptr;
-	capture_time = (*neutron->GetEndTime()) / 1000.; // [ns -> us]
+	capture_time = *neutron->GetEndTime();
 	got_capture_t = true;
 	return &capture_time;
 }
@@ -171,7 +189,7 @@ bool NCapture::NeutronTravelTime(double& ntravelt){
 	double* startt = neutron->GetStartTime();
 	double* endt = neutron->GetEndTime();
 	if(startt!=nullptr && endt!=nullptr){
-		ntravelt=((*endt-*startt)/1000.);
+		ntravelt = (*endt-*startt);
 	} else {
 		return false;
 	}
@@ -179,7 +197,7 @@ bool NCapture::NeutronTravelTime(double& ntravelt){
 }
 
 void NCapture::Print(bool verbose){
-	std::cout<<"\tcapture time [us]: "<<(GetTime() ? toString(*GetTime()) : "?")<<"\n"
+	std::cout<<"\tcapture time [us]: "<<(GetTime() ? toString(*GetTime()/1000.) : "?")<<"\n"
 	         <<"\tcapture position [cm]: "<<(GetPos() ? toString(*GetPos()) : "(?,?,?)")<<"\n"
 	         <<"\tdaughter nuclide pdg: "<<(GetDaughterNuclide() ? toString(GetDaughterNuclide()->pdg) : "?")<<"\n";
 	int ng, ne;
@@ -189,7 +207,7 @@ void NCapture::Print(bool verbose){
 	         <<"\tnum conversion electrons: "<<(NConversiones(ne) ? toString(ne) : "?")<<"\n"
 	         <<"\ttotal conversion election E [MeV]: "<<(SumConversioneE(see) ? toString(see) : "?")<<"\n"
 	         <<"\tneutron travel distance [cm]: "<<(NeutronTravelDist(ntd) ? toString(ntd) : "?")<<"\n"
-	         <<"\tneutron travel time [us]: "<<(NeutronTravelTime(ntt) ? toString(ntt) : "?")<<"\n";
+	         <<"\tneutron travel time [us]: "<<(NeutronTravelTime(ntt) ? toString(ntt/1000.) : "?")<<"\n";
 	if(verbose){
 		std::cout<<"Neutron MParticle: ";
 		MParticle* neutron = GetNeutron();

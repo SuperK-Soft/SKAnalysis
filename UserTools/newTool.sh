@@ -81,7 +81,7 @@ fi
 	    do
 		if [ "$line" == "return ret;" ]
 		then
-		    echo "  if (tool==\""$dir"\") ret=new "$dir";" >>Factory/Factory.cpp.tmp
+		    echo "if (tool==\""$dir"\") ret=new "$dir";" >>Factory/Factory.cpp.tmp
 		fi
 		echo "$line" >>Factory/Factory.cpp.tmp
 	    done < Factory/Factory.cpp

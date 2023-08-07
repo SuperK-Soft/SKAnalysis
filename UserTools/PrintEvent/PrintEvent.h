@@ -26,8 +26,9 @@ class PrintEvent: public Tool {
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
 	
 	private:
-	bool PrintTQRealInfo(bool verbose=false);
+	bool PrintTQRealInfo(bool ID, bool verbose=false);
 	bool PrintSubTriggers(bool verbose=false);
+	bool PrintSubTriggersMC(bool verbose=false);
 	bool PrintLowEInfo();
 	bool PrintATMPDInfo();
 	bool PrintMuInfo();
@@ -44,13 +45,17 @@ class PrintEvent: public Tool {
 	bool PrintTriggerInfo();
 	bool Print_sktrg();
 	bool PrintHits();
+	bool PrintTQRealHits(bool ID, int nhits);
+	bool PrintTQCommons(bool ID, int nhits);
+	bool PrintTQZCommons(bool ID, int nhits);
+	bool PrintTQRawCommons(bool ID, int nhits);
 	
 	std::string m_unique_name="";
 	
 	MTreeReader* myTreeReader=nullptr;
 	
 	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
+	//int verbosity=1;  m_verbose
 	int v_error=0;
 	int v_warning=1;
 	int v_message=2;

@@ -18,7 +18,7 @@ bool PrintEvent::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	
 	// get the reader for inputs
 	std::string treeReaderName;
@@ -48,13 +48,18 @@ bool PrintEvent::Execute(){
 	
 	PrintTriggerInfo(); // from commons... not sure this is all available from a single class.
 	
-	PrintHWTriggerInfo();
-	
-	PrintSWTriggerInfo();
+	if(myTreeReader->GetMCFlag()){
+		PrintMCInfo();
+	} else {
+		// HWTRGLIST and SOFTWARETRG branches aren't in MC files
+		PrintHWTriggerInfo();
+		PrintSWTriggerInfo();
+	}
 	
 	Print_sktrg();
 	
-	if(myTreeReader->GetMCFlag()) PrintMCInfo();
+	// PREVT0 also not present for MC... not sure it would makes sense for it to be
+	if(!myTreeReader->GetMCFlag()) PrintPrevT0();
 	
 	PrintBadChannels();
 	
@@ -63,14 +68,20 @@ bool PrintEvent::Execute(){
 	// from Reformatter.h, apparently there is a branch:
 	// TClonesArray*      TRGList;   // ??? where is this? how relates to SWTRGLIST and HWTRGLIST?
 	
-	PrintPrevT0(); // what is this?
-	
-	PrintTQRealInfo();
+	// N.B. as of f204293d6370d7e89bba0623e79fa65822668643 SKG4 does not include OD: no OD hits
+	PrintTQRealInfo(true);  // ID
+	PrintTQRealInfo(false);  // OD
 	
 	PrintHits();   // compare various sources: TQReal, commons, TODO TQLIST, TQRAWSK?
 	
 	//TClonesArray*       TQList;   // TODO
 	//TClonesArray*     ODTQList;   // TODO
+	
+	if(!myTreeReader->GetMCFlag()){
+		PrintSubTriggers();
+	} else {
+		PrintSubTriggersMC();
+	}
 	
 	std::cout<<"\n ==== COMMONS ====\n"<<std::endl;
 	
@@ -78,8 +89,9 @@ bool PrintEvent::Execute(){
 	         <<"\tnevhwsk: "<<skheadqb_.nevhwsk<<"\n"    // "TRG EVENT COUNTER (where T0 have)"? == Header::counter_32
 	         <<"\tnevswsk: "<<skheadqb_.nevswsk<<"\n"    // software trigger id - small, != nevsk; is it a triggerID?
 	         <<"\tntrigsk: "<<skheadqb_.ntrigsk<<"\n"    // sub-trigger # (=(it0xsk-it0sk)/count_per_nsec/10).
-	         <<"\t\t(check: should == "<<(((skheadqb_.it0xsk-skheadqb_.it0sk)/COUNT_PER_NSEC)/10)<<")\n"
+	         //<<"\t\t( == "<<(((skheadqb_.it0xsk-skheadqb_.it0sk)/COUNT_PER_NSEC)/10)<<")\n" // confirmed this is same
 	         <<"\tnumhwsk: "<<skheadqb_.numhwsk<<"\n";   // == SoftwareTrigger::nhwtrgs == HWTRGLIST->GetEntries()?
+	         // FIXME what sets ntrigsk; is it set_timing_gate? maybe it has to be?
 	for(int i=0; i<skheadqb_.numhwsk; ++i){
 		std::cout<<"\t\thwsk["<<i<<"]: "<<skheadqb_.hwsk[i]<<"\n"; // TRG EVENT COUNTER
 	}
@@ -107,23 +119,18 @@ bool PrintEvent::Execute(){
 	return true;
 }
 
-bool PrintEvent::PrintTQRealInfo(bool verbose){
-	// ID hit info
+bool PrintEvent::PrintTQRealInfo(bool ID, bool verbose){
+	
+	// hit info
+	std::string branchname = ID ? "TQREAL" : "TQAREAL";
 	TQReal* myTQReal=nullptr;
-	get_ok = myTreeReader->Get("TQREAL", myTQReal);
+	get_ok = myTreeReader->Get(branchname.c_str(), myTQReal);
 	if(!get_ok || myTQReal==nullptr){
-		Log(m_unique_name+" failed to get TQREAL from Tree",v_error,verbosity);
-		return false;
-	}
-	// OD hit info
-	TQReal* myTQAReal=nullptr;
-	get_ok = myTreeReader->Get("TQAREAL", myTQAReal);
-	if(!get_ok || myTQAReal==nullptr){
-		Log(m_unique_name+" failed to get TQAREAL from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get "+branchname+" from Tree",v_error,m_verbose);
 		return false;
 	}
 	
-	std::cout<<"\nPrinting TQREAL & TQAREAL Branches\n";
+	std::cout<<"\nPrinting "+branchname+" Branch\n";
 	
 	/* members of TQReal, from tqrealroot.h
 	Int_t nhits;
@@ -138,27 +145,15 @@ bool PrintEvent::PrintTQRealInfo(bool verbose){
 	std::vector<float> Q;
 	*/
 	
-	std::cout<<"TQReal (ID)\n"
+	std::cout<<branchname<<(ID ? " (ID)" : " (OD)")<<"\n"
 	         <<"\tversion: "<<myTQReal->tqreal_version<<"\n"
 	         <<"\tQB const version: "<<myTQReal->qbconst_version<<"\n"
 	         <<"\tTQ map version: "<<myTQReal->tqmap_version<<"\n"
 	         <<"\tpgain version: "<<myTQReal->pgain_version<<"\n"   // what is pgain? PMT gain map?
 	         <<"\tpC->p.e. conversion factor: "<<myTQReal->pc2pe<<"\n" // possibly obsolete? sktqC.h
 	         <<"\tit0xsk [TDC count]: "<<myTQReal->it0xsk   // skheadqb_.it0xsk
-	         <<" = " << (myTQReal->it0xsk)/(COUNT_PER_NSEC * 1000) << " us\n"
+	         <<" = " << (myTQReal->it0xsk)/COUNT_PER_NSEC << " [ns]\n"
 	         <<"\tNum hits: "<<myTQReal->nhits<<"\n"
-	         << std::endl;
-	
-	// XXX i would expect most of these to be the same, or perhaps not relevant, for OD?
-	std::cout<<"TQAReal (OD):\n"
-	         <<"\tversion: "<<myTQAReal->tqreal_version<<"\n"
-	         <<"\tQB const version: "<<myTQAReal->qbconst_version<<"\n"
-	         <<"\tTQ map version: "<<myTQAReal->tqmap_version<<"\n"
-	         <<"\tpgain version: "<<myTQAReal->pgain_version<<"\n"
-	         <<"\tpC->p.e. conversion factor: "<<myTQAReal->pc2pe<<"\n"
-	         <<"\tit0xsk [TDC count]: "<<myTQAReal->it0xsk
-	         <<" = " << (myTQAReal->it0xsk)/(COUNT_PER_NSEC * 1000) << " us\n"
-	         <<"\tNum hits: "<<myTQAReal->nhits<<"\n"
 	         << std::endl;
 	
 	// The trigger window is defined by the time range [IT0XSK-pre_t0]->[IT0XSK+post_t0];
@@ -192,7 +187,10 @@ bool PrintEvent::PrintTQRealInfo(bool verbose){
 	// the '1.3us' flag is a similar throwback to SKI-III triggers, which all had 1.3us
 	// readout windows (SK-IV+ uses trigger window lengths that depend on the trigger type).
 	// To emulate SKI-III style triggers, select only hits with the '1.3us' flag set.
-	// (the `delete_outside_hits_` routine removes all hits with `1.3us` flag == 0)
+	// The `delete_outside_hits_` routine removes all hits with `1.3us` flag == 0,
+	// BUT BE AWARE: calling delete_outside_hits_ removes these hits from ALL common blocks
+	// (INCLUDING sktqz and rawtqinfo!), and subsequent calls to `set_timing_gate` then `skcread`
+	// will not re-retrieve the deleted hits!!!
 	
 	/*   Cable Numbers below from $SKOFL_ROOT/const/connection.super.sk-4.dat
 	# -- for ID PMTs (1-11146) last ID PMT # (11146) #defined as MAXPM in tqrealroot.h
@@ -233,57 +231,6 @@ bool PrintEvent::PrintTQRealInfo(bool verbose){
 			std::string hitflagstring;
 			GetHitFlagNames(hitflags, &hitflagstring);
 			std::cout<<"\tHit "<<i<<", PMT: "<<cableNumber<<", Q: "<<charge<<" [units?]" // XXX
-			         <<", T: "<<htime<<" [ns], flags: "<<hitflagstring<<"\n";
-		}
-		
-		std::bitset<32> flags{hitflags};
-		bool in_13us = flags.test(0);
-		bool in_gate = flags.test(1);
-		
-		if(cableNumber>0 && cableNumber<MAXPM){
-			++hit_counts.at("ID");
-			if(in_13us) ++hit_counts.at("ID_in_13");
-			if(in_gate) ++hit_counts.at("ID_in_gate");
-		} else if(cableNumber>11150 && cableNumber<11155){
-			++hit_counts.at("Veto");
-		} else if(cableNumber>11154 && cableNumber<11186){
-			++hit_counts.at("Calibration");
-		} else if(cableNumber>15000 && cableNumber<15024){
-			++hit_counts.at("Trigger");
-		} else if(cableNumber>QB_OD_OFFSET && cableNumber<(QB_OD_OFFSET+MAXPMA)){
-			++hit_counts.at("OD");
-			if(in_13us) ++hit_counts.at("OD_in_13");
-			if(in_gate) ++hit_counts.at("OD_in_gate");
-		} else {
-			++hit_counts.at("Unknown");
-		}
-	}
-	
-	std::cout<<"TQReal Hit counts:\n"
-	         <<"\tID Hits: "<<hit_counts.at("ID")<<" of which "<<hit_counts.at("ID_in_gate")
-	                        <<" were in-gate and "<<hit_counts.at("ID_in_13")<<" were in a 1.3us window\n"
-	         <<"\tOD Hits: "<<hit_counts.at("OD")<<" of which "<<hit_counts.at("OD_in_gate")
-	                        <<" were in-gate and "<<hit_counts.at("OD_in_13")<<" were in a 1.3us window\n"
-	         <<"\tVeto Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\tCalibration Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\tTrigger Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\tUnknown Hits: "<<hit_counts.at("Veto")<<std::endl;
-	
-	// =========================================================
-	
-	// same scan on TQAReal
-	for(auto&& acount : hit_counts) acount.second = 0;
-	for (int i = 0; i < myTQAReal->nhits; ++i){
-		int cableNumber = myTQAReal->cables.at(i);
-		float charge = myTQAReal->Q.at(i);
-		float htime = myTQAReal->T.at(i);
-		int hitflags = cableNumber >> 16;
-		cableNumber = cableNumber & 0x0000FFFF;
-		
-		if(verbose){
-			std::string hitflagstring;
-			GetHitFlagNames(hitflags, &hitflagstring);
-			std::cout<<"\tHit "<<i<<", PMT: "<<cableNumber<<", Q: "<<charge<<" [units?]" // XXX
 			                   <<", T: "<<htime<<" [ns], flags: "<<hitflagstring<<"\n";
 		}
 		
@@ -310,41 +257,41 @@ bool PrintEvent::PrintTQRealInfo(bool verbose){
 		}
 	}
 	
-	std::cout<<"TQAReal Hit counts:\n"
-	         <<"\tID Hits: "<<hit_counts.at("ID")<<" of which "<<hit_counts.at("ID_in_gate")
+	std::cout<<"\tHit counts:\n"
+	         <<"\t\tID Hits: "<<hit_counts.at("ID")<<" of which "<<hit_counts.at("ID_in_gate")
 	                        <<" were in-gate and "<<hit_counts.at("ID_in_13")<<" were in a 1.3us window\n"
-	         <<"\tOD Hits: "<<hit_counts.at("OD")<<" of which "<<hit_counts.at("OD_in_gate")
+	         <<"\t\tOD Hits: "<<hit_counts.at("OD")<<" of which "<<hit_counts.at("OD_in_gate")
 	                        <<" were in-gate and "<<hit_counts.at("OD_in_13")<<" were in a 1.3us window\n"
-	         <<"\tVeto Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\tCalibration Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\tTrigger Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\tUknonwn Hits: "<<hit_counts.at("Veto")<<std::endl;
+	         <<"\t\tVeto Hits: "<<hit_counts.at("Veto")<<"\n"
+	         <<"\t\tCalibration Hits: "<<hit_counts.at("Veto")<<"\n"
+	         <<"\t\tTrigger Hits: "<<hit_counts.at("Veto")<<"\n"
+	         <<"\t\tUnknown Hits: "<<hit_counts.at("Veto")<<std::endl;
 	
 	return true;
 }
 
-// TODO add Print methods for other ROOT branches: TQLIST, TQRAWSK,... any others?
-// TODO also add to the PrintHits method to compare all sources
 
 bool PrintEvent::PrintHits(){
 	// we have many sources of hits: let's compare
 	
-	TQReal* myTQReal=nullptr;
-	get_ok = myTreeReader->Get("TQREAL", myTQReal);
-	if(!get_ok || myTQReal==nullptr){
-		Log(m_unique_name+" failed to get TQREAL from Tree",v_error,verbosity);
-		return false;
-	}
-	TQReal* myTQAReal=nullptr;
-	get_ok = myTreeReader->Get("TQAREAL", myTQAReal);
-	if(!get_ok || myTQAReal==nullptr){
-		Log(m_unique_name+" failed to get TQAREAL from Tree",v_error,verbosity);
-		return false;
-	}
+	// TODO add other ROOT branches: TQLIST, TQRAWSK,... any others?
 	
 	std::cout<<"\nPrinting Hits (various sources)\n"<<std::endl;
 	
-	/* COMMON BLOCKS:
+	/* 
+	// BRANCHES:
+	// ========
+	TQReal                         : all hits, XXX before/after bad channel masking?
+	{                              : hit T0 ref: IT0XSK (member) presumably? XXX
+		Int_t nhits;
+		Int_t it0xsk;              : time 
+		std::vector<int> cables;   : hit flags (upper 16 bits ==ihtiflz), PMT# (lower 16 bits) (tqrealsk.F::117)
+		std::vector<float> T;
+		std::vector<float> Q;
+	}
+	
+	// COMMON BLOCKS:
+	// ==============
 	// -------------------------------------------------------------------------------------- //
 	                         XXX these are only hits within 1.3us! XXX
 	                         ***   bad channel masking is applied  ***
@@ -421,224 +368,70 @@ bool PrintEvent::PrintHits(){
 	
 	// presumably these common blocks are all filled by SKRAWREAD/SKREAD....? FIXME verify?
 	
+	TQReal* myTQReal=nullptr;
+	get_ok = myTreeReader->Get("TQREAL", myTQReal);
+	if(!get_ok || myTQReal==nullptr){
+		Log(m_unique_name+" failed to get TQREAL from Tree",v_error,m_verbose);
+		//return false;
+	}
+	TQReal* myTQAReal=nullptr;
+	get_ok = myTreeReader->Get("TQAREAL", myTQAReal);
+	if(!get_ok || myTQAReal==nullptr){
+		Log(m_unique_name+" failed to get TQAREAL from Tree",v_error,m_verbose);
+		//return false;
+	}
+	
 	// TODO add notes explaining the differences
-	std::cout<<"Num ID hits:\n"
-	         <<"\tTQReal.nhits: "<<myTQReal->nhits<<"\n" // TODO == nqisk or nqiskz?
+	std::cout<<"ID hits:\n"
+	         <<"\tTQReal.nhits (all hits, after bad channel masking?): "<<(myTQReal ? myTQReal->nhits : 0)<<"\n" // FIXME == nqiskz or nqisk_raw?
 	         <<"\tskq_.nqisk (in-1.3us only): "<<skq_.nqisk<<"\n"
-	         <<"\tsktqz_.nqiskz (all hits): "<<sktqz_.nqiskz<<"\n" // == skq_.nqisk
-	         <<"\trawtqinfo_.nqisk_raw (all hits): "<<rawtqinfo_.nqisk_raw<<"\n"
-	         <<"Total ID charge (skq_.qismsk): "<<skq_.qismsk<<" [p.e.]\n" // charges are floats btw
-	         <<"ID PMT "<<skq_.mxqisk<<" saw the most charge of any ID PMT, with "<<skq_.qimxsk<<" [p.e.]\n"
-	         <<"ID PMT "<<skt_.mntisk<<" had the earliest hit in 1.3us of any ID PMT at "<<skt_.timnsk<<" [ns]\n"
-	         <<"ID PMT "<<skt_.mxtisk<<" had the last hit in 1.3us of any ID PMT at "<<skt_.timxsk<<" [ns]\n";
-	         // note these 'max/min, earliest/latest' variables are only for in-gate hits
-	         // so e.g. skt_.timnsk == skt_.tisk[skchnl_.ihcab[0]]
+	         <<"\tsktqz_.nqiskz (all hits, after bad channel masking): "<<sktqz_.nqiskz<<"\n" // == skq_.nqisk_raw
+	         <<"\trawtqinfo_.nqisk_raw (all hits, before bad channel masking): "<<rawtqinfo_.nqisk_raw<<"\n"
+	         <<"\tin 1.3us gate:\n"
+	         <<"\t\tTotal ID charge (skq_.qismsk): "<<skq_.qismsk<<" [p.e.]\n"; // charges are floats btw
 	
-	if(myTQReal->nhits==0){
-		std::cout<<"TQReal had no ID hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 ID hits (TQReal: bad channel mask applied, not just near sw trigger?):\n";
-		for (int i = 0, j=0; i<myTQReal->nhits; ++i){
-			int cableNumber = myTQReal->cables.at(i);
-			int hitflags = cableNumber >> 16;
-			cableNumber = cableNumber & 0xFFFF;
-			if(cableNumber<=0 && cableNumber>MAXPM) continue;
-			std::string hitflagstring;
-			GetHitFlagNames(hitflags, &hitflagstring);
-			std::cout<<"ID Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<"\n"
-				     <<"\tT: TQReal.t: "<<myTQReal->T.at(j)<<" [ns]\n"
-				     <<"\tQ: TQReal.q: "<<myTQReal->Q.at(j)<<" [p.e.]\n"
-				     <<"\fhit flags: "<<hitflagstring<<"\n";
-			++j;
-			if(j>5) break;
-		}
+	if(skq_.nqisk>0){
+		std::cout<<"\t\tID PMT "<<skq_.mxqisk<<" saw the most charge of any ID PMT, with "<<skq_.qimxsk<<" [p.e.]\n"
+		         <<"\t\tID PMT "<<skt_.mntisk<<" had the earliest hit of any ID PMT at "<<skt_.timnsk<<" [ns]\n"
+		         <<"\t\tID PMT "<<skt_.mxtisk<<" had the last hit of any ID PMT at "<<skt_.timxsk<<" [ns]\n";
+		         // note these 'max/min, earliest/latest' variables are only for in-gate hits
+		         // so e.g. skt_.timnsk == skt_.tisk[skchnl_.ihcab[0]]
 	}
+	std::cout<<std::endl;
 	
-	if(skq_.nqisk==0){
-		std::cout<<"skq_ had no ID hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 ID hits (skq_,skt_: bad channel mask applied? within 1.3us of IT0XSK only):\n";
-		for(int i=0, j=0; i<skq_.nqisk; ++i){
-			int cableNumber = skchnl_.ihcab[i];
-			if(cableNumber<=0 && cableNumber>MAXPM) continue;
-			int iab = skchnl_.iab[cableNumber-1];
-			// indexing seems like this from $SKOFL_ROOT/examples/skrd/dump_tq.F
-			std::cout<<"ID Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<", iab: "<<iab<<" = "<<((iab==1) ? "A" : "B")<<"\n"
-				     <<"\tT: skchnl_.itabsk: "<<skchnl_.itabsk[iab-1][cableNumber-1] // seems to be 0
-				     <<", skt_.tisk: "<<skt_.tisk[cableNumber-1]<<"\n"
-				     <<"\tQ: skchnl_.iqabsk: "<<skchnl_.iqabsk[iab-1][cableNumber-1] // seems to be 0
-				     <<", skq_.qisk: "<<skq_.qisk[cableNumber-1]<<"\n";
-			++j;
-			if(j>5) break;
-		}
+	PrintTQRealHits(true, 5);
+	
+	PrintTQCommons(true, 5);
+	
+	PrintTQZCommons(true, 5);
+	
+	PrintTQRawCommons(true, 5);
+	
+	std::cout<<"OD hits:\n"
+	         <<"\tTQAReal.nhits (all hits, after bad channel masking?): "<<(myTQAReal ? myTQAReal->nhits : 0)<<"\n"
+	         <<"\tskqa_.nqask (in X.Xus only): "<<skqa_.nqask<<"\n"  // FIXME gate width?
+	         <<"\tsktqaz_.nhitaz (all hits, after bad channel masking): "<<sktqaz_.nhitaz<<"\n"
+	         <<"\trawtqinfo_.nhitaz_raw (all hits, before bad channel masking): "<<rawtqinfo_.nhitaz_raw<<"\n"
+	         // XXX rawtqinfo_.nhitaz_raw != sktqaz_.nhitaz unlike ID hits!
+	         <<"\tin X.Xus gate:\n"  // FIXME gate width?
+	         <<"\t\tTotal OD charge (skqa_.qasmsk): "<<skqa_.qasmsk<<" [p.e.]\n";
+	
+	if(skqa_.nqask>0){
+		std::cout<<"\t\tOD PMT "<<skqa_.mxqask<<" saw the most charge of any OD PMT, with "<<skqa_.qamxsk<<" [p.e.]\n"
+		         <<"\t\tOD PMT "<<skta_.mntask<<" had the earliest hit of any OD PMT at "<<skta_.tamnsk<<" [ns]\n"
+		         <<"\t\tOD PMT "<<skta_.mxtask<<" had the last hit of any OD PMT at "<<skta_.tamxsk<<" [ns]\n";
 	}
+	std::cout<<std::endl;
 	
-	if(sktqz_.nqiskz==0){
-		std::cout<<"sktqz had no ID hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 ID hits (sktqz_: bad channel mask applied? all hits, not just in-gate):\n";
-		for(int i=0, j=0; i<sktqz_.nqiskz; ++i){
-			int cableNumber = sktqz_.icabiz[i];
-			if(cableNumber<=0 && cableNumber>MAXPM) continue;
-			// XXX note indices are [i] NOT [cableNumber-1]!
-			std::string ihtiflz_flagstring="";
-			GetHitFlagNames(sktqz_.ihtiflz[i], &ihtiflz_flagstring);
-			std::string iqiskz_flagstring="";
-			int iqiskz_q_counts, iqiskz_flags;
-			GetHitChargeAndFlags(sktqz_.iqiskz[i], iqiskz_q_counts, iqiskz_flags, &iqiskz_flagstring);
-			std::cout<<"ID Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<"\n"
-				     <<"\tT: sktqz_.itiskz: "<<sktqz_.itiskz[i]
-				     <<" [ticks], sktqz_.tiskz: "<<sktqz_.tiskz[i]<<" [ns]\n"
-				     <<"\tQ: sktqz_.iqiskz (bits 0-10): "<<iqiskz_q_counts<<
-				     " [cts], sktqz_.qiskz: "<<sktqz_.qiskz[i]<<" [p.e.]\n"
-				     //<<"\thit flags: sktqz_.iqiskz (bits 11-15): "<<iqiskz_flagstring<<"\n" // same as below
-				     <<"\thit flags: sktqz_.ihtiflz: "<<ihtiflz_flagstring<<"\n";
-			++j;
-			if(j>5) break;
-		}
-	}
+	PrintTQRealHits(false, 5);
 	
-	if(rawtqinfo_.nqisk_raw==0){
-		std::cout<<"rawtqinfo had no ID hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 ID hits (rawtqinfo_: before bad channel mask, all hits, not just in-gate):\n";
-		for(int i=0, j=0; i<rawtqinfo_.nqisk_raw; ++i){
-			int cableNumber = rawtqinfo_.icabbf_raw[i] & 0xFFFF; // TODO Constants function for icabbf/icabaz?
-			if(cableNumber<=0 || cableNumber>MAXPM) continue;
-			// XXX note indices are [i] NOT [cableNumber-1]!
-			std::string icabbf_raw_flagstring="";
-			GetHitFlagNames((rawtqinfo_.icabbf_raw[i] >> 16), &icabbf_raw_flagstring);
-			std::string iqiskz_raw_flagstring="";
-			int iqiskz_raw_q_counts, iqiskz_raw_flags;
-			GetHitChargeAndFlags(rawtqinfo_.iqiskz_raw[i], iqiskz_raw_q_counts, iqiskz_raw_flags, &iqiskz_raw_flagstring);
-			std::cout<<"ID Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<"\n"
-				     <<"\tT: rawtqinfo_.itiskz_raw: "<<rawtqinfo_.itiskz_raw[i] // == sktqz.itiskz
-				     <<", rawtqinfo_.tbuf_raw: "<<rawtqinfo_.tbuf_raw[i]<<"\n"  // == sktqz.tiskz
-				     <<"\tQ: rawtqinfo_.iqiskz_raw: "<<iqiskz_raw_q_counts // bits 0-10
-				     <<", rawtqinfo_.qbuf_raw: "<<rawtqinfo_.qbuf_raw[i]<<"\n" // == sktqz_.qiskz
-				     //<<"\thit flags: rawtqinfo_.iqiskz_raw: "<<iqiskz_raw_flagstring<<"\n" // same as below
-				     <<"\thit flags: rawtqinfo_.icabbf_raw: "<<icabbf_raw_flagstring<<"\n";
-			++j;
-			if(j>5) break;
-		}
-	}
+	PrintTQCommons(false, 5);
 	
-	//  =======================
+	PrintTQZCommons(false, 5);
 	
-	std::cout<<"Num OD hits:\n"
-	         <<"\tTQAReal.nhits: "<<myTQAReal->nhits<<"\n"
-	         <<"\tskqa_.nqask: "<<skqa_.nqask<<"\n"
-	         <<"\tsktqaz_.nhitaz: "<<sktqaz_.nhitaz<<"\n"
-	         <<"\trawtqinfo_.nhitaz_raw: "<<rawtqinfo_.nhitaz_raw<<"\n" // XXX != sktqaz_.nhitaz unlike ID hits!
-	         <<"Total OD charge (skqa_.qasmsk): "<<skqa_.qasmsk<<" [p.e.]\n"
-	         <<"OD PMT "<<skqa_.mxqask<<" saw the most charge of any OD PMT, with "<<skqa_.qamxsk<<" [p.e.]\n"
-	         <<"OD PMT "<<skta_.mntask<<" had the earliest hit of any OD PMT at "<<skta_.tamnsk<<" [ns]\n"
-	         <<"OD PMT "<<skta_.mxtask<<" had the last hit of any OD PMT at "<<skta_.tamxsk<<" [ns]\n";
-	
-	if(myTQAReal->nhits==0){
-		std::cout<<"TQAReal had no OD hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 ID hits (TQAReal: bad channel mask applied, not just near sw trigger?):\n";
-		for (int i = 0, j=0; i<myTQAReal->nhits; ++i){
-			int cableNumber = myTQAReal->cables.at(i);
-			int hitflags = cableNumber >> 16;
-			cableNumber = cableNumber & 0xFFFF;
-			if(cableNumber<=QB_OD_OFFSET || cableNumber>(QB_OD_OFFSET+MAXPMA)) continue;
-			std::string hitflagstring;
-			GetHitFlagNames(hitflags, &hitflagstring);
-			std::cout<<"OD Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<"\n"
-				     <<"\tT: TQAReal.t: "<<myTQAReal->T.at(j)<<" [ns]\n"
-				     <<"\tQ: TQAReal.q: "<<myTQAReal->Q.at(j)<<" [p.e.]\n"
-				     <<"\fhit flags: "<<hitflagstring<<"\n";
-			++j;
-			if(j>5) break;
-		}
-	}
-	
-	if(skqa_.nqask==0){
-		std::cout<<"skqa had no OD hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 OD hits (skqa_,skta_: bad channel mask applied? in 1.3us only):\n";
-		for(int i=0, j=0; i<skqa_.nqask; ++i){ // FIXME are these in 1.3us or [-5,1]us?
-			int cableNumber = sktqaz_.ihacab[i]; // note ihacab is in sktqaz_ not skchnla_, which does not exist!
-			// ihacab does not contain OD PMT offset, so we need to add it,
-			// BUT skta_.task and skqa_.qask are indexed WITHOUT the offset!
-			int cableNumber2 = cableNumber + QB_OD_OFFSET;
-			if(cableNumber2<=QB_OD_OFFSET || cableNumber2>(QB_OD_OFFSET+MAXPMA)) continue;
-			// sktqC.h says:
-			// NQASK  ; # of hits (>= # of PMTs)
-			// QASK   ; Q of individual PMT's (earliest hit for each PMT)
-			// suggesting that NQASK is larger than the number of elements in QASK.
-			// so how many elements does QASK contain? ... 
-			// $SKOFL_ROOT/examples/skrd/dump_tq.F dumps NQASK elements of task, qask, as does the mc ver
-			// $SKOFL_ROOT/examples/summer-test/read_rfm.F does the same
-			// $SKOFL_ROOT/src/skrd/tqask.F sets NQASK to size of QASK while filling QASK/TASK
-			// $SKOFL_ROOT/lowe/sklowe/lfnhita.F counts anti-hits in some timing window
-			// and actually scans MAXPMA elements for task values in the timing window, suggesting either
-			// MAXPMA elements, or at least suitable default values (e.g. 0) for unused elements
-			// $SKOFL_ROOT/examples/skrd/sample_read.F loops MAXPMA times, printing elements where qisk[i]!=0
-			// (though it also prints task[i] and qask[i], not task[ihacab[i]] and qask[ihacab[i]])
-			std::cout<<"OD Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber2<<"\n"
-				     <<"\tT: skta_.task: "<<skta_.task[cableNumber-1]<<"\n"  // XXX note indexing is
-				     <<"\tQ: skqa_.qask: "<<skqa_.qask[cableNumber-1]<<"\n"; // WITHOUT QB_OD_OFFSET!!
-			++j;
-			if(j>5) break;
-		}
-	}
-	
-	if(sktqaz_.nhitaz==0){
-		std::cout<<"sktqaz had no OD hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 OD hits (sktqaz_: bad channel mask applied? all hits, not just in-gate):\n";
-		for(int i=0, j=0; i<sktqaz_.nhitaz; ++i){
-			int cableNumber = sktqaz_.icabaz[i];
-			if(cableNumber<=QB_OD_OFFSET || cableNumber>(QB_OD_OFFSET+MAXPMA)) continue;
-			// XXX note indices are [i] NOT [cableNumber-1]!
-			std::string ihtflz_flagstring="";
-			GetHitFlagNames(sktqaz_.ihtflz[i], &ihtflz_flagstring);
-			std::string iqaskz_flagstring="";
-			int iqaskz_q_counts, iqaskz_flags;
-			GetHitChargeAndFlags(sktqaz_.iqaskz[i], iqaskz_q_counts, iqaskz_flags, &iqaskz_flagstring);
-			std::cout<<"OD Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<"\n"
-				     <<"\tT: sktqaz_.itaskz: "<<sktqaz_.itaskz[i]
-				     <<" [ticks], sktqaz_.taskz: "<<sktqaz_.taskz[i]<<" [ns]\n"
-				     <<"\tQ: sktqaz_.iqaskz: "<<iqaskz_q_counts<<" [cts]"
-				     <<", sktqaz_.qaskz: "<<sktqaz_.qaskz[i]<<"\n"
-				     //<<"\thit flags: sktqaz_.iqaskz: "<<iqaskz_flagstring<<"\n" // same as below
-				     <<"\thit flags: sktqaz_.ihtflz: "<<ihtflz_flagstring<<"\n";
-			++j;
-			if(j>5) break;
-		}
-	}
-	
-	if(rawtqinfo_.nhitaz_raw==0){
-		std::cout<<"rawtqinfo had no OD hits"<<std::endl;
-	} else {
-		std::cout<<"first 5 OD hits (before bad ch masking):\n";
-		for(int i=0, j=0; i<rawtqinfo_.nhitaz_raw; ++i){
-			int cableNumber = rawtqinfo_.icabaz_raw[i] & 0xFFFF;
-			if(cableNumber<=QB_OD_OFFSET || cableNumber>(QB_OD_OFFSET+MAXPMA)) continue;
-			std::cout<<"OD Hit "<<j<<"\n"
-				     <<"\tPMT: "<<cableNumber<<"\n"
-				     <<"\tT: rawtqinfo_.itaskz_raw: "<<rawtqinfo_.itaskz_raw[i]<<" [ticks]"
-				     <<", rawtqinfo_.taskz_raw: "<<rawtqinfo_.taskz_raw[i]<<" [ns]\n"
-				     <<"\tQ: rawtqinfo_.iqaskz_raw: "<<(rawtqinfo_.iqaskz_raw[i] & 0x07FF)<<" [cts]"
-				     <<", rawtqinfo_.qaskz_raw: "<<rawtqinfo_.qaskz_raw[i]<<" [p.e.]\n";
-			++j;
-			if(j>5) break;
-		}
-	}
+	PrintTQRawCommons(false, 5);
 	
 	// =========
-	
-	std::cout<<std::endl;
 	
 	/* these do indeed match as expected
 	if(sktqz_.nqiskz==0){
@@ -651,7 +444,7 @@ bool PrintEvent::PrintHits(){
 			int cableNumber2 = skchnl_.ihcab[j];
 			if(cableNumber!=cableNumber2){
 				std::cout<<"in-gate ID Hit mismatch sktqz_.icabiz["<<i<<"] != skchnl_.ihcab["<<j<<"]\n"
-					     <<"\tPMT nums: "<<cableNumber<<" != "<<cableNumber2<<"\n";
+				         <<"\tPMT nums: "<<cableNumber<<" != "<<cableNumber2<<"\n";
 			} else {
 				std::string ihtiflz_flagstring="";
 				GetHitFlagNames(sktqz_.ihtiflz[i], &ihtiflz_flagstring);
@@ -679,7 +472,7 @@ bool PrintEvent::PrintHits(){
 	}
 	*/
 	
-	/* also agrees as expected
+	/* this also agrees as expected
 	if(sktqaz_.nhitaz==0){
 		std::cout<<"\ncan't do check of sktqaz vs skta because no OD hits"<<std::endl;
 	} else {
@@ -691,7 +484,7 @@ bool PrintEvent::PrintHits(){
 			int cableNumber3 = cableNumber2 + QB_OD_OFFSET;
 			if(cableNumber!=cableNumber3){
 				std::cout<<"in-gate OD Hit "<<j<<"\n"
-					     <<"\tPMT: "<<cableNumber<<" != "<<cableNumber3<<"\n";
+				         <<"\tPMT: "<<cableNumber<<" != "<<cableNumber3<<"\n";
 			} else {
 				std::string ihtflz_flagstring="";
 				GetHitFlagNames(sktqaz_.ihtflz[i], &ihtflz_flagstring);
@@ -699,17 +492,17 @@ bool PrintEvent::PrintHits(){
 				int iqaskz_q_counts, iqaskz_flags;
 				GetHitChargeAndFlags(sktqaz_.iqaskz[i], iqaskz_q_counts, iqaskz_flags, &iqaskz_flagstring);
 				std::cout<<"in-gate OD Hit "<<j<<"\n"
-					     <<"\tPMT: sktqaz_.icabaz: "<<cableNumber<<"\n"
-					     <<"\tT: sktqaz_.itaskz: "<<sktqaz_.itaskz[i]
-					     <<" [ticks], sktqaz_.taskz: "<<sktqaz_.taskz[i]<<" [ns]\n"
-					     <<"\tQ: sktqaz_.iqaskz: "<<iqaskz_q_counts
-					     <<"[cts], sktqaz_.qaskz: "<<sktqaz_.qaskz[i]<<"\n"
-					     <<"\thit flags: sktqaz_.iqaskz: "<<iqaskz_flagstring<<"\n"
-					     <<"\thit flags: sktqaz_.ihtflz: "<<ihtflz_flagstring<<"\n"
-					     <<"\n"
-					     //<<"\tPMT: sktqaz_.ihacab: "<<cableNumber3<<"\n"
-					     <<"\tT: skta_.task: "<<skta_.task[cableNumber2-1]<<"\n"
-					     <<"\tQ: skqa_.qask: "<<skqa_.qask[cableNumber2-1]<<"\n";
+				         <<"\tPMT: sktqaz_.icabaz: "<<cableNumber<<"\n"
+				         <<"\tT: sktqaz_.itaskz: "<<sktqaz_.itaskz[i]
+				         <<" [ticks], sktqaz_.taskz: "<<sktqaz_.taskz[i]<<" [ns]\n"
+				         <<"\tQ: sktqaz_.iqaskz: "<<iqaskz_q_counts
+				         <<"[cts], sktqaz_.qaskz: "<<sktqaz_.qaskz[i]<<"\n"
+				         <<"\thit flags: sktqaz_.iqaskz: "<<iqaskz_flagstring<<"\n"
+				         <<"\thit flags: sktqaz_.ihtflz: "<<ihtflz_flagstring<<"\n"
+				         <<"\n"
+				         //<<"\tPMT: sktqaz_.ihacab: "<<cableNumber3<<"\n"
+				         <<"\tT: skta_.task: "<<skta_.task[cableNumber2-1]<<"\n"
+				         <<"\tQ: skqa_.qask: "<<skqa_.qask[cableNumber2-1]<<"\n";
 			}
 			++j;
 			if(j>5) break;
@@ -745,23 +538,322 @@ bool PrintEvent::PrintHits(){
 	return true;
 }
 
+bool PrintEvent::PrintTQRealHits(bool ID, int nhits){
+	
+	std::cout<<"\nPrinting "<<(ID ? "TQREAL" : "TQAREAL")<<"\n"<<std::endl;
+	
+	if(ID){
+		
+		TQReal* myTQReal=nullptr;
+		get_ok = myTreeReader->Get("TQREAL", myTQReal);
+		if(!get_ok || myTQReal==nullptr){
+			Log(m_unique_name+" failed to get TQREAL from Tree",v_error,m_verbose);
+			return false;
+		}
+		
+		if(myTQReal->nhits==0){
+			std::cout<<"TQReal had no ID hits"<<std::endl;
+		} else {
+			std::cout<<"Num ID hits (TQReal.nhits): "<<myTQReal->nhits<<"\n"
+			         <<"first "<<nhits<<" ID hits (TQReal: bad channel mask applied, not just near sw trigger?):\n";
+			for (int i = 0, j=0; i<myTQReal->nhits; ++i){
+				int cableNumber = myTQReal->cables.at(i);
+				int hitflags = cableNumber >> 16;
+				cableNumber = cableNumber & 0xFFFF;
+				if(cableNumber<=0 && cableNumber>MAXPM) continue;
+				std::string hitflagstring;
+				GetHitFlagNames(hitflags, &hitflagstring);
+				std::cout<<"ID Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<"\n"
+				         <<"\tT: TQReal.t: "<<myTQReal->T.at(j)<<" [ns]\n"
+				         <<"\tQ: TQReal.q: "<<myTQReal->Q.at(j)<<" [p.e.]\n"
+				         <<"\fhit flags: "<<hitflagstring<<"\n";
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	} else {
+		
+		TQReal* myTQAReal=nullptr;
+		get_ok = myTreeReader->Get("TQAREAL", myTQAReal);
+		if(!get_ok || myTQAReal==nullptr){
+			Log(m_unique_name+" failed to get TQAREAL from Tree",v_error,m_verbose);
+			return false;
+		}
+		
+		if(myTQAReal->nhits==0){
+			std::cout<<"TQAReal had no OD hits"<<std::endl;
+		} else {
+			std::cout<<"Num OD hits (TQAReal.nhits): "<<myTQAReal->nhits<<"\n"
+			         <<"first "<<nhits<<" ID hits (TQAReal: bad channel mask applied, not just near sw trigger?):\n";
+			for (int i = 0, j=0; i<myTQAReal->nhits; ++i){
+				int cableNumber = myTQAReal->cables.at(i);
+				int hitflags = cableNumber >> 16;
+				cableNumber = cableNumber & 0xFFFF;
+				if(cableNumber<=QB_OD_OFFSET || cableNumber>(QB_OD_OFFSET+MAXPMA)) continue;
+				std::string hitflagstring;
+				GetHitFlagNames(hitflags, &hitflagstring);
+				std::cout<<"OD Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<"\n"
+				         <<"\tT: TQAReal.t: "<<myTQAReal->T.at(j)<<" [ns]\n"
+				         <<"\tQ: TQAReal.q: "<<myTQAReal->Q.at(j)<<" [p.e.]\n"
+				         <<"\fhit flags: "<<hitflagstring<<"\n";
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	}
+	
+	return true;
+}
+
+bool PrintEvent::PrintTQCommons(bool ID, int nhits){
+	
+	std::cout<<"\nPrinting Hits in "<<(ID ? "skq_, skt_" : "skta_, skqa_")<<"\n"<<std::endl;
+	
+	if(ID){
+		
+		if(skq_.nqisk==0){
+			std::cout<<"skq_ had no ID hits"<<std::endl;
+		} else {
+			
+			std::cout<<"Num ID hits in-1.3us (skq_.nqisk): "<<skq_.nqisk<<"\n";
+			/*
+			         <<"Total ID charge (skq_.qismsk): "<<skq_.qismsk<<" [p.e.]\n"
+			         <<"ID PMT "<<skq_.mxqisk<<" saw the most charge of any ID PMT, with "<<skq_.qimxsk<<" [p.e.]\n"	
+			         <<"ID PMT "<<skt_.mntisk<<" had the earliest hit in 1.3us of any ID PMT at "<<skt_.timnsk<<" [ns]\n"
+			         <<"ID PMT "<<skt_.mxtisk<<" had the last hit in 1.3us of any ID PMT at "<<skt_.timxsk<<" [ns]\n";
+			*/
+			
+			std::cout<<"first "<<nhits<<" ID hits (skq_,skt_: bad channel mask applied? within 1.3us of IT0XSK only):\n";
+			for(int i=0, j=0; i<skq_.nqisk; ++i){
+				int cableNumber = skchnl_.ihcab[i];
+				if(cableNumber<=0 && cableNumber>MAXPM) continue;
+				int iab = skchnl_.iab[cableNumber-1];
+				// indexing seems like this from $SKOFL_ROOT/examples/skrd/dump_tq.F
+				std::cout<<"ID Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<", iab: "<<iab<<" = "<<((iab==1) ? "A" : "B")<<"\n"
+				         <<"\tT: skchnl_.itabsk: "<<skchnl_.itabsk[iab-1][cableNumber-1] // seems to be 0
+				         <<", skt_.tisk: "<<skt_.tisk[cableNumber-1]<<"\n"
+				         <<"\tQ: skchnl_.iqabsk: "<<skchnl_.iqabsk[iab-1][cableNumber-1] // seems to be 0
+				         <<", skq_.qisk: "<<skq_.qisk[cableNumber-1]<<"\n";
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	} else {
+		
+		if(skqa_.nqask==0){
+			std::cout<<"skqa had no OD hits"<<std::endl;
+		} else {
+			
+			std::cout<<"Num OD hits in 1.3us gate (skqa_.nqask): "<<skqa_.nqask<<"\n";
+			/*
+			         <<"Total OD charge (skqa_.qasmsk): "<<skqa_.qasmsk<<" [p.e.]\n"
+			         <<"OD PMT "<<skqa_.mxqask<<" saw the most charge of any OD PMT, with "<<skqa_.qamxsk<<" [p.e.]\n"
+			         <<"OD PMT "<<skta_.mntask<<" had the earliest hit of any OD PMT at "<<skta_.tamnsk<<" [ns]\n"
+			         <<"OD PMT "<<skta_.mxtask<<" had the last hit of any OD PMT at "<<skta_.tamxsk<<" [ns]\n";
+			*/
+			
+			std::cout<<"first "<<nhits<<" OD hits (skqa_,skta_: bad channel mask applied? in 1.3us only):\n";
+			for(int i=0, j=0; i<skqa_.nqask; ++i){ // FIXME are these in 1.3us or [-5,1]us?
+				int cableNumber = sktqaz_.ihacab[i]; // note ihacab is in sktqaz_ NOT skchnla_ !!
+				// ihacab does not contain OD PMT offset, so we need to add it,
+				// BUT skta_.task and skqa_.qask are indexed WITHOUT the offset!
+				int cableNumber2 = cableNumber + QB_OD_OFFSET;
+				if(cableNumber2<=QB_OD_OFFSET || cableNumber2>(QB_OD_OFFSET+MAXPMA)) continue;
+				// sktqC.h says:
+				// NQASK  ; # of hits (>= # of PMTs)
+				// QASK   ; Q of individual PMT's (earliest hit for each PMT)
+				// suggesting that NQASK is larger than the number of elements in QASK.
+				// so how many elements does QASK contain? ... 
+				// $SKOFL_ROOT/examples/skrd/dump_tq.F dumps NQASK elements of task, qask, as does the mc ver
+				// $SKOFL_ROOT/examples/summer-test/read_rfm.F does the same
+				// $SKOFL_ROOT/src/skrd/tqask.F sets NQASK to size of QASK while filling QASK/TASK
+				// $SKOFL_ROOT/lowe/sklowe/lfnhita.F counts anti-hits in some timing window
+				// and actually scans MAXPMA elements for task values in the timing window, suggesting either
+				// MAXPMA elements, or at least suitable default values (e.g. 0) for unused elements
+				// $SKOFL_ROOT/examples/skrd/sample_read.F loops MAXPMA times, printing elements where qisk[i]!=0
+				// (though it also prints task[i] and qask[i], not task[ihacab[i]] and qask[ihacab[i]])
+				std::cout<<"OD Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber2<<"\n"
+				         <<"\tT: skta_.task: "<<skta_.task[cableNumber-1]<<"\n"  // XXX note indexing is
+				         <<"\tQ: skqa_.qask: "<<skqa_.qask[cableNumber-1]<<"\n"; // WITHOUT QB_OD_OFFSET!!
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	}
+	
+	return true;
+}
+
+bool PrintEvent::PrintTQZCommons(bool ID, int nhits){
+	
+	std::cout<<"\nPrinting Hits in "<<(ID ? "sktqz_" : "sktqaz_")<<"\n"<<std::endl;
+	
+	if(ID){
+		if(sktqz_.nqiskz==0){
+			std::cout<<"sktqz had no ID hits"<<std::endl;
+		} else {
+			std::cout<<"Num ID hits (sktqz_.nqiskz): "<<sktqz_.nqiskz<<"\n"
+			         <<"first "<<nhits<<" ID hits (sktqz_: bad channel mask applied? all hits, not just in-gate):\n";
+			for(int i=0, j=0; i<sktqz_.nqiskz; ++i){
+				int cableNumber = sktqz_.icabiz[i];
+				if(cableNumber<=0 && cableNumber>MAXPM) continue;
+				// XXX note indices are [i] NOT [cableNumber-1]!
+				std::string ihtiflz_flagstring="";
+				GetHitFlagNames(sktqz_.ihtiflz[i], &ihtiflz_flagstring);
+				std::string iqiskz_flagstring="";
+				int iqiskz_q_counts, iqiskz_flags;
+				GetHitChargeAndFlags(sktqz_.iqiskz[i], iqiskz_q_counts, iqiskz_flags, &iqiskz_flagstring);
+				std::cout<<"ID Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<"\n"
+				         <<"\tT: sktqz_.itiskz: "<<sktqz_.itiskz[i]
+				         <<" [ticks], sktqz_.tiskz: "<<sktqz_.tiskz[i]<<" [ns]\n"
+				         <<"\tQ: sktqz_.iqiskz (bits 0-10): "<<iqiskz_q_counts<<
+				         " [cts], sktqz_.qiskz: "<<sktqz_.qiskz[i]<<" [p.e.]\n"
+				         //<<"\thit flags: sktqz_.iqiskz (bits 11-15): "<<iqiskz_flagstring<<"\n"
+				         <<"\thit flags: sktqz_.ihtiflz: "<<ihtiflz_flagstring<<"\n";
+				         // (both sets of flags are the same)
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	} else {
+		
+		if(sktqaz_.nhitaz==0){
+			std::cout<<"sktqaz had no OD hits"<<std::endl;
+		} else {
+			std::cout<<"Num OD hits (sktqaz_.nhitaz): "<<sktqaz_.nhitaz<<"\n"
+			         <<"first "<<nhits<<" OD hits (sktqaz_: bad channel mask applied? all hits, not just in-gate):\n";
+			for(int i=0, j=0; i<sktqaz_.nhitaz; ++i){
+				int cableNumber = sktqaz_.icabaz[i];
+				if(cableNumber<=QB_OD_OFFSET || cableNumber>(QB_OD_OFFSET+MAXPMA)) continue;
+				// XXX note indices are [i] NOT [cableNumber-1]!
+				std::string ihtflz_flagstring="";
+				GetHitFlagNames(sktqaz_.ihtflz[i], &ihtflz_flagstring);
+				std::string iqaskz_flagstring="";
+				int iqaskz_q_counts, iqaskz_flags;
+				GetHitChargeAndFlags(sktqaz_.iqaskz[i], iqaskz_q_counts, iqaskz_flags, &iqaskz_flagstring);
+				std::cout<<"OD Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<"\n"
+				         <<"\tT: sktqaz_.itaskz: "<<sktqaz_.itaskz[i]
+				         <<" [ticks], sktqaz_.taskz: "<<sktqaz_.taskz[i]<<" [ns]\n"
+				         <<"\tQ: sktqaz_.iqaskz: "<<iqaskz_q_counts<<" [cts]"
+				         <<", sktqaz_.qaskz: "<<sktqaz_.qaskz[i]<<"\n"
+				         //<<"\thit flags: sktqaz_.iqaskz: "<<iqaskz_flagstring<<"\n"
+				         <<"\thit flags: sktqaz_.ihtflz: "<<ihtflz_flagstring<<"\n";
+				         // (both sets of flags are the same)
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	}
+	
+	return true;
+}
+
+bool PrintEvent::PrintTQRawCommons(bool ID, int nhits){
+	
+	std::cout<<"\nPrinting "<<(ID ? "ID" : "OD")<<" hits in rawtqinfo_\n"<<std::endl;
+	
+	if(ID){
+		
+		if(rawtqinfo_.nqisk_raw==0){
+			std::cout<<"rawtqinfo had no ID hits"<<std::endl;
+		} else {
+			
+			std::cout<<"Num ID hits (rawtqinfo_.nqisk_raw): "<<rawtqinfo_.nqisk_raw<<"\n";
+			std::cout<<"first "<<nhits<<" ID hits (rawtqinfo_: before bad channel mask, all hits, not just in-gate):\n";
+			for(int i=0, j=0; i<rawtqinfo_.nqisk_raw; ++i){
+				int cableNumber = rawtqinfo_.icabbf_raw[i] & 0xFFFF; // TODO Constants function for icabbf/icabaz?
+				if(cableNumber<=0 || cableNumber>MAXPM) continue;
+				// XXX note indices are [i] NOT [cableNumber-1]!
+				std::string icabbf_raw_flagstring="";
+				GetHitFlagNames((rawtqinfo_.icabbf_raw[i] >> 16), &icabbf_raw_flagstring);
+				std::string iqiskz_raw_flagstring="";
+				int iqiskz_raw_q_counts, iqiskz_raw_flags;
+				GetHitChargeAndFlags(rawtqinfo_.iqiskz_raw[i], iqiskz_raw_q_counts, iqiskz_raw_flags, &iqiskz_raw_flagstring);
+				std::cout<<"ID Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<"\n"
+				         <<"\tT: rawtqinfo_.itiskz_raw: "<<rawtqinfo_.itiskz_raw[i] // == sktqz.itiskz
+				         <<", rawtqinfo_.tbuf_raw: "<<rawtqinfo_.tbuf_raw[i]<<"\n"  // == sktqz.tiskz
+				         <<"\tQ: rawtqinfo_.iqiskz_raw: "<<iqiskz_raw_q_counts // bits 0-10
+				         <<", rawtqinfo_.qbuf_raw: "<<rawtqinfo_.qbuf_raw[i]<<"\n" // == sktqz_.qiskz
+				         //<<"\thit flags: rawtqinfo_.iqiskz_raw: "<<iqiskz_raw_flagstring<<"\n" // same as below
+				         <<"\thit flags: rawtqinfo_.icabbf_raw: "<<icabbf_raw_flagstring<<"\n";
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	} else {
+		
+		if(rawtqinfo_.nhitaz_raw==0){
+			std::cout<<"rawtqinfo had no OD hits"<<std::endl;
+		} else {
+			std::cout<<"Num OD hits (rawtqinfo_.nhitaz_raw): "<<rawtqinfo_.nhitaz_raw<<"\n";
+			// XXX rawtqinfo_.nhitaz_raw != sktqaz_.nhitaz unlike ID hits...?!
+			std::cout<<"first "<<nhits<<" OD hits (before bad ch masking):\n";
+			for(int i=0, j=0; i<rawtqinfo_.nhitaz_raw; ++i){
+				int cableNumber = rawtqinfo_.icabaz_raw[i] & 0xFFFF;
+				if(cableNumber<=QB_OD_OFFSET || cableNumber>(QB_OD_OFFSET+MAXPMA)) continue;
+				std::cout<<"OD Hit "<<j<<"\n"
+				         <<"\tPMT: "<<cableNumber<<"\n"
+				         <<"\tT: rawtqinfo_.itaskz_raw: "<<rawtqinfo_.itaskz_raw[i]<<" [ticks]"
+				         <<", rawtqinfo_.taskz_raw: "<<rawtqinfo_.taskz_raw[i]<<" [ns]\n"
+				         <<"\tQ: rawtqinfo_.iqaskz_raw: "<<(rawtqinfo_.iqaskz_raw[i] & 0x07FF)<<" [cts]"
+				         <<", rawtqinfo_.qaskz_raw: "<<rawtqinfo_.qaskz_raw[i]<<" [p.e.]\n";
+				++j;
+				if(j>=nhits) break;
+			}
+			std::cout<<std::endl;
+		}
+		
+	}
+	
+	return true;
+}
+
 bool PrintEvent::PrintTriggerInfo(){
 	
-	std::cout<<"\nPrinting Trigger Info (commons)\n"<<std::endl;
+	std::cout<<"\nPrinting Trigger Info (from skheadqb_, skruninf_ commons)\n"<<std::endl;
+	
+	// skruninf_ common is not populated by skread/skrawread (TreeReader Tool),
+	// we need to call this explicitly or values will be 0
+	runinfsk_(); // think this reads from RUNINF branch. it prints an error if not present
 	
 	std::cout<<"\tskheadqb_.it0sk: "<<skheadqb_.it0sk<<"\n"
 	         <<"\tskheadqb_.nevswsk: "<<skheadqb_.nevswsk<<"\n"
-	         <<"\tskruninf_.softtrg_pre_t0: "<<skruninf_.softtrg_pre_t0[skheadqb_.nevswsk]<<"\n"
-	         <<"\tskruninf_.softtrg_post_t0: "<<skruninf_.softtrg_post_t0[skheadqb_.nevswsk]<<"\n"
-	         <<"\tskruninf_.softtrg_t0_offset: "<<skruninf_.softtrg_t0_offset[skheadqb_.nevswsk]<<"\n";
-	         // seems these skruninf_ variables are not set in rfm files: all 0
+	         // FIXME nevswsk is maybe the same as idtgsk, so is not an element index....
+	         <<"\tskruninf_.softtrg_pre_t0: "<<"???\n" // skruninf_.softtrg_pre_t0[???]<<"\n"
+	         <<"\tskruninf_.softtrg_post_t0: "<<"???\n" // skruninf_.softtrg_post_t0[???]<<"\n"
+	         <<"\tskruninf_.softtrg_t0_offset: "<<"???\n"; // skruninf_.softtrg_t0_offset[???]<<"\n";
 	
+	// FIXME this is printing ... maybe garbage? probably because it0sk is some huge negative number....
+	// think hit times are already relative to IT0SK so no need to add it anyway...?
+	// but how do we put times into an absolute measure to compare hit times in different subtriggers?
 	std::cout<<"\tTrigger gate spanned: "
-	         <<((skheadqb_.it0sk-skruninf_.softtrg_pre_t0[skheadqb_.nevswsk])*COUNT_PER_NSEC)
-	         <<"ns to "
-	         <<((skheadqb_.it0sk+skruninf_.softtrg_post_t0[skheadqb_.nevswsk])*COUNT_PER_NSEC)
+	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_pre_t0[???])*COUNT_PER_NSEC)
+	         <<" ns to "
+	         <<"???" //((skheadqb_.it0sk+skruninf_.softtrg_post_t0[???])*COUNT_PER_NSEC)
 	         <<" with trigger signal at "
-	         <<((skheadqb_.it0sk-skruninf_.softtrg_t0_offset[skheadqb_.nevswsk])*COUNT_PER_NSEC)<<"\n";
+	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_t0_offset[???])*COUNT_PER_NSEC)<<"\n";
+	         <<std::endl;
 	
 	// TODO add more info such as trigger type? hmm... don't want to overlap the other printers....
 	return true;
@@ -769,6 +861,7 @@ bool PrintEvent::PrintTriggerInfo(){
 
 bool PrintEvent::Print_sktrg(){
 	
+	std::cout<<"\nPrinting sktrg_ common\n"<<std::endl;
 	/*
 	from sktrg.h:
 	sktrg_. common {
@@ -779,9 +872,9 @@ bool PrintEvent::Print_sktrg(){
 	  int    nclk48trghw[3][nsktrghw];  // 48bit clk
 	  int    stattrghw[nsktrghw];       // Status
 	}; */
-	// seems this is not populated by skead/skrawread...
-	std::cout<<"\nsktrg_:\n"
-	         <<"\tsktrg_.nsktrghw = "<<sktrg_.nsktrghw<<"\n";
+	
+	// FIXME seems this is not populated by skead/skrawread... reads 0 even when we had hardware triggers.
+	std::cout<<"\tsktrg_.nsktrghw = "<<sktrg_.nsktrghw<<"\n";
 	for(int i=0; i<sktrg_.nsktrghw; ++i){
 		std::cout<<"\ttrigger "<<i<<"\n"
 		         <<"\t\tsktrg_.nruntrghw["<<i<<"] = "<<sktrg_.nruntrghw[i]<<"\n"
@@ -792,24 +885,15 @@ bool PrintEvent::Print_sktrg(){
 		                                          <<", "<<sktrg_.nclk48trghw[1][i]
 		                                          <<", "<<sktrg_.nclk48trghw[2][i]<<"]\n";
 	}
+	std::cout<<std::endl;
 	
 	return true;
 }
 
 bool PrintEvent::PrintSubTriggers(bool verbose){
 	
-	Header* myHeader=nullptr;
-	get_ok = myTreeReader->Get("HEADER", myHeader);
-	if(!get_ok || myHeader==nullptr){
-		Log(m_unique_name+" failed to get HEADER from Tree",v_error,verbosity);
-		return false;
-	}
+	std::cout<<"\nPrinting subtriggers (Data)\n"<<std::endl;
 	
-	return true; // TODO
-	
-	std::cout<<"\nPrinting subtriggers\n"<<std::endl;
-	
-	long it0sk = myHeader->t0;        // skheadqb_.it0sk;
 	// IT0SK   ; Original T0 of the event
 	// IT0XSK  ; T0 of the event for ITISKZ,ITASKZ,ITABSK,TISK,IHCAB,TASK,IHACAB,...
 	
@@ -827,15 +911,12 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	// note it0sk, tiskz, taskz are not updated (i think?)
 	
 	// so to process all subtriggers the following steps are required:
-	// 1. runinf_ to retrieve trigger settings for the given run
-	// 2. softtrg_set_cond_ to configure these settings (1&2 may only be required if you want to change trigger settings?)
-	// 3. skrawread, to get next event
-	// 4. get_sub_triggers(trigid, ntrig, t0_sub, MAX_TRIG) to get subtriggers of given type
-	//    trigid: input int, format of idtgsk, which trigger to look for (one bit set only? TODO check)
-	//    ntrig: output - # subtriggers found
-	//    t0_sub: output array of subtrigger times
-	//    MAX_TRIG: max # to search for
-	//    (interally calls sofftrg_inittrgtbl to apply software trigger)
+	// 1. runinfsk_ to retrieve trigger settings for the given run
+	// 2. softtrg_set_cond_ to configure these settings
+	//    (1&2 may only be required if you want to change trigger settings?) FIXME not clear.
+	// 3. skrawread, if not already called, to load this event (this is done by the TreeReader Tool)
+	// 4. get_sub_triggers to get subtriggers of given type
+	//    (interally calls softtrg_inittrgtbl to apply software trigger)
 	// 5. set_timing_gate(it0sk+t0_sub(i)) to set next t0
 	// 6. skread(-LUN) to re-load event and recalculate times and other variables
 	// 7. optionally update PREVT0 and tdiff branches.... ?? unclear what this is being set to...*
@@ -844,20 +925,288 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	//    you'll end up with many events that essentially hold the same hits, so its wasteful....
 	//    although mue_decay.F example does exactly this!
 	
+	// retrieve trigger settings used by the current run
+	runinfsk_();
+	
+	std::cout << "software trigger settings from file:" << std::endl;
+	// XXX for MC these seem to be empty?
+	std::vector<std::string> triggers_of_interest{"SLE","LE","HE","SHE","AFT","OD"};
+	for(int i=0; i < triggers_of_interest.size(); i++){
+		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerIDToName(i));
+		if(trigit==triggers_of_interest.end()) continue;
+		std::cout<<"\tTrigger "<<i << " = " << TriggerIDToName(i)<<"\n"
+		         << "\t\tthreshold: " << skruninf_.softtrg_thr[i]<<"\n";
+		         //<< "\t\tdetector: " << skruninf_.softtrg_detector[i]<<"\n"
+		         //<< "\t\tt0 offset: " << skruninf_.softtrg_t0_offset[i]<<"\n"
+		         //<< "\t\tpre-t0: " << skruninf_.softtrg_pre_t0[i]<<"\n"
+		         //<< "\t\tpost-t0: " << skruninf_.softtrg_post_t0[i]<<"\n"
+	}
+	std::cout << std::endl;
+	
+	/*
+	// we can alter the software trigger settings at this point via
+	skruninf_.softtrg_thr[0] = 30;            // new LE threshold
+	skruninf_.softtrg_thr[1] = 40;            // new HE threshold
+	// n.b. we don't need to use the variables in skruninf_,
+	// but we'll need a set of variables of those types to pass to softtrg_set_cond_,
+	// so we may as well use them
+	*/
+	
+	// pass these settings to the software trigger
+	// (not clear if this is required if we don't want to change the default settings) TODO find out
+	softtrg_set_cond_(skruninf_.softtrg_detector, skruninf_.softtrg_thr, skruninf_.softtrg_t0_offset, skruninf_.softtrg_pre_t0, skruninf_.softtrg_post_t0);
+	
+	// when getting subtriggers we call skcread to update the common block contents,
+	// recalculate hit counts, hit flags, first/last hit times etc etc.
+	// for this we will need the file LUN
+	int lun = m_data->GetLUN(myTreeReader->GetName());
+	lun = -std::abs(lun);  // IMPORTANT: make it negative to ensure skcread does not advance TTree
+	
+	// trigger time of the primary trigger
+	int it0sk = skheadqb_.it0sk;
+	
+	// demo: loop over subtrigger types and see how many of each we find.
+	for(int i=0; i<32; ++i){
+		
+		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerIDToName(i));
+		if(trigit==triggers_of_interest.end()) continue;
+		
+		int ntrigsfound=0;
+		int MAX_SUBTRIGS=100;
+		std::vector<int> t0_sub(MAX_SUBTRIGS,-1);  // relative time of subtrigger to IT0SK
+		
+		/*
+		// we may need to modify the bad channel masking settings, depending on what kind
+		// of subtriggers we're looking for and what our current setting is
+		// (which is usually set in the TreeReader tool config).
+		// e.g. to search for lowe triggers, we must ensure noisy PMTs are NOT masked.
+		// (usual lowe badopt 23 does this, but for high energy muon events we typically mask
+		// all kinds of bad PMTs with skbadopt 0)
+		int badopt_lowe = 23;
+		skbadopt_(&badopt_lowe);
+		
+		// reload hits with this bad channel masking
+		skcread(&lun, &get_ok);
+		*/
+		
+		// run subtrigger algorithm to search for subtriggers of this type
+		get_sub_triggers_(&i, &ntrigsfound, t0_sub.data(), &MAX_SUBTRIGS);
+		
+		// print what we found
+		std::cout<<"found "<<ntrigsfound<<" "<<TriggerIDToName(i)<<" triggers\n";
+		for(int j=0; j<ntrigsfound; ++j){
+			if(j==0) std::cout<<"\ttimes: [";
+			else std::cout<<", ";
+			std::cout<<t0_sub.at(j);  // IT0XSK of this subtrigger
+			if(j==(ntrigsfound-1)) std::cout<<"]";
+		}
+		std::cout<<"\n";
+		
+		int previously_found_subtriggers = ntrigsfound;
+		if(ntrigsfound>0){
+			// we may further search for more subtriggers of a different type,
+			// which do not overlap with these ones, by the following: // XXX define "overlap"...?
+			std::vector<int> id_sub(MAX_SUBTRIGS,-1); // type id of a given subtrigger
+			std::fill(id_sub.begin(), id_sub.begin()+ntrigsfound, i); // fill the ones we've found by the above
+			int anothertrigid = 2;  // now search for SLE triggers that don't overlap with the above....
+			if(i!=2){               // (dont search for extra SLE triggers in an SLE trigger search...)
+				get_sub_triggers_add_(&anothertrigid, &ntrigsfound, t0_sub.data(), id_sub.data(), &MAX_SUBTRIGS);
+				std::cout<<"found "<<(previously_found_subtriggers-ntrigsfound)
+				         <<" "<<TriggerIDToName(anothertrigid)
+				         <<" subtriggers that did not overlap with any of our "
+				         <<previously_found_subtriggers<<" "<<TriggerIDToName(i)<<" triggers"<<std::endl;
+			}
+		}
+		
+		// process the subtriggers:
+		for(int j=0; j<previously_found_subtriggers; ++j){
+			
+			// trigger time of the subtrigger
+			int it0xsk = it0sk + t0_sub.at(j);
+			
+			// we can convert hit times in primary trigger window to hit times within a subtrigger as follows:
+			//hit_time_in_subtrigger = hit_time_in_primary_trigger - (it0xsk-it0sk)/COUNT_PER_NSEC;
+			
+			// or we can do the following to update the contents of
+			// skt_, skq_ and skchnl_, after which times in skt_ will be relative to IT0XSK
+			// (are sktqz_.ihtiflz and sktqaz_.ihtflz hit flags updated? FIXME)
+			
+			// set IT0XSK to the position of the next subtrigger
+			set_timing_gate_(&it0xsk);
+			
+			std::cout<<"After call to set_timing_gate, new ntrigsk is :"
+			         <<"\tskheadqb_.ntrigsk: "<<skheadqb_.ntrigsk<<"\n";
+			// === (((skheadqb_.it0xsk-skheadqb_.it0sk)/COUNT_PER_NSEC)/10)
+			
+			// re-load the hits to update hit counts, common block contents, hit flags, etc.
+			// note that this DOES UPDATE times in sktqz_ and sktqaz_ to be relative to the new IT0XSK
+			skcread_(&lun, &get_ok);
+			if(get_ok!=0){
+				switch(get_ok){
+					case 1: std::cerr<<"PrintEvent::GetSubTriggers read error!"<<std::endl; break;
+					case 2: std::cerr<<"PrintEvent::GetSubTriggers hit end of file!"<<std::endl; break;
+					case 3: std::cerr<<"PrintEvent::GetSubTriggers pedestal event"<<std::endl; break;
+					case 4: std::cerr<<"PrintEvent::GetSubTriggers no pedestal or header bank"<<std::endl; break;
+					default: break; /* no error */
+				}
+				return false;
+			}
+			
+			// print hits
+			std::cout<<"Hits in subtrigger "<<j<<"\n"
+			         <<"----------------------"<<std::endl;
+			PrintTQCommons(true, 3);   // ID hits
+			//PrintTQCommons(false, 3);  // OD hits
+			//PrintTQZCommons(false, 3);  // all hits
+			std::cout<<"----------------------"<<std::endl;
+			
+			/*
+			// when saving subtriggers we should record the software trigger settings in the
+			// LoweInfo::linfo array. We can modify this directly, or if using the fortran routines
+			// to populate the LoweInfo class, by updating the skroot_lowe_ common block,
+			// then calling skroot_set_lowe.
+			// skroot_lowe_swtrig is an alias for skroot_lowe_.linfo[61], #defined in skroot_loweC.h
+			skroot_lowe_swtrig = i;
+			for(int k=0; k<3; ++k){
+				skroot_lowe_swtrig_thr[k] = skruninf_.softtrg_thr[k]; // alias for linfo[62-64]
+			}
+			// update count of linfo size to say at least this many elements are valid... dubious.
+			if(skroot_lowe_.lninfo < 65) skroot_lowe_.lninfo = 65;
+			
+			// similarly record the event number of the parent muon trigger in MuInfo::muinfo array
+			// (i.e. if you're making a list of subtriggers in AFT, you'd carry over the nvesk
+			//  from the preceding SHE event i guess...?)
+			skroot_mu_.muinfo[4] = skhead_.nevsk;
+			// update count of extra muinfo elements to say at least this many elements are valid...
+			if(skroot_.muninfo < 6) skroot_mu_.muninfo = 6;
+			
+//			// maybe also relevant to update prevt0 here, but not sure how
+//			// FIXME what are these doing, how do they work
+//			// from $SKOFL_ROOT/examples/lowe/c_lomufit_gd.cpp
+//			// ------
+//			//int pt0_prev_counter_32[32];
+//			//int pt0_prev_t0[32];
+//			//int pt0_clk48[32][3];
+//			//int pt0_iprev;
+//			//skroot_get_prevt0_(&lun, &get_ok, pt0_prev_counter_32, pt0_prev_t0, pt0_clk48);
+//			//tdiff_sub_(skhead_.nt48sk, &skroot_lowe_.ltimediff);
+//			// ------
+//			
+//			// from $SKOFL_ROOT/examples/lowe/mue_decay.F:
+//			// ------
+//			// save the current T0 into PREVT0 branch
+//			skroot_get_prevt0(lun, istat, prev_counter_32, prev_t0, clk48)
+//			do j = 1, 32
+//				if (iand(idtgsk, 2**(j-1)).ne.0) then
+//					prev_counter_32(j) = nevhwsk
+//					prev_t0(j) = it0sk
+//					clk48(1,j) = nt48sk(1)
+//					clk48(2,j) = nt48sk(2)
+//					clk48(3,j) = nt48sk(3)
+//				endif
+//			enddo
+//			call skroot_set_prevt0(lun, prev_counter_32, prev_t0, clk48)
+//			// recalc time to the previous event 
+//			call tdiff_sub(nt48sk,ltimediff)
+//			print *,'timediff2=', ltimediff, t0_sub(i)/count_per_nsec
+//			// ------
+			
+			// write common block contents to LoweInfo class
+			skroot_set_lowe(...);
+			skroot_set_mu(...);
+			
+			// remove hits outside 1.3us around IT0XSK so we don't end up saving copies
+			delete_outside_hits_();
+			
+			// pass data from common blocks to TTree classes
+			skroot_set_tree(&lun);
+			
+			// call TTree::Fill()
+			skroot_fill_tree(&lun);
+			*/
+			
+		}
+		
+	}
+	
+	
 	// *see $SKOFL_ROOT/examples/lowe/mue_decay.F for example that selects parent mu & decay-e,
 	// applies lfmufit to primary SHE triggers and saves event, then applies lfallfit_sk4_data_
 	// to subtriggers & saves each subtrigger as a new event.
 	// This also updates PREVT0 and ltdiff, but i don't follow the process....
 	// apparently lomufit_sle also does this (10a-slereduction_lomufit_sle.pdf:10)
-	// TODO
 	
-	// TODO  print first/last hit times in subtrigger windows or sth.
-	/*
-		// convert hit times in primary trigger window to hit time within a subtrigger
-		// by subtracting [the time from 40us buffer readout start (IT0SK) to subtrigger start (IT0XSK)],
-		// converted from TDC ticks to nanoseconds:
-		hit_time -= (it0xsk-it0sk)/COUNT_PER_NSEC;
-	*/
+	return true;
+}
+
+bool PrintEvent::PrintSubTriggersMC(bool verbose){
+	
+	// for MC we have some variables in MCInfo that may be similar/relevant?
+	MCInfo* mcinfo=nullptr;
+	get_ok = myTreeReader->Get("MC",mcinfo);
+	if(!get_ok  || mcinfo==nullptr){
+		Log(m_unique_name+" failed to get HEADER from Tree",v_error,m_verbose);
+		return false;
+	}
+	
+	std::cout<<"\nPrinting subtriggers (MC)\n"<<std::endl;
+	
+	int lun = m_data->GetLUN(myTreeReader->GetName());
+	lun = -std::abs(lun);  // IMPORTANT: make it negative to ensure skcread does not advance TTree
+	
+	std::cout<<"Num MC sw triggers (MCInfo::numdsswtrgs): "<<mcinfo->numdsswtrgs<<"\n";
+	
+	for(int i=0; i<mcinfo->numdsswtrgs; ++i){
+		std::string triggernames;
+		if(mcinfo->trigbit[i]==-1){
+			triggernames="None";
+		} else {
+			if(mcinfo->trigbit[i] & 0x1) triggernames+=", LE";
+			if(mcinfo->trigbit[i] & 0x2) triggernames+=", HE";
+			if(mcinfo->trigbit[i] & 0x3) triggernames+=", OD";
+			if(triggernames.size()){
+				triggernames = triggernames.substr(1,std::string::npos);
+			}
+			triggernames = "[" + triggernames+" ]";
+		}
+		
+		std::cout<<"mc sw trig "<<i<<":\n"
+		         <<"\ttrigger candidate (prim_trg): "<<mcinfo->prim_trg[i]<<"\n" // meaning?
+		         <<"\ttrigger it0sk [ticks]: "<<mcinfo->it0sk_temp[i]<<"\n"
+		         <<"\ttrigger bits: "<<mcinfo->trigbit[i]<<" = "<<triggernames<<"\n"
+		         <<"\tgeant_t0 relative time: "<<mcinfo->prim_pret0[i]<<"\n";
+		
+		// not entirely sure if we can do the rest of this, but i would assume we can XXX
+		
+		// trigger time of the subtrigger
+		int it0xsk = mcinfo->it0sk_temp[i];
+		
+		// set IT0XSK to the position of the next subtrigger
+		set_timing_gate_(&it0xsk);
+		
+		// re-load the hits to update hit counts, common block contents, hit flags, etc.
+		skcread_(&lun, &get_ok);
+		if(get_ok!=0){
+			switch(get_ok){
+				case 1: std::cerr<<"PrintEvent::GetSubTriggers read error!"<<std::endl; break;
+				case 2: std::cerr<<"PrintEvent::GetSubTriggers hit end of file!"<<std::endl; break;
+				case 3: std::cerr<<"PrintEvent::GetSubTriggers pedestal event"<<std::endl; break;
+				case 4: std::cerr<<"PrintEvent::GetSubTriggers no pedestal or header bank"<<std::endl; break;
+				default: break; /* no error */
+			}
+			return false;
+		}
+		
+		// print hits
+		std::cout<<"Hits in subtrigger "<<i<<"\n"
+		         <<"----------------------"<<std::endl;
+		PrintTQCommons(true, 3);   // ID hits
+		PrintTQCommons(false, 3);  // OD hits
+		PrintTQZCommons(true, 3); // this should not change, double check
+		std::cout<<"----------------------"<<std::endl;
+		
+	}
+	std::cout<<std::endl;
 	
 	return true;
 }
@@ -866,7 +1215,7 @@ bool PrintEvent::PrintLowEInfo(){
 	LoweInfo* lowe=nullptr;
 	get_ok = myTreeReader->Get("LOWE", lowe);
 	if(!get_ok || lowe==nullptr){
-		Log(m_unique_name+" failed to get LOWE from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get LOWE from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -935,7 +1284,7 @@ bool PrintEvent::PrintLowEInfo(){
 		linfo[5,6] effwall for clusfit, bonsai
 		linfo[7,8] effective # hits for clusfit, bonsai ("at given water transparency"?)
 		linfo[25] bonsai clik (cluster likelihood to reject noise events near wall)
-		linfo[26] bonsai ovaq (bonsai goodness^2 - dirks^2) - combined 1D vertex & angle goodness metric
+		linfo[26] bonsai ovaq (bonsai goodness[1]^2 - dirks^2) - combined 1D vertex & angle goodness metric
 		linfo[27-33] ariadne values (bsn20, hits, adir, amsg, aratio, anscat, acosscat)? FIXME
 		// n.b. from skroot_lowe.h, some aliases are given to some linfo elements:
 		linfo=61-65: software trigger
@@ -950,7 +1299,7 @@ bool PrintEvent::PrintATMPDInfo(){
 	AtmpdInfo* atmpd=nullptr;
 	get_ok = myTreeReader->Get("ATMPD", atmpd);
 	if(!get_ok || atmpd==nullptr){
-		Log(m_unique_name+" failed to get ATMPD from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get ATMPD from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -965,7 +1314,7 @@ bool PrintEvent::PrintUpMuInfo(){
 	UpmuInfo* upmu=nullptr;
 	get_ok = myTreeReader->Get("UPMU", upmu);
 	if(!get_ok || upmu==nullptr){
-		Log(m_unique_name+" failed to get UPMU from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get UPMU from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -980,7 +1329,7 @@ bool PrintEvent::PrintMuInfo(){
 	MuInfo* muinfo=nullptr;
 	get_ok = myTreeReader->Get("MU", muinfo);
 	if(!get_ok || muinfo==nullptr){
-		Log(m_unique_name+" failed to get UPMU from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get UPMU from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -1016,7 +1365,7 @@ bool PrintEvent::PrintSLEInfo(){
 	SLEInfo* sleinfo=nullptr;
 	get_ok = myTreeReader->Get("SLE", sleinfo);
 	if(!get_ok || sleinfo==nullptr){
-		Log(m_unique_name+" failed to get SLE from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get SLE from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -1044,7 +1393,7 @@ bool PrintEvent::PrintPrevT0(){
 	PrevT0* prevt0=nullptr;
 	get_ok = myTreeReader->Get("PREVT0", prevt0);
 	if(!get_ok || prevt0==nullptr){
-		Log(m_unique_name+" failed to get PREVT0 from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get PREVT0 from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -1054,13 +1403,14 @@ bool PrintEvent::PrintPrevT0(){
 	         <<"\tsw_event_no: "<<prevt0->sw_event_no<<"\n"; // skheadqb_.nevsk (XXX NOT skheadqb_.nevswsk!), == SoftwareTrigger::sw_event_no
 	// XXX seems these will read 0 from the start of a run until at least there is a valid past trigger of that type?
 	for(int i=0; i<NTRGTYPES; ++i){
-		std::cout<<"\tfor trigger "<<TriggerIDToTrigger(i)<<"\n"
+		std::cout<<"\tfor trigger "<<TriggerIDToName(i)<<"\n"
 		         <<"\t\tprev_t0: "<<prevt0->prev_t0[i]<<"\n"
 		         <<"\t\tprev_counter_32: "<<prevt0->prev_counter_32[i]<<"\n"
 		         <<"\t\tprev_clock_ticks (clk48): ["<<prevt0->clk48[i][0]
 		                                      <<", "<<prevt0->clk48[i][1]
-		                                      <<", "<<prevt0->clk48[i][2]<<"]"<<std::endl;
+		                                      <<", "<<prevt0->clk48[i][2]<<"]\n";
 	}
+	std::cout<<std::endl;
 	
 	// see $SKOFL_ROOT/lowe/sklowe/tdiff.F; tdiff(nt48sk, ltimediff) routine
 	// (which for SKIV+ actually ignores its nt48sk argument and calls skroot_get_prevt0)
@@ -1099,7 +1449,7 @@ bool PrintEvent::PrintHWTriggerInfo(){
 	TClonesArray* hwtriggers=nullptr;
 	get_ok = myTreeReader->Get("HWTRGLIST", hwtriggers);
 	if(!get_ok || hwtriggers==nullptr){
-		Log(m_unique_name+" failed to get HWTRGLIST from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get HWTRGLIST from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -1139,8 +1489,7 @@ bool PrintEvent::PrintHWTriggerInfo(){
 		         <<"\tclock ticks (clk48): ["<<trg->clk48[0]<<", "<<trg->clk48[1]<<", "<<trg->clk48[2]<<"]\n"
 		         <<"\thw counter: "<<trg->hw_trg_ctr<<"\n"
 		         <<"\tID: "<<trg->hw_trg_id<<"\n"
-		         <<"\tas type:"<<TriggerIDToTrigger(trg->hw_trg_id)<<std::endl; // seems valid, usually 'Periodic'
-		
+		         <<"\tas type:"<<TriggerIDToName(trg->hw_trg_id)<<std::endl; // seems valid, usually 'Periodic'
 	}
 	
 	return true;
@@ -1151,7 +1500,7 @@ bool PrintEvent::PrintSWTriggerInfo(){
 	SoftwareTrigger* swtrg=nullptr;
 	get_ok = myTreeReader->Get("SOFTWARETRG",swtrg);
 	if(!get_ok  || swtrg==nullptr){
-		Log(m_unique_name+" failed to get SOFTWARETRG from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get SOFTWARETRG from Tree",v_error,m_verbose);
 		return false;
 	}
 	
@@ -1163,14 +1512,15 @@ bool PrintEvent::PrintSWTriggerInfo(){
 	std::cout<<"\tsoftware trigger version: "<<swtrg->sw_trg_ver<<"\n"       // i guess this is a version number???
 	         <<"\tnum hw triggers: "<<swtrg->nhwtrgs<<"\n"                   // skheadqb_.numhwsk? == HWTRGLIST->GetEntries(). don't ask me why this is in the SW trigger.
 	         <<"\ttrg ID: "<<swtrg->sw_trg_id<<"\n"
-	         <<"\tas type: "<<TriggerIDToTrigger(swtrg->sw_trg_id)<<"\n"     // seems valid
+	         <<"\tas types: "<<GetTriggerNames(swtrg->sw_trg_id)<<"\n"
 	         <<"\tMasked triggers: "<<swtrg->sw_trg_mask<<"\n"
 	         <<"\tas types: "<<GetTriggerNames(swtrg->sw_trg_mask)<<"\n" // skheadqb_.trgmask? == Header::sw_trg_mask. is this a bitmask of ignored triggers??? FIXME don't think this is right.
 	         <<"\tclock ticks (clk48): ["<<swtrg->clk48[0]<<", "<<swtrg->clk48[1]<<", "<<swtrg->clk48[2]<<"]\n"
 	         <<"\tcounter32: "<<swtrg->counter_32<<"\n"
 	         <<"\tt0: "<<swtrg->t0<<"\n"   // skheadqb_.it0sk, == Header::t0
 	         <<"\tgate width: "<<swtrg->gate_width<<"\n"  // skheadqb_.gatewsk == Header::gate_width
-	         <<"\tnhits: "<<swtrg->nhits<<std::endl;  // what kind? TQ? TQReal? ID? OD? ????
+	         <<"\tnhits: "<<swtrg->nhits<<"\n";  // what kind? TQ? TQReal? ID? OD? ????
+	std::cout<<std::endl;
 	
 	// see also softtrg info in RunInfo class or skruninfo_ common block.
 	// how are these different???
@@ -1211,7 +1561,7 @@ bool PrintEvent::PrintHeaderInfo(){
 	Header* myHeader=nullptr;
 	get_ok = myTreeReader->Get("HEADER",myHeader);
 	if(!get_ok  || myHeader==nullptr){
-		Log(m_unique_name+" failed to get HEADER from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get HEADER from Tree",v_error,m_verbose);
 		return false;
 	}
 	std::cout<<"\nPrinting HEADER Branch\n"<<std::endl;
@@ -1252,7 +1602,7 @@ bool PrintEvent::PrintHeaderInfo(){
 	// "48-bit clock" from skheadC.h
 	std::cout<<"clock ticks (nt48sk): ["<<myHeader->nt48sk[0]<<", "
 	                                    <<myHeader->nt48sk[1]<<", "
-	                                    <<myHeader->nt48sk[2]<<"]"<<std::endl;
+	                                    <<myHeader->nt48sk[2]<<"]\n";
 	/*
 	from lowe school: 48bit clock was used in SKI-III to get time difference between two events.
 	(excludes SLE events). 1 tick = 20ns, tick count reset at the start of each run.
@@ -1262,21 +1612,29 @@ bool PrintEvent::PrintHeaderInfo(){
 	int runMode = myHeader->mdrnsk;           // skhead_.mdrnsk == RunInfo::run_mode
 	std::cout<<"This run was a "<<RunModeToName(runMode)<<" run"<<std::endl;
 	
-	std::cout<<"Triggers bits in this event: "<<GetTriggerNames(myHeader->idtgsk)<<"\n";  // skhead_.idtgsk
-	
-	std::cout<<"Event flags in this event: "<<GetEventFlagNames(myHeader->ifevsk)<<"\n";  // skhead_.ifevsk
-	
 	std::cout<<"Event header info:\n"
-	         <<"\tit0sk [ticks]: "<<myHeader->t0<<"\n" // skheadqb_.it0sk XXX rfm files both same but negative??
-	         <<"\tcounter_32: "<<myHeader->counter_32<<"\n"  // skheadqb_.nevhw 
+	         <<"\tTriggers bits in this event (idtgsk): "<<myHeader->idtgsk<<"\n"
+	         <<"\tas types: "<<GetTriggerNames(myHeader->idtgsk)<<"\n"
+	         <<"\t\t(c.f. skhead_.idtgsk = "<<skhead_.idtgsk<<")\n"
+	         <<"\tEvent flags in this event (ifevsk): "<<myHeader->ifevsk<<"\n"
+	         <<"\tas types: "<<GetEventFlagNames(myHeader->ifevsk)<<"\n"
+	         <<"\t\t(c.f. skhead_.ifevsk = "<<skhead_.ifevsk<<")\n"
+	         <<"\tit0sk [ticks]: "<<myHeader->t0<<"\n"
+	         <<"\t\t(c.f. skheadqb_.it0sk = "<<skheadqb_.it0sk<<")\n"
+	         <<"\tcounter_32: "<<myHeader->counter_32<<"\n"
+	         <<"\t\t(c.f. skheadqb_.nevhwsk  = "<<skheadqb_.nevhwsk<<")\n"
 	         <<"\tnum hardware triggers: "<<myHeader->ntrg<<"\n"
-	         <<"\tsoftware trigger id: "<<myHeader->swtrg_id<<"\n"  // == SoftwareTrigger::sw_trg_id
-	         <<"\tas type: "<<TriggerIDToTrigger(myHeader->swtrg_id)<<"\n" // FIXME not sure this is correct
-	         <<"\tsoftware trigger mask: "<<myHeader->sw_trg_mask<<"\n"    // skheadqb_.trgmask == SoftwareTrigger::sw_trg_mask == RunInfo::trigger_mask. what is this? are these the enabled triggers??
-	         <<"\tas types: "<<GetTriggerNames(myHeader->sw_trg_mask)<<"\n" 
+	         <<"\tsoftware trigger id: "<<myHeader->swtrg_id<<"\n"       // == skhead_.idtgsk, and
+	         <<"\tas type: "<<GetTriggerNames(myHeader->swtrg_id)<<"\n"  // == SoftwareTrigger::sw_trg_id
+	         <<"\tsoftware trigger mask: "<<myHeader->sw_trg_mask<<"\n"
+	          // == SoftwareTrigger::sw_trg_mask == RunInfo::trigger_mask. what is this variable?
+	         <<"\tas types: "<<GetTriggerNames(myHeader->sw_trg_mask)<<"\n" // FIXME not sure if correct
+	         <<"\t\t(c.f. skheadqb_.trgmask = "<<skheadqb_.trgmask<<")\n"
 	         // FIXME if so, 'Normal Run' (rfm_run086730.000001.root) includes LINAC, LINAC MW, but not SHE, AFT?
-	         <<"\ttrigger gate width: "<<myHeader->gate_width<<" [ticks] = "<<(myHeader->gate_width*COUNT_PER_NSEC)<<" [ns]\n"; // skheadqb_.gatewsk == SoftwareTrigger::gate_width
-	            
+	         <<"\ttrigger gate width: "<<myHeader->gate_width<<" [ticks]"
+	         <<" = "<<(myHeader->gate_width*COUNT_PER_NSEC)<<" [ns]\n"
+	         <<"\t\t(c.f. skheadqb_.gatewsk = "<<skheadqb_.gatewsk<<")\n" // == SoftwareTrigger::gate_width
+	         <<std::endl;
 	         //<<"\t\"contents\": "<<myHeader->contents<<std::endl;     // skheadqb_.contsk? seriously wtf is this
 	
 	/* further members:
@@ -1303,14 +1661,14 @@ bool PrintEvent::PrintMCInfo(){
 	MCInfo* mcinfo=nullptr;
 	get_ok = myTreeReader->Get("MC",mcinfo);
 	if(!get_ok  || mcinfo==nullptr){
-		Log(m_unique_name+" failed to get HEADER from Tree",v_error,verbosity);
+		Log(m_unique_name+" failed to get HEADER from Tree",v_error,m_verbose);
 		return false;
 	}
 	
 	std::cout<<"\nPrinting MC Branch\n"<<std::endl;
 	
 	// see mcinfo.h
-	std::cout<<"SK Geom: (MCInfo): "<<mcinfo->ivmcp<<"\n" // MC version? apparently 1000+SK_geometry? unclear
+	std::cout<<"SK Geom: (MCInfo): "<<mcinfo->ivmcp<<"\n" // 1000+SK_geometry
 	         <<"Run: "<<mcinfo->mcrun<<"\n"
 	         <<"it0_offset: "<<mcinfo->it0_offset<<"\n"         // IT0_OFFSET of event (random)
 	         <<"it0sk_geantt0: "<<mcinfo->it0sk_geantt0<<"\n"   // geant0 in clock counts
@@ -1336,6 +1694,7 @@ bool PrintEvent::PrintMCInfo(){
 		         <<"\ttrigger bits: "<<mcinfo->trigbit[i]<<triggernames<<"\n"
 		         <<"\tgeant_t0 relative time: "<<mcinfo->prim_pret0[i]<<"\n";
 	}
+	std::cout<<std::endl;
 	
 	/*
 	// other variables "corresponding to MCPAR MCONV in skdetsim/dsprsv.F"
@@ -1367,7 +1726,7 @@ bool PrintEvent::PrintRunInfo(){
 	std::string treeReaderName = myTreeReader->GetName();
 	int LUN = m_data->GetLUN(treeReaderName);
 	if(LUN<0){
-		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel",v_error,verbosity);
+		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel",v_error,m_verbose);
 		return false;
 	}
 	TreeManager* manager = GetTreeManager(LUN);
@@ -1473,7 +1832,7 @@ bool PrintEvent::PrintRunInfo(){
 	std::cout<<"\tRun Trigger Mask:\n";
 	for(int i=0; i<32; ++i){
 		// TODO skip triggers for which trigger bit i is not a meaningful one
-		std::cout<<"\tTrigger "<<TriggerIDToTrigger(i)<<"\n"
+		std::cout<<"\tTrigger "<<TriggerIDToName(i)<<"\n"
 			     //<<(myRunInfo->detector[i] ? " (OD trigger) " : " (ID trigger) ")<<"\n" // skruninf_.softtrg_detector - literally only OD for the DO trigger.
 			     <<"\t\tenabled? "<<(mask.test(i) ? "Y" : "N")<<"\n"  // skruninf_.softtrg_mask
 			     <<"\t\tthreshold: "<<myRunInfo->thr[i]<<" [hits]\n"  // skruninf_.softtrg_thr
@@ -1485,6 +1844,7 @@ bool PrintEvent::PrintRunInfo(){
 			     <<" = "<<(myRunInfo->t0_offset[i]*COUNT_PER_NSEC)<<" [ns]\n"; // skruninf_.softtrg_t0_offset
 		// n.b. COUNT_PER_NSEC = 1.92(count/nsec), #defined constant in skheadC.h
 	}
+	std::cout<<std::endl;
 	
 	//UInt_t dummy[512-1-5*32]; // what does this hold? anything of interest?
 	
@@ -1493,7 +1853,7 @@ bool PrintEvent::PrintRunInfo(){
 
 bool PrintEvent::PrintBadChannels(){
 	
-	std::cout<<"\nPrinting Bad Channels\n"<<std::endl;
+	//std::cout<<"\nPrinting Bad Channels\n"<<std::endl;
 	
 	// TODO
 	/*     from 'skbadc.h' or skbadc0C.h */
@@ -1557,7 +1917,8 @@ bool PrintEvent::PrintBadChannels(){
 
 bool PrintEvent::PrintDarkInfo(){
 	
-	std::cout<<"\nPrinting Dark Info\n"<<std::endl;
+	//std::cout<<"\nPrinting Dark Info\n"<<std::endl;
+	
 	// TODO
 	/*     from 'skbadc.h'*/
 	/*     COMMON block COMDARK: infomation of dark rate (filled by src/skrd/skdark.F)*/

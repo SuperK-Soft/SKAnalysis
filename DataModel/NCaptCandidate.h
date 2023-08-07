@@ -6,6 +6,7 @@
 #include "NCapture.h"
 
 class DataModel;
+class LoweCandidate;
 
 class NCaptCandidate {
 	public:
@@ -17,38 +18,37 @@ class NCaptCandidate {
 	
 	// generated from n-tagger
 	std::string algo;
-	double likelihood_metric = -1;  // 0->1, 1 is high confidence, 0 is no confidence.
+	double capture_likelihood_metric = -1;  // 0->1, 1 is high confidence, 0 is no confidence.
 	double capture_time = -1; // ns
 	TVector3 capture_pos;  // cm
-	double prompt_time = -1; // ns
-	TVector3 prompt_pos{999.,999.,999}; // cm
+	double capture_E = -1; // MeV
 	
 	matchType matchtype=matchType::kNotSet;
 	BStore featureMap{true,constants::BSTORE_BINARY_FORMAT};  // features used by tagging algorithm
+	BStore recoVars{true,constants::BSTORE_BINARY_FORMAT};    // additional reconstruction variables
 	
 	std::string GetMatchType();
 	bool SetTrueCaptureIdx(int idx);
+	bool SetPromptEvent(int idx);
 	NCapture* GetTrueCapture();
+	LoweCandidate* GetPromptEvent();
 	double* GetCaptTerr();
 	double* GetCaptPosErr();
-	double* GetPromptTerr();
-	double* GetPromptPosErr();
-	void Print(bool printFeatureMap=false, bool printFeatureMapValues=false);
+	double* GetCaptEnergyErr();
+	void Print(bool printPrompt=true, bool printRecoVarsMap=false, bool printRecoVarsMapValues=false, bool printFeatureMap=false, bool printFeatureMapValues=false);
 	
 	private:
 	int truecap_idx=-1; // index in NCapturesTrue if matched to a true capture
+	int prompt_idx=-1;  // index in LoweCandidates of associated prompt event
 	bool got_cap_pos_err=false;
 	bool got_cap_t_err=false;
-	bool got_prompt_pos_err=false;
-	bool got_prompt_t_err=false;
+	bool got_cap_e_err=false;
 	double cap_t_err;
 	double cap_pos_err;
+	double cap_e_err;
 	double* cap_t_err_p=nullptr;
 	double* cap_pos_err_p=nullptr;
-	double prompt_t_err;
-	double prompt_pos_err;
-	double* prompt_t_err_p=nullptr;
-	double* prompt_pos_err_p=nullptr;
+	double* cap_e_err_p=nullptr;
 	DataModel* m_data=nullptr;
 	
 };

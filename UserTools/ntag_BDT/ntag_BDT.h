@@ -56,6 +56,7 @@ class ntag_BDT : public Tool {
 	Int_t GetNlowIndex(Float_t rsqred, Float_t z, const Int_t init);
 	
 	MTreeReader* myTreeReader = nullptr;
+	MTreeReader outTreeReader{"ntag_BDT_TreeReader"};
 	TFile* outfile = nullptr;
 	TTree* treeout = nullptr;
 	int WRITE_FREQUENCY = 500;

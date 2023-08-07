@@ -6,7 +6,6 @@
 #include "SK2p2MeV_relic.h"
 #include "SK2p2MeV_t2k.h"
 
-#include "MTreeReader.h"
 #include "type_name_as_string.h"
 
 SK2p2MeV_ntag::SK2p2MeV_ntag():Tool(){
@@ -75,6 +74,12 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 		return false;
 	}
 	
+	// so that downstream Tools can process the outputs without having to go via disk
+	// in a separate ToolChain run, we'll also create a TreeReader that allows downstream Tools
+	// to access this tree as if it were being read by a TreeReader Tool
+	outTreeReader.Load(theOTree);
+	m_data->RegisterReader("sk2p2_OutTree", &outTreeReader);
+	
 	// set base class options
 	// TODO explain these in the README for this tool
 	// TODO move all base configuration options here
@@ -137,6 +142,9 @@ bool SK2p2MeV_ntag::Finalise(){
 	delete fout;
 	theOTree = 0;
 	fout = 0;
+	
+	// tell our TreeReader that it doesn't own the file/tree and shouldn't close them in destructor
+	outTreeReader.SetClosed();
 	
 	return true;
 }

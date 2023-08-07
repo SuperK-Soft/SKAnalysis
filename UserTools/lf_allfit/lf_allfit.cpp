@@ -31,6 +31,8 @@ bool lf_allfit::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("verbosity",verbosity);            // how verbose to be
 	m_variables.Get("fname_in",fname_in);
 	m_variables.Get("fname_out",fname_out);
+	int sk_geometry=6;
+	m_variables.Get("sk_geometry",sk_geometry);
 	
 	lun = 10;  // TODO we should track these in ToolAnalysis to ensure uniqueness
 	
@@ -62,14 +64,14 @@ bool lf_allfit::Initialise(std::string configfile, DataModel &data){
 	// but also sets the variable `SK_FILE_FORMAT = 1` in common block /SKHEADF/
 	
 	// initialize data structure (zbs)
-	kzinit_();
+	m_data->KZInit();
 	std::string options = "31,30,26,25";
 	skoptn_(const_cast<char*>(options.c_str()), options.size());
 	int badopt = 23;
 	skbadopt_(&badopt);
+	
 	// need to set skgeometry in skheadg common block
-	skheadg_.sk_geometry = 4;
-	geoset_();
+	m_data->GeoSet(sk_geometry);
 	
 	// initialize water transparency table
 	skrunday_();

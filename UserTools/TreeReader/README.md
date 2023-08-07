@@ -112,3 +112,17 @@ skoptn values:
 15 : Timing correction (TMQ) by Ikeda-san
 14 : Do not remove q<0 hits for OD (SK IV only)
 ```
+
+skbadopt bits: (from skbadcC.h)
+```
+no bits (skbadopt 0): mask all kinds of bad channels (used for high energy events, e.g. muon reconstruction)
+bit 0: mask badch.dat
+bit 1: mask dead ID PMTs (criterion 1)
+bit 2: mask dead ID PMTs (criterion 2)
+bit 3: mask ID noisy PMTs (should NOT be enabled for lowe event subtigger search or lowe reconstruction)
+bit 4: mask OD PMTs
+bit 5: mask ID HK PMTs
+uppermost bit (skbadopt -1): mask only badch.00* and inner HK PMTs
+```
+usual lowe option is 23: 10111; mask everything except noisy ID PMTs
+(says this masks OD PMTs, but from what? they're still read into the appropriate common blocks...)

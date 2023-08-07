@@ -34,11 +34,55 @@ int G3ParticleCodeToPdg(int code);
 int StringToG3ParticleCode(std::string name);
 std::string G3ParticleCodeToString(int code);
 double PdgToMass(int code);
-std::string TriggerIDToTrigger(int code);
+std::string TriggerIDToName(int code);
 std::string GetTriggerNames(int32_t trigid);
 const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
+
+enum class TriggerType{
+	LE=0,
+	HE=1,
+	SLE=2,
+	OD_or_Fission=3,
+	Periodic=4,
+	AFT_or_Cal=5,
+	Veto_Start=6,
+	Veto_Stop=7,
+	unknown_8=8,
+	unknown_9=9,
+	unknown_10=10,
+	Random_Wide=11,
+	ID_Laser=12,
+	LED=13,
+	Ni=14,
+	OD_Laser=15,
+	LE_hitsum=16,
+	HE_hitsum=17,
+	SLE_hitsum=18,
+	OD_hitsum=19,
+	unknown_20=20,
+	unknown_21=21,
+	SN_Burst=22,
+	mue_Decay=23,
+	LINAC=24,
+	LINAC_RF=25,
+	unknown_26=26,
+	Periodic_simple=27,
+	SHE=28,
+	AFT=29,
+	Pedestal=30,
+	T2K=31
+};
+
+enum class muboy_classes{
+	misfit=0,
+	single_thru_going=1,
+	single_stopping=2,
+	multiple_mu_1=3,
+	multiple_mu_2=4,
+	corner_clipper=5
+};
 
 namespace constants{
 	
@@ -438,6 +482,13 @@ namespace constants{
 		{52, "NC elastic"}
 	};
 	
+	const std::map<muboy_classes,std::string> muboy_class_to_name{
+		{muboy_classes::misfit,"misfit"},
+		{muboy_classes::single_thru_going,"single_thru_going"},
+		{muboy_classes::single_stopping,"single_stopping"},
+		{muboy_classes::multiple_mu_1,"multiple_mu_1"},
+		{muboy_classes::multiple_mu_2,"multiple_mu_2"}
+	};
 	
 	const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();
 	/* populating this is now done in pdg_to_name_nuclei.cc, as its real big
@@ -562,20 +613,12 @@ namespace constants{
 	// could we use this to connect daughter nuclei to their parent?
 	// we will probably need to build this decay list ourselves though.
 	
-	enum muboy_classes{ misfit=0, single_thru_going=1, single_stopping=2, multiple_mu=3, also_multiple_mu=4, corner_clipper=5};
-	const std::map<muboy_classes,std::string> muboy_class_to_name{
-		{muboy_classes::misfit,"misfit"},
-		{muboy_classes::single_thru_going,"single_thru_going"},
-		{muboy_classes::single_stopping,"single_stopping"},
-		{muboy_classes::multiple_mu,"multiple_mu"},
-		{muboy_classes::also_multiple_mu,"also_multiple_mu"}
-	};
 	const std::map<std::string,muboy_classes> muboy_name_to_class{
 		{"misfit",muboy_classes::misfit},
 		{"single_thru_going",muboy_classes::single_thru_going},
 		{"single_stopping",muboy_classes::single_stopping},
-		{"multiple_mu",muboy_classes::multiple_mu},
-		{"also_multiple_mu",muboy_classes::also_multiple_mu}
+		{"multiple_mu_1",muboy_classes::multiple_mu_1},
+		{"multiple_mu_2",muboy_classes::multiple_mu_2}
 	};
 	
 	static const std::map<int, std::string> Trigger_ID_To_Trigger{
@@ -589,25 +632,25 @@ namespace constants{
 		{5, "AFT or Cal"},     // in normal run: AFT trigger, in calib run, one of: {laser, Xenon, Nickel, Linac}
 		{6, "Veto Start"},
 		{7, "Veto Stop"},
-		{8, "8 (15005)"},
-		{9, "9 (15006)"},
-		{10, "10 (15007)"},
-		{11, "Random Wide Trigger"},
+		{8, "unknown 8 (15005)"},
+		{9, "unknown 9 (15006)"},
+		{10, "unknown 10 (15007)"},
+		{11, "Random Wide"},
 		{12, "Laser (ID, Usho Laser)"},
 		{13, "LED"},
 		{14, "Ni"},
 		{15, "Laser (OD, AutoTQlaser)"},
 		{16, "LE (hitsum)"},
-		{17, "HE (histum)"},
+		{17, "HE (hitsum)"},
 		{18, "SLE (hitsum)"},
 		{19, "OD (hitsum)"},
-		{20, "20 (unknown)"},
-		{21, "21 (unknown)"},
+		{20, "unknown 20"},
+		{21, "unknown 21"},
 		{22, "SN Burst"},
 		{23, "mu->e Decay"},
 		{24, "LINAC"},
 		{25, "LINAC Microwave"},
-		{26, "26 (15023)"},
+		{26, "unknown 26 (15023)"},
 		{27, "Periodic (simple)"},
 		{28, "SHE (SW)"},
 		{29, "AFT (SW)"},

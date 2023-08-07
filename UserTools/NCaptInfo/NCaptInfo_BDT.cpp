@@ -1,4 +1,5 @@
 #include "NCaptInfo_BDT.h"
+#include "LoweCandidate.h"
 
 bool NCaptInfo_BDT::InitCandidateReader(){
 	
@@ -26,6 +27,7 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	basic_array<float*> xs;
 	basic_array<float*> ys;
 	basic_array<float*> zs;
+	basic_array<float*> bses;
 	
 	get_ok  = myTreeReader->Get("neutron5",metrics);
 	get_ok &= myTreeReader->Get("nvx",xs);
@@ -33,6 +35,8 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	get_ok &= myTreeReader->Get("nvz",zs);
 	// dt= time of prompt event, dtn=time of capture event
 	get_ok &= myTreeReader->Get("dtn",times);
+	get_ok &= myTreeReader->Get("bse",bses);  // is this bonsai energy for the ncapture candidate?
+	
 	
 	// prompt information is from upstream LOWE branch which gets propagated
 	LoweInfo* myLowE=nullptr;
@@ -53,16 +57,30 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 		
 		// likelihood metric should be defined such that 1 is high confidence and 0 is no confidence.
 		// didn't NTag and the BDT define metrics in the opposite way...? one might need `1-metrics.at(icand)`
-		cand.likelihood_metric = metrics.at(icand);
+		cand.capture_likelihood_metric = metrics.at(icand);
 		cand.capture_time = times.at(icand);
 		cand.capture_pos = TVector3(xs.at(icand),
 		                            ys.at(icand),
 		                            zs.at(icand));
+		cand.capture_E = bses.at(icand);
+		
+		// we ought to save some info about the prompt event too, as this is used for the search starting point
 		if(myLowE){
-			cand.prompt_pos = TVector3(myLowE->bsvertex[0],
-			                           myLowE->bsvertex[1],
-			                           myLowE->bsvertex[2]);
-			cand.prompt_time = myLowE->bsvertex[3];
+			
+			LoweCandidate prompt;
+			prompt.algo = "bonsai";
+			prompt.event_pos = TVector3(myLowE->bsvertex[0],
+			                            myLowE->bsvertex[1],
+			                            myLowE->bsvertex[2]);
+			prompt.event_time = myLowE->bsvertex[3];
+			prompt.event_energy = myLowE->bsenergy;
+			prompt.goodness_metric = myLowE->bsgood[1]; // seems to be the main 'goodness' metric
+			prompt.recoVars.Set("bsgood",std::vector<float>{myLowE->bsgood,myLowE->bsgood+3});
+			prompt.recoVars.Set("bsdirks",myLowE->bsdirks);
+			prompt.recoVars.Set("ovaQ",myLowE->linfo[26]);
+			m_data->LoweCandidates.push_back(prompt);
+			cand.SetPromptEvent(m_data->LoweCandidates.size()-1);
+			
 		}
 		
 		// TODO

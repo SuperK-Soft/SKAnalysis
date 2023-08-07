@@ -75,16 +75,43 @@ bool TrueNCaptures::Execute(){
 				Log(m_unique_name+" found true neutron, but it did not capture",v_debug,verbosity);
 				continue;
 			}
-			Log(m_unique_name+" found true neutron capture",v_debug,verbosity);
+			Log(m_unique_name+" found true neutron capture at index "+toString(i),v_debug,verbosity);
 			NCapture acapture;
 			get_ok = acapture.SetNeutronIndex(i);
 			if(!get_ok){
 				Log(m_unique_name+" Error! Captured neutron at index "+toString(i)
 				     +" rejected by SetNeutronIndex?!",v_error,verbosity);
+				return false;
 				// this should never happen
-			} else {
-				m_data->NCapturesTrue.push_back(acapture);
 			}
+			
+			// try to find the associated true IBD positron, if applicable.
+			// we want to find a positron that shares the same parent index as our neutron
+			// (which may be -1 if it was a simulated IBD event and both are primaries)
+			if(aparticle.GetNearestParentIndex()==-1 || aparticle.IsParentDirect()){
+				// primary, or valid recorded parent
+				int NeutronParentIdx = aparticle.GetNearestParentIndex();
+				int PositronIndex =-1;
+				// search for a positron with the same parent index
+				for(int j=0; j<m_data->eventParticles.size(); ++j){
+					MParticle& bparticle = m_data->eventParticles.at(j);
+					if(bparticle.pdg==-11 && (bparticle.IsParentDirect() || NeutronParentIdx==-1)
+					    && bparticle.GetNearestParentIndex()==NeutronParentIdx){
+						if(PositronIndex<0){
+							PositronIndex=j;
+							// if we don't care about the possibility of finding >1 matching positron:
+							//break;
+						} else {
+							Log(m_unique_name+" Found multiple positrons from the same parent index"
+							   " as the neutron ("+toString(NeutronParentIdx)+")",v_error,verbosity);
+							// we can't uniquely identify the correct positron... should be unlikely...
+						}
+					}
+				}
+				acapture.SetIBDPositronIndex(PositronIndex);
+			} // else this neutron has no direct recorded parent, so no way to match.
+			
+			m_data->NCapturesTrue.push_back(acapture);
 		}
 	}
 	
@@ -167,7 +194,7 @@ bool TrueNCaptures::MakePlots(int step){
 		
 	} else if(step==1){
 		
-		Log(m_unique_name+" filling debugging tree",v_debug,verbosity);
+		Log(m_unique_name+" filling plots tree with "+toString(m_data->NCapturesTrue.size())+" true captures",v_debug,verbosity);
 		// execution - fill tree
 		for(NCapture& acap : m_data->NCapturesTrue){
 			double tmpd=0;
@@ -278,6 +305,7 @@ bool TrueNCaptures::MakePlots(int step){
 			tplots->Fill();
 			//tplots->Show(tplots->GetEntries()-1);
 		}
+		Log(m_unique_name+": done filling tree",v_debug,verbosity);
 		
 	} else if(step==2){
 		

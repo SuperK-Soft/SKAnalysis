@@ -251,6 +251,15 @@ int MTreeReader::ParseBranches(){
 	for(auto&& abranch : branch_isarray){
 		if(abranch.second) ParseBranchDims(abranch.first);
 	}
+	
+	// build a string list of branch names
+	branchnamestring="";
+	for(auto&& abranch : branch_titles){
+		if(!branchnamestring.empty()) branchnamestring += ", ";
+		branchnamestring += abranch.first;
+	}
+	branchnamestring = "{" + branchnamestring + "}";
+	
 	return 1;
 }
 

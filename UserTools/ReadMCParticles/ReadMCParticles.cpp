@@ -12,6 +12,7 @@ namespace {
 	// used for removing redundant particles/vertices
 	const double TIME_TOLERANCE=1;    // 1ns?
 	const double POS_TOLERANCE=0.1;   // 1mm?
+	const double MC_TIME_OFFSET=1000; // SKG4 adds 1,000 to all hit times, so to put MC particles in the same time frame, add this
 }
 
 bool ReadMCParticles::Initialise(std::string configfile, DataModel &data){
@@ -56,6 +57,7 @@ bool ReadMCParticles::Execute(){
 	
 	if(debugEntryNum>=0 && myTreeReader->GetEntryNumber()==debugEntryNum) verbosity=99;
 	
+	// N.B. times printed by the Print functions here are before adding MC_TIME_OFFSET
 	if(dataSrc==0){
 		if(verbosity>5) PrintSecondaryInfo();
 		GetSecondaryInfo();
@@ -63,7 +65,14 @@ bool ReadMCParticles::Execute(){
 		if(verbosity>5) PrintSecondaryVectors(true);
 		GetSecondaryVectors();
 	}
+	
 	if(verbosity>2) PrintEvent();
+	
+	// MC adds 1,000 to all hit times, which means hits and reconstructed variables are all offset by 1,000
+	// wrt to MC truth variables (i.e. particle times). Add that offset now so we align them.
+	for(auto&& avertex : m_data->eventVertices){
+		avertex.time += MC_TIME_OFFSET;
+	}
 	
 	//if(debugEntryNum>=0 && myTreeReader->GetEntryNumber()==debugEntryNum) m_data->vars.Set("StopLoop",1);
 	

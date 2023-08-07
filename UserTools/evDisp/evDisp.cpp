@@ -663,10 +663,10 @@ bool evDisp::Execute(){
 	// initlialise string Trigs to store trigger strings in
 	std::string Trigs;
 	// loop over the 31 trigger IDs and check if the trigger bit for each ID, i, is 1
-	// pull trigger strings from Trigger_ID_To_Trigger using Constants::TriggerIDToTrigger 
+	// pull trigger strings from Trigger_ID_To_Trigger using Constants::TriggerIDToName 
 	// and append them to trigs
 	for(int i=0; i<=31; i++){
-		if(triggerID.test(i)) Trigs += " " + TriggerIDToTrigger(i) + ",";
+		if(triggerID.test(i)) Trigs += " " + TriggerIDToName(i) + ",";
 	}
 	// check that Trigs is not empty, or pop_back makes evDisp fail the execute
 	// if Trigs is not empty then print the trigger flags that were set for the event

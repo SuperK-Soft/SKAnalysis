@@ -1,4 +1,4 @@
 # vim: filetype=Makefile #
 verbosity 1
-inputFile /home/moflaher/disk02/treefile.root
-outputFile /home/moflaher/disk02/plotsfile.root
+inputFile /home/moflaher/disk02/treefile.root   # file from NCaptInfo Tool
+outputFile /home/moflaher/disk02/plotsfile.root # output file of histograms

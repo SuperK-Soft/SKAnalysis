@@ -7,6 +7,7 @@
 
 #include "Tool.h"
 #include "SkrootHeaders.h" // MCInfo, Header etc.
+#include "MTreeReader.h"
 
 /**
 * \class SK2p2MeV_ntag
@@ -40,6 +41,7 @@ class SK2p2MeV_ntag: public Tool {
 	// ==============
 	std::string toolName;
 	MTreeReader* myTreeReader = nullptr;
+	MTreeReader outTreeReader{"SK2p2MeV_OutTree"};
 	SK2p2MeV* ntagger = nullptr;
 	TFile* fout = nullptr;
 	TTree* theOTree = nullptr;

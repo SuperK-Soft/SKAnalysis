@@ -1,8 +1,6 @@
-verbosity 3
+verbosity 1
 readerName sk2p2mevReader
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
-#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
-#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root
 #inputFile $HOME/rfm_run074724.000001.root         # a full rfm data file, supported by NTag (no MC info though)
 #inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root # skdetsim gd water neutron gun sims
 #inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root # SKG4 neutron gun
@@ -17,7 +15,5 @@ maxEntries -1                                     # max num input entries to pro
 skFile 1                                          # must populate common blocks to run lfallfit
 triggerMasks 28 29                                # only pass on SHE (28) and AFT (29) triggers
 SK_GEOMETRY 6
-skreadMode 1
-skipPedestals 1
 skoptn 31,30,25                                   # add 26 to read bad ch from data file
 skbadchrun 85609                                  # reference run for SK6 from SKG4 template macro

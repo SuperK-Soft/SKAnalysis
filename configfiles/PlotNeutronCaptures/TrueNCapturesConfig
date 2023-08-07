@@ -1,2 +1,2 @@
 verbosity 1
-plotsFile /home/moflaher/disk02/treefile.root
+plotsFile /home/moflaher/disk02/treefile.root  # true neutron info, pass to PlotNeutronCaptures
