@@ -49,14 +49,16 @@ const std::vector<std::string> default_branches{
 
 bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	
-    m_data= &data;
+	m_data= &data;
 	
 	Log(toolName+": Initializing",v_debug,verbosity);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
 	LoadConfig(configfile);
+	toolName = toolName+" "+readerName;
 	m_data->tool_configs[toolName] = &m_variables;
+	myTreeReader.SetName(readerName);
 	
 	// safety check that we were given an input file
 	if(inputFile=="" && FileListName==""){
@@ -104,6 +106,20 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		return false;
 	}
 	
+	// safety check that if asked to read an SKROOT file, it has a TTree called 'data'
+	// if not, the TreeManager will segfault!
+	if(skrootMode==SKROOTMODE::READ || skrootMode==SKROOTMODE::COPY){
+		// i guess we can only pracitcally check the first file
+		// i don't think it'll seg as long as at least one file has a 'data' tree
+		// XXX although, perhaps it would be better to check all of them?
+		TFile* ftest = TFile::Open(firstfile.c_str(),"READ");
+		if(ftest->Get("data")==nullptr){
+			Log(toolName+" ERROR! input file "+firstfile+" has no 'data' TTree!",v_error,verbosity);
+			m_data->vars.Set("StopLoop",1);
+			return false;
+		}
+	}
+	
 	// warning check: see if we're given an input when we're in WRITE mode
 	if(skrootMode==SKROOTMODE::WRITE && (inputFile!="" || FileListName!="")){
 		Log(toolName+" warning! InputFile or FileListName given, but mode is skroot::write! "
@@ -134,12 +150,13 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// For now we'll just keep our own list of LUNs in the DataModel
 		LUN = m_data->GetNextLUN(LUN, readerName);
 		
+		// "initialize data structures".
+		// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
+		m_data->KZInit();
+		
 		// slight change in initialization depending on SK root vs zebra
 		if(not (skrootMode==SKROOTMODE::ZEBRA)){
 			Log(toolName+" doing SKROOT initialization",v_debug,verbosity);
-			// "initialize data structures".
-			// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
-			m_data->KZInit();
 			
 			// There are 3 modes to the TreeManager:
 			// skroot_open_read_ calls the TreeManager constructor with mode = 2;
@@ -211,6 +228,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveInputBranches.begin(),ActiveInputBranches.end(),abranch) ==
 							ActiveInputBranches.end()){
+							if(abranch=="HEADER") continue; // always required
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -225,6 +243,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveOutputBranches.begin(),ActiveOutputBranches.end(),abranch) ==
 							ActiveOutputBranches.end()){
+							if(abranch=="HEADER") continue; // always required
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -242,7 +261,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			Log(toolName+" doing zebra initialization",v_debug,verbosity);
 			skheadf_.sk_file_format = 0;    // set common block variable for ZBS format
 			
-			zbsinit_();
+			//zbsinit_();  THIS IS THE SAME ROUTINE AS KZINIT!!
 			
 			// Set rflist and open file
 			// '$SKOFL_ROOT/iolib/set_rflist.F' is used for setting the input file to open.
@@ -280,8 +299,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// So... modify if needed. Please explain any changes in comments.
 		
 		// need to set skgeometry in skheadg common block
-		skheadg_.sk_geometry = sk_geometry;
-		geoset_();
+		m_data->GeoSet(sk_geometry);
 		
 		// skoptn 25 indicates that skread should mask bad channels.
 		// As a base there is a manually maintained list of bad channels, $SKOFL_ROOT/const/badch.dat
@@ -447,8 +465,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				*        istat  ;+10 : normal end  additional read /skam/const/badch.dat
 				*/
 				if(istat<0){
-					Log(toolName+" Error applying skbadch with reference run "+toString(skroot_badch_ref_run),
-					    v_error,verbosity);
+					Log(toolName+" Error applying skbadch with reference run "+
+					    toString(skroot_badch_ref_run),v_error,verbosity);
 					return false;
 				}
 			}
@@ -471,7 +489,11 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			std::find(ActiveInputBranches.begin(), ActiveInputBranches.end(), "*")==ActiveInputBranches.end()){
 			// only disable unlisted branches if we have a non-empty list of active branches
 			// and the key "*" was not specified.
-			myTreeReader.OnlyEnableBranches(ActiveInputBranches);
+			get_ok = myTreeReader.OnlyEnableBranches(ActiveInputBranches);
+			if(!get_ok){
+				Log(toolName+" Did not recognise some branches in active branches list!",
+				    v_error,verbosity);
+			}
 		}
 	}
 	
@@ -483,7 +505,9 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	std::function<bool()> loadSHE = std::bind(std::mem_fn(&TreeReader::LoadSHE), std::ref(*this));
 	std::function<bool()> loadAFT = std::bind(std::mem_fn(&TreeReader::LoadAFT), std::ref(*this));
 	std::function<bool(int)> loadCommons = std::bind(std::mem_fn(&TreeReader::LoadCommons), std::ref(*this), std::placeholders::_1);
-	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons);
+	std::function<int(long)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, false);
+	// TODO we could remove the first argument now that the MTreeReader knows its name
+	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons, getTreeEntry);
 	
 	// get first entry to process
 	if(firstEntry<0) firstEntry=0;
@@ -576,12 +600,23 @@ bool TreeReader::Execute(){
 				PrintTriggerBits();
 				
 				// apply our general check for required bits in the trigger mask
-				for(int mask_i=0; mask_i<triggerMasks.size(); ++mask_i){
-					int required_bit = triggerMasks.at(mask_i);
-					if(trigger_bits.test(required_bit)==false){
+				// skip all events matching trigger types in skippedTriggers
+				for(int bit_i=0; bit_i<skippedTriggers.size(); ++bit_i){
+					int test_bit = skippedTriggers.at(bit_i);
+					if(trigger_bits.test(test_bit)){
 						get_ok=-999; // skip this event
 					}
 				}
+				// alternatively to specifying every type we don't want,
+				// we may choose to specify only the types we do want
+				bool skipit=(allowedTriggers.size()>0); // only apply if given
+				for(int bit_i=0; bit_i<allowedTriggers.size(); ++bit_i){
+					int test_bit = allowedTriggers.at(bit_i);
+					if(trigger_bits.test(test_bit)){
+						skipit=false;
+					}
+				}
+				if(skipit) get_ok=-999; // skip this event
 				
 				// if we're reading *only* SHE+AFT pairs, skip the entry if it's not SHE
 				if(get_ok>0 && onlyPairs && !trigger_bits.test(28)){
@@ -1176,7 +1211,8 @@ int TreeReader::LoadConfig(std::string configfile){
 	bool settingInputBranchNames=false;
 	bool settingOutputBranchNames=false;
 	bool skFile=false;
-	std::string triggerMasksString="";
+	std::string allowedTriggersString="";
+	std::string skippedTriggersString="";
 	
 	// scan over lines in the config file
 	while (getline(fin, Line)){
@@ -1246,7 +1282,8 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="readSheAftTogether") loadSheAftPairs = stoi(thevalue);
 		else if(thekey=="onlySheAftPairs") onlyPairs = stoi(thevalue);
 		else if(thekey=="entriesPerExecute") entriesPerExecute = stoi(thevalue);
-		else if(thekey=="triggerMasks") triggerMasksString = thevalue;
+		else if(thekey=="allowedTriggers") allowedTriggersString = thevalue;
+		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
 		else {
 			Log(toolName+" error parsing config file line: \""+LineCopy
 				+"\" - unrecognised variable \""+thekey+"\"",v_error,verbosity);
@@ -1270,14 +1307,24 @@ int TreeReader::LoadConfig(std::string configfile){
 		}
 	}
 	
-	// parse the triggerMasksString for trigger masks
+	// parse the allowedTriggersString for allowed triggers
 	while(true){
 		try{
 			size_t nextchar=0;
-			int next_bit = stoi(triggerMasksString,&nextchar);
-			triggerMasks.push_back(next_bit);
-			if(nextchar==triggerMasksString.length()) break;
-			triggerMasksString = triggerMasksString.substr(nextchar+1,std::string::npos);
+			int next_bit = stoi(allowedTriggersString,&nextchar);
+			allowedTriggers.push_back(next_bit);
+			if(nextchar==allowedTriggersString.length()) break;
+			allowedTriggersString = allowedTriggersString.substr(nextchar+1,std::string::npos);
+		} catch (...) { break; }
+	}
+	// same for skippedTriggerString
+	while(true){
+		try{
+			size_t nextchar=0;
+			int next_bit = stoi(skippedTriggersString,&nextchar);
+			skippedTriggers.push_back(next_bit);
+			if(nextchar==skippedTriggersString.length()) break;
+			skippedTriggersString = skippedTriggersString.substr(nextchar+1,std::string::npos);
 		} catch (...) { break; }
 	}
 	
@@ -1327,7 +1374,8 @@ bool TreeReader::LoadNextZbsFile(){
 	
 	set_rflist_zbs( LUN, next_file.c_str(), false );
 	int ipt = 1;
-	skopenf_( LUN, ipt, "Z", get_ok, 1 );
+	int ihndl=1;
+	skopenf_( &LUN, &ipt, "Z", &get_ok, &ihndl );
 	
 	if(get_ok!=0){
 		Log(toolName+" Error loading next ZBS file '"+next_file,v_error,verbosity);
@@ -1580,8 +1628,8 @@ bool TreeReader::HasAFT(){
 }
 
 bool TreeReader::LoadAFT(){
-	Log(toolName+" LoadAFT called for tree "+readerName
-		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
+	Log(toolName+" LoadAFT called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,verbosity);
 	if(has_aft && !aft_loaded){
 		aft_loaded = LoadCommons(0);
 		return aft_loaded;
@@ -1590,8 +1638,8 @@ bool TreeReader::LoadAFT(){
 }
 
 bool TreeReader::LoadSHE(){
-	Log(toolName+" LoadSHE called for tree "+readerName
-		+", has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),v_debug,verbosity);
+	Log(toolName+" LoadSHE called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,verbosity);
 	if(has_aft && aft_loaded){
 		aft_loaded = !LoadCommons(0);
 		return aft_loaded;
