@@ -1,0 +1,22 @@
+verbosity 1
+#inputFile ./rootFiles/data/sk4/061525/lowe_rfm_run061525.000002.root
+
+FileListName MyFileList
+
+#inputFile /disk02/usr7/jfannon/data/lowe_rfm_run074558.000002.root
+
+treeName data
+readerName spallReader
+skFile 1
+skoptn 31,30,26,25
+#firstEntry 10                 # first TTree entry to process
+maxEntries -1                 # max num input entries to process
+skbadopt 23
+SK_GEOMETRY 4
+skipPedestals 1
+LUN 10
+skrootMode 2
+#outputFile test_spallchain.root
+
+#readSheAftTogether 1                # whether to read AFT data for associated SHE events together (0)
+#onlySheAftPairs 1                   # whether to only return SHE+AFT pairs (0)

@@ -1,0 +1,30 @@
+# Specify which trigger you would like to not skip. By default, the SkipTriggers tool will remove every event.
+
+treeReaderName spallReader
+
+LETrig 1
+HETrig 1
+SLETrig 1
+ODTrig 1
+PeriodicTrig 0
+AfterTrig 1
+VetoStartTrig 0
+VetoStopTrig 0
+RandWideTrig 0
+IDLaserTrig 0
+LEDTrig 0
+NiTrig 0
+ODLaserTrig 0
+LEHitsumTrig 1
+HEHitsumTrig 1
+SLEHitsumTrig 1
+ODHitsumTrig 1
+SNBurstTrig 0
+MuToEleTrig 0
+LINACTrig 0
+LINACMicroWaveTrig 0
+PeriodicSimpTrig 0
+SHETrig 1
+AFTTrig 1
+PedestalTrig 0
+T2KTrig 0

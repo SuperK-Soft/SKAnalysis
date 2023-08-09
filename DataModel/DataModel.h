@@ -42,6 +42,9 @@
 #include "MParticle.h"
 #include "MVertex.h"
 
+#include "ParticleCand.h"
+#include "skroot_loweC.h"
+
 class MTreeReader;
 class MTreeSelection;
 class TreeReader;
@@ -136,7 +139,27 @@ class DataModel {
   
   std::map<std::string, Store*> tool_configs;
   StoreToTTree StoreConverter;
-
+  
+  // for muon-lowe matching
+  // ----------------------
+  bool newMuon = false;   // flag for a new muon
+  bool newRelic = false;  //flag for a new relic candidate
+  
+  //deques of ALL muon candidates and relic candidates (before/during matching)
+  std::deque<ParticleCand> muonCandDeque;
+  std::deque<ParticleCand> relicCandDeque;
+  
+  //deque of muons that need to be reconstructed (i.e. those matched to a relic candidate)
+  std::vector<ParticleCand> muonsToRec;
+  
+  //vector of relic candidate ready to be written out (muon scan done)
+  std::vector<ParticleCand> writeOutRelics;
+  
+  //cached lowe common blocks, for use during matching
+  std::map<long, skroot_lowe_common> loweCommonBufferMap;
+  
+  // -----------------------
+  
  private:
 
 
