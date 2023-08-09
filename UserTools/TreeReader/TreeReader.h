@@ -100,6 +100,8 @@ class TreeReader: public Tool {
 	MTreeSelection* myTreeSelections=nullptr;  // a set of entries one or more cuts
 	std::vector<std::string> ActiveInputBranches;
 	std::vector<std::string> ActiveOutputBranches;
+	std::vector<std::string> SkippedInputBranches;
+	std::vector<std::string> SkippedOutputBranches;
 	
 	// functions involved in buffering common blocks
 	// to load SHE+AFT pairs together

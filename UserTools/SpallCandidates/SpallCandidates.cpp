@@ -77,9 +77,7 @@ bool SpallCandidates::Execute(){
 	int zero = 0;
 	int* zeropointer = &zero; 
 	
-	int nhwtrg = softtrg_inittrgtbl_(runnum, zeropointer, onepointer, max_qb);
-	
-	int ntrg = softtrg_inittrgtbl(myHeader->nrunsk, 0, 1, 1280);
+	int ntrg = softtrg_inittrgtbl_(runnum, zeropointer, onepointer, max_qb);
 	
 	int NMuons = 0;
 	std::vector<float> untaggedMuonTime;

@@ -34,6 +34,13 @@ class HitsCut: public Tool {
 	
 	
 	int m_verbose = 0;
+	std::string m_unique_name="";
+	
+	int get_ok;
+	int v_error=0;
+	int v_warning=1;
+	int v_message=2;
+	int v_debug=3;
 	
 };
 

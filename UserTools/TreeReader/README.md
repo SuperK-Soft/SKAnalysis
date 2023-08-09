@@ -62,23 +62,25 @@ Notes:
 * if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see $SKOFL_ROOT/src/skrd/skoptn.F for all options)
 * LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.
 * skipPedestals will load the next entry for which `skread` or `skrawread` did not return 3 or 4 (not pedestal or runinfo entry).
-* When reading ROOT files, only enable branches you intend to use. Specify a list of input branches as follows:
+* Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use:
 ```
-StartInputBranchList
+StartSkippedInputBranches
 branchA
 branchB
-branchC
-EndInputBranchList
+EndSkippedInputBranches
 ```
-* this will disable all branches other than `branchA`, `branchB` and `branchC`.
-* for skroot files in `copy` mode, an output file will be created and entries may be copied from input to output file. Unused input branches should be disabled as above, but branches that are needed for processing but not desired in the output can be removed from the copy operation by listing only the desired output branches as follows:
+* Alternatively to disable all branches other than those specified, use:
 ```
-StartOutputBranchList
+StartActiveInputBranches
 branchA
 branchB
-EndOutputBranchList
+EndActiveInputBranches
 ```
-* in this case branches `branchA`,`branchB` and `branchC` will be read in and accessible, but the output file will only contain branches `branchA` and `branchB`.
+* this will disable all branches other than `branchA` and `branchB`.
+* for skroot files in `copy` mode, an output file will be created where entries can be copied straight from input to output.
+* Branches not desired in the output can be omitted from the copy by listing them in a similar fashion as above, using either
+* `Start/EndSkippedOutputBranches` or `Start/EndActiveOutputBranches`. Branches disabled in the output but not the input
+* will be read in and accessible, but the output file will not contain them.
 * outputFile is only applicable in skroot copy or write mode.
 * In write mode you will need to call `skroot_set_***` and `skroot_fill_tree_` functions as required. If you need to read inputs from another file, you will need to use another TreeReader instance.
 * N.B. The minimum set of active input branches for calling lf_allfit seems to be:

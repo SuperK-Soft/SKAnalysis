@@ -83,9 +83,10 @@ extern "C" void get_sub_triggers2_(int*, int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
 extern "C" void set_timing_gate_nsec_(float*);
 extern "C" int make_swtrg_list(int*,int*);
-extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*);
-extern "C" int softtrg_inittrgtbl(int , int, int, int);
 extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);
+// for these two, see $SKOFL_ROOT/src/softtrg/softtrg_ofldata.c
+extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*); // probably call this
+extern "C" int softtrg_inittrgtbl(int , int, int, int);    // which internally calls this
 
 // the following are provided by libwtlib_5.1.a
 extern "C" void skrunday_();

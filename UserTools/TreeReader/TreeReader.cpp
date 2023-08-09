@@ -81,10 +81,12 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		}
 	}
 	// detect zebra files based on extention of first file
-	std::string firstfile = list_of_files.front();
-	if(firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs"){
-		Log(toolName+" using zebra mode",v_debug,verbosity);
-		skrootMode=SKROOTMODE::ZEBRA;
+	if(skrootMode!=SKROOTMODE::WRITE){
+		std::string firstfile = list_of_files.front();
+		if(firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs"){
+			Log(toolName+" using zebra mode",v_debug,verbosity);
+			skrootMode=SKROOTMODE::ZEBRA;
+		}
 	}
 	
 	// safety check that the requested name to associate to this reader is free
@@ -108,16 +110,24 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	
 	// safety check that if asked to read an SKROOT file, it has a TTree called 'data'
 	// if not, the TreeManager will segfault!
+	// while we have it, also make a note of the tree branches, as they're not standard
+	std::vector<std::string> present_branches;
 	if(skrootMode==SKROOTMODE::READ || skrootMode==SKROOTMODE::COPY){
 		// i guess we can only pracitcally check the first file
 		// i don't think it'll seg as long as at least one file has a 'data' tree
 		// XXX although, perhaps it would be better to check all of them?
-		TFile* ftest = TFile::Open(firstfile.c_str(),"READ");
-		if(ftest->Get("data")==nullptr){
-			Log(toolName+" ERROR! input file "+firstfile+" has no 'data' TTree!",v_error,verbosity);
+		TFile* f_temp = TFile::Open(list_of_files.front().c_str(),"READ");
+		TTree* t_temp= (TTree*)f_temp->Get("data");
+		if(t_temp==nullptr){
+			Log(toolName+" ERROR! input file "+list_of_files.front()+" has no 'data' TTree!",v_error,verbosity);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
+		present_branches.resize(t_temp->GetListOfBranches()->GetEntriesFast());
+		for(int i=0; i<present_branches.size(); ++i){
+			present_branches.at(i) = t_temp->GetListOfBranches()->At(i)->GetName();
+		}
+		f_temp->Close();
 	}
 	
 	// warning check: see if we're given an input when we're in WRITE mode
@@ -222,10 +232,17 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				
 				// disable unused input branches.
 				int io_dir = 0; // 0 for input branch, 1 for output branch
-				if(ActiveInputBranches.size() &&
-					std::find(ActiveInputBranches.begin(),
-					          ActiveInputBranches.end(),"*")==ActiveInputBranches.end()){
-					for(auto&& abranch : default_branches){
+				
+				// ok first disable branches via a list of inactive branches specified by the user
+				for(auto&& abranch : SkippedInputBranches){
+					if(abranch=="HEADER") continue; // always required
+					skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+				}
+				
+				// alternatively allow users to specify just the branches they want to keep,
+				// and skip everything else.
+				if(ActiveInputBranches.size()){
+					for(auto&& abranch : present_branches){
 						if(std::find(ActiveInputBranches.begin(),ActiveInputBranches.end(),abranch) ==
 							ActiveInputBranches.end()){
 							if(abranch=="HEADER") continue; // always required
@@ -233,13 +250,27 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 						}
 					}
 				}
+				
+				// lastly, the TreeManager attempts to read data from a standard set of branches,
+				// and segfaults if they don't exist... SO let's explicitly disable everything standard
+				// if it's not actually present
+				for(auto&& abranch : default_branches){
+					if(std::find(present_branches.begin(), present_branches.end(), abranch)==default_branches.end()){
+						Log(toolName+": disabling absent input branch "+abranch,v_debug,verbosity);
+						skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+					}
+				}
 			}
 			// disable unwanted output branches. Only applicable to COPY mode
 			if(skrootMode==SKROOTMODE::COPY){
 				int io_dir = 1;
-				if(ActiveOutputBranches.size() &&
-					std::find(ActiveOutputBranches.begin(),
-					          ActiveOutputBranches.end(),"*")==ActiveOutputBranches.end()){
+				// first from list of disabled branches from user
+				for(auto&& abranch : SkippedOutputBranches){
+					if(abranch=="HEADER") continue; // always required
+					skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+				}
+				// alternatively from a list of enabled branches from user
+				if(ActiveOutputBranches.size()){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveOutputBranches.begin(),ActiveOutputBranches.end(),abranch) ==
 							ActiveOutputBranches.end()){
@@ -285,7 +316,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 //		exit(-1);
 		
 		// we can access the manager via:
-		//TreeManager* mgr = skroot_get_mgr_(&LUN);
+		//TreeManager* mgr = skroot_get_mgr(&LUN);
 		
 		// the primary reason to use the TreeManager is to populate the fortran common blocks
 		// required by many old SK algorithms. This is not done by the TreeManager itself,
@@ -293,13 +324,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// from the ROOT files via the skroot_get_* functions (e.g. via headsk.F),
 		// and so depend on there being an underlying TreeManager.
 		// There are a few extra steps we need to do to initialize up the fortran common blocks...
-		
-		// Warning!
-		// XXX i'm not sure what of the following (if any) should be called in 'write' mode XXX
-		// So... modify if needed. Please explain any changes in comments.
-		
-		// need to set skgeometry in skheadg common block
-		m_data->GeoSet(sk_geometry);
 		
 		// skoptn 25 indicates that skread should mask bad channels.
 		// As a base there is a manually maintained list of bad channels, $SKOFL_ROOT/const/badch.dat
@@ -321,11 +345,16 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		if(use_runwise_bad_ch_masking) skroot_options.erase(skroot_options.find("26"),2);
 		bool isMC=false;
 		
-		// options for what to read etc.
-		skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
-		
-		// options for masking OD / dead / noisy channels
-		skbadopt_(&skroot_badopt);
+		if(skrootMode!=SKROOTMODE::WRITE){
+			// need to set skgeometry in skheadg common block
+			m_data->GeoSet(sk_geometry);
+			
+			// options for what to read etc.
+			skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
+			
+			// options for masking OD / dead / noisy channels
+			skbadopt_(&skroot_badopt);
+		}
 		
 		// we can provide an MTreeReader except in SKROOT::WRITE mode or when reading zebra files
 		if(skrootMode!=SKROOTMODE::ZEBRA && skrootMode!=SKROOTMODE::WRITE){
@@ -376,7 +405,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				++tmp_entry;
 			}
 			Log(toolName+" read "+toString(tmp_entry)+" entries before determining that isMC = "
-				+toString(isMC),v_debug,verbosity);
+			    +toString(isMC),v_debug,verbosity);
 			
 			/*
 			// A much simpler option is to check for the 'MC' branch, but this could be:
@@ -437,7 +466,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		} // else SKROOT::Write mode, cannot check whether it's MC or not.
 		
 		// now we know if our file is MC or not, set the appropriate runwise bad channel masking if required
-		if(skroot_options.find("25")!=std::string::npos && use_runwise_bad_ch_masking){
+		if(skrootMode!=SKROOTMODE::WRITE && skroot_options.find("25")!=std::string::npos && use_runwise_bad_ch_masking){
 			if(not isMC){
 				skroot_options = skroot_options + " 26";
 				skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
@@ -1208,8 +1237,10 @@ int TreeReader::LoadConfig(std::string configfile){
 		return -1;
 	}
 	
-	bool settingInputBranchNames=false;
-	bool settingOutputBranchNames=false;
+	bool settingActiveInputBranches=false;
+	bool settingActiveOutputBranches=false;
+	bool settingSkippedInputBranches=false;
+	bool settingSkippedOutputBranches=false;
 	bool skFile=false;
 	std::string allowedTriggersString="";
 	std::string skippedTriggersString="";
@@ -1235,31 +1266,58 @@ int TreeReader::LoadConfig(std::string configfile){
 		std::string thevalue = Line.substr(Line.find_first_of(" \t\n\015\014\013")+1,std::string::npos);
 		bool push_variable=true;  // whether to record this in m_variables (skip branch names and flags)
 		
-		// first check if we're entering or leaving the list of branches to activate
-		if (thekey=="StartInputBranchList"){
-			settingInputBranchNames = true;
+		// first check if we're entering or leaving the list of input or output branches to activate
+		if (thekey=="StartActiveInputBranches"){
+			settingActiveInputBranches = true;
 			push_variable=false;
 		}
-		else if(thekey=="EndInputBranchList"){
-			settingInputBranchNames = false;
+		else if(thekey=="EndActiveInputBranches"){
+			settingActiveInputBranches = false;
 			push_variable=false;
 		}
-		else if(settingInputBranchNames){
+		else if(settingActiveInputBranches){
 			ActiveInputBranches.push_back(Line);
 			push_variable=false;
 		}
-		else if (thekey=="StartOutputBranchList"){
-			settingOutputBranchNames = true;
+		else if (thekey=="StartActiveOutputBranches"){
+			settingActiveOutputBranches = true;
 			push_variable=false;
 		}
-		else if(thekey=="EndOutputBranchList"){
-			settingOutputBranchNames = false;
+		else if(thekey=="EndActiveOutputBranches"){
+			settingActiveOutputBranches = false;
 			push_variable=false;
 		}
-		else if(settingOutputBranchNames){
+		else if(settingActiveOutputBranches){
 			ActiveOutputBranches.push_back(Line);
 			push_variable=false;
 		}
+		// or the list of input or output branches to skip
+		if (thekey=="StartSkippedInputBranches"){
+			settingActiveInputBranches = true;
+			push_variable=false;
+		}
+		else if(thekey=="EndSkippedInputBranches"){
+			settingActiveInputBranches = false;
+			push_variable=false;
+		}
+		else if(settingSkippedInputBranches){
+			SkippedInputBranches.push_back(Line);
+			push_variable=false;
+		}
+		else if (thekey=="StartSkippedOutputBranches"){
+			settingSkippedOutputBranches = true;
+			push_variable=false;
+		}
+		else if(thekey=="EndSkippedOutputBranches"){
+			settingSkippedOutputBranches = false;
+			push_variable=false;
+		}
+		else if(settingSkippedOutputBranches){
+			SkippedOutputBranches.push_back(Line);
+			push_variable=false;
+		}
+		
+		// other variables
 		else if(thekey=="verbosity") verbosity = stoi(thevalue);
 		else if(thekey=="inputFile") inputFile = thevalue;
 		else if(thekey=="outputFile") outputFile = thevalue; // when using SKROOT copy mode

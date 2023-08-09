@@ -2,6 +2,7 @@
 include ./skofl.gmk  # pulls in libskroot.so as well
 # skofl.gmk is copy of aboe with rfa removed from SITE_LIRBRARIES
 PWD=`pwd`
+Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
 CXXFLAGS += -fPIC -O3 -g -std=c++17 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
@@ -33,9 +34,13 @@ OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
 ATMPDINCLUDE = -I $(ATMPD_ROOT)/include -I $(OLD_NTAG_GD_ROOT) -I $(ATMPD_ROOT)/src/recon/fitqun
 ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k
 
+# kirk's newmufit. what is this?
+KIRKLIB = -L $(Dependencies)/Kirk -lnewmufit
+
 # not all fortran routines are built into libraries as part of compiling SKOFL & ATMPD.
 # figure out why standalones don't need to specify a full path when listing in dependencies of a target....?
-LOCAL_OBJS = $(SKOFL_ROOT)/examples/root2zbs/fort_fopen.o $(ATMPD_ROOT)/src/analysis/neutron/merge/zbsinit.o
+LOCAL_OBJS = $(SKOFL_ROOT)/examples/root2zbs/fort_fopen.o 
+#$(ATMPD_ROOT)/src/analysis/neutron/merge/zbsinit.o
 #$(ATMPD_ROOT)/src/analysis/neutron/ntag/bonsai.o
 #$(RELICWORKDIR)/data_reduc/neutron_tagging/src/bonsai.o
 # ATMP version calls lfallfit_sk4_data, which invokes bonsaifit.
@@ -124,6 +129,10 @@ THIRDREDLIB = -L/home/moflaher/relic_sk4_ana/relic_work_dir/data_reduc/third/lib
 # SKG4 Library
 SKG4LIB = ${SKG4Dir}/lib/libSKG4Root.so
 
+# PairBonsai; fit both prompt and neutron with a combined likelihood (by liz kneale)
+PAIRBONSAILIB= -L $(Dependencies)/pairbonsai -lpairbonsai
+PAIRBONSAIINCLUDE= -I $(Dependencies)/pairbonsai
+
 # all user classes that the user may wish to write to ROOT files require a dictionary.
 # TODO maybe we should put these in a separate directory or something so they don't need to be listed explicitly
 ROOTCLASSES = DataModel/Candidate.h DataModel/Cluster.h DataModel/EventCandidates.h DataModel/EventParticles.h DataModel/EventTrueCaptures.h DataModel/Particle.h DataModel/PMTHitCluster.h DataModel/PMTHit.h DataModel/TrueCapture.h
@@ -137,8 +146,8 @@ DataModelLib = $(ROOTLIB)
 EXTRALIBS= -lstdc++fs
 
 # Combine all external libraries and headers needed by user Tools
-MyToolsInclude = $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PythonInclude) $(TMVAINCLUDE)
-MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS) $(EXTRALIBS)
+MyToolsInclude = $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PythonInclude) $(TMVAINCLUDE) $(PAIRBONSAIINCLUDE)
+MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS) $(EXTRALIBS) $(PAIRBONSAILIB) $(KIRKLIB)
 
 # To add user classes:
 # 1. Add a rule to build them into a shared library (see libMyClass.so example)
@@ -149,8 +158,6 @@ UserLibs = lib/libMyClass.so
 # these can't be put in rules, they won't be executed there.
 USERLIBS1=$(patsubst %.so,%,$(UserLibs))
 USERLIBS2=$(patsubst lib/lib%,-l%,$(USERLIBS1))
-
-Dependencies=Dependencies
 
 debug: all
 
@@ -207,7 +214,7 @@ clean:
 	#rm -f map_string,string__LinkDef.h
 
 
-lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp)) lib/libRootDict.so
+lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))  $(patsubst DataModel/%.F, DataModel/%.o, $(wildcard DataModel/*.F)) lib/libRootDict.so
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	g++ $(CXXFLAGS) -fvisibility=hidden -shared DataModel/*.o -I include -L lib -lStore -lLogging -o lib/libDataModel.so $(DataModelInclude) $(DataModelLib) -lRootDict
 

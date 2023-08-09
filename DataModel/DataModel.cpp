@@ -315,7 +315,7 @@ bool DataModel::GeoSet(int sk_geometry_in){
 		//exit(-1); // should we do this? printouts are easy to miss...
 		return false;
 	} else {
-		skheadg_.sk_geometry = sk_geometry;
+		skheadg_.sk_geometry = sk_geometry_in;
 		geoset_();
 	}
 	return true;

@@ -1,7 +1,7 @@
 myGracefulStop GracefulStop configfiles/SpallReduction/GracefulStopConfig
 myFileList LoadFileList configfiles/SpallReduction/LoadFileListConfig
 myTreeReader TreeReader configfiles/SpallReduction/TreeReaderConfig
-mySkipTriggers SkipTriggers configfiles/SpallReduction/SkipTriggersConfig
+#mySkipTriggers SkipTriggers configfiles/SpallReduction/SkipTriggersConfig
 mySpallCandidates SpallCandidates configfiles/SpallReduction/SpallCandidatesConfig
 myHitsCut HitsCut configfiles/SpallReduction/WallCutConfig
 myODCut ODCut configfiles/SpallReduction/WallCutConfig
