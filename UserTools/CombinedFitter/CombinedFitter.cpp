@@ -11,13 +11,10 @@
 
 #include "Algorithms.h"
 #include "Constants.h"
-#include "type_name_as_string.h"
 
 #include <string>
 #include <iostream>
 #include <bitset>
-
-#include "SuperManager.h"
 
 // including bonsai in skofl rather than putting it all in the DataModel
 #include "searchgrid.h"
@@ -29,10 +26,6 @@
 
 #include <TCanvas.h>
 #include <TRandom.h>
-
-// declarations and #includes for SK fortran routines
-#include "fortran_routines.h"
-#include "SK_helper_functions.h"
 
 CombinedFitter::CombinedFitter():Tool(){
 	
@@ -56,9 +49,9 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	// ------------------------------------
 	m_variables.Get("verbosity",verbosity);    // how verbose to be
 	m_variables.Get("readerName",readerName);  // name given to the TreeReader used for file handling
-	m_variables.Get("dataSrc",dataSrc);   	   // where to get the data from (common blocks/tqreal)
+	m_variables.Get("dataSrc",dataSrc);        // where to get the data from (common blocks/tqreal)
 	m_variables.Get("bonsaiSrc",bonsaiSrc);    // which bonsai to use (skofl or local)
-	m_variables.Get("addNoise",addNoise);    // whether to add noise to AFT
+	m_variables.Get("addNoise",addNoise);      // whether to add noise to AFT
 	m_variables.Get("outputFile",outputFile);  // name of file to save ntuples to
 	
 	// use the readerName to find the LUN associated with this file

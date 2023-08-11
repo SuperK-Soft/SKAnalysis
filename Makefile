@@ -127,7 +127,7 @@ endif
 THIRDREDLIB = -L/home/moflaher/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
 
 # SKG4 Library
-SKG4LIB = ${SKG4Dir}/lib/libSKG4Root.so
+SKG4LIB = -L${SKG4Dir}/lib -lSKG4Root
 
 # PairBonsai; fit both prompt and neutron with a combined likelihood (by liz kneale)
 PAIRBONSAILIB= -L $(Dependencies)/pairbonsai -lpairbonsai

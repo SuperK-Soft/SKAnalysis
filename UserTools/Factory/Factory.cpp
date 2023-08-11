@@ -48,7 +48,18 @@ if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
 if (tool=="PrintEvent") ret=new PrintEvent;
 if (tool=="PlotHitTimes") ret=new PlotHitTimes;
 if (tool=="VertexFitter") ret=new VertexFitter;
-//if (tool=="CombinedFitter") ret=new CombinedFitter;
+if (tool=="CombinedFitter") ret=new CombinedFitter;
+if (tool=="SpallCandidates") ret=new SpallCandidates;
+if (tool=="HitsCut") ret=new HitsCut;
+if (tool=="ODCut") ret=new ODCut;
+if (tool=="RunEnergyCut") ret=new RunEnergyCut;
+if (tool=="WallCut") ret=new WallCut;
+if (tool=="RelicCandidates") ret=new RelicCandidates;
+if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
+if (tool=="WriteMatchedInfo") ret=new WriteMatchedInfo;
+if (tool=="WriteSpallCand") ret=new WriteSpallCand;
+if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
+
 return ret;
 }
 

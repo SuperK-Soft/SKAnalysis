@@ -53,7 +53,7 @@ class TreeReader: public Tool {
 	// ==============
 	std::string toolName;
 	std::string inputFile="";
-	std::string FileListName="InputFileList";
+	std::string FileListName="";
 	std::string selectionsFile="";
 	std::string cutName="";
 	std::string treeName;

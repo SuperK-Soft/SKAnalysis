@@ -11,7 +11,6 @@
 
 #include "Algorithms.h"
 #include "Constants.h"
-#include "type_name_as_string.h"
 
 #include <string>
 #include <vector>
@@ -23,10 +22,6 @@
 #include "searchgrid.h"
 #include "bscalls.h"
 #include "TCanvas.h"
-
-// declarations and #includes for SK fortran routines
-#include "fortran_routines.h"
-#include "SK_helper_functions.h"
 
 VertexFitter::VertexFitter():Tool(){
 

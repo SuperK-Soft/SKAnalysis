@@ -7,13 +7,6 @@
 
 #include "Tool.h"
 
-#include "SkrootHeaders.h" // MCInfo, Header etc.
-#include "skonl/softtrg_tbl.h"
-#include "SuperManager.h"
-
-#include "basic_array.h"
-#include "fortran_routines.h"
-
 #include "pmt_geometry.h"
 #include "bonsaifit.h"
 #include "pairlikelihood.h"

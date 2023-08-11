@@ -348,6 +348,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		if(skrootMode!=SKROOTMODE::WRITE){
 			// need to set skgeometry in skheadg common block
 			m_data->GeoSet(sk_geometry);
+			// note: it seems like we do need to call this before SKRAWREAD,
+			// but if the geometry is incorrect, SKRAWREAD will reload the correct geometry. Maybe.
 			
 			// options for what to read etc.
 			skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
@@ -514,10 +516,15 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		
 		// for efficiency of reading, only enable used branches
 		Log(toolName+" activating branches",v_debug,verbosity);
-		if(ActiveInputBranches.size() && 
-			std::find(ActiveInputBranches.begin(), ActiveInputBranches.end(), "*")==ActiveInputBranches.end()){
+		if(SkippedInputBranches.size()){
+			get_ok = myTreeReader.OnlyDisableBranches(SkippedInputBranches);
+			if(!get_ok){
+				Log(toolName+" Did not recognise some branches in skipped branches list!",
+				    v_error,verbosity);
+			}
+		}
+		if(ActiveInputBranches.size()){
 			// only disable unlisted branches if we have a non-empty list of active branches
-			// and the key "*" was not specified.
 			get_ok = myTreeReader.OnlyEnableBranches(ActiveInputBranches);
 			if(!get_ok){
 				Log(toolName+" Did not recognise some branches in active branches list!",
