@@ -1,5 +1,4 @@
 #include "HitsCut.h"
-#include "fortran_routines.h"
 
 HitsCut::HitsCut():Tool(){
 	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();

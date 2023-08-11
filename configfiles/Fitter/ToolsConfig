@@ -1,6 +1,7 @@
 myGracefulStop GracefulStop configfiles/Fitter/GracefulStopConfig
 #myLoadFileList LoadFileList configfiles/Fitter/LoadFileListConfig
 myTreeReader TreeReader configfiles/Fitter/TreeReaderConfig
+myHitsCut HitsCut configfiles/Fitter/HitsCutConfig
 myVertexFit VertexFitter configfiles/Fitter/VertexFitterConfig
 #myCombinedFit CombinedFitter configfiles/Fitter/CombinedFitterConfig
 #myLowFit lf_allfit_new configfiles/Fitter/lf_allfit_newConfig
