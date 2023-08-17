@@ -42,22 +42,12 @@ class MakeNCaptTree: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string outputFile; // or just add to the input file?
 	int maxEvents=-1;
 	int WRITE_FREQUENCY;
 	
 	int entrynum=0;
 	std::map<std::string,int> capture_nuclide_vs_count;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// variables to write out
 	// ======================

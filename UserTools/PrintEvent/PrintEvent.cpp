@@ -4,10 +4,7 @@
 #include "SuperWrapper.h"
 #include <bitset>
 
-PrintEvent::PrintEvent():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+PrintEvent::PrintEvent():Tool(){}
 
 
 bool PrintEvent::Initialise(std::string configfile, DataModel &data){

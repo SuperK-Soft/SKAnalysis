@@ -1,8 +1,7 @@
 verbosity 1
 treeName data
-readerName spallWriter
+treeReaderName spallWriter
 skFile 1
-LUN 20
 skrootMode 1
 outputFile test_jacks.root
 #outputFile /disk03/usr8/jfannon/data/tool_lomu_075097.root

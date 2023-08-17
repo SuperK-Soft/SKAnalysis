@@ -1,1 +1,6 @@
-treeReaderName spallReader
+verbosity 1
+selectorName relicCuts
+# from any run up to and including run 68670, reject events w: ( 10 < bsenergy < 100 )
+cut -1 68670 10 100
+# for any run from 68671 onwards, reject events w: ( 8 < bsenergy < 100 )
+cut 68671 -1 8 100

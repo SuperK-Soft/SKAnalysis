@@ -27,12 +27,7 @@
 #include <TCanvas.h>
 #include <TRandom.h>
 
-CombinedFitter::CombinedFitter():Tool(){
-	
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-	
-}
+CombinedFitter::CombinedFitter():Tool(){}
 
 
 bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
@@ -43,11 +38,11 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);    // how verbose to be
+	m_variables.Get("verbosity",m_verbose);    // how verbose to be
 	m_variables.Get("readerName",readerName);  // name given to the TreeReader used for file handling
 	m_variables.Get("dataSrc",dataSrc);        // where to get the data from (common blocks/tqreal)
 	m_variables.Get("bonsaiSrc",bonsaiSrc);    // which bonsai to use (skofl or local)
@@ -58,7 +53,7 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	std::map<std::string,int> lunlist;
 	m_data->CStore.Get("LUNList",lunlist);
 	if(lunlist.count(readerName)==0){
-		Log(toolName+" error! No LUN associated with readerName "+readerName,v_error,verbosity);
+		Log(m_unique_name+" error! No LUN associated with readerName "+readerName,v_error,m_verbose);
 		return false;
 	}
 	lun = lunlist.at(readerName);
@@ -133,18 +128,18 @@ bool CombinedFitter::Initialise(std::string configfile, DataModel &data){
 	bspairfit = new bonsaifit(bspairlike);
 	
 	// Use built-in BONSAI functions (bonsai/bscalls.cc::)
-	cfbsinit_(&numPMTs, xyzpm);
+	m_data->BonsaiInit();
 	
 	// check where we are getting the hit info from
 	if (dataSrc==0) 
-		Log(toolName+": Getting hit info from common blocks skt_/skq_",v_message,verbosity);
+		Log(m_unique_name+": Getting hit info from common blocks skt_/skq_",v_message,m_verbose);
 	else if (dataSrc==1) {
-		Log(toolName+": Getting raw hit info from common block sktqz_",v_message,verbosity);
-		Log(toolName+": Warning: this method is not yet functional (need to remove bad channels, etc)",v_warning,verbosity);
+		Log(m_unique_name+": Getting raw hit info from common block sktqz_",v_message,m_verbose);
+		Log(m_unique_name+": Warning: this method is not yet functional (need to remove bad channels, etc)",v_warning,m_verbose);
 	}
 	else {
-		Log(toolName+": Getting raw hit info from tqreal branch",v_message,verbosity);
-		Log(toolName+": Warning: this method may not give exactly the same result as skt_/skq_ common blocks",v_warning,verbosity);
+		Log(m_unique_name+": Getting raw hit info from tqreal branch",v_message,m_verbose);
+		Log(m_unique_name+": Warning: this method may not give exactly the same result as skt_/skq_ common blocks",v_warning,m_verbose);
 	}
 	
 	return true;
@@ -163,18 +158,18 @@ bool CombinedFitter::Execute(){
 	TBranch *ev_id = t->Branch("evid",&evid,"evid/D");
 	
 	if((nread%1)==0){
-		Log(toolName+" recostructing event "+toString(nread),v_message,verbosity);
+		Log(m_unique_name+" recostructing event "+toString(nread),v_message,m_verbose);
 	}
 	++nread;
 	
 	// Set the run number if run number is not real/applicable
 	if(MC && skhead_.nrunsk==999999){
-		//Log(toolName+" warning: no run number!!",v_warning,verbosity);
+		//Log(m_unique_name+" warning: no run number!!",v_warning,m_verbose);
 		skhead_.nrunsk = 75000;
 	}
 	// Putting this here temporarily for SKG4 sim
 	if(MC && skhead_.nrunsk==85000){
-		//Log(toolName+" warning: no run number!!",v_warning,verbosity);
+		//Log(m_unique_name+" warning: no run number!!",v_warning,m_verbose);
 		skhead_.nrunsk = 75000;
 	}
 	// once per run update the water transparency and SLE threshold
@@ -183,13 +178,13 @@ bool CombinedFitter::Execute(){
 		int idetector[32], ithr[32], it0_offset[32], ipret0[32] ,ipostt0[32];
 		softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
 		SLE_threshold = ithr[2];
-		Log(toolName+": SLE threshold"+toString(SLE_threshold),v_debug,verbosity);
+		Log(m_unique_name+": SLE threshold"+toString(SLE_threshold),v_debug,m_verbose);
 		
 		// Update the water transparency
 		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];
 		lfwater_(&days_to_run_start, &watert);
-		Log(toolName+" loaded new water transparency value "+toString(watert)
-			+" for run "+toString(skhead_.nrunsk),v_debug,verbosity);
+		Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+			+" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
 		nrunsk_last = skhead_.nrunsk;
 	}
 	
@@ -346,7 +341,7 @@ bool CombinedFitter::Execute(){
 					posmcAFT[1] = secondaries->vtxprnt[isecondary][1];
 					posmcAFT[2] = secondaries->vtxprnt[isecondary][2];
 					mct_ncapture = secondaries->tscnd[isecondary];
-					Log(toolName+" ncapture time "+toString(mct_ncapture),v_debug,verbosity);
+					Log(m_unique_name+" ncapture time "+toString(mct_ncapture),v_debug,m_verbose);
 					break; // stop looking once we have found one
 				}
 			}
@@ -434,7 +429,7 @@ bool CombinedFitter::Execute(){
 		last_prompt = mct_ncapture; // using the mc time for now, to check the fit
 		
 		// MCInfo.prim_pret0 saves the time difference between the trigger time and geant_t0
-		Log(toolName+": first prompt hit time "+toString(first_prompt)+", pret0 "+toString(mc->prim_pret0[0]),v_debug,verbosity);
+		Log(m_unique_name+": first prompt hit time "+toString(first_prompt)+", pret0 "+toString(mc->prim_pret0[0]),v_debug,m_verbose);
 		float prompt_trigger_t0 = mc->prim_pret0[0]+500.;
 		
 		// Do the single-event BONSAI fit
@@ -475,7 +470,7 @@ bool CombinedFitter::Execute(){
 			}
 		}
 		nhitsAFT_raw = timesRaw.size();
-		Log(toolName+": number of hits in the AFT before dark rate - "+toString(timesRaw.size()),v_debug,verbosity);
+		Log(m_unique_name+": number of hits in the AFT before dark rate - "+toString(timesRaw.size()),v_debug,m_verbose);
 		// Get the hits for the peak number of events in 200 ns
 		std::vector<int> cableIDsAFT;
 		std::vector<float> chargesAFT;
@@ -485,9 +480,9 @@ bool CombinedFitter::Execute(){
 			nhitsAFT = SetAftHits(prompt_trigger_t0,SLE_threshold,addNoise,numPMTs,darkmc,last_prompt,chargesRaw,timesRaw,cableIDsRaw,nhitsRaw,chargesAFT,timesAFT,cableIDsAFT);
 		}
 		
-		Log(toolName+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,verbosity);
+		Log(m_unique_name+": number of in-gate hits in the AFT trigger - "+toString(nhitsAFT),v_debug,m_verbose);
 //		for (int hit=0;hit<nhitsAFT;hit++){
-//			Log(toolName+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,verbosity);
+//			Log(m_unique_name+"AFT hit time,charge,cable: "+toString(timesAFT[hit])+", "+toString(chargesAFT[hit])+", "+toString(cableIDsAFT[hit]),v_debug,m_verbose);
 //			timesAFT[hit]-=(timesAFT[0]-bstimes[0]);
 //		}
 		// Do the single fit
@@ -606,7 +601,7 @@ bool CombinedFitter::Execute(){
 		if (bsvertex[0]<9999)
 		{
 			std::vector<int> cableIDs_n50;
-			Log(toolName+" calculating NX",v_debug,verbosity);
+			Log(m_unique_name+" calculating NX",v_debug,m_verbose);
 			skroot_lowe_.bsn50 = CalculateNX(50,bsvertex,cableIDs,times,cableIDs_n50);
 			
 			// TODO can we avoid using more of the fortran routines?
@@ -867,7 +862,6 @@ bool CombinedFitter::Execute(){
 bool CombinedFitter::Finalise()
 {
 	
-	// terminate bonsai?
 	// plots for sanity check?
 	// write the output ntuples to file
 	fout->Write();
@@ -935,7 +929,7 @@ int CombinedFitter::CalculateNX(int timewindow, float* vertex, std::vector<int> 
 		bsnwin++;
 	}
 	if (bsnwin!=bsnwindow){
-	   Log(toolName+": bsnwin error, "+toString(bsnwin)+" != "+toString(bsnwindow),v_error,verbosity);
+	   Log(m_unique_name+": bsnwin error, "+toString(bsnwin)+" != "+toString(bsnwindow),v_error,m_verbose);
 	}
 	return(bsnwindow);
 }
@@ -1045,7 +1039,7 @@ int CombinedFitter::SetAftHits(float prompt_trigger_t0, int SLE_threshold, int a
 		// Remove bad channels TODO missing channels
 		bool bad = (find(badIDs.begin(),badIDs.end(),cableIDsRaw[ihit]) != badIDs.end());
 		if (bad){
-			Log(toolName+" removing bad channel "+toString(cableIDsRaw[ihit]),v_debug,verbosity);
+			Log(m_unique_name+" removing bad channel "+toString(cableIDsRaw[ihit]),v_debug,m_verbose);
 			continue; 
 		}
 		
@@ -1063,20 +1057,20 @@ int CombinedFitter::SetAftHits(float prompt_trigger_t0, int SLE_threshold, int a
 		[](HitInfo const& i, HitInfo const& j) {return i.time < j.time;});
 	
 	if (addNoise){
-		Log(toolName+" Warning, adding dark noise",v_debug,verbosity);
+		Log(m_unique_name+" Warning, adding dark noise",v_debug,m_verbose);
 		TRandom rnd;
 		// Get a random dark rate for this event
 		float darkRate = numPMTs*darkmc;// total expected dark rate in Hz
 		float ndark = rnd.Poisson(darkRate); // dark rate
 		ndark *= 1e-9;
-		Log(toolName+" Dark hits per ns "+toString(ndark),v_debug,verbosity);
+		Log(m_unique_name+" Dark hits per ns "+toString(ndark),v_debug,m_verbose);
 		float tstartNoise = hits_tmp[0].time-300;
 		float tendNoise = hits_tmp[hits_tmp.size()-1].time+100;
 		float noiseWindow = tendNoise - tstartNoise; // total in the AFT
 		ndark *= noiseWindow;// total 
-		Log(toolName+" Dark rate "+toString(darkRate),v_debug,verbosity);
-		Log(toolName+" Noise window "+toString(noiseWindow),v_debug,verbosity);
-		Log(toolName+" Total dark hits "+toString(ndark),v_debug,verbosity);
+		Log(m_unique_name+" Dark rate "+toString(darkRate),v_debug,m_verbose);
+		Log(m_unique_name+" Noise window "+toString(noiseWindow),v_debug,m_verbose);
+		Log(m_unique_name+" Total dark hits "+toString(ndark),v_debug,m_verbose);
 		// loop over randomly generated dark hits and assign random dark
 		// rate where event rate is below dark rate for hits in trigger
 		for (int darkhit = 0; darkhit<ndark; darkhit++){
@@ -1159,7 +1153,7 @@ int CombinedFitter::SetAftHits(float prompt_trigger_t0, int SLE_threshold, int a
 		chargesAFT.push_back(ihit.charge);
 		timesAFT.push_back(ihit.time-t_trigger + prompt_trigger_t0); // 500 time offset and make prompt and delayed trigger times the same
 	}
-	Log(toolName+": prompt trigger "+toString(prompt_trigger_t0)+", delayed trigger time "+toString(t_trigger)+", time of first hit in delayed trigger "+toString(timesAFT[0]),v_debug,verbosity);
+	Log(m_unique_name+": prompt trigger "+toString(prompt_trigger_t0)+", delayed trigger time "+toString(t_trigger)+", time of first hit in delayed trigger "+toString(timesAFT[0]),v_debug,m_verbose);
 	
 	return(hits_tmp.size());
 }

@@ -23,6 +23,10 @@ DataModel::~DataModel(){
 	eventVertices.clear();
 	NCaptureCandidates.clear();
 	NCapturesTrue.clear();
+	// finalise bonsai if it was initialised
+	if(bonsai_initialised){
+		cfbsexit_();
+	}
 }
 
 // open a file, making it if necessary. Useful for adding data to the same file from multiple Tools.
@@ -319,6 +323,18 @@ bool DataModel::GeoSet(int sk_geometry_in){
 		geoset_();
 	}
 	return true;
+}
+
+bool DataModel::BonsaiInit(){
+	if(!bonsai_initialised){
+		// initialize bonsai
+		int MAXPM_var = MAXPM;
+		float* xyzpm = &geopmt_.xyzpm[0][0];
+		cfbsinit_(&MAXPM_var, xyzpm);
+		bonsai_initialised=true;
+		return true;
+	}
+	return false;
 }
 
 // return a new LUN. We accept a hint, but will only apply it if not already assigned.

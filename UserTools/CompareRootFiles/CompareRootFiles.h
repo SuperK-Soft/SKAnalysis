@@ -112,7 +112,6 @@ class CompareRootFiles: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string filename_1;
 	std::string filename_2;
 	TFile* file1=nullptr;
@@ -139,15 +138,7 @@ class CompareRootFiles: public Tool {
 	int mismatching_entries = 0;
 	std::string entry_string;
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
 	std::stringstream smessage;
-	int get_ok=0;
 	
 	
 };

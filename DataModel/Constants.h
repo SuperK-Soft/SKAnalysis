@@ -17,6 +17,8 @@ extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
 extern std::map<TInterpreter::EErrorCode, std::string> TInterpreterErrors;
 
+enum class TriggerType;
+
 // functions
 std::string G3_process_code_to_string(int process_code);
 std::string G4_process_code_to_string(int process_code);
@@ -36,6 +38,7 @@ std::string G3ParticleCodeToString(int code);
 double PdgToMass(int code);
 std::string TriggerIDToName(int code);
 std::string GetTriggerNames(int32_t trigid);
+int TriggerNameToID(std::string trigname);
 const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
@@ -624,6 +627,7 @@ namespace constants{
 	static const std::map<int, std::string> Trigger_ID_To_Trigger{
 		// from skheadC.h
 		// "# (Unknown)" entries are empty ID numbers in skheadC.h
+		{-1, "?"},
 		{0, "LE"},
 		{1, "HE"},
 		{2, "SLE"},
@@ -656,6 +660,42 @@ namespace constants{
 		{29, "AFT (SW)"},
 		{30, "Pedestal (SW)"},
 		{31, "T2K (SW)"}
+	};
+	
+	static const std::map<std::string, int> Trigger_To_Trigger_ID{
+		{"?", -1},
+		{"LE", 0},
+		{"HE", 1},
+		{"SLE", 2},
+		{"OD or Fission", 3},
+		{"Periodic", 4},
+		{"AFT or Cal", 5},
+		{"Veto Start", 6},
+		{"Veto Stop", 7},
+		{"unknown 8 (15005)", 8},
+		{"unknown 9 (15006)", 9},
+		{"unknown 10 (15007)", 10},
+		{"Random Wide", 11},
+		{"Laser (ID, Usho Laser)", 12},
+		{"LED", 13},
+		{"Ni", 14},
+		{"Laser (OD, AutoTQlaser)", 15},
+		{"LE (hitsum)", 16},
+		{"HE (hitsum)", 17},
+		{"SLE (hitsum)", 18},
+		{"OD (hitsum)", 19},
+		{"unknown 20", 20},
+		{"unknown 21", 21},
+		{"SN Burst", 22},
+		{"mu->e Decay", 23},
+		{"LINAC", 24},
+		{"LINAC Microwave", 25},
+		{"unknown 26 (15023)", 26},
+		{"Periodic (simple)", 27},
+		{"SHE (SW)", 28},
+		{"AFT (SW)", 29},
+		{"Pedestal (SW)", 30},
+		{"T2K (SW)", 31}
 	};
 	
 	static const std::map<int, std::string> flag_to_string_SKI_III{
@@ -726,6 +766,76 @@ namespace constants{
 		{29,"ANTI  DETECTOR OFF"},
 		{30,"T2K GPS"},
 		{31,"(EVNT HDR)&(SOFTWARE TRG)"}
+	};
+	
+	static const std::map<int, std::string> string_to_flag_SKI_III{
+		{"ATM", 0},
+		{"TRG", 1},
+		{"SMP_REGISTER", 2},
+		{"SCALER", 3},
+		{"PEDESTAL_START", 4},
+		{"PEDESTAL_DATA(ATM)", 5},
+		{"PEDESTAL_HISTOGRAM", 6},
+		{"PEDESTAL_END", 7},
+		{"END_OF_RUN", 8},
+		{"PEDESTAL_ON", 9},
+		{"unknown_10", 10},
+		{"GPS_DATA", 11},
+		{"CAMAC_ADC", 12},
+		{"ANTI_DATA", 13},
+		{"INNER_SLOW_DATA", 14},
+		{"RUN_INFORMATION", 15},
+		{"ERROR_TKO-PS", 16},
+		{"ERROR_HV-PS", 17},
+		{"ERROR_TEMPERATURE", 18},
+		{"unknown_19", 19},
+		{"UNCOMPLETED_ATM_DATA", 20},
+		{"INVALID_ATM_DATA", 21},
+		{"unknown_22", 22},
+		{"unknown_23", 23},
+		{"ERROR_DATA", 24},
+		{"UNREASONABLE_DATA", 25},
+		{"LED_BURST_ON", 26},
+		{"unknown_27", 27},
+		{"INNER_DETECTOR_OFF", 28},
+		{"ANTI_DETECTOR_OFF", 29},
+		{"unknown_30", 30},
+		{"TRG_IS_AVAILABLE", 31}
+	};
+	
+	static const std::map<int, std::string> string_to_flag_SKIV{
+		{"QBEE_TQ", 0},
+		{"HARD_TRG", 1},
+		{"QBEE_STAT", 2},
+		{"DB_STAT_BLOCK", 3},
+		{"CORRUPTED_CHECKSUM", 4},
+		{"MISSING_SPACER", 5},
+		{"PED_HIST_BLOCK", 6},
+		{"unknown_7", 7},
+		{"unknown_8", 8},
+		{"PEDESTAL_ON", 9},
+		{"RAW_AMT_BLOCK", 10},
+		{"GPS_DATA", 11},
+		{"PEDESTAL_CHECK", 12},
+		{"SEND_BLOCK", 13},
+		{"INNER_SLOW_DATA", 14},
+		{"RUN_INFORMATION", 15},
+		{"PREV_T0_BLOCK", 16},
+		{"unknown_17", 17},
+		{"FE_TRL_BLOCK", 18},
+		{"SPACER_BLOCK", 19},
+		{"INCOMPLETE_TQ", 20},
+		{"CORRUPT_TQ_BLOCK", 21},
+		{"TRG_MISMATCH_TQ", 22},
+		{"QBEE_ERROR", 23},
+		{"SORT_BLOCK", 24},
+		{"CORRUPTED_BLOCK", 25},
+		{"LED_BURST_ON", 26},
+		{"EVNT_TRAILER", 27},
+		{"INNER_DETECTOR_OFF", 28},
+		{"ANTI_DETECTOR_OFF", 29},
+		{"T2K_GPS", 30},
+		{"EVNT_HDR_&_SOFTWARE_TRG", 31}
 	};
 	
 	// geometry information from geotnkC.h: #define'd constants

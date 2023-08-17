@@ -39,28 +39,12 @@ class SK2p2MeV_ntag: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	MTreeReader* myTreeReader = nullptr;
 	MTreeReader outTreeReader{"SK2p2MeV_OutTree"};
 	SK2p2MeV* ntagger = nullptr;
 	TFile* fout = nullptr;
 	TTree* theOTree = nullptr;
 	bool isWIT = false;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
-	
-	// variables to read in
-	// ====================
-	
-	// variables to write out
-	// ======================
 	
 };
 

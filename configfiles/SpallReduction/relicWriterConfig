@@ -1,0 +1,4 @@
+verbosity 10
+treeReaderName spallReader
+renameDataTo mu
+newTreeName relic

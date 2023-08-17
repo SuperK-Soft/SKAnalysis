@@ -1,9 +1,8 @@
 /* vim:set noexpandtab tabstop=4 wrap */
-#include "lf_allfit.h"
+#include "lfallfit_simple.h"
 
 #include "Algorithms.h"
 #include "Constants.h"
-#include "type_name_as_string.h"
 
 #include <string>
 #include <vector>
@@ -12,23 +11,20 @@
 // declarations and #includes for SK fortran routines
 #include "fortran_routines.h"
 
-lf_allfit::lf_allfit():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+lfallfit_simple::lfallfit_simple():Tool(){}
 
-bool lf_allfit::Initialise(std::string configfile, DataModel &data){
+bool lfallfit_simple::Initialise(std::string configfile, DataModel &data){
 	
 	if(configfile!="")  m_variables.Initialise(configfile);
 	//m_variables.Print();
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	m_variables.Get("fname_in",fname_in);
 	m_variables.Get("fname_out",fname_out);
 	int sk_geometry=6;
@@ -88,7 +84,7 @@ bool lf_allfit::Initialise(std::string configfile, DataModel &data){
 }
 
 
-bool lf_allfit::Execute(){
+bool lfallfit_simple::Execute(){
 	
 	if((nread%10000)==0) std::cout<<"nrunsk/nread = "<<skhead_.nrunsk<<"/"<<nread<<std::endl;
 	++nread;
@@ -194,7 +190,7 @@ bool lf_allfit::Execute(){
 }
 
 
-bool lf_allfit::Finalise(){
+bool lfallfit_simple::Finalise(){
 	
 	// close input skroot files, delete the TTreeManager
 	skroot_close_(&lun);

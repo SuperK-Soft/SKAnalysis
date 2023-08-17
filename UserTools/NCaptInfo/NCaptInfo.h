@@ -43,7 +43,6 @@ class NCaptInfo: public Tool {
 	
 	protected:
 	MTreeReader* myTreeReader;
-	std::string m_unique_name=""; // TODO remove once we upgrade ToolFrameworkCore
 	bool match_mistags=false;
 	std::string candidates_file="";
 	std::string mctruth_file="";
@@ -70,15 +69,6 @@ class NCaptInfo: public Tool {
 	std::unordered_map<std::string, double> cdbranchvars;
 	std::unordered_map<std::string, int> mibranchvars;
 	std::unordered_map<std::string, double> mdbranchvars;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 };
 

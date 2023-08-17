@@ -12,7 +12,7 @@ bool ApplyTMVA::Initialise(std::string configfile, DataModel &data)
     m_data= &data;
     m_data->tool_configs[name] = &m_variables;
     
-    m_variables.Get("tool_verbosity",m_verbose);
+    m_variables.Get("verbosity",m_verbose);
     // defaults
     likelihoodThreshold = 0.7f;
     mvaMethodName="MLP";

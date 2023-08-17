@@ -4,10 +4,7 @@
 #include "TBranch.h"
 #include "MTreeReader.h"
 
-TrueNCaptures::TrueNCaptures():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+TrueNCaptures::TrueNCaptures():Tool(){}
 
 
 bool TrueNCaptures::Initialise(std::string configfile, DataModel &data){
@@ -18,7 +15,7 @@ bool TrueNCaptures::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("plotsFile",plotsfile);
 	
 	if(plotsfile!="") MakePlots(0);
@@ -29,12 +26,12 @@ bool TrueNCaptures::Initialise(std::string configfile, DataModel &data){
 
 bool TrueNCaptures::Execute(){
 	
-	Log(m_unique_name+" executing...",v_debug,verbosity);
+	Log(m_unique_name+" executing...",v_debug,m_verbose);
 	m_data->NCapturesTrue.clear();
 	
 	// loop over true particles and pull out neutron capture events
 	Log(m_unique_name+" scanning "+toString(m_data->eventParticles.size())
-	    +" recorded particles for neutrons",v_debug,verbosity);
+	    +" recorded particles for neutrons",v_debug,m_verbose);
 	for(int i=0; i<m_data->eventParticles.size(); ++i){
 		MParticle& aparticle = m_data->eventParticles.at(i);
 		//std::cout<<"particle "<<i<<" has pdg "<<aparticle.pdg<<std::endl;
@@ -59,7 +56,7 @@ bool TrueNCaptures::Execute(){
 				// did not capture, hence nothing recorded; such instances have been confirmed
 				// by Secondary vectors, where the neutron termination process was 'transportation'
 				Log(m_unique_name+" Warning! Found neutron but no termination processes recorded!"
-				   " Assuming it did not capture...",v_debug,verbosity);
+				   " Assuming it did not capture...",v_debug,m_verbose);
 				/*
 				// n.b. the event number printed by this might be off by 1 because we may not
 				// be using the right TreeReader (might be one that comes after this Tool)
@@ -72,15 +69,15 @@ bool TrueNCaptures::Execute(){
 				*/
 			}
 			if(!captured){
-				Log(m_unique_name+" found true neutron, but it did not capture",v_debug,verbosity);
+				Log(m_unique_name+" found true neutron, but it did not capture",v_debug,m_verbose);
 				continue;
 			}
-			Log(m_unique_name+" found true neutron capture at index "+toString(i),v_debug,verbosity);
+			Log(m_unique_name+" found true neutron capture at index "+toString(i),v_debug,m_verbose);
 			NCapture acapture;
 			get_ok = acapture.SetNeutronIndex(i);
 			if(!get_ok){
 				Log(m_unique_name+" Error! Captured neutron at index "+toString(i)
-				     +" rejected by SetNeutronIndex?!",v_error,verbosity);
+				     +" rejected by SetNeutronIndex?!",v_error,m_verbose);
 				return false;
 				// this should never happen
 			}
@@ -103,7 +100,7 @@ bool TrueNCaptures::Execute(){
 							//break;
 						} else {
 							Log(m_unique_name+" Found multiple positrons from the same parent index"
-							   " as the neutron ("+toString(NeutronParentIdx)+")",v_error,verbosity);
+							   " as the neutron ("+toString(NeutronParentIdx)+")",v_error,m_verbose);
 							// we can't uniquely identify the correct positron... should be unlikely...
 						}
 					}
@@ -115,7 +112,7 @@ bool TrueNCaptures::Execute(){
 		}
 	}
 	
-	if(verbosity>2) PrintCaptures();
+	if(m_verbose>2) PrintCaptures();
 	if(plotsfile!="") MakePlots(1);
 	
 	return true;
@@ -136,7 +133,7 @@ bool TrueNCaptures::PrintCaptures(){
 		if(i>0) std::cout<<"------------------------------------------\n";
 		std::cout<<"Capture "<<i<<"\n";
 		NCapture& acapture = m_data->NCapturesTrue.at(i);
-		acapture.Print((verbosity>5));
+		acapture.Print((m_verbose>5));
 	}
 	std::cout<<"=========================================="<<std::endl;
 	return true;
@@ -194,7 +191,7 @@ bool TrueNCaptures::MakePlots(int step){
 		
 	} else if(step==1){
 		
-		Log(m_unique_name+" filling plots tree with "+toString(m_data->NCapturesTrue.size())+" true captures",v_debug,verbosity);
+		Log(m_unique_name+" filling plots tree with "+toString(m_data->NCapturesTrue.size())+" true captures",v_debug,m_verbose);
 		// execution - fill tree
 		for(NCapture& acap : m_data->NCapturesTrue){
 			double tmpd=0;
@@ -256,7 +253,7 @@ bool TrueNCaptures::MakePlots(int step){
 			if(acap.GetDaughters(daughters)){
 				for(int daughteridx : daughters){
 					if(daughteridx<0 || daughteridx>=m_data->eventParticles.size()){
-						Log(m_unique_name+" Error! bad daughter idx: "+toString(daughteridx),v_error,verbosity);
+						Log(m_unique_name+" Error! bad daughter idx: "+toString(daughteridx),v_error,m_verbose);
 						// this event number here may be off by one, because the first TreeReader
 						// might be one relating to a later Tool. Meh, close enough.
 						std::cerr<<"Dumping event "
@@ -276,7 +273,7 @@ bool TrueNCaptures::MakePlots(int step){
 						if(adaughter->pdg==22){
 							if(*startE>10){
 								Log(m_unique_name+" Error! Gamma from ncapture with energy "
-								    +toString(*startE)+"> 10MeV?!",v_error,verbosity);
+								    +toString(*startE)+"> 10MeV?!",v_error,m_verbose);
 								// this event number here may be off by one, because the first TreeReader
 								// might be one relating to a later Tool. Meh, close enough.
 								std::cerr<<"Dumping event "
@@ -305,7 +302,7 @@ bool TrueNCaptures::MakePlots(int step){
 			tplots->Fill();
 			//tplots->Show(tplots->GetEntries()-1);
 		}
-		Log(m_unique_name+": done filling tree",v_debug,verbosity);
+		Log(m_unique_name+": done filling tree",v_debug,m_verbose);
 		
 	} else if(step==2){
 		

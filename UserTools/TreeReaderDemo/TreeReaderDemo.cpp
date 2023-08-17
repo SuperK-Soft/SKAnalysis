@@ -8,10 +8,7 @@
 #include <time.h>  // for 'struct tm'
 #include <numeric> // for std::accumulate
 
-TreeReaderDemo::TreeReaderDemo():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+TreeReaderDemo::TreeReaderDemo():Tool(){}
 
 bool TreeReaderDemo::Initialise(std::string configfile, DataModel &data){
 	
@@ -20,15 +17,15 @@ bool TreeReaderDemo::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("treeReaderName",treeReaderName);
 	
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
 	myTreeReader = m_data->Trees.at(treeReaderName);
@@ -72,7 +69,7 @@ bool TreeReaderDemo::Execute(){
 		std::cout<<"calling secondary print"<<std::endl;
 		secondaries->Print();
 	} else {
-		Log(toolName+" No SECONDARY branch - cannot print secondary information at this time.",v_debug,verbosity);
+		Log(m_unique_name+" No SECONDARY branch - cannot print secondary information at this time.",v_debug,m_verbose);
 	}
 	
 	// reconstructed energy and vertex

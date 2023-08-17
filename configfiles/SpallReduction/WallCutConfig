@@ -1,2 +1,3 @@
 treeReaderName spallReader
 treeWriterName spallWriter
+selectorName relicCuts

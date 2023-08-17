@@ -1,1 +1,3 @@
-treeReaderName spallReader
+verbosity 1
+coincidence_threshold 100    # [ns]
+selectorName relicCuts

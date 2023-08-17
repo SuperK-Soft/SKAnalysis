@@ -5,6 +5,7 @@
 
 struct ParticleCand {
 	int EventNumber;
+	int SubTriggerNumber;
 	float EventTime;
 	int EntryNumber;
 	int PID = 0; //0 = muon 1 = LowE

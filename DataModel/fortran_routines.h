@@ -148,6 +148,9 @@ extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
 extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
 extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
 
+// vectgen
+extern "C" void spectrum_(int*,int*,int*,float*,int*,float*,float*,int*);
+
 // SK I/O
 extern "C" {
 //    void kzinit_();

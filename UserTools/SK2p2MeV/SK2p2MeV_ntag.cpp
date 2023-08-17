@@ -8,10 +8,7 @@
 
 #include "type_name_as_string.h"
 
-SK2p2MeV_ntag::SK2p2MeV_ntag():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+SK2p2MeV_ntag::SK2p2MeV_ntag():Tool(){}
 
 // -----------------------------
 
@@ -30,14 +27,14 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
 	std::string treeReaderName;
 	std::string derived_classname;
 	std::string outFile = "SK2p2MeV.root";
-	m_variables.Get("verbosity",verbosity);                   // how verbose to be
+	m_variables.Get("verbosity",m_verbose);                   // how verbose to be
 	m_variables.Get("treeReaderName",treeReaderName);         // reader for input tree
 	m_variables.Get("derived_classname", derived_classname);  // derived class of SK2p2MeV
 	m_variables.Get("outFile",outFile);                       // output file for TTree
@@ -45,7 +42,7 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	
 	
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
 	myTreeReader = m_data->Trees.at(treeReaderName);
@@ -65,12 +62,12 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	} else if(derived_classname == "ambe"){
 		get_ok = InitAmBe();
 	} else {
-		Log(toolName+" Unrecognised derived class "+derived_classname,v_error,verbosity);
+		Log(m_unique_name+" Unrecognised derived class "+derived_classname,v_error,m_verbose);
 		return false;
 	}
 	
 	if(not get_ok){
-		Log(toolName+" Failed to Initialise SK2p2MeV class instance!",v_error,verbosity);
+		Log(m_unique_name+" Failed to Initialise SK2p2MeV class instance!",v_error,m_verbose);
 		return false;
 	}
 	
@@ -95,7 +92,7 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("N10CutThreshold",N10CutThreshold);
 	
 	// pass to the SK2p2MeV class instance
-	ntagger->SetVerbosity(std::min(verbosity,2));
+	ntagger->SetVerbosity(std::min(m_verbose,2));
 	ntagger->SetN10Threshold(N10Threshold);
 	ntagger->SetN10CutThreshold(N10CutThreshold);
 	
@@ -112,7 +109,7 @@ bool SK2p2MeV_ntag::Execute(){
 	// depending on the input source (data / mc). If branches are not present, it just
 	// ignores them and continues anyway. TODO better handling.
 	if(not get_ok){
-		Log(toolName+" Error getting input variables from TreeReader!",v_error,verbosity);
+		Log(m_unique_name+" Error getting input variables from TreeReader!",v_error,m_verbose);
 		return false;
 	}
 	*/
@@ -179,8 +176,8 @@ bool SK2p2MeV_ntag::InitRelic(){
 	m_variables.Get("T2KDir",   T2KDir);     // path to the directory containing T2K run data files
 	
 	if(fakeData && (T2KData=="" || T2KDir=="")){
-		Log(toolName+" Error! Using SK2p2MeV_relic with fake data flag requires T2KData and T2KDir to be set!",
-		    v_error,verbosity);
+		Log(m_unique_name+" Error! Using SK2p2MeV_relic with fake data flag requires T2KData and T2KDir to be set!",
+		    v_error,m_verbose);
 		return false;
 	}
 	

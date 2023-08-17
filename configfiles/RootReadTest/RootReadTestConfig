@@ -9,4 +9,4 @@ treeName data
 testFileType SKROOT
 
 maxEvents 3
-verbose 2
+verbosity 2

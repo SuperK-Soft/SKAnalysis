@@ -30,22 +30,25 @@ class MTreeSelection : public SerialisableObject {
 	
 	public:
 	MTreeSelection();
-	MTreeSelection(MTreeReader* treereader, std::string fname);  // for writing
+	MTreeSelection(MTreeReader* treereader, std::string fname, std::string distrofname="");  // for writing
 	MTreeSelection(std::string cutFilein);                       // for reading
 	~MTreeSelection();
-	void MakeOutputFile(std::string fname);
 	bool SetTreeReader(MTreeReader* treereaderin);
-	void AddCut(std::string cutname);
-	void AddCut(std::string cutname, std::string branchname); // type 1
-	void AddCut(std::string cutname, std::vector<std::string> branchnames);  // type 1 or 2
+	void MakeOutputFile(std::string fname, std::string distrofname="");
+	bool NoteCut(std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
+	void AddCut(std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
+	void AddCut(std::string cutname, std::string description, std::string branchname, double low=DOUBLE_MIN, double high=DOUBLE_MAX); // type 1
+	void AddCut(std::string cutname, std::string description, std::vector<std::string> branchnames, double low=DOUBLE_MIN, double high=DOUBLE_MAX);  // type 1 or 2
+	bool CheckCut(std::string cutname);   // just check we know this cut
 	void IncrementEventCount(std::string cutname);
-	bool NoteCut(std::string cutname);
+	// apply cut and add if it passes (new way)
+	bool ApplyCut(std::string cutname, double val);
+	bool ApplyCut(std::string cutname, double val, size_t index);
+	bool ApplyCut(std::string cutname, double val, std::vector<size_t> indices);
+	// just add directly (old way, only call for passing events)
 	bool AddPassingEvent(std::string cutname);
 	bool AddPassingEvent(std::string cutname, size_t index);
 	bool AddPassingEvent(std::string cutname, std::vector<size_t> indices);
-	bool AddPassingEvent(std::string cutname, TTree* thetree, Long64_t entry_number);
-	bool AddPassingEvent(std::string cutname, TTree* thetree, Long64_t entry_number, std::string branchname, size_t index);
-	bool AddPassingEvent(std::string cutname, TTree* thetree, Long64_t entry_number, std::vector<std::string> branchnames, std::vector<size_t> indices);
 	
 	/*
 	template<typename T, class = typename std::enable_if<!std::is_same<T,TTree>::value>::type>
@@ -98,6 +101,10 @@ class MTreeSelection : public SerialisableObject {
 	//BoostStore* outstore=nullptr;
 	TFile* outfile=nullptr;
 	bool initialized=false; // written initial meta-data  - FIXME redundant/broken? (order of cuts?)
+	
+	// if making distributions of the variables we're cutting on
+	TFile* distros_file=nullptr;
+	TTree* distros_tree=nullptr;
 	
 	// involved in reading
 	TFile* cutfile=nullptr;

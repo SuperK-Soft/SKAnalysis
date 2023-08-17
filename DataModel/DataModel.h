@@ -112,11 +112,22 @@ class DataModel {
   void KZInit();
   bool kz_initialized=false;
   bool GeoSet(int sk_geometry_in);
+  bool BonsaiInit();
+  bool bonsai_initialised=false;
   
   TFile* OpenFileForWriting(std::string file, bool alreadyopenonly=false);
   TFile* OpenFileForReading(std::string file, bool fromdisk=true);
   bool CloseFile(std::string file);
   bool CloseFile(TFile* fptr);
+  
+  // helper functions for working with MTreeSelections
+  // (basically just needed for the case of adding cuts to multiple selectors at once)
+  template<typename... Args>
+  bool AddCut(std::string selector, std::string cut, std::string description, Args... rest);
+  template<typename... Args>
+  bool ApplyCut(std::string selector, std::string cut, double val, Args... rest);
+  template<typename... Args>
+  bool AddPassingEvent(std::string selector, std::string cut, Args... rest);
   
   // Event vars
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
@@ -176,6 +187,64 @@ class DataModel {
   
   
 };
+
+
+template<typename... Args>
+bool DataModel::AddCut(std::string selector, std::string cut, std::string description){
+	if(selector!="all" && Selectors.count(selector)==0){
+		std::cerr<<"DataModel::AddCut Error! Unrecognised selector "<<selector
+		         <<" for cut "<<cut<<std::endl;
+		return false;
+	}
+	bool ret=true;
+	if(selector=="all"){
+		// add this event to all selectors
+		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
+			ret &= sel->AddCut(cut, description);
+		}
+	} else {
+		ret = Selectors.at(selector).AddCut(cut, val, rest...);
+	}
+	return ret;
+}
+
+template<typename... Args>
+bool DataModel::ApplyCut(std::string selector, std::string cut, double val, Args... rest){
+	if(selector!="all" && Selectors.count(selector)==0){
+		std::cerr<<"DataModel::ApplyCut Error! Unrecognised selector "<<selector
+		         <<" for cut "<<cut<<std::endl;
+		return false;
+	}
+	bool ret=true;
+	if(selector=="all"){
+		// add this event to all selectors
+		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
+			ret &= sel->ApplyCut(cut, val, rest...);
+		}
+	} else {
+		ret = Selectors.at(selector).ApplyCut(cut, val, rest...);
+	}
+	return ret;
+}
+
+template<typename... Args>
+bool DataModel::AddPassingEvent(std::string selector, std::string cut, Args... rest){
+	if(selector!="all" && Selectors.count(selector)==0){
+		std::cerr<<"DataModel::AddPassingEvent Error! Unrecognised selector "<<selector
+		         <<" for cut "<<cut<<std::endl;
+		return false;
+	}
+	bool ret=true;
+	if(selector=="all"){
+		// add this event to all selectors
+		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
+			ret &= sel->AddPassingEvent(cut, rest...);
+		}
+	} else {
+		ret = Selectors.at(selector).AddPassingEvent(cut, rest...);
+	}
+	return ret;
+}
 
 
 #endif

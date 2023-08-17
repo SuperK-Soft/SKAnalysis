@@ -13,11 +13,13 @@
 #include "TParameter.h"
 #include "TKey.h"
 
+#include <limits>
+
 MTreeSelection::MTreeSelection(){}  // required to declare them in headers
 
-MTreeSelection::MTreeSelection(MTreeReader* treereaderin, std::string fname){
+MTreeSelection::MTreeSelection(MTreeReader* treereaderin, std::string fname, std::string distrofname){
 	if(treereaderin) SetTreeReader(treereaderin);  // for writing a cut file
-	outfile = new TFile(fname.c_str(),"RECREATE");
+	MakeOutputFile(fname, distrofname);
 }
 
 MTreeSelection::MTreeSelection(std::string cutFilein){
@@ -35,6 +37,10 @@ MTreeSelection::~MTreeSelection(){
 	}
 	if(cutfile){
 		cutfile->Close();
+	}
+	if(distros_file){
+		distros_file->Close();
+		delete distros_file;
 	}
 }
 
@@ -55,8 +61,12 @@ bool MTreeSelection::Serialise(BinaryStream &bs){
 bool MTreeSelection::Print(){ PrintCuts(); return true; } // required for SerialisableObjects
 std::string MTreeSelection::GetVersion(){ return "0.0"; } // required for SerialisableObjects
 
-void MTreeSelection::MakeOutputFile(std::string fname){
-	outfile = new TFile(fname.c_str(),"RECREATE");
+void MTreeSelection::MakeOutputFile(std::string fname, std::string distrofname){
+	if(outfile==nullptr) outfile = new TFile(fname.c_str(),"RECREATE");
+	if(distros_file==nullptr && distrofname!=""){
+		distros_file = new TFile(distrofname.c_str(), "RECREATE");
+		distros_tree = new TTree("vals", "Distributions of variables used for selection");
+	}
 }
 
 bool MTreeSelection::SetTreeReader(MTreeReader* treereaderin){
@@ -68,48 +78,52 @@ bool MTreeSelection::SetTreeReader(MTreeReader* treereaderin){
 	return true;
 }
 
-bool MTreeSelection::NoteCut(std::string cutname){
+bool MTreeSelection::NoteCut(std::string cutname, std::string description, double low, double high){
+	auto it = cut_tracker.emplace(cutname,0);
+	if(!it.second){
+		std::cerr<<"MTreeSelection::NoteCut - cut "<<cutname<<" already exists!"<<std::endl;
+		return false;
+	}
 	cut_order.push_back(cutname);
-	cut_tracker.emplace(cutname,0);
 	did_pass_cut.emplace(cutname,false);
-	// we must have an output file before we make the TTrees in the MTreeCut. 
-	auto it = cut_pass_entries.emplace(cutname, new MTreeCut(outfile, cutname));
-	return it.second; // true if new element, false if not
+	// N.B. we must have an output file before we make the TTrees in the MTreeCut.
+	cut_pass_entries.emplace(cutname, new MTreeCut(outfile, cutname, description, low, high));
+	return true;
 }
 
-void MTreeSelection::AddCut(std::string cutname){
-	bool ok = NoteCut(cutname);
+void MTreeSelection::AddCut(std::string cutname, std::string description, double low, double high){
+	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
 	}
-	cut_pass_entries.at(cutname)->Initialize(0);
+	cut_pass_entries.at(cutname)->Initialize(0, treereader, distros_tree);
 }
 
-void MTreeSelection::AddCut(std::string cutname, std::string branchname){
-	bool ok = NoteCut(cutname);
+void MTreeSelection::AddCut(std::string cutname, std::string description, std::string branchname, double low, double high){
+	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
 	}
 	if(branchname=="") std::cerr<<"empty branchname passed for cut "<<cutname<<std::endl; // XXX
-	cut_pass_entries.at(cutname)->Initialize(1, branchname, FindLinkedBranches(branchname));
+	cut_pass_entries.at(cutname)->Initialize(1, branchname, FindLinkedBranches(branchname), treereader, distros_tree);
 }
 
-void MTreeSelection::AddCut(std::string cutname, std::vector<std::string> branchnames){
-	bool ok = NoteCut(cutname);
+void MTreeSelection::AddCut(std::string cutname, std::string description, std::vector<std::string> branchnames, double low, double high){
+	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
 	}
 	if(branchnames.size()==0){
-		cut_pass_entries.at(cutname)->Initialize(0);
+		cut_pass_entries.at(cutname)->Initialize(0, treereader, distros_tree);
 	} else if(branchnames.size()==1){
-		cut_pass_entries.at(cutname)->Initialize(1, branchnames[0], FindLinkedBranches(branchnames[0]));
+		cut_pass_entries.at(cutname)->Initialize(1, branchnames[0], FindLinkedBranches(branchnames[0]), treereader, distros_tree);
 	} else {
 		std::vector<std::vector<std::string>> linked_branch_lists;
 		for(auto&& branchname : branchnames){
 			if(branchname=="") std::cerr<<"empty string in AddPassingEvent for cut "<<cutname; // XXX
 			linked_branch_lists.emplace_back(FindLinkedBranches(branchname));
 		}
-		cut_pass_entries.at(cutname)->Initialize(2, branchnames, linked_branch_lists);
+		cut_pass_entries.at(cutname)->Initialize(2, branchnames, linked_branch_lists, treereader, distros_tree);
 	}
 }
 
@@ -129,26 +143,41 @@ void MTreeSelection::IncrementEventCount(std::string cutname){
 	}
 }
 
-bool MTreeSelection::AddPassingEvent(std::string cutname){
-	return AddPassingEvent(cutname, treereader->GetTree(), treereader->GetEntryNumber());
-}
-
-bool MTreeSelection::AddPassingEvent(std::string cutname,TTree* thetree, Long64_t entry_number){
-	
+bool MTreeSelection::CheckCut(std::string cutname){
 	// check we know this cut
 	if(cut_pass_entries.count(cutname)==0){
 		std::cerr<<"MTreeSelection::AddPassingEvent called with unknown cut "<<cutname
-				 <<"\nPlease call MTreeSelection::AddCut on all cuts in order first"<<std::endl;
+				 <<"\nPlease call MTreeSelection::AddCut first"<<std::endl;
 		return false;
 	}
-	
-	// initialize the cut if not already
-	if(cut_pass_entries[cutname]->type<0){
-		cut_pass_entries[cutname]->Initialize(0);
-	}
+	return true;
+}
+
+bool MTreeSelection::ApplyCut(std::string cutname, double val){
+	bool newentry = cut_pass_entries[cutname]->Apply(val);
+	if(not newentry) return false;
+	IncrementEventCount(cutname);
+	return true;
+}
+
+bool MTreeSelection::ApplyCut(std::string cutname, double val, size_t index){
+	bool newentry = cut_pass_entries[cutname]->Apply(val, index);
+	if(not newentry) return false;
+	IncrementEventCount(cutname);
+	return true;
+}
+
+bool MTreeSelection::ApplyCut(std::string cutname, double val, std::vector<size_t> indices){
+	bool newentry = cut_pass_entries[cutname]->Apply(val, indices);
+	if(not newentry) return false;
+	IncrementEventCount(cutname);
+	return true;
+}
+
+bool MTreeSelection::AddPassingEvent(std::string cutname){
 	
 	// save the TTree entry number of the passing event
-	bool newentry = cut_pass_entries[cutname]->Enter(entry_number,thetree);
+	bool newentry = cut_pass_entries.at(cutname)->Enter();
 	
 	// increment number of events passing the cut
 	if(not newentry) return false;   // prevent double counting
@@ -159,23 +188,6 @@ bool MTreeSelection::AddPassingEvent(std::string cutname,TTree* thetree, Long64_
 
 // provided Initialize is called first we can skip most of the arguments
 bool MTreeSelection::AddPassingEvent(std::string cutname, size_t index){
-	return AddPassingEvent(cutname, treereader->GetTree(), treereader->GetEntryNumber(), "", index);
-}
-
-bool MTreeSelection::AddPassingEvent(std::string cutname, TTree* thetree, Long64_t entry_number, std::string branchname, size_t index){
-	
-	// check we know this cut
-	if(cut_pass_entries.count(cutname)==0){
-		std::cerr<<"MTreeSelection::AddPassingEvent called with unknown cut "<<cutname
-				 <<"\nPlease call MTreeSelection::AddCut on all cuts in order first"<<std::endl;
-		return false;
-	}
-	
-	// initialize the cut if not already
-	if(cut_pass_entries[cutname]->type<0){
-		if(branchname=="") std::cerr<<"empty branchname passed for cut "<<cutname<<std::endl; // XXX
-		cut_pass_entries[cutname]->Initialize(1, branchname, FindLinkedBranches(branchname));
-	}
 	
 	// save the TTree entry number and the array index.
 	// A simple TEventList allows one to record which TTree entries passed a cut.
@@ -183,7 +195,7 @@ bool MTreeSelection::AddPassingEvent(std::string cutname, TTree* thetree, Long64
 	// is not just a TTree entry, but more specifically *one element of an array*
 	// within a single TTree entry. We need to record the TTree entry number,
 	// the branch name holding the array, and the array index.
-	bool newentry = cut_pass_entries[cutname]->Enter(entry_number, index, thetree);
+	bool newentry = cut_pass_entries.at(cutname)->Enter(index);
 	
 	// increment number of events passing the cut
 	if(not newentry) return false;  // prevent double counting
@@ -192,35 +204,13 @@ bool MTreeSelection::AddPassingEvent(std::string cutname, TTree* thetree, Long64
 	return true;
 }
 
-
-bool MTreeSelection::AddPassingEvent(std::string cutname, std::vector<size_t> indices){
-	return AddPassingEvent(cutname, treereader->GetTree(), treereader->GetEntryNumber(), std::vector<std::string>{}, indices);
-}
-
 // but what if the "event" is specified by not just one, but several array indices?
 // this time we pass a vector of pairs, each pair being the branch pointer and the index number
 // call this by the syntax `AddPassingEvent("mycut",{{branchptr1,index1},{branchptr2,index2},...});
-bool MTreeSelection::AddPassingEvent(std::string cutname, TTree* thetree, Long64_t entry_number, std::vector<std::string> branchnames, std::vector<size_t> indices){
-	
-	// check we know this cut
-	if(cut_pass_entries.count(cutname)==0){
-		std::cerr<<"MTreeSelection::AddPassingEvent called with unknown cut "<<cutname
-				 <<"\nPlease call MTreeSelection::AddCut on all cuts in order first"<<std::endl;
-		return false;
-	}
-	
-	// initialize the cut if not already
-	if(cut_pass_entries[cutname]->type<0){
-		std::vector<std::vector<std::string>> linked_branch_lists;
-		for(auto&& branchname : branchnames){
-			if(branchname=="") std::cerr<<"empty string in AddPassingEvent for cut "<<cutname; // XXX
-			linked_branch_lists.emplace_back(FindLinkedBranches(branchname));
-		}
-		cut_pass_entries[cutname]->Initialize(2, branchnames, linked_branch_lists);
-	}
+bool MTreeSelection::AddPassingEvent(std::string cutname, std::vector<size_t> indices){
 	
 	// save the TTree entry number and the array indices.
-	bool newentry = cut_pass_entries[cutname]->Enter(entry_number, indices, thetree);
+	bool newentry = cut_pass_entries.at(cutname)->Enter(indices);
 	
 	// increment number of events passing the cut
 	if(not newentry) return false;  // prevent double counting
@@ -275,6 +265,12 @@ bool MTreeSelection::Write(){
 	// write out the MTreeCuts saving which entries passed each cut
 	for(auto&& acut : cut_pass_entries){
 		acut.second->Write();
+	}
+	
+	// write distributions if we're keeping them
+	if(distros_tree){
+		distros_file->cd();
+		distros_tree->Write("",TObject::kOverwrite&&TObject::kSingleKey);
 	}
 	
 	// reset ROOT directory

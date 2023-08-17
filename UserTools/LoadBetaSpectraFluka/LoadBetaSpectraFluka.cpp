@@ -7,10 +7,7 @@
 
 #include "TFile.h"
 
-LoadBetaSpectraFluka::LoadBetaSpectraFluka():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+LoadBetaSpectraFluka::LoadBetaSpectraFluka():Tool(){}
 
 const std::map<std::pair<int,int>,std::string> isotope_AZ{
 	{{11,4},"11Be"},
@@ -44,11 +41,11 @@ bool LoadBetaSpectraFluka::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	m_variables.Get("inputFile",inputFile);            // a single specific input file
 	m_variables.Get("histosFile",histosFile);          // root file to write
 	m_variables.Get("mapsFile",mapsFile);              // booststore file to write
@@ -86,7 +83,7 @@ bool LoadBetaSpectraFluka::Initialise(std::string configfile, DataModel &data){
 
 bool LoadBetaSpectraFluka::Execute(){
 	
-	if((entrynum%1000)==0) Log(toolName+" getting entry "+toString(entrynum),v_debug,verbosity);
+	if((entrynum%1000)==0) Log(m_unique_name+" getting entry "+toString(entrynum),v_debug,m_verbose);
 	
 	// retrieve desired branches
 	get_ok = GetBranches();
@@ -98,13 +95,13 @@ bool LoadBetaSpectraFluka::Execute(){
 	entrynum++;
 	// check if we've hit the user-requested entry limit
 	if((maxEvents>0)&&(entrynum==maxEvents)){
-		Log(toolName+" hit max events, setting StopLoop",v_message,verbosity);
+		Log(m_unique_name+" hit max events, setting StopLoop",v_message,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 		return 1;
 	}
 	
 	// pre-load the next ttree entry
-	Log(toolName+" Preloading next entry",v_debug,verbosity);
+	Log(m_unique_name+" Preloading next entry",v_debug,m_verbose);
 	get_ok = ReadEntry(entrynum);
 	if(get_ok==0){
 		return 1; // end of file
@@ -112,14 +109,14 @@ bool LoadBetaSpectraFluka::Execute(){
 		return 0; // read error
 	}
 	
-	Log(toolName+" Done",v_debug,verbosity);
+	Log(m_unique_name+" Done",v_debug,m_verbose);
 	return true;
 }
 
 bool LoadBetaSpectraFluka::Analyse(){
 	
 	std::string isotope = std::to_string(A)+isotope_Z.at(Z);
-	//Log(toolName+" checking isotope "+isotope,v_debug,verbosity);
+	//Log(m_unique_name+" checking isotope "+isotope,v_debug,m_verbose);
 	if(true_spectra.count(isotope)==0){
 		if(unknown_isotopes.count(isotope)==0){
 			std::cout<<"unknown isotope "<<isotope<<std::endl;
@@ -130,7 +127,7 @@ bool LoadBetaSpectraFluka::Analyse(){
 	
 	// skip poorly reconstructed events to prevent distortion of the reconstructed spectra
 	// from affecting the selected efficiency
-	Log(toolName+" Bonsai goodness is "+toString(bonsai_goodness),v_debug,verbosity);
+	Log(m_unique_name+" Bonsai goodness is "+toString(bonsai_goodness),v_debug,m_verbose);
 	if(bonsai_goodness<bonsai_goodness_cut) return true;
 	
 	// we also seem to have events where the bonsai energy is up at like 10k
@@ -142,12 +139,12 @@ bool LoadBetaSpectraFluka::Analyse(){
 	// so we should use true energy that is the sum of both
 	double true_total_energy = true_photon_E + true_beta_E;
 	
-	Log(toolName+" Filling histos",v_debug,verbosity);
+	Log(m_unique_name+" Filling histos",v_debug,m_verbose);
 	true_spectra.at(isotope).Fill(true_total_energy);
 	reco_spectra.at(isotope).Fill(bonsai_energy);
 	reco_over_true_spectra.at(isotope).Fill(bonsai_energy/true_total_energy);
 	
-	Log(toolName+" incrementing counters",v_debug,verbosity);
+	Log(m_unique_name+" incrementing counters",v_debug,m_verbose);
 	if(true_total_energy < 8.0) ++true_events_below_8MeV.at(isotope);
 	else ++true_events_above_8MeV.at(isotope);
 	
@@ -166,12 +163,12 @@ bool LoadBetaSpectraFluka::Analyse(){
 
 bool LoadBetaSpectraFluka::Finalise(){
 	
-	Log(toolName+" Making output ROOT file "+histosFile,v_debug,verbosity);
+	Log(m_unique_name+" Making output ROOT file "+histosFile,v_debug,m_verbose);
 	TFile* fout = new TFile(histosFile.c_str(),"RECREATE");
 	fout->cd();
 	
 	// write out our histos and maps
-	Log(toolName+" Writing histos",v_debug,verbosity);
+	Log(m_unique_name+" Writing histos",v_debug,m_verbose);
 	for(auto&& an_isotope : isotope_AZ){
 		std::string isotope = an_isotope.second; // name
 		
@@ -191,14 +188,14 @@ bool LoadBetaSpectraFluka::Finalise(){
 //		reco_events_above_6MeV.emplace(isotope,0);
 	}
 	
-	Log(toolName+" Closing output ROOT file",v_debug,verbosity);
+	Log(m_unique_name+" Closing output ROOT file",v_debug,m_verbose);
 	fout->Write("*",TObject::kOverwrite);
 	fout->Close();
 	delete fout;
 	fout = nullptr;
 	
 	// let's put the maps in a store, since that's what we'll need anyway
-	Log(toolName+" Making output BoostStore",v_debug,verbosity);
+	Log(m_unique_name+" Making output BoostStore",v_debug,m_verbose);
 	BStore outStore(true);
 	outStore.Initnew(mapsFile, uncompressed, true);
 	outStore.Set("true_events_below_8MeV",true_events_below_8MeV);
@@ -212,11 +209,11 @@ bool LoadBetaSpectraFluka::Finalise(){
 	outStore.Set("reco_events_above_6MeV",reco_events_above_6MeV);
 	
 	// save BoostStore
-	Log(toolName+" Saving BoostStore",v_debug,verbosity);
+	Log(m_unique_name+" Saving BoostStore",v_debug,m_verbose);
 	outStore.Save();
 	outStore.Close(); // necessary to complete the file write!
 	
-	Log(toolName+" Done",v_debug,verbosity);
+	Log(m_unique_name+" Done",v_debug,m_verbose);
 	return true;
 }
 
@@ -226,15 +223,15 @@ int LoadBetaSpectraFluka::ReadEntry(long entry_number){
 	
 	// stop loop if we ran off the end of the tree
 	if(bytesread<1&&bytesread>-3){
-		Log(toolName+" hit end of input file, stopping loop",v_message,verbosity);
+		Log(m_unique_name+" hit end of input file, stopping loop",v_message,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	}
 	// stop loop if we had an error of some kind
 	else if(bytesread<0){
-		 if(bytesread==-1) Log(toolName+" IO error loading next input entry!",v_error,verbosity);
-		 if(bytesread==-10) Log(toolName+" AutoClear error loading next input entry!",v_error,verbosity);
-		 if(bytesread <-2) Log(toolName+" Unknown error "+toString(bytesread)
-		                       +" loading next input entry!",v_error,verbosity);
+		 if(bytesread==-1) Log(m_unique_name+" IO error loading next input entry!",v_error,m_verbose);
+		 if(bytesread==-10) Log(m_unique_name+" AutoClear error loading next input entry!",v_error,m_verbose);
+		 if(bytesread <-2) Log(m_unique_name+" Unknown error "+toString(bytesread)
+		                       +" loading next input entry!",v_error,m_verbose);
 		 m_data->vars.Set("StopLoop",1);
 	}
 	

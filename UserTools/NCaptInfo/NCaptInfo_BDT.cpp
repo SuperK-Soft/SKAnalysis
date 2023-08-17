@@ -7,7 +7,7 @@ bool NCaptInfo_BDT::InitCandidateReader(){
 	std::string treeReaderName="";
 	m_variables.Get("treeReaderName",treeReaderName);
 	 if(m_data->Trees.count(treeReaderName)==0){
-		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	} else {
 		myTreeReader = m_data->Trees.at(treeReaderName);
@@ -43,7 +43,7 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	get_ok &= myTreeReader->Get("LOWE",myLowE);
 	
 	if(!get_ok){
-		Log(m_unique_name+": error getting candidates!",v_error,verbosity);
+		Log(m_unique_name+": error getting candidates!",v_error,m_verbose);
 		return false;
 	}
 	
@@ -51,7 +51,7 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	candidates.resize(times.size());
 	for(int icand=0; icand<times.size(); ++icand){
 		
-		Log(m_unique_name+": Get BDT candidate "+toString(icand),v_debug,verbosity);
+		Log(m_unique_name+": Get BDT candidate "+toString(icand),v_debug,m_verbose);
 		NCaptCandidate& cand = candidates.at(icand);
 		cand.algo = "BDT";
 		

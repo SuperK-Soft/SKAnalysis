@@ -58,7 +58,6 @@ class FitSpallationDt: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string outputFile="";
 	std::string valuesFileMode="";
 	std::string valuesFile="";
@@ -98,15 +97,6 @@ class FitSpallationDt: public Tool {
 	std::map<std::string,double> fit_amps;
 	
 	ColourWheel colourwheel;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// variables to read in
 	// ====================

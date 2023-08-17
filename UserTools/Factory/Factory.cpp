@@ -31,9 +31,9 @@ if (tool=="FitPurewaterLi9NcaptureDt") ret=new FitPurewaterLi9NcaptureDt;
 if (tool=="FitSpallationDt") ret=new FitSpallationDt;
 if (tool=="PurewaterSpallAbundanceCuts") ret=new PurewaterSpallAbundanceCuts;
 if (tool=="TreeReader") ret=new TreeReader;
-if (tool=="lf_allfit") ret=new lf_allfit;
+if (tool=="lfallfit_simple") ret=new lfallfit_simple;
 if (tool=="TreeReaderDemo") ret=new TreeReaderDemo;
-if (tool=="lf_allfit_new") ret=new lf_allfit_new;
+if (tool=="lfallfit") ret=new lfallfit;
 if (tool=="evDisp") ret=new evDisp;
 if (tool=="CompareRootFiles") ret=new CompareRootFiles;
 if (tool=="vectgen") ret=new vectgen;
@@ -49,10 +49,10 @@ if (tool=="PrintEvent") ret=new PrintEvent;
 if (tool=="PlotHitTimes") ret=new PlotHitTimes;
 if (tool=="VertexFitter") ret=new VertexFitter;
 if (tool=="CombinedFitter") ret=new CombinedFitter;
-if (tool=="SpallCandidates") ret=new SpallCandidates;
-if (tool=="HitsCut") ret=new HitsCut;
+if (tool=="MuonSearch") ret=new MuonSearch;
+if (tool=="IDChargeCut") ret=new IDChargeCut;
 if (tool=="ODCut") ret=new ODCut;
-if (tool=="RunEnergyCut") ret=new RunEnergyCut;
+if (tool=="RunwiseEnergyCut") ret=new RunwiseEnergyCut;
 if (tool=="WallCut") ret=new WallCut;
 if (tool=="RelicCandidates") ret=new RelicCandidates;
 if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
@@ -60,6 +60,12 @@ if (tool=="WriteMatchedInfo") ret=new WriteMatchedInfo;
 if (tool=="WriteSpallCand") ret=new WriteSpallCand;
 if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
 
+if (tool=="SkipTriggers") ret=new SkipTriggers;
+if (tool=="BuildHist") ret=new BuildHist;
+if (tool=="CutRecorder") ret=new CutRecorder;
+if (tool=="SkipEventFlags") ret=new SkipEventFlags;
+if (tool=="AddTree") ret=new AddTree;
+if (tool=="WriteSkEvent") ret=new WriteSkEvent;
 return ret;
 }
 

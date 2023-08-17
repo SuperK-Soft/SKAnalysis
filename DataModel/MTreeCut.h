@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <limits>
 
 #include "TEntryList.h"
 #include "TTree.h"
@@ -11,11 +12,18 @@
 #include "SerialisableObject.h"  // so we can put these in a BStore
 #include "BinaryStream.h"        // so we can put these in a BStore
 
+namespace {
+	constexpr double DOUBLE_MIN = std::numeric_limits<double>::min();
+	constexpr double DOUBLE_MAX = std::numeric_limits<double>::max();
+}
+
+class MTreeReader;
+
 class MTreeCut : public SerialisableObject {
 	
 	public:
 	// for all types
-	MTreeCut(TFile* outfilein, std::string cutname);
+	MTreeCut(TFile* outfilein, std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
 	MTreeCut(std::string cutname, TEntryList* inelist, TTree* intree);
 	~MTreeCut();
 	std::string mode="";  // can be "read" or "write". Determines whether destructor performs cleanup.
@@ -27,22 +35,31 @@ class MTreeCut : public SerialisableObject {
 	int type=-1;
 	// -1; uninitialized,
 	//  0: simple, an "event" is a TTree entry
-	//  1: an "event" is described by a specific element of an array branch in TTree entry
-	//  2: an "event" is described by a set of >1 elements in various array branches in a TTree entry
+	//  1: an "event" is a single element of an array branch in TTree entry
+	//  2: an "event" is a combination of >1 elements in multiple *independent* array branches in a TTree entry
 	// 
-	// e.g., if TTree has branches:
-	// "num_hits" (float)
-	// "hit_charge" (float[num_hits])
-	// "hit_time" (float[num_hits])
-	// then a cut "num_hits>5" would be type 0
-	//      a cut "hit_charge>5.f" would be type 1 (an "event" represents a single hit that passes this cut)
-	//      a cut "hit_charge>5.f && hit_time<25e3" would be type 2
+	// e.g., if a TTree has branches:
+	// "num_prompt_events" (int)
+	// "prompt_t" (float[num_prompt_events])
+	// "prompt_e" (float[num_prompt_events])
+	// "num_delayed_events" (int)
+	// "delayed_t" (float[num_delayed_events])
+	// "delayed_e" (float[num_delayed_events])
+	// 
+	// then a cut "num_delayed_events>0" would be type 0
+	//      a cut "prompt_e > 8.0" would be type 1 (an "event" represents a single entry in the 'prompt' branch arrays that passes this cut)
+	//      a cut "prompt_e > 8.0 && delayed_e > 5.0" would be a type 2 (an "event" represents the COMBINATION of a single entry in the 'prompt' branch
+	//                                                                    arrays TOGETHER WITH a single entry in the INDEPENDENT 'delayed' branch arrays)
+	// NOTE:  cut "prompt_e > 8.0 && prompt_t < 25e3" would NOT be type 2, because these arrays are NOT independent:
+	// i.e. the passing index in the prompt_e array is necessarily the same as the passing index in the prompt_t array,
+	// as these arrays represent different properties of the same underlying object (they sharing indexing).
+	// so this is just the '&&' of two type 1 cuts, which still represents a type 1 cut.
 	
 	// for type 1
 	std::string additional_branchname;
 	std::vector<std::string> linked_branch_list;
 	std::set<size_t> indexes_this_entry;               //! use a set to prevent duplicates.
-	std::set<size_t>* indexes_this_entry_p=nullptr;   // required when reading, must stay in memory!
+	std::set<size_t>* indexes_this_entry_p=nullptr;    // required when reading, must stay in memory!
 	
 	// for type 2
 	std::vector<std::string> additional_branchnames;
@@ -51,22 +68,29 @@ class MTreeCut : public SerialisableObject {
 	std::set<std::vector<size_t>>* indices_this_entry_p=nullptr;
 	
 	private:
+	MTreeReader* theReader=nullptr;
 	Long64_t current_entry=-1;
 	Long64_t tlist_entry=-1;
 	Long64_t total_entries=-1;
 	
 	public:
-	void Initialize(int type_in);
-	void Initialize(int type_in, std::string indexcutbranch, std::vector<std::string> linkedbranches);
-	void Initialize(int type_in, std::vector<std::string> indexcutbranches, std::vector<std::vector<std::string>> linkedbranches);
-	void SetEntryList(TEntryList* inelist);
-	void SetTree(TTree* intree);
-	void SetSaveFile(TFile* outfilein);
+	void Initialize(int type_in, MTreeReader* readerIn, TTree* distro_tree=nullptr);
+	void Initialize(int type_in, std::string indexcutbranch, std::vector<std::string> linkedbranches, MTreeReader* readerIn, TTree* distro_tree=nullptr);
+	void Initialize(int type_in, std::vector<std::string> indexcutbranches, std::vector<std::vector<std::string>> linkedbranches, MTreeReader* readerIn, TTree* distro_tree=nullptr);
+	bool MakeDistroBranches(TTree* distros_tree);
 	void SetBranchAddresses();
 	bool GetMetaInfo();
-	bool Enter(Long64_t entry_number, TTree* treeptr=nullptr);
-	bool Enter(Long64_t entry_number, size_t index, TTree* treeptr=nullptr);
-	bool Enter(Long64_t entry_number, std::vector<size_t>& indices, TTree* treeptr=nullptr);
+	void SetDescription(std::string desc);
+	
+	bool Enter();
+	bool Enter(size_t index);
+	bool Enter(std::vector<size_t>& indices);
+	
+	// check if the value passes the required check and if so calls Enter
+	bool Apply(double value);
+	bool Apply(double value, size_t index);
+	bool Apply(double value, std::vector<size_t> indices);
+	
 	bool Flush();
 	void Write();
 	Long64_t GetCurrentEntry();
@@ -79,6 +103,18 @@ class MTreeCut : public SerialisableObject {
 	bool Serialise(BinaryStream &bs);
 	bool Print();
 	std::string GetVersion();
+	bool got_low_thresh=false;
+	double low_thresh=DOUBLE_MIN;
+	bool got_high_thresh=false;
+	double high_thresh=DOUBLE_MAX;
+	bool got_bool_req=false;
+	
+	// if saving distributions
+	bool save_distros=false;
+	double branch_val;
+	bool pass_val;
+	TBranch* values_branch=nullptr;
+	TBranch* pass_branch=nullptr;
 	
 };
 

@@ -41,7 +41,6 @@ class FitPurewaterLi9NcaptureDt: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::vector<float> li9_ntag_dt_vals;
 	std::string outputFile="";
 	float ncap_dtmin;                 // range of dt_mu_ncap values to accept
@@ -49,15 +48,6 @@ class FitPurewaterLi9NcaptureDt: public Tool {
 	std::string treeReaderName;
 	MTreeReader* myTreeReader=nullptr;
 	MTreeSelection* myTreeSelections=nullptr;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// variables to read in
 	// ====================

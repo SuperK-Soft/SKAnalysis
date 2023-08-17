@@ -7,7 +7,7 @@ bool NCaptInfo_NTag::InitCandidateReader(){
 	std::string candidateTreeReaderName="";
 	m_variables.Get("candidateTreeReaderName",candidateTreeReaderName);
 	 if(m_data->Trees.count(candidateTreeReaderName)==0){
-		Log(m_unique_name+" failed to find TreeReader "+candidateTreeReaderName+" in DataModel!",v_error,verbosity);
+		Log(m_unique_name+" failed to find TreeReader "+candidateTreeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	} else {
 		candidatesTreeReader = m_data->Trees.at(candidateTreeReaderName);
@@ -19,7 +19,7 @@ bool NCaptInfo_NTag::InitCandidateReader(){
 	std::string variablesTreeReaderName="";
 	m_variables.Get("variablesTreeReaderName",variablesTreeReaderName);
 	 if(m_data->Trees.count(variablesTreeReaderName)==0){
-		Log(m_unique_name+" failed to find TreeReader "+variablesTreeReaderName+" in DataModel!",v_error,verbosity);
+		Log(m_unique_name+" failed to find TreeReader "+variablesTreeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	} else {
 		variablesTreeReader = m_data->Trees.at(variablesTreeReaderName);
@@ -52,7 +52,7 @@ bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	get_ok &= variablesTreeReader->Get("geant_t0",prompt_t);
 	
 	if(!get_ok){
-		Log(m_unique_name+": error getting candidates!",v_error,verbosity);
+		Log(m_unique_name+": error getting candidates!",v_error,m_verbose);
 		return false;
 	}
 	
@@ -60,7 +60,7 @@ bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	candidates.resize(times->size());
 	for(int icand=0; icand<times->size(); ++icand){
 		
-		Log(m_unique_name+": Get NTag candidate "+toString(icand),v_debug,verbosity);
+		Log(m_unique_name+": Get NTag candidate "+toString(icand),v_debug,m_verbose);
 		NCaptCandidate& cand = candidates.at(icand);
 		cand.algo = "NTag";
 		

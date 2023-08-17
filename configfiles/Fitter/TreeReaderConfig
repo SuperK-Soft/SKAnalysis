@@ -2,11 +2,12 @@ verbosity 1                     # tool verbosity (1)
 #inputFile /home/sk_user/SKAnalysis/test_reconstruction/ibd_sk6_10k_reactornu_0p1pct_gd.root
 #inputFile /home/sk_user/SKAnalysis/test_reconstruction/ibd_sk6_reactornu_100k.root
 #inputFile /home/sk_user/SKAnalysis/test_reconstruction/ibd_sk6_1M_skg4_gd_2pct.root
+#inputFile /disk03/usr8/lkneale/ibd_sk6_reactornu_100k.root
 inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
 #FileListName MyFileList        # the name of a set of files prepared by the LoadFileList tool
 treeName data                   # the name of the tree within the file
 readerName fitReader            # the name to give the MTreeReader in the DataModel
-maxEntries 100                   # max number of entries to process before stopping the ToolChain (-1)
+maxEntries 10000                   # max number of entries to process before stopping the ToolChain (-1)
 skFile 1                        # whether to enable additional functionality (1)
 skrootMode 0                    # 2=read, 1=write, 0=root2root copy. (2)
 outputFile combinedfit.root     # the output file, when using the TreeManager in root2root mode

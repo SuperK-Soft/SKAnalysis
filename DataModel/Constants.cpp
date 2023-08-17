@@ -178,6 +178,13 @@ std::string TriggerIDToName(int code){
 	return "?";
 }
 
+int TriggerNameToID(std::string trigname){
+	if(constants::Trigger_To_Trigger_ID.count(trigname)){
+		return constants::Trigger_To_Trigger_ID.at(trigname);
+	}
+	return -1;
+}
+
 std::string GetTriggerNames(int32_t trigid){
 	std::bitset<32> triggerID{trigid};
 	std::string Trigs="";

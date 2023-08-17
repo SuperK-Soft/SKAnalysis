@@ -51,12 +51,11 @@ class TreeReader: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string inputFile="";
 	std::string FileListName="";
 	std::string selectionsFile="";
 	std::string cutName="";
-	std::string treeName;
+	std::string treeName="data";
 	std::string readerName;
 	int maxEntries=-1;
 	int firstEntry=0;
@@ -84,15 +83,6 @@ class TreeReader: public Tool {
 	bool aft_loaded=false; // is the AFT loaded into the common blocks at present
 	long buffered_entry = -1;
 	long file_cursor=0;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// variables to read in
 	// ====================

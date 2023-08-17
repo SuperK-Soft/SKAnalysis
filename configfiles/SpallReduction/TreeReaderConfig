@@ -1,15 +1,13 @@
 verbosity 1
 #inputFile ./rootFiles/data/sk4/061525/lowe_rfm_run061525.000002.root
-#inputFile /disk02/usr7/jfannon/data/lowe_rfm_run074558.000002.root
-FileListName MyFileList
+#inputFile /disk02/usr7/jfannon/data/lowe_rfm_run074558.000002.root << lfallfit doesn't like this file
+inputFile /disk02/data7/sk6/run/0867/086730/rfm_run086730.000001.root
+#FileListName MyFileList
 
 treeName data
 readerName spallReader
 skFile 1
 skoptn 31,30,26,25
-maxEntries 100                       # max num input entries to process
+maxEntries 1000                       # max num input entries to process
 skbadopt 23
 SK_GEOMETRY 6
-
-#readSheAftTogether 1                # whether to read AFT data for associated SHE events together (0)
-#onlySheAftPairs 1                   # whether to only return SHE+AFT pairs (0)

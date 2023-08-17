@@ -25,7 +25,7 @@
 
 evDisp::evDisp():Tool(){
 	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
+	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
 }
 
 namespace{
@@ -39,7 +39,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	//m_variables.Print();
 	m_data= &data;
 	
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("treeReaderName",treeReaderName);
 	m_variables.Get("plotVar",plotVar);
 	m_variables.Get("dataSrc",dataSrc);
@@ -50,7 +50,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	if(dataSrc == 1 || (dataSrc == -1 && treeReaderName!="")){
 		// if getting data from TTree, check the TreeReader
 		 if(m_data->Trees.count(treeReaderName)==0){
-			Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+			Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 			if(dataSrc==1) return false; // we may not need it...
 		} else {
 			myTreeReader = m_data->Trees.at(treeReaderName);
@@ -63,7 +63,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	gROOT->SetStyle("Plain");
 	if(plotStyle==0){
 		// polymarker versions
-		Log(toolName+" using plotStyle 0: TGraphs",v_debug,verbosity);
+		Log(m_unique_name+" using plotStyle 0: TGraphs",v_debug,m_verbose);
 		topCapHitMap = new TGraph2D();
 		topCapHitMap->SetMarkerStyle(7);
 		bottomCapHitMap = new TGraph2D();
@@ -72,7 +72,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 		barrelHitMap->SetMarkerStyle(7);
 	} else if(plotStyle==1){
 		// histgrams for plotting
-		Log(toolName+" using plotStyle 1: Histograms",v_debug,verbosity);
+		Log(m_unique_name+" using plotStyle 1: Histograms",v_debug,m_verbose);
 		topCapHeatMap = new TH2D("topCapHeatMap", "topCap", 50, -2000, 2000, 50, -2000, 2000);
 		bottomCapHeatMap = new TH2D("bottomCapHeatMap", "bottomCap", 50, -2000, 2000, 50, -2000, 2000);
 		barrelHeatMap = new TH2D("barrelSideHeatMap", "barrelSide", 150, -3.14, 3.14, 50, -2000, 2000);
@@ -176,7 +176,7 @@ bool evDisp::Initialise(std::string configfile, DataModel &data){
 	if(dataSrc == -1){
 		get_ok = FindHits();
 		if(get_ok==0){
-			Log(toolName+" ERROR! Couldn't find hits anywhere!", v_error, verbosity);
+			Log(m_unique_name+" ERROR! Couldn't find hits anywhere!", v_error, m_verbose);
 			return false;
 		}
 	}
@@ -283,13 +283,13 @@ bool evDisp::Execute(){
 		}
 		default: {
 			// unknown
-			Log(toolName+" unknown dataSrc: "+std::to_string(dataSrc),v_error,verbosity);
+			Log(m_unique_name+" unknown dataSrc: "+std::to_string(dataSrc),v_error,m_verbose);
 			// TODO add support for rawtqinfo_ (see SimplifyTree Tool)
 			totalPMTsActivated = 0;
 			break;
 		}
 	}
-	Log(toolName+" This event had "+std::to_string(totalPMTsActivated)+" PMTs hit",v_debug,verbosity);
+	Log(m_unique_name+" This event had "+std::to_string(totalPMTsActivated)+" PMTs hit",v_debug,m_verbose);
 	//if(totalPMTsActivated<10) return true;
 	
 	if(plotStyle==0){
@@ -392,7 +392,7 @@ bool evDisp::Execute(){
 			}
 			default: {
 				// unknown
-				Log(toolName+" unknown dataSrc: "+std::to_string(dataSrc),v_error,verbosity);
+				Log(m_unique_name+" unknown dataSrc: "+std::to_string(dataSrc),v_error,m_verbose);
 				totalPMTsActivated = 0;
 				break;
 			}
@@ -426,7 +426,7 @@ bool evDisp::Execute(){
 		// enum Locations{ kIDTop, kIDWall, kIDBot, kODTop, kODWall, kODBot }; (from ConnectionTable.cc)
 		int loc = myConnectionTable->GetLocation(tubePosition[0],tubePosition[1],tubePosition[2]);
 		
-		if(verbosity>10){
+		if(m_verbose>10){
 			std::cout<<"hit on PMT "<<cableNumber<<std::endl;
 			std::cout<<"charge is "<<charge<<", time is "<<time
 				 <<", PMT position is "<<tubePosition[0]<<", "<<tubePosition[1]
@@ -709,7 +709,7 @@ bool evDisp::Execute(){
 
 bool evDisp::Finalise(){
 	
-	Log(toolName+" performing cleanup",v_debug,verbosity);
+	Log(m_unique_name+" performing cleanup",v_debug,m_verbose);
 	// graphs
 	if(topCapHitMap) delete topCapHitMap;
 	if(bottomCapHitMap) delete bottomCapHitMap;
@@ -733,82 +733,82 @@ bool evDisp::GetData(){
 }
 
 int evDisp::FindHits(){
-	Log(toolName+": Looking for data sources... ",v_debug,verbosity);
+	Log(m_unique_name+": Looking for data sources... ",v_debug,m_verbose);
 	// first check for TQReal
-	logmsg = toolName+": TQREAL branch is ";
+	logmessage = m_unique_name+": TQREAL branch is ";
 	if(myTreeReader->GetTree()->FindBranch("TQREAL")){
 		// TQREAL branch exists, now check if it is populated with hits
 		myTreeReader->Get("TQREAL", myTQReal);
 		if(myTQReal->nhits > 0){
-			logmsg += "present and populated, setting dataSrc = 1";
-			Log(logmsg,v_debug,verbosity);
+			logmessage += "present and populated, setting dataSrc = 1";
+			Log(logmessage,v_debug,m_verbose);
 			dataSrc = 1;
 			return 1;
-		} else logmsg += "present but empty";
-	} else logmsg += " absent";
-	Log(logmsg,v_debug,verbosity);
+		} else logmessage += "present but empty";
+	} else logmessage += " absent";
+	Log(logmessage,v_debug,m_verbose);
 	
 	// no TQReal hits so check the sktqz_ common block
 	if(sktqz_.nqiskz > 0){
-		Log(toolName + ": sktqz_ block is populated, setting dataSrc = 0",v_debug,verbosity);
+		Log(m_unique_name + ": sktqz_ block is populated, setting dataSrc = 0",v_debug,m_verbose);
 		dataSrc = 0;
 		return 1;
 	}
-	Log(toolName+": sktqz_ block is empty",v_debug,verbosity);
+	Log(m_unique_name+": sktqz_ block is empty",v_debug,m_verbose);
 	
 	if(skt_.tisk && skq_.qisk){
-		Log(toolName+" skt_ and skq_ blocks are populated, setting dataSrc = 2",v_debug,verbosity);
+		Log(m_unique_name+" skt_ and skq_ blocks are populated, setting dataSrc = 2",v_debug,m_verbose);
 		dataSrc = 2;
 		return 1;
 	}
-	Log(toolName+": skt_ and skq_ blocks are empty",v_debug,verbosity);
+	Log(m_unique_name+": skt_ and skq_ blocks are empty",v_debug,m_verbose);
 	// if no hits found anywhere return 0
 	return 0;
 }
 
 bool evDisp::BranchCheck(){
 	// check the SECONDARY branch exists
-	logmsg = toolName+": SECONDARY branch is";
+	logmessage = m_unique_name+": SECONDARY branch is";
 	if(myTreeReader->GetTree()->FindBranch("SECONDARY")){
-		logmsg += " present!";
+		logmessage += " present!";
 		// it exists! now check if it has any secondary particle information in it
 		// first atmpd c-style arrays
 		myTreeReader->Get("SECONDARY", mySecondary);
 		if(mySecondary->nscndprt > 0){
-			logmsg += " atmpd arrays are populated";
+			logmessage += " atmpd arrays are populated";
 		} else {
-			logmsg += " atmpd arrays do not seem populated";
+			logmessage += " atmpd arrays do not seem populated";
 		}
 		// also check the SECONDARY vectors
 		if(mySecondary->vertex_time.size() > 0){
-			logmsg += ", secondary vectors are populated";
+			logmessage += ", secondary vectors are populated";
 		} else {
-			logmsg += ", secondary vectors do not seem populated.";
+			logmessage += ", secondary vectors do not seem populated.";
 		}
 	} else {
-		logmsg += " absent";
+		logmessage += " absent";
 	}
-	Log(logmsg,v_debug,verbosity);
+	Log(logmessage,v_debug,m_verbose);
 	
 	
 	//check the LOWE branch exists
-	logmsg = toolName+": LOWE branch is";
+	logmessage = m_unique_name+": LOWE branch is";
 	if(myTreeReader->GetTree()->FindBranch("LOWE")){
-		logmsg += " present";
+		logmessage += " present";
 		// it exists! now check if it is populated. Do this by checking if bsenergy has a value.
 		// FIXME perhaps there is a better way...
 		myTreeReader->Get("LOWE", myLowe);
 		if(myLowe->bsenergy != 0){
 			// lowe branch is populated!
-			logmsg+= " and appears populated!";
+			logmessage+= " and appears populated!";
 		// lowe branch is unpopulated
 		} else {
-			logmsg += " but appears unpopulated.";
+			logmessage += " but appears unpopulated.";
 		}
 	} else {
-		logmsg += " absent";
+		logmessage += " absent";
 	}
-	Log(logmsg,v_debug,verbosity);
+	Log(logmessage,v_debug,m_verbose);
 	
 	return true;
 }
