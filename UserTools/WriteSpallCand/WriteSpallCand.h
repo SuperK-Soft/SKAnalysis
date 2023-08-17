@@ -39,10 +39,6 @@ class WriteSpallCand: public Tool {
 	int lun;
 	int currentRun = 0;
 	
-	int verbosity = 1;
-	int m_verbose;
-	int v_error = 0;
-	
 	TTree* WriteTree=nullptr;
 	TBranch* MatchedEvNumsBranch=nullptr;
 	TBranch* MatchedTimeDiffBranch=nullptr;

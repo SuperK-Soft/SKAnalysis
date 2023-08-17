@@ -1,5 +1,5 @@
 #include "WallCut.h"
-#include "geotnkC.h"
+#include "geotnkC.h" // for HIINTK, DIINTK
 #include "fortran_routines.h"
 #include "Constants.h"
 #include "skroot_loweC.h"
@@ -16,15 +16,14 @@ bool WallCut::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
+	m_variables.Get("cutThreshold",cutThreshold);
 	
-	m_variables.Get("treeReaderName", treeReaderName);
-	
-	if(m_data->Trees.count(treeReaderName)==0){
-	Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
-	return false;
-	} else {
-		myTreeReader = m_data->Trees.at(treeReaderName);
+	// add a cut to the selector if being used
+	get_ok = m_variables.Get("selectorName", selectorName);
+	if(get_ok){
+		std::string description = "bswall < " + toString(cutThreshold);
+		m_data->AddCut(selectorName, m_unique_name, description);
 	}
 	
 	return true;
@@ -35,51 +34,56 @@ bool WallCut::Execute(){
 	
 	bool muon = false;
 	m_data->vars.Get("newMuon", muon);
-	if(muon){
-		return true;
-	}
+	if(muon) return true;
 	
-	myTreeReader->Get("LOWE", myLowe);
+	float WallDistance = 0;
 	
-	reconVertex = skroot_lowe_.bsvertex;
+	// distance to closest wall
+	//WallDistance = skroot_lowe_.linfo[9];    // clwallsk
+	WallDistance = skroot_lowe_.linfo[10];     // bswallsk
 	
-	//	reconVertex = myLowe->bsvertex;
+	// back-projected distance to wall
+	//WallDistance = skroot_lowe_.linfo[6];     // bseffwal
+	//WallDistance = skroot_lowe_.linfo[5];     // cleffwal
 	
-	float xyDistance;
-	float IVRadius = 1690.;
-	float wallDistance;
-	float posHeight = 1810.;
-	float negHeight = -1810.;
+	// or to calculate distance to closest wall
+	//WallDistance = bswallsk = wallsk_(&skroot_lowe_.bsvertex[0]);
 	
-	xyDistance = sqrt(pow(reconVertex[0], 2) + pow(reconVertex[1], 2));
+	// deprecated manual version
+	//WallDistance = DistanceToWall();
 	
-	
-	float zDistance;
-	
-	if(reconVertex[2] < 0){zDistance = reconVertex[2] + posHeight;}
-	else{zDistance = posHeight - reconVertex[2];}
-	
-	wallDistance = abs(IVRadius - xyDistance);
-	
-	if(wallDistance > zDistance){wallDistance = zDistance;}
-	
-
-	if(wallDistance < 200){
+	bool rejected=false;
+	if(wallDistance < cutThreshold){
+		rejected=true;
 		Nskipped++;
 		m_data->vars.Set("Skip",true);
 		//std::cout << "Skipped due to wall" << std::endl;
 		return true;
 	}
 	
-	m_data->vars.Set("Skip",false);
+	if(!selectorName.empty() && !rejected) m_data->ApplyCut(selectorName, m_unique_name, wallDistance);
 	
 	return true;
+}
+
+float WallCut::DistanceToWall(){
+	
+	float* reconVertex = &skroot_lowe_.bsvertex[0];
+	
+	static const float IVRadius = DIINTK/2.f;   // inner volume radius, 1690 cm
+	static const float posHeight = HIINTK/2.f;  // inner volume half-height, 1810 cm
+	
+	float xyDistance = IVRadius - sqrt(pow(reconVertex[0], 2.f) + pow(reconVertex[1], 2.f));
+	float zDistance = posHeight - abs(reconVertex[2]);
+	
+	return std::min(xyDistance, zDistance);
+	
 }
 
 
 bool WallCut::Finalise(){
 	
-	std::cout << "Number of events skipped due to wallcut: " << Nskipped << std::endl;
+	Log(m_unique_name+": Number of events rejected: "+toString(Nskipped),v_debug,verbosity);
 	
 	return true;
 }

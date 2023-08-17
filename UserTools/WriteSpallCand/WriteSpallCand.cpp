@@ -14,7 +14,7 @@ bool WriteSpallCand::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	
 	m_variables.Get("treeReaderName", treeReaderName);
 	m_variables.Get("treeWriterName", treeWriterName);
@@ -22,7 +22,7 @@ bool WriteSpallCand::Initialise(std::string configfile, DataModel &data){
 	myTreeWriter = m_data->Trees.at(treeWriterName);
 	
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 	return false;
 	} else {
 		myTreeReader = m_data->Trees.at(treeReaderName);

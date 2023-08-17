@@ -1,9 +1,8 @@
 #include "ODCut.h"
-#include "Constants.h"
 
 #include "fortran_routines.h"
-#include "softtrg_tbl.h"
 #include "SK_helper_functions.h"
+#include "Constants.h"
 
 #include <bitset>
 
@@ -18,15 +17,20 @@ bool ODCut::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
+	std::string treeReaderName, selectionsName;
 	m_variables.Get("treeReaderName",treeReaderName);
+	m_variables.Get("hitsThreshold", hitsThreshold);
+	m_variables.Get("windowMinT",windowMinT);
+	m_variables.Get("windowMaxT",windowMaxT);
 	
-	// if getting data from TTree, check the TreeReader
-	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
-		return false;
-	} else {
-		myTreeReader = m_data->Trees.at(treeReaderName);
+	get_ok = m_variables.Get("selectorName",selectorName);
+	if(get_ok){
+		std::string description = "cut events with the OD trigger bit set in the primary trigger, or more than "
+		                          +toString(hitsThreshold)+" hits within the time range "
+		                          +toString(windowMinT)+" to "+toString(windowMaxT)
+		                          +" ns from the primary trigger";
+		m_data->AddCut(selectorName, m_unique_name, description);
 	}
 	
 	return true;
@@ -35,44 +39,41 @@ bool ODCut::Initialise(std::string configfile, DataModel &data){
 
 bool ODCut::Execute(){
 	
-	bool muonEventFlag = false;
-	m_data->vars.Get("newMuon", muonEventFlag);
+	//check if the muon flag has been set, and if so bypass this cut
+	bool newMuon = false;
+	m_data->vars.Get("newMuon", newMuon);
+	if(newMuon) return true;
 	
-	//check if the muon flag has been set. if it has skip the event as a possible relic candidate
-	//if not then check to see if the OD software trigger has been set. If it has then throw out the event as a
-	//possible relic candidate and set the skip variable.
-	if(muonEventFlag){
+	// otherwise check if the OD software trigger bit has been set, and if so throw the event out
+	std::bitset<32> triggerID{skhead_.idtgsk};
+	if(triggerID.test(4)){
+		Nskipped++;
+		m_data->vars.Set("Skip", true);
 		return true;
 	}
-	else{
-		myTreeReader->Get("HEADER", myHeader);
-		triggerID = myHeader->idtgsk;
-		if(triggerID.test(4)){
-			Nskipped++;
-			m_data->vars.Set("Skip", true);
-			return true;
-		}
-	}
 	
-	//if not a muon and no OD trigger set then need to check the number of OD hits in a time window
-	//get the number of PMT hits in the OD for this event
+	// as a more stringent check we can also scan for OD activity
 	int ODHits = sktqaz_.nhitaz;
 	
 	//check for number of OD PMT hits within a 500 - 1300 ns range
+	// FIXME is this equivalent to `lfnhita`???
 	float ODHitTime;
 	int ODHitsInWindow = 0;
 	for(int hitPMT; hitPMT < ODHits; hitPMT++){
 		ODHitTime = sktqaz_.taskz[hitPMT];
-		if(ODHitTime >= 500. && ODHitTime <= 1300.){
+		if(ODHitTime >= windowMinT && ODHitTime <= windowMaxT){
 			ODHitsInWindow++;
 		}
 	}
 	
-	//if there are more than 20 hits in the 500 - 1300 ns range then throw out the event as a relic candidate
-	if(ODHitsInWindow > 20){
+	//if there are more than `hitsThreshold` hits in this range, throw out the event as a relic candidate
+	if(ODHitsInWindow > hitsThreshold){
 		Nskipped++;
 		m_data->vars.Set("Skip", true);
 	}
+	
+	// record whether this event passed the cut
+	if(!selectorName.empty()) m_data->ApplyCut(selectorName, m_unique_name, ODHitsInWindow);
 	
 	return true;
 }

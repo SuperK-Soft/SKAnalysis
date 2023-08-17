@@ -11,12 +11,12 @@ bool RelicCandidates::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("treeReaderName",treeReaderName);
 	
 	// if getting data from TTree, check the TreeReader
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	} else {
 		myTreeReader = m_data->Trees.at(treeReaderName);

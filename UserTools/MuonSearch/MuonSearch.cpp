@@ -1,18 +1,17 @@
-#include "SpallCandidates.h"
+#include "MuonSearch.h"
 #include "Constants.h"
 
 #include "fortran_routines.h"
-#include "softtrg_tbl.h"
 #include "SK_helper_functions.h"
 
 #include <bitset>
 
-SpallCandidates::SpallCandidates():Tool(){}
+MuonSearch::MuonSearch():Tool(){}
 
-// Selects LE events within +-60 s of a HE event. Creates a spallation selection by minusing the pre sample from
-// the post sample.
+// Applies the software trigger to search for coincident HE+OD triggers
+// if found, marks the event as containing one or muons.
 
-bool SpallCandidates::Initialise(std::string configfile, DataModel &data){
+bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 	
 	if(configfile!="")  m_variables.Initialise(configfile);
 	//m_variables.Print();
@@ -20,43 +19,33 @@ bool SpallCandidates::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	m_variables.Get("verbosity",verbosity);
-	m_variables.Get("treeReaderName",treeReaderName);
+	m_variables.Get("verbosity",m_verbose);
+	m_variables.Get("coincidence_threshold",coincidence_threshold);
 	
-	// if getting data from TTree, check the TreeReader
-	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
-		return false;
-	} else {
-		myTreeReader = m_data->Trees.at(treeReaderName);
+	// add a cut to the selector if being used
+	get_ok = m_variables.Get("selectorName", selectorName);
+	if(get_ok){
+		std::string description="accept events with a coincident HE+OD trigger pair anywhere in the readout window. Coincidence defined as within "+toString(coincidence_threshold)+" ns";
+		m_data->AddCut(selectorName, m_unique_name, description);
 	}
+	
+	// convert coincidence_threshold from ns to clock ticks for it0sk and swtrgt0ctr
+	coincidence_threshold *= COUNT_PER_NS;
 	
 	return true;
 }
 
 
-bool SpallCandidates::Execute(){
+bool MuonSearch::Execute(){
 	
-	/*
-		TODO List
-		The current reduction places a +-30 s window around the candidates. Marcus mentioned a +-60 s window instead.
-		Searches through all the event windows for muons
-		Fit muons using lfmufit_sk4_hz. This is something that could be ported into tool.
-		Calculated dE/dx using various methods
-		Replaces those with dE/dx results from the fits. I don't know why it calculates these in the first place,
-		maybe for the fitters? Seems to be an issue in the fitters that the ionisation energy is not being calculated
-		correctly.
-	*/
-	
-	// get HEADER branch
-	myTreeReader->Get("HEADER", myHeader);
-	triggerID = myHeader->idtgsk;
+	std::bitset<sizeof(int)*8> triggerID = skhead_.idtgsk;
 	
 	int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
 	
+	// get trigger settings from file (why bother?)
 	softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
 	
-	
+	// disable all triggers except 1 (HE) and 3 (OD) by setting threshold to 100k and window size to 0
 	for(int i = 0; i < 32; i++){
 		if(i != 1 && i != 3){
 			ithr[i] = 100000;
@@ -65,46 +54,74 @@ bool SpallCandidates::Execute(){
 			ipostt0[i]=0;
 		}
 	}
+	// pass to the software trigger algorithm
 	softtrg_set_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
 	
-	// Need to call softtrg_inittrgtbl_ to populate the swtrgtbl_ common block. This requires int* arguments.
-	int normalrunnum = myHeader->nrunsk;
-	int* runnum = &normalrunnum;
-	int tempo = 1280;
-	int* max_qb = &tempo;
+	// call softtrg_inittrgtbl_ to populate the swtrgtbl_ common block.
+	int max_qb = 1280;
 	int one = 1;
-	int* onepointer = &one;
 	int zero = 0;
-	int* zeropointer = &zero; 
+	int ntrg = softtrg_inittrgtbl_(&myHeader->nrunsk, &zero, &one, &max_qb);
 	
-	int ntrg = softtrg_inittrgtbl_(runnum, zeropointer, onepointer, max_qb);
-	
-	int NMuons = 0;
 	std::vector<float> untaggedMuonTime;
 	
-	//check for muons (tagged and untagged)
-	for(int i = 0; i < ntrg; i++){
-		if(swtrgtbl_.swtrgtype[i] == 1){
-			for(int j = 0; j < ntrg; j++){
-				if(swtrgtbl_.swtrgtype[j] == 3){
-					if(abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i]) < 100){
-						NMuons++;
+	// search for pairs of HE+OD within a 100ns window - consider these muons
+	for(int i = 0; i < ntrg; i++){                                                   // loop over triggers found
+		if(swtrgtbl_.swtrgtype[i] == 1){                                             // for each HE trigger...
+			for(int j = 0; j < ntrg; j++){                                           // loop over triggers again
+				if( (swtrgtbl_.swtrgtype[j] == 3) &&                                 // looking for OD triggers...
+					(abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])          // within e.g. ~100ns
+					     < coincidence_threshold)){
 						untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
-						m_data->vars.Set("newMuon", true);
 					}
 				}
 			}
 		}
 	}
 	
-	// if HE (1) and OD (3) trigger bits are already set then the event is an identified muon.
+	// seems redundant, but we can also check the primary trigger
 	if(triggerID.test(1) && triggerID.test(3)){
-		m_data->vars.Set("newMuon", true);
-		if(NMuons >= 2 && untaggedMuonTime[NMuons-1] > 400){
-			std::cout << "Warning: DiMuon event found!" << std::endl;
+		if(untaggedMuonTime.empty()){
+			// worrying if we did not find it...
+			Log(m_unique_name+" Warning! software trigger scan did not pick up primary muon event!",
+			    v_error,verbosity);
+			untaggedMuonTime.push_back(skheadqb_.it0sk);
+		} else {
+			// this is probably the first entry from our scan
+			if(std::abs(skheadqb_.it0sk - untaggedMuonTime.front()) > coincidence_threshold){
+				// time difference of >100ns??
+				Log(m_unique_name+" Warning! software trigger scan first HE+OD event at "
+				   +toString(untaggedMuonTime.front())+" does not line up with primary trigger HE+OD event at "
+				   +toString(skheadqb_.it0sk),v_warning,verbosity);
+				// i guess we can scan for a more robust check...?
+				bool foundit=false;
+				for(auto&& atime : untaggedMuonTime){
+					if(std::abs(atime - skheadqb_.it0sk) < coincidence_threshold){
+						foundit=true;
+						Log(m_unique_name+" found match (Δt="+toString(std::abs(atime - skheadqb_.it0sk))
+						    +") in later subtrigger",v_warning,verbosity);
+					}
+				}
+				// add it to our list i guess
+				if(!foundit) untaggedMuonTime.push_back(skheadqb_.it0sk);
+			}
 		}
-	}else if(NMuons >= 1){
-		std::cout << "Untagged muon found." << std::endl;
+	} else if(!untaggedMuonTime.empty()){
+		// primary trigger says not a muon event, but we found one in subtriggers
+		Log(m_unique_name+": Untagged muon found!",v_debug,verbosity);
+	}
+	
+	// if we found any muons
+	if(!untaggedMuonTime.empty()){
+		// flag it for downstream tools (this will not be a relic candidate)
+		m_data->vars.Set("newMuon", true);
+		// and pass their times
+		m_data->vars.Set("muonTimes", untaggedMuonTime);
+		// mark this event as 'passing' the cut
+		if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, m_unique_name);
+	} else {
+		m_data->vars.Set("newMuon", false);
+		m_data->vars.Set("muonTimes", std::vector<float>{});
 	}
 	
 	return true;
@@ -112,7 +129,7 @@ bool SpallCandidates::Execute(){
 }
 
 
-bool SpallCandidates::Finalise(){
+bool MuonSearch::Finalise(){
 	
 	return true;
 }

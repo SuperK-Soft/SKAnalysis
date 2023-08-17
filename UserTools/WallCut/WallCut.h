@@ -5,9 +5,6 @@
 #include <iostream>
 
 #include "Tool.h"
-#include "MTreeReader.h"
-#include "skroot.h"
-#include "ConnectionTable.h"
 
 
 /**
@@ -29,22 +26,13 @@ class WallCut: public Tool {
 	bool Execute(); ///< Executre function used to perform Tool perpose. 
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
 	
-	
 	private:
+	float DistanceToWall();
 	
-	std::string treeReaderName;
-	
-	MTreeReader* myTreeReader = nullptr;
-	
-	const LoweInfo* myLowe=nullptr;
-	
-	int verbosity = 1;
-	int m_verbose;
-	int v_error = 0;
-	
-	basic_array<float> reconVertex;
-	
+	int cutThreshold = 200; // [cm]
 	int Nskipped = 0;
+	std::string selectorName;
+	
 };
 
 
