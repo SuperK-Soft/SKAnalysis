@@ -7,7 +7,6 @@
 #include "Tool.h"
 #include "MTreeReader.h"
 #include "skroot.h"
-#include "ConnectionTable.h"
 #include "ParticleCand.h"
 
 /**
@@ -27,62 +26,33 @@ class RelicMuonMatching: public Tool {
 	
 	private:
 	
-	std::string treeReaderName;
-	
-	MTreeReader* myTreeReader = nullptr;
-	
+	MTreeReader* rfmReader = nullptr;
 	const Header* myHeader=nullptr;
-	const HardwareTrigger* myHardwareTrigger=nullptr;
-	const LoweInfo* myLowe=nullptr;
 	
-	
-	int verbosity = 1;
-	int m_verbose;
-	int v_error = 0;
-	
-	int lun;
+	int muWriterLUN;
+	int relicWriterLUN;
 	
 	bool RemoveFromDeque(std::vector<int>& particlesToRemove, std::deque<ParticleCand>& particleDeque);
-	unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);
-	bool RelicMuonMatch(std::string particleType, std::deque<ParticleCand>& currentDeque, std::deque<ParticleCand>& targetDeque);
+	bool RelicMuonMatch(bool muonFlag, float currentTime, int subtrg_num=0);
 	
 	bool WriteRelicInfo();
 	bool WriteMuonInfo();
-	bool WriteInfo(ParticleCand Event);
-	bool Makededx(float (&muentry)[4], float (&mdir)[3], int (&ihcab)[11146], float (&qisk)[11146], float (&tisk)[11146], float (&xyzpm)[11146][3], int &nqiskm, float (&dedx)[200]);
-	int mujecttime(float (&v)[4], float (&d)[3], float (&p)[4], double (&dist)[4], float (&cosang)[2]);
 	
 	bool muonFlag;
-	bool relicFlag;
 	int currentSubRun;
-	
-	std::vector<std::string> branchestoSkip;
-	
-	unsigned long long int muonTime;
-	unsigned long long int relicTime;
-	float timeDiff;
-	unsigned long long int bitOne = 1;
+	int lastRun = 0;
 	
 	std::vector<int> relicsToRemove;
 	std::vector<int> muonsToRemove;
 	
-	TTree* WriteTree=nullptr;
-	TBranch* MatchedEvNumsBranch=nullptr;
-	TBranch* MatchedTimeDiffBranch=nullptr;
-	TBranch* PIDBranch=nullptr;
-	
 	std::vector<int> MatchedEvNums;
 	std::vector<float> MatchedTimeDiff;
 	
-	int PID;
+	std::string muSelectorName;
+	std::string relicSelectorName;
 	
-	int lastRun = 0;
-	
-	float bffpos[3];
-	float hpos[3];
-	float bffgood;
-	float modd;
-	
+	// defunct....
+	//unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);
 };
 
 

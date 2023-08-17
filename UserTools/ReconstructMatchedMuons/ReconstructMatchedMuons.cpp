@@ -16,12 +16,12 @@ bool ReconstructMatchedMuons::Initialise(std::string configfile, DataModel &data
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	m_variables.Get("treeReaderName", treeReaderName);
 	m_variables.Get("treeWriterLUN", treeWriterLUN);
 
 	if(m_data->Trees.count(treeReaderName)==0){
-	Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+	Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 	return false;
 	} else {
 		myTreeReader = m_data->Trees.at(treeReaderName);
@@ -73,7 +73,7 @@ bool ReconstructMatchedMuons::Execute(){
 		}else if(muyn_org < 0){
 			skroot_mu_.muyn = 0;
 		}else{
-			Log("Muyn_org returning as == 0. Not supported yet", v_error, verbosity);
+			Log("Muyn_org returning as == 0. Not supported yet", v_error, m_verbose);
 			return false;
 		}
 		

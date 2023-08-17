@@ -1,17 +1,15 @@
-#ifndef RunEnergyCut_H
-#define RunEnergyCut_H
+#ifndef RunwiseEnergyCut_H
+#define RunwiseEnergyCut_H
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <utility>
 
 #include "Tool.h"
-#include "MTreeReader.h"
-#include "skroot.h"
-#include "ConnectionTable.h"
-
 
 /**
- * \class RunEnergyCut
+ * \class RunwiseEnergyCut
  *
  * This is a balnk template for a Tool used by the script to generate a new custom tool. Please fill out the descripton and author information.
 *
@@ -19,29 +17,22 @@
 * $Date: 2019/05/28 10:44:00 $
 */
 
-class RunEnergyCut: public Tool {
+class MTreeSelection;
+
+class RunwiseEnergyCut: public Tool {
 	
 	public:
 	
-	RunEnergyCut(); ///< Simple constructor
+	RunwiseEnergyCut(); ///< Simple constructor
 	bool Initialise(std::string configfile,DataModel &data); ///< Initialise Function for setting up Tool resorces. @param configfile The path and name of the dynamic configuration file to read in. @param data A reference to the transient data class used to pass information between Tools.
 	bool Execute(); ///< Executre function used to perform Tool perpose. 
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
-	
+	bool ParseOptions(std::string& configfile);
 	
 	private:
-	std::string treeReaderName;
-	
-	MTreeReader* myTreeReader = nullptr;
-	
-	const Header* myHeader=nullptr;
-	const LoweInfo* myLowe=nullptr;
-	
-	int verbosity = 1;
-	int m_verbose;
-	int v_error = 0;
-	
+	MTreeSelection* mySelector=nullptr;
 	int Nskipped = 0;
+	std::vector<std::pair<int,int>,std::pair<float,float>> cuts;
 };
 
 

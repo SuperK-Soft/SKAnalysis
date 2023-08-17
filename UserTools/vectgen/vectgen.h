@@ -32,7 +32,6 @@ class vectgen: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string output_file = "vectgen_out";
 	std::string output_format = "DatTable"; // or can be 'zbs'
 	int num_events = 0;         // num IBD events to generate. if !=0, overrides use of run number + rate
@@ -57,15 +56,6 @@ class vectgen: public Tool {
 	
 	int subrun = 0;             // counter for Execute loop.
 	int event_num = 0;          // counter for Execute loop.
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 };
 

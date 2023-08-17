@@ -46,10 +46,6 @@ class ReconstructMatchedMuons: public Tool {
 	
 	std::vector<ParticleCand> muonsToRec;
 	
-	int verbosity = 1;
-	int m_verbose;
-	int v_error = 0;
-	
 	int lastRun;
 	float watert;
 	

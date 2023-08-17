@@ -23,12 +23,7 @@
 #include "bscalls.h"
 #include "TCanvas.h"
 
-VertexFitter::VertexFitter():Tool(){
-
-    // get the name of the tool from its class name
-    toolName=type_name<decltype(this)>(); toolName.pop_back();
-
-}
+VertexFitter::VertexFitter():Tool(){}
 
 
 bool VertexFitter::Initialise(std::string configfile, DataModel &data){
@@ -39,11 +34,11 @@ bool VertexFitter::Initialise(std::string configfile, DataModel &data){
    
     m_data= &data;
    
-    Log(toolName+": Initializing",v_debug,verbosity);
+    Log(m_unique_name+": Initializing",v_debug,m_verbose);
    
     // Get the Tool configuration variables
     // ------------------------------------
-    m_variables.Get("verbosity",verbosity);    // how verbose to be
+    m_variables.Get("verbosity",m_verbose);    // how verbose to be
     m_variables.Get("readerName",readerName);  // name given to the TreeReader used for file handling
     m_variables.Get("dataSrc",dataSrc);        // where to get the data from (common blocks/tqreal)
     m_variables.Get("bonsaiSrc",bonsaiSrc);    // which bonsai to use (skofl or local)
@@ -52,7 +47,7 @@ bool VertexFitter::Initialise(std::string configfile, DataModel &data){
     std::map<std::string,int> lunlist;
     m_data->CStore.Get("LUNList",lunlist);
     if(lunlist.count(readerName)==0){
-        Log(toolName+": error! No LUN associated with readerName "+readerName,v_error,verbosity);
+        Log(m_unique_name+": error! No LUN associated with readerName "+readerName,v_error,m_verbose);
         return false;
     }
     lun = lunlist.at(readerName);
@@ -77,30 +72,30 @@ bool VertexFitter::Initialise(std::string configfile, DataModel &data){
     //------------------
     // Use built-in BONSAI functions (bonsai/bscalls.cc::)
     if (bonsaiSrc==0) {
-        Log(toolName+": Initialising BONSAI using built-in function cfbsinit_.",v_message,verbosity);
-        cfbsinit_(&numPMTs, xyzpm);
+        Log(m_unique_name+": Initialising BONSAI using built-in function cfbsinit_.",v_message,m_verbose);
+        m_data->BonsaiInit();
     }
     // Use BONSAI direct (currently local)
     else{
-        Log(toolName+": Initialising BONSAI direct.",v_message,verbosity);
+        Log(m_unique_name+": Initialising BONSAI direct.",v_message,m_verbose);
         bsgeom = new pmt_geometry(numPMTs,xyzpm);
         bslike = new likelihood(bsgeom->cylinder_radius(),bsgeom->cylinder_height());
         bsfit = new bonsaifit(bslike);
     }
-    Log(toolName+": BONSAI initialised.",v_message,verbosity);
+    Log(m_unique_name+": BONSAI initialised.",v_message,m_verbose);
 
     // check where we are getting the hit info from
     if (dataSrc==0) 
-        Log(toolName+": Getting hit info from common blocks skt_/skq_",v_message,verbosity);
+        Log(m_unique_name+": Getting hit info from common blocks skt_/skq_",v_message,m_verbose);
     else if (dataSrc==1)
     {
-        Log(toolName+": Getting raw hit info from common block sktqz_",v_message,verbosity);
-        Log(toolName+": Warning: this method is not yet functional (need to remove bad channels, etc)",v_warning,verbosity);
+        Log(m_unique_name+": Getting raw hit info from common block sktqz_",v_message,m_verbose);
+        Log(m_unique_name+": Warning: this method is not yet functional (need to remove bad channels, etc)",v_warning,m_verbose);
     }
     else 
     {
-        Log(toolName+": Getting raw hit info from tqreal branch",v_message,verbosity);
-        Log(toolName+": Warning: this method may not give exactly the same result as skt_/skq_ common blocks",v_warning,verbosity);
+        Log(m_unique_name+": Getting raw hit info from tqreal branch",v_message,m_verbose);
+        Log(m_unique_name+": Warning: this method may not give exactly the same result as skt_/skq_ common blocks",v_warning,m_verbose);
     }
     
     return true;
@@ -113,37 +108,45 @@ bool VertexFitter::Execute(){
 
     // Get the branches we need from the tree
     // TODO we don't need to call this for each entry
+    std::cerr<<"vertexfitter getting tree"<<std::endl;
     SuperManager* Smgr = SuperManager::GetManager();
     TreeManager* mgr = Smgr->GetTreeManager(lun);
+    std::cerr<<"getting tqrealinfo"<<std::endl;
     TQReal *tqreal = mgr->GetTQREALINFO();
+    std::cerr<<"getting MC"<<std::endl;
     MCInfo *mc = mgr->GetMC();
 
     if((nread%100)==0){
-        Log(toolName+" read loop "+toString(nread)+", current run "+toString(skhead_.nrunsk),v_message,verbosity);
+        Log(m_unique_name+" read loop "+toString(nread)+", current run "+toString(skhead_.nrunsk),v_message,m_verbose);
     }
     ++nread;
 
     if(MC && skhead_.nrunsk==999999){
-        Log(toolName+" warning: no run number!!",v_warning,verbosity);
+        Log(m_unique_name+" warning: no run number!!",v_warning,m_verbose);
         skhead_.nrunsk = 75000;
     }
 
     // once per run update the water transparency
     if(skhead_.nrunsk!=nrunsk_last){
+        std::cerr<<"updating water transparency with run "<<skhead_.nrunsk<<std::endl;
         int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];  // defined in skdayC.h
         lfwater_(&days_to_run_start, &watert);
-        Log(toolName+" loaded new water transparency value "+toString(watert)
-            +" for run "+toString(skhead_.nrunsk),v_debug,verbosity);
+        Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+            +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
         nrunsk_last = skhead_.nrunsk;
     }
 
     if(MC){
         if(skhead_.nrunsk!=nrunsk_last || skhead_.nsubsk!=nsubsk_last){
+            std::cerr<<"updating bad channel list with run "<<skhead_.nrunsk<<", subrun "<<skhead_.nsubsk<<std::endl;
             int ierr;
             skbadch_(&skhead_.nrunsk,&skhead_.nsubsk,&ierr);
             nrunsk_last = skhead_.nrunsk;
             nsubsk_last = skhead_.nsubsk;
-            if(skhead_.nrunsk!=nrunsk_last) darklf_(&skhead_.nrunsk);
+            if(skhead_.nrunsk!=nrunsk_last){
+                std::cerr<<"updating darklf"<<std::endl;
+                darklf_(&skhead_.nrunsk);
+            }
                 // Get the dark rate
                 float darkmc;
                 int sk_geometry = skheadg_.sk_geometry;
@@ -151,7 +154,7 @@ bool VertexFitter::Execute(){
                     darkmc = mc->darkds*0.7880; // (1/1.269) lfallfit_sk4_mc.F::112
                 }
                 else{
-                    Log(toolName+": SK_GEOMETRY="+toString(sk_geometry)+". Not set up for earlier than SKIV.",v_error,verbosity);
+                    Log(m_unique_name+": SK_GEOMETRY="+toString(sk_geometry)+". Not set up for earlier than SKIV.",v_error,m_verbose);
                 }
             }
     }
@@ -182,6 +185,7 @@ bool VertexFitter::Execute(){
     // clear variables for low & mu fitters
     // also clears mc variables
     // sets bs variables to 99999
+    std::cerr<<"calling lfclear_all"<<std::endl;
     lfclear_all_();
 
     int NHITCUT = 800;//(MC) ? 800 : 1000;  //  maximum number of hits to reconstruct
@@ -316,6 +320,7 @@ bool VertexFitter::Execute(){
     // Instead, we need to apply a secondary 'trigger' to find the hits from
     // the neutron capture. We can do this with a simple hit sum and look
     // for all secondary 'triggers' occurring after the prompt SHE trigger.
+    std::cerr<<"getting hit info"<<std::endl;
     int nqisk = (int)skq_.nqisk;
     float charges[nqisk];  // final array of hit charges
     float times[nqisk];    // final array of hit times
@@ -330,6 +335,7 @@ bool VertexFitter::Execute(){
         // These are the common blocks stored by skread
         // ---------------------------------------------------
         nhit = skq_.nqisk;
+        std::cerr<<"copying from skq"<<std::endl;
         for (int i=0;i<skq_.nqisk; i++){
             //skt_, skq_, skchnl_ common blocks
             cableIDs[i] = skchnl_.ihcab[i];
@@ -344,6 +350,7 @@ bool VertexFitter::Execute(){
         // Get raw hit time and charge info from the common blocks (sktqz)
         // TODO these hits need to be processed as per the tqreal branch 
         // to remove bad channels etc so this will yield different results
+        std::cerr<<"copying from sktqz"<<std::endl;
         nhit = sktqz_.nqiskz;
         for (int i=0;i<nhit; i++) {
             cableIDs[i] = sktqz_.icabiz[i];
@@ -365,6 +372,7 @@ bool VertexFitter::Execute(){
         */
         //  myTreeReader->Get("TQREAL", tqreal);
         // 'raw' in the following means pre-skread i.e. info for all hits
+        std::cerr<<"copying from TQREAL"<<std::endl;
         int nhits_raw = tqreal->nhits;
         Int_t *cableIDs_raw = new Int_t[MAXPM];       //from TQREAL
         Float_t *charges_raw = new Float_t[MAXPM];    //from TQREAL
@@ -417,6 +425,7 @@ bool VertexFitter::Execute(){
     int nvalid,listatm[3],nhitatm[3];
     int atmchnum[3],atmratio[3];
     int num = 3;
+    std::cerr<<"calling skatmap"<<std::endl;
     skatmmap2_(&num,&nvalid,&listatm[0],&nhitatm[0],&atmratio[0],&atmchnum[0]);
     skroot_lowe_.latmnum = atmchnum[0];
     skroot_lowe_.latmh = nhitatm[0];
@@ -424,6 +433,7 @@ bool VertexFitter::Execute(){
     // Get the number of hits around a specified cable mx24
     // mxqisk # of max Q pmt
     int mxhit8;
+    std::cerr<<"calling lfneihit"<<std::endl;
     lfneihit_(&skq_.mxqisk,&mxhit8,&skroot_lowe_.lmx24);
     //tdiff(nt48sk,ltimediff);
     
@@ -432,14 +442,17 @@ bool VertexFitter::Execute(){
     int nqrng[3]; // nhit[3] number of hit divided region of q in 600ns & 1800ns
     // nqrng[0] <= -1 pC, -1 pC <= nqrng[1] <= 1 pC, nqrng[2] > 1 pC
     float rqrng[3]; // ratio of hits for each q bin
+    std::cerr<<"calling lfqhit"<<std::endl;
     lfqhit_(&nqrng[0],&rqrng[0]);
     if ((nqrng[0]+nqrng[1]+nqrng[2])>0){
         skroot_lowe_.lnsratio = float(nqrng[1])/float(nqrng[0]+nqrng[1]+nqrng[2]);
     }
     
     
+    std::cerr<<"doing reconstruction with "<<nhit<<" hits?"<<std::endl;
     if (nhit>9 && nhit<=NHITCUT) // reconstruction unstable with < 10 hits, slow with > 800 hits
     {
+    std::cerr<<"yes"<<std::endl;
         // Do the BONSAI fit
         //------------------
         // do the fit
@@ -455,22 +468,28 @@ bool VertexFitter::Execute(){
         
         if (bonsaiSrc==0){
             int* nhits = &skq_.nqisk;
+            std::cerr<<"calling bonsaifit fortran"<<std::endl;
             int nbf = bonsaifit_(&bsvertex[0],&bsresult[0],&bsgood[0],&nsel,&skq_.nqisk,&cableIDs[0],&times[0],&charges[0]);
+            std::cerr<<"bonsai returned "<<nbf<<std::endl;
         }
         
         else {
+            std::cerr<<"calling bonsai++"<<std::endl;
             goodness *bshits = new goodness(bslike->sets(),bslike->chargebins(),bsgeom,nhit,cableIDs,times,charges);
             int nsel = bshits->nselected();
             if (bshits->nselected()<4) {
-                Log(toolName+": Event "+toString(ev)+", "+toString(bshits->nselected())+" selected hits not enough, not reconstructed.",v_warning,verbosity);
+                Log(m_unique_name+": Event "+toString(ev)+", "+toString(bshits->nselected())+" selected hits not enough, not reconstructed.",v_warning,m_verbose);
                 return false;
             }
             fourhitgrid* bsgrid = new fourhitgrid(bsgeom->cylinder_radius(),bsgeom->cylinder_height(),bshits);
             
+            std::cerr<<"setting hits"<<std::endl;
             bslike->set_hits(bshits);
+            std::cerr<<"maxising"<<std::endl;
             bslike->maximize(bsfit,bsgrid);
             int nbf = bslike->nfit();
             if (nbf >0) {
+                std::cerr<<"getting best vertex"<<std::endl;
                 // get best reconstructed vertex and time if the fit was successful
                 bsvertex[0] = bsfit->xfit();      //reco x
                 bsvertex[1] = bsfit->yfit();      //reco y
@@ -488,6 +507,7 @@ bool VertexFitter::Execute(){
                 bslike->set_hits(NULL);
             }
         }
+        std::cerr<<"bonsai done"<<std::endl;
         
         
         //------------------------------------------------------------------------
@@ -501,7 +521,7 @@ bool VertexFitter::Execute(){
         // output: nhit (maximal number of hits in timing window), ihitcab[nhit] (array with cable numbers of these hits)
         if (bsvertex[0]<9999) {
             int cableIDs_n50[500];
-            Log(toolName+": calculating NX",v_debug,verbosity);
+            Log(m_unique_name+": calculating NX",v_debug,m_verbose);
             skroot_lowe_.bsn50 = CalculateNX(50,bsvertex,cableIDs,times,cableIDs_n50);
             
             // TODO can we avoid using more of the fortran routines?
@@ -730,6 +750,7 @@ bool VertexFitter::Execute(){
     
     
     // TODO???? remove hits outside 1.3 microsec
+    std::cerr<<"deleting outside hits"<<std::endl;
     delete_outside_hits_();
     
     // store header & TQ info.
@@ -744,6 +765,7 @@ bool VertexFitter::Execute(){
     mgr->Clear(); // zero out structures for next entry ! don't forget !
     
     //prev_t_nsec = t_nsec; // TODO reinstate when time is sorted
+    std::cerr<<"end of VertexFitter"<<std::endl;
     
     return true;
 }
@@ -752,7 +774,6 @@ bool VertexFitter::Execute(){
 
 bool VertexFitter::Finalise(){
 
-    // terminate bonsai?
     // plots for sanity check?
     //TTree* t = skroot_get_tree(&lun);
     //TH1D *h1 = new TH1D();
@@ -782,19 +803,19 @@ int VertexFitter::CalculateNX(int timewindow, float* vertex, int cableIDs[], flo
     float cns2cm =21.58333; // speed of light in medium
     // Find tof subtracted times for all hits at reconstructed vertex
     std::vector<float> tof;
-    Log(toolName+": getting tof subtracted times for all hits",v_debug,verbosity);
+    Log(m_unique_name+": getting tof subtracted times for all hits",v_debug,m_verbose);
     for (int hit=0; hit<skq_.nqisk; hit++)
     {
            tof.push_back(times[hit]-sqrt(pow((vertex[0]-geopmt_.xyzpm[cableIDs[hit]-1][0]),2)+pow((vertex[1]-geopmt_.xyzpm[cableIDs[hit]-1][1]),2)+pow((vertex[2]-geopmt_.xyzpm[cableIDs[hit]-1][2]),2))/cns2cm);
     }
     
-    Log(toolName+": sorting tof subtracted times",v_debug,verbosity);
+    Log(m_unique_name+": sorting tof subtracted times",v_debug,m_verbose);
     // Sort in ascending order
     auto tof_sorted = tof;
     sort(tof_sorted.begin(),tof_sorted.end());
        
     // Find the centre of the distribution
-    Log(toolName+": finding the centre of the tof subtracted times distribution",v_debug,verbosity);
+    Log(m_unique_name+": finding the centre of the tof subtracted times distribution",v_debug,m_verbose);
     
     int bsnwindow = 1;
     int hstart_test = 0 ;
@@ -822,7 +843,7 @@ int VertexFitter::CalculateNX(int timewindow, float* vertex, int cableIDs[], flo
         cableIDs_twindow[bsnwin++]=cableIDs[hit];
     }
     if (bsnwin!=bsnwindow){
-        Log(toolName+": bsnwin error "+toString(bsnwin)+" != "+toString(bsnwindow),v_error,verbosity);
+        Log(m_unique_name+": bsnwin error "+toString(bsnwin)+" != "+toString(bsnwindow),v_error,m_verbose);
     }
     return(bsnwindow);
 }

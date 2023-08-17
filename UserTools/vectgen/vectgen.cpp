@@ -7,12 +7,7 @@
 #include "TRandom3.h"
 #include <cmath> // floor
 
-extern "C" void spectrum_(int*,int*,int*,float*,int*,float*,float*,int*);
-
-vectgen::vectgen():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+vectgen::vectgen():Tool(){}
 
 bool vectgen::Initialise(std::string configfile, DataModel &data){
 	
@@ -21,11 +16,11 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity", verbosity);           // how verbose to be
+	m_variables.Get("verbosity", m_verbose);           // how verbose to be
 	m_variables.Get("output_file", output_file);       // location of output file.
 	m_variables.Get("output_format", output_format);   // "zbs" or "DatTable" (SKG4)
 	m_variables.Get("num_events", total_events);       // we may directly specify number of events...
@@ -51,8 +46,8 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 	
 	// validity check
 	if(output_format!="zbs" && output_format!="DatTable"){
-		Log(toolName+" Uknown output format "+output_format+"! Valid options are "
-		    "'zbs' or 'DatTable'",v_error,verbosity);
+		Log(m_unique_name+" Uknown output format "+output_format+"! Valid options are "
+		    "'zbs' or 'DatTable'",v_error,m_verbose);
 		return false;
 	}
 	
@@ -76,12 +71,12 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 	float total_livetime=0;
 	if(total_events==0){
 		if(run_number==0 || event_rate==0){
-			Log(toolName+": Please provide either a number of events to generate, "
-			   "or an event rate and run number for livetime.",v_error,verbosity);
+			Log(m_unique_name+": Please provide either a number of events to generate, "
+			   "or an event rate and run number for livetime.",v_error,m_verbose);
 			return false;
 		}
 		if(livetime_file==""){
-			Log(toolName+" Warning: No livetime file given - using SK-IV livetime file",v_warning,verbosity);
+			Log(m_unique_name+" Warning: No livetime file given - using SK-IV livetime file",v_warning,m_verbose);
 			livetime_file = "/home/sklowe/realtime_sk4_rep/solar_apr19/timevent/timevent.r061525.r077958";
 		}
 		// calculate livetime, noting subrun start date+times and durations (for zbs output)
@@ -111,12 +106,12 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 		duration.push_back(total_events / event_rate);
 	}
 	
-	logmessage = toolName+" Will generate "+toString(total_events)+" IBD events "
+	logmessage = m_unique_name+" Will generate "+toString(total_events)+" IBD events "
 	    "with positron energy in the range "+toString(min_E)+" -- "+toString(max_E)+" MeV";
 	if(random_position) logmessage += " with random positions within the fiducial volume";
 	else logmessage += " at position ("+toString(pos_x)+", "+toString(pos_y)+", "+toString(pos_z)+")";
 	logmessage += " with random directions";
-	Log(logmessage,v_debug,verbosity);
+	Log(logmessage,v_debug,m_verbose);
 	
 	// initialize zbs. This is needed whether we're writing to zbs or not.
 	skheadf_.sk_file_format = 0;    // set common block variable for ZBS format
@@ -125,7 +120,7 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 	// open the output file
 	if(output_format=="zbs"){
 		if(output_file=="vectgen_out") output_file += ".zbs"; // add an extension if using default filename
-		Log(toolName+" creating output ZBS file "+output_file,v_debug,verbosity);
+		Log(m_unique_name+" creating output ZBS file "+output_file,v_debug,m_verbose);
 		// get a unique handle for the file
 		zbs_LUN = m_data->GetNextLUN();
 		// open output file
@@ -134,16 +129,16 @@ bool vectgen::Initialise(std::string configfile, DataModel &data){
 		int ihndl=1;
 		skopenf_( &zbs_LUN, &ipt, "Z",&get_ok, &ihndl );
 		if(get_ok!=0){   // based on skdump_new, this should be 0 for success...
-			Log(toolName+" Error opening output ZBS file!",v_error,verbosity);
+			Log(m_unique_name+" Error opening output ZBS file!",v_error,m_verbose);
 		}
 	} else {
 		// output fstream
 		if(output_file=="vectgen_out") output_file += ".dat";
-		Log(toolName+" creating output dat file "+output_file,v_debug,verbosity);
+		Log(m_unique_name+" creating output dat file "+output_file,v_debug,m_verbose);
 		datout = new std::ofstream(output_file.c_str(),std::ios::out);
 		if(not datout->is_open()){
-			Log(toolName+" Error! Could not open output file "+output_file+" for writing!"
-			    +" Does the path exist?",v_debug,verbosity);
+			Log(m_unique_name+" Error! Could not open output file "+output_file+" for writing!"
+			    +" Does the path exist?",v_debug,m_verbose);
 			return false;
 		}
 		// write out preamble. The DatTable is only read after a line containing "#DATASTART" is found.
@@ -192,7 +187,7 @@ bool vectgen::Execute(){
 	spectrum_(&flag,date.at(subrun).data(),time.at(subrun).data(),&position[0][0],
 	          &seed,&min_E,&max_E,&random_position);
 	if(output_format=="zbs"){
-		Log(toolName+": writing primaries to zbs output",v_debug,verbosity);
+		Log(m_unique_name+": writing primaries to zbs output",v_debug,m_verbose);
 		// slmcmklow - $SKOFL_ROOT/lowe/sollib/slmcmklow.F - populates the LOWMC zbs bank
 		// which contains the passed variables on run num, start date+time and duration.
 		slmcmklow_(&run_number,&subrun,date.at(subrun).data(),time.at(subrun).data(),&duration.at(subrun));
@@ -201,7 +196,7 @@ bool vectgen::Execute(){
 		// reset common blocks for next event
 		kzeclr_();
 	} else if(output_format=="DatTable"){
-		Log(toolName+": writing output primaries to DatTable file",v_debug,verbosity);
+		Log(m_unique_name+": writing output primaries to DatTable file",v_debug,m_verbose);
 		// DatTable doesn't support run information variables,
 		// but we do need to write the generated IBD particles
 		// from the VCWORK and VCVRTX banks to the output file.
@@ -215,7 +210,7 @@ bool vectgen::Execute(){
 		// sanity check - we expect 3 output particles per IBD event
 		if(vcwork_.nvc!=3){
 			std::cerr<<"We have "<<vcwork_.nvc<<" primary particles!"<<std::endl;
-			verbosity=10;
+			m_verbose=10;
 		}
 		// the DatTable file needs the pdg code, position, time, kinetic energy and direction of each primary
 		// loop over output particles
@@ -246,7 +241,7 @@ bool vectgen::Execute(){
 	++event_num;
 	// check if this should be our last event
 	if(event_num==total_events){
-		Log(toolName+" Finished generating all events, terminating loop",v_debug,verbosity);
+		Log(m_unique_name+" Finished generating all events, terminating loop",v_debug,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	}
 	// check if we're moving to a new subrun
@@ -312,7 +307,7 @@ float vectgen::CalculateLivetime(int run_number, std::string livetime_filename, 
 	slredtimev_(&minus1, &runnum, &subrun, &runstartdate[0], &runstarttime[0], &livetime, &solardir[0], &istat);
 	// scan the livetime file for entries matching the requested run
 	while(istat==0){
-		if(verbosity>2 && (line_num%1000)==0) printf(".");
+		if(m_verbose>2 && (line_num%1000)==0) printf(".");
 		// $SKOFL_ROOT/lowe/sollib/slredtimev.f
 		slredtimev_(&LUN, &runnum, &subrun, &runstartdate[0], &runstarttime[0], &livetime, &solardir[0], &istat);
 		++line_num;
@@ -341,8 +336,8 @@ float vectgen::CalculateLivetime(int run_number, std::string livetime_filename, 
 	cclose_(&LUN);  // $SKOFL_ROOT/src/iolib/cclose.f
 	// inform DataModel the LUN is again free
 	m_data->FreeLUN(LUN);
-	Log(toolName+" livetime for run "+toString(run_number)+" was "
-	    +toString(total_livetime)+" seconds",v_debug,verbosity);
+	Log(m_unique_name+" livetime for run "+toString(run_number)+" was "
+	    +toString(total_livetime)+" seconds",v_debug,m_verbose);
 	
 	return total_livetime;
 }
