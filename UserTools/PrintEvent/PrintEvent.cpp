@@ -968,6 +968,9 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerIDToName(i));
 		if(trigit==triggers_of_interest.end()) continue;
 		
+		// also, by definition searching for subtriggers of type AFT doesn't make sense
+		if(i==int(TriggerType::AFT)) continue;
+		
 		int ntrigsfound=0;
 		int MAX_SUBTRIGS=100;
 		std::vector<int> t0_sub(MAX_SUBTRIGS,-1);  // relative time of subtrigger to IT0SK

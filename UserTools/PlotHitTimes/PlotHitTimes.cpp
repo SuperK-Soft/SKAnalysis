@@ -83,6 +83,13 @@ bool PlotHitTimes::Execute(){
 		n_triggers += GetSubtriggerFlags(thetrigtype, in_subtrigger_flags, n_triggers);
 	}
 	
+	// tell ROOT not to assume ownership of histograms (not add them to its list of histograms)
+	// without this, ROOT "remembers" the name of a histogram that no longer exists
+	// and spits out a warning that it is being replaced with a potential memory leak.
+	// this is a blunt tool as it's a global directive; alternative is to explicitly
+	// remove them from gDirectory on cleanup.
+	//TH1::AddDirectory(kFALSE);
+	
 	// histograms for out-of-gate, in-gate, and each 1.3us window for the primary and all subtriggers
 	// times will be plotted in the frame of reference of the primary trigger
 	THStack h_hits("h_hits","Hit Times");
@@ -94,10 +101,6 @@ bool PlotHitTimes::Execute(){
 		std::string h_name = "h_in_13us_"+std::to_string(i+1);
 		std::string h_title = "Hit Times in 1.3us gate "+std::to_string(i+1);
 		h_hits.Add(new TH1D(h_name.c_str(), h_title.c_str(), nbins, earliest_hit_time-padding, latest_hit_time+padding));
-	}
-	// 'mark the histograms as deletable? F*#% knows.
-	for(int i=0; i<h_hits.GetHists()->GetEntries(); ++i){
-		h_hits.GetHists()->SetBit(kMustCleanup);
 	}
 	TH1D* ahist = nullptr; // placeholder
 	
@@ -181,12 +184,17 @@ bool PlotHitTimes::Execute(){
 	}
 	
 	fout->cd();
-	c_subtriggers->Clear();
 	c_subtriggers->cd();
 	h_hits.Draw();
 	std::string canv_name = "event_"+std::to_string(myTreeReader->GetEntryNumber());
 	c_subtriggers->Write(canv_name.c_str());
 	gDirectory->cd();
+	
+	// NO, ROOT, YOU DO NOT OWN THESE. THEY DON'T EVEN EXIST ANY MORE. STOP IT.
+	for(int i=0; i<h_hits.GetHists()->GetEntries(); ++i){
+		gDirectory->GetList()->Remove(h_hits.GetHists()->At(i));
+	}
+	c_subtriggers->Clear();
 	
 	return true;
 }
