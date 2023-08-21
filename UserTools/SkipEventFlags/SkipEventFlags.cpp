@@ -18,7 +18,7 @@ bool SkipEventFlags::Initialise(std::string configfile, DataModel &data){
 	
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	
-	if(!ParseOptions()) return false;
+	if(!ParseOptions(configfile)) return false;
 	
 	// if saving the passing events to an MTreeSelection...
 	get_ok = m_variables.Get("selectorName", selectorName);
@@ -49,7 +49,7 @@ bool SkipEventFlags::Execute(){
 	std::bitset<sizeof(int)*8> flags_bits = skhead_.ifevsk;
 	
 	// debug prints
-	if(m_verbose >= v_debug) PrintFlagBits();
+	if(m_verbose >= v_debug) PrintFlags();
 	
 	bool skipit=false;
 	// specify only the types we do want
@@ -84,12 +84,34 @@ bool SkipEventFlags::Finalise(){
 	return true;
 }
 
-bool SkipEventFlags::ParseOptions(){
+bool SkipEventFlags::ParseOptions(std::string configfile){
 	
 	std::string allowedFlagsString="";
 	std::string skippedFlagsString="";
-	m_variables.Get("skippedFlags", skippedFlagsString);
-	m_variables.Get("allowedFlags", allowedFlagsString);
+	
+	std::ifstream ifile(configfile);
+	if(!ifile.is_open()){
+		Log(m_unique_name+" Error! Failed to open config file "+configfile,v_error,m_verbose);
+		return false;
+	}
+	std::string line;
+	std::string key;
+	std::stringstream ss;
+	while(getline(ifile, line)){
+		if(line.empty()) continue;
+		if(line[0]=='#') continue;
+		ss.clear();
+		ss.str(line);
+		if(!(ss >> key)) continue;
+		if(key[0]=='#') continue;
+		if(key=="skippedFlags"){
+			skippedFlagsString = line.substr(line.find("skippedFlags")+key.length(),std::string::npos);
+		} else if(key=="allowedFlags"){
+			allowedFlagsString = line.substr(line.find("allowedFlags")+key.length(),std::string::npos);
+		}
+	}
+	ifile.close();
+	
 	std::stringstream allowedFlagsSS(allowedFlagsString);
 	std::stringstream skippedFlagsSS(skippedFlagsString);
 	// parse the allowedFlagsString for allowed flags
@@ -108,7 +130,7 @@ bool SkipEventFlags::ParseOptions(){
 			int next_bit = stoi(next_flag);
 			allowedFlags.push_back(next_bit);
 		} catch (...) {
-			Log(m_unique_name+" error parsing allowed flag '"+next_flag+"'",v_error,verbosity);
+			Log(m_unique_name+" error parsing allowed flag '"+next_flag+"'",v_error,m_verbose);
 			return false;
 		}
 	}
@@ -127,7 +149,7 @@ bool SkipEventFlags::ParseOptions(){
 			int next_bit = stoi(next_flag);
 			skippedFlags.push_back(next_bit);
 		} catch (...) {
-			Log(m_unique_name+" error parsing skipped flag '"+next_flag+"'",v_error,verbosity);
+			Log(m_unique_name+" error parsing skipped flag '"+next_flag+"'",v_error,m_verbose);
 			return false;
 		}
 	}
@@ -143,12 +165,6 @@ bool SkipEventFlags::ParseOptions(){
 
 void SkipEventFlags::PrintFlags(){
 	std::bitset<sizeof(int)*8> flags_bits = skhead_.ifevsk;
-	
-	Log(m_unique_name+" Flag word for the active entry is: "
-		+flags_bits.to_string(),v_debug,m_verbose);
-	if(m_verbose>(v_debug+1)){
-		for(int i=0; i<(sizeof(int)*8); ++i){
-			if(flags_bits.test(i)) std::cout<<"Flag "<<FlagIDToName(i)<<" ("<<i<<") set"<<std::endl;
-		}
-	}
+	Log(m_unique_name+" Event flags for this event: "+flags_bits.to_string()
+	   +" = "+GetEventFlagNames(skhead_.ifevsk),v_debug,m_verbose);
 }

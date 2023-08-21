@@ -33,20 +33,20 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	if(renameDataTo!="") existingTree->SetName(renameDataTo.c_str());
 	
 	// set the associated file as active
-	myTreeReader->GetCurrentFile()->cd();
+	myTreeReader->GetFile()->cd();
 	
 	// make a new TreeManager in Write mode, but give it an empty file name.
 	// this causes the internal call to 'new TFile(filename, "RECREATE")'
 	// to fail, but this is not checked, so the code subsequently carries on,
 	// making a new managed Tree, associated with the current ROOT directory
 	// (i.e. our existing file)
-	int LUN = m_data->GetNextLUN(LUN, readerName);
+	int LUN = m_data->GetNextLUN(LUN, treeReaderName);
 	skroot_open_write_(&LUN, "", 0);
 	TreeManager* mgr = skroot_get_mgr(&LUN);
-	thisTree = mgr->GetTree();
-	thisTree->SetName(newTreeName);
+	thistree = mgr->GetTree();
+	thistree->SetName(newTreeName.c_str());
 	// don't think this is actually needed
-	//thisTree->SetDirectory(myTreeReader->GetCurrentFile());
+	//thistree->SetDirectory(myTreeReader->GetFile());
 	
 	return true;
 }
@@ -67,8 +67,8 @@ bool AddTree::Finalise(){
 	// destructor of all the TreeManagers, causing each to Write and Close their files.
 	// So, it should be fine if we call Write on this Tree in Finalise, because the
 	// parent file will not be Closed and deleted until the application terminates.
-	myTreeReader->GetCurrentFile()->cd();
-	thisTree->Write("",TObject::kOverwrite);
+	myTreeReader->GetFile()->cd();
+	thistree->Write("",TObject::kOverwrite);
 	
 	return true;
 }

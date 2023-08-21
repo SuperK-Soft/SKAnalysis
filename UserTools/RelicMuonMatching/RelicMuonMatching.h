@@ -50,6 +50,7 @@ class RelicMuonMatching: public Tool {
 	
 	std::string muSelectorName;
 	std::string relicSelectorName;
+	std::string rfmReaderName;
 	
 	// defunct....
 	//unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);

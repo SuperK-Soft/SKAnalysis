@@ -29,7 +29,7 @@ bool WriteSkEvent::Initialise(std::string configfile, DataModel &data){
 	if(mgr->GetMode()==2){
 		// file is opened in READ mode! no output file to write!
 		Log(m_unique_name+" Error! TreeReader "+treeReaderName+" is opened in SKROOT_READ mode,"
-		    " so cannot write outputs to it!",v_error,verbosity);
+		    " so cannot write outputs to it!",v_error,m_verbose);
 		m_data->vars.Set("StopLoop",1); // fatal error
 		return false;
 	}
@@ -40,7 +40,7 @@ bool WriteSkEvent::Initialise(std::string configfile, DataModel &data){
 
 bool WriteSkEvent::Execute(){
 	
-	Log(m_unique_name+" Executing...",v_debug,verbosity);
+	Log(m_unique_name+" Executing...",v_debug,m_verbose);
 	
 	// remove hits outside 1.3 microsec window from primary trigger
 	if(delete_outside_hits) delete_outside_hits_();

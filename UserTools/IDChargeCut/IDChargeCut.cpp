@@ -39,7 +39,7 @@ bool IDChargeCut::Execute(){
 		m_data->vars.Set("Skip", true);
 	}
 	
-	if(selectorName) m_data->AddPassingEvent(selectorName, m_unique_name);
+	if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, m_unique_name);
 	
 	return true;
 }

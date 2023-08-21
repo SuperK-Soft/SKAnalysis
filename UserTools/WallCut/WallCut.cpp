@@ -36,21 +36,21 @@ bool WallCut::Execute(){
 	m_data->vars.Get("newMuon", muon);
 	if(muon) return true;
 	
-	float WallDistance = 0;
+	float wallDistance = 0;
 	
 	// distance to closest wall
-	//WallDistance = skroot_lowe_.linfo[9];    // clwallsk
-	WallDistance = skroot_lowe_.linfo[10];     // bswallsk
+	//wallDistance = skroot_lowe_.linfo[9];    // clwallsk
+	wallDistance = skroot_lowe_.linfo[10];     // bswallsk
 	
 	// back-projected distance to wall
-	//WallDistance = skroot_lowe_.linfo[6];     // bseffwal
-	//WallDistance = skroot_lowe_.linfo[5];     // cleffwal
+	//wallDistance = skroot_lowe_.linfo[6];     // bseffwal
+	//wallDistance = skroot_lowe_.linfo[5];     // cleffwal
 	
 	// or to calculate distance to closest wall
-	//WallDistance = bswallsk = wallsk_(&skroot_lowe_.bsvertex[0]);
+	//wallDistance = bswallsk = wallsk_(&skroot_lowe_.bsvertex[0]);
 	
 	// deprecated manual version
-	//WallDistance = DistanceToWall();
+	//wallDistance = DistanceToWall();
 	
 	bool rejected=false;
 	if(wallDistance < cutThreshold){
@@ -83,7 +83,7 @@ float WallCut::DistanceToWall(){
 
 bool WallCut::Finalise(){
 	
-	Log(m_unique_name+": Number of events rejected: "+toString(Nskipped),v_debug,verbosity);
+	Log(m_unique_name+": Number of events rejected: "+toString(Nskipped),v_debug,m_verbose);
 	
 	return true;
 }

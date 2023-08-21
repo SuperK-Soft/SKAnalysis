@@ -32,6 +32,8 @@ class IDChargeCut: public Tool {
 	int totalHits = 0;
 	int hitLimit = 999;
 	
+	std::string selectorName;
+	
 };
 
 

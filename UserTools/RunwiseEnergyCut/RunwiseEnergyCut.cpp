@@ -1,7 +1,6 @@
 #include "RunwiseEnergyCut.h"
 #include "fortran_routines.h"
 #include "Constants.h"
-#include "skroot_loweC.h"
 
 RunwiseEnergyCut::RunwiseEnergyCut():Tool(){}
 
@@ -63,7 +62,7 @@ bool RunwiseEnergyCut::Execute(){
 	
 	if(!selectorName.empty() && !rejected) m_data->ApplyCut(selectorName, m_unique_name, reconEnergy);
 	
-	Log(m_unique_name+" Event passed with energy: "+toString(skroot_lowe_.bsenergy),v_debug,verbosity);
+	Log(m_unique_name+" Event passed with energy: "+toString(skroot_lowe_.bsenergy),v_debug,m_verbose);
 	
 	return true;
 }
@@ -71,7 +70,7 @@ bool RunwiseEnergyCut::Execute(){
 
 bool RunwiseEnergyCut::Finalise(){
 	
-	Log(m_unique_name+": Number of events skipped due to RunEnergy cut: "+toString(Nskipped),v_debug,verbosity);
+	Log(m_unique_name+": Number of events skipped due to RunEnergy cut: "+toString(Nskipped),v_debug,m_verbose);
 	
 	return true;
 }
@@ -81,7 +80,7 @@ bool RunwiseEnergyCut::ParseOptions(std::string& configfile){
 	std::string line;
 	std::ifstream infile(configfile);
 	if(!infile.is_open()){
-		Log(m_unique_name+" Error opening config file "+configfile,v_error,verbosity);
+		Log(m_unique_name+" Error opening config file "+configfile,v_error,m_verbose);
 		return false;
 	}
 	std::stringstream ss;
@@ -91,24 +90,24 @@ bool RunwiseEnergyCut::ParseOptions(std::string& configfile){
 	while(getline(infile, line)){
 		if(line.empty()) continue;
 		ss.str(line);
-		if(!ss >> key) break; // ?? what happened?
+		if(!(ss >> key)) break; // ?? what happened?
 		if(key[0]=='#') continue;
 		if(key!="cut") continue;
 		if(!(ss >> startrun >> endrun >> minE >> maxE)) continue;
-		cuts.emplace_back({startrun, endrun}, {minE, maxE});
+		cuts.emplace_back(std::pair<int,int>{startrun, endrun}, std::pair<int,int>{minE, maxE});
 	}
 	
-	if(verbosity >= v_debug){
+	if(m_verbose >= v_debug){
 		std::cout<<m_unique_name<<" got cuts:\n";
 		for(auto&& acut : cuts){
 			std::cout<<acut.first.first<<" < Run < "<<acut.first.second
 			         <<" : Require "<<acut.second.first<<" < bsenergy < "<<acut.second.second<<"\n";
 		}
-		std::flush;
+		std::cout<<std::flush;
 	}
 	
 	if(cuts.empty()){
-		Log(m_unique_name+" Error! Found no valid cut specifications in config file!",v_error,verbosity);
+		Log(m_unique_name+" Error! Found no valid cut specifications in config file!",v_error,m_verbose);
 		return false;
 	}
 	

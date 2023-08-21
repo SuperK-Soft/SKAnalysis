@@ -9,5 +9,5 @@ readerName spallReader
 skFile 1
 skoptn 31,30,26,25
 maxEntries 1000                       # max num input entries to process
-skbadopt 23
+skbadopt 23   # 55? we need to re-read with 0 for muons
 SK_GEOMETRY 6

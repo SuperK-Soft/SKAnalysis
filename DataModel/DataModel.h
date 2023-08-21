@@ -45,8 +45,9 @@
 #include "ParticleCand.h"
 #include "skroot_loweC.h"
 
+#include "MTreeSelection.h"
+
 class MTreeReader;
-class MTreeSelection;
 class TreeReader;
 class ConnectionTable;
 
@@ -190,7 +191,7 @@ class DataModel {
 
 
 template<typename... Args>
-bool DataModel::AddCut(std::string selector, std::string cut, std::string description){
+bool DataModel::AddCut(std::string selector, std::string cut, std::string description, Args... rest){
 	if(selector!="all" && Selectors.count(selector)==0){
 		std::cerr<<"DataModel::AddCut Error! Unrecognised selector "<<selector
 		         <<" for cut "<<cut<<std::endl;
@@ -200,10 +201,10 @@ bool DataModel::AddCut(std::string selector, std::string cut, std::string descri
 	if(selector=="all"){
 		// add this event to all selectors
 		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
-			ret &= sel->AddCut(cut, description);
+			ret &= sel->second->AddCut(cut, description, rest...);
 		}
 	} else {
-		ret = Selectors.at(selector).AddCut(cut, val, rest...);
+		ret = Selectors.at(selector)->AddCut(cut, description, rest...);
 	}
 	return ret;
 }
@@ -219,10 +220,10 @@ bool DataModel::ApplyCut(std::string selector, std::string cut, double val, Args
 	if(selector=="all"){
 		// add this event to all selectors
 		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
-			ret &= sel->ApplyCut(cut, val, rest...);
+			ret &= sel->second->ApplyCut(cut, val, rest...);
 		}
 	} else {
-		ret = Selectors.at(selector).ApplyCut(cut, val, rest...);
+		ret = Selectors.at(selector)->ApplyCut(cut, val, rest...);
 	}
 	return ret;
 }
@@ -238,10 +239,10 @@ bool DataModel::AddPassingEvent(std::string selector, std::string cut, Args... r
 	if(selector=="all"){
 		// add this event to all selectors
 		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
-			ret &= sel->AddPassingEvent(cut, rest...);
+			ret &= sel->second->AddPassingEvent(cut, rest...);
 		}
 	} else {
-		ret = Selectors.at(selector).AddPassingEvent(cut, rest...);
+		ret = Selectors.at(selector)->AddPassingEvent(cut, rest...);
 	}
 	return ret;
 }

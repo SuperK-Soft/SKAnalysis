@@ -18,7 +18,7 @@ bool SkipTriggers::Initialise(std::string configfile, DataModel &data){
 	
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	
-	if(!ParseOptions()) return false;
+	if(!ParseOptions(configfile)) return false;
 	
 	// if saving the passing events to an MTreeSelection...
 	get_ok = m_variables.Get("selectorName", selectorName);
@@ -49,7 +49,7 @@ bool SkipTriggers::Execute(){
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
 	
 	// debug prints
-	if(m_verbose >= v_debug) PrintTriggerBits();
+	if(m_verbose >= v_debug) PrintTriggers();
 	
 	bool skipit=false;
 	// specify only the types we do want
@@ -84,15 +84,37 @@ bool SkipTriggers::Finalise(){
 	return true;
 }
 
-bool SkipTriggers::ParseOptions(){
+bool SkipTriggers::ParseOptions(std::string configfile){
 	
 	std::string allowedTriggersString="";
 	std::string skippedTriggersString="";
-	m_variables.Get("skippedTriggers", skippedTriggersString);
-	m_variables.Get("allowedTriggers", allowedTriggersString);
-	if(allowedTriggersString!="" && skippedTriggerString!=""){
+	
+	std::ifstream ifile(configfile);
+	if(!ifile.is_open()){
+		Log(m_unique_name+" Error! Failed to open config file "+configfile,v_error,m_verbose);
+		return false;
+	}
+	std::string line;
+	std::string key;
+	std::stringstream ss;
+	while(getline(ifile, line)){
+		if(line.empty()) continue;
+		if(line[0]=='#') continue;
+		ss.clear();
+		ss.str(line);
+		if(!(ss >> key)) continue;
+		if(key[0]=='#') continue;
+		if(key=="skippedTriggers"){
+			skippedTriggersString = line.substr(line.find("skippedTriggers")+key.length(),std::string::npos);
+		} else if(key=="allowedTriggers"){
+			allowedTriggersString = line.substr(line.find("allowedTriggers")+key.length(),std::string::npos);
+		}
+	}
+	ifile.close();
+	
+	if(allowedTriggersString!="" && skippedTriggersString!=""){
 		// seems too much like user error
-		Log(m_unique_name+" Error! Please specify either allowed or skipped triggers, not both",v_error,verbosity);
+		Log(m_unique_name+" Error! Please specify either allowed or skipped triggers, not both",v_error,m_verbose);
 		return false;
 	}
 	std::stringstream allowedTriggersSS(allowedTriggersString);
@@ -109,11 +131,11 @@ bool SkipTriggers::ParseOptions(){
 			int next_bit = stoi(next_trig);
 			allowedTriggers.push_back(next_bit);
 		} catch (...) {
-			Log(m_unique_name+" error parsing allowed trigger '"+next_trig+"'",v_error,verbosity);
+			Log(m_unique_name+" error parsing allowed trigger '"+next_trig+"'",v_error,m_verbose);
 			return false;
 		}
 	}
-	// same for skippedTriggerString
+	// same for skippedTriggersString
 	while(skippedTriggersSS >> next_trig){
 		if(next_trig[0]=='#') break; // trailing comments
 		if(TriggerNameToID(next_trig)>=0){
@@ -124,7 +146,7 @@ bool SkipTriggers::ParseOptions(){
 			int next_bit = stoi(next_trig);
 			skippedTriggers.push_back(next_bit);
 		} catch (...) {
-			Log(m_unique_name+" error parsing skipped trigger '"+next_trig+"'",v_error,verbosity);
+			Log(m_unique_name+" error parsing skipped trigger '"+next_trig+"'",v_error,m_verbose);
 			return false;
 		}
 	}
@@ -140,12 +162,6 @@ bool SkipTriggers::ParseOptions(){
 
 void SkipTriggers::PrintTriggers(){
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
-	
-	Log(m_unique_name+" Trigger word for the active entry is: "
-		+trigger_bits.to_string(),v_debug,m_verbose);
-	if(m_verbose>(v_debug+1)){
-		for(int i=0; i<(sizeof(int)*8); ++i){
-			if(trigger_bits.test(i)) std::cout<<"Trigger "<<TriggerIDToName(i)<<" ("<<i<<") set"<<std::endl;
-		}
-	}
+	Log(m_unique_name+" Trigger word for this event: "+trigger_bits.to_string()
+	   +" = "+GetTriggerNames(skhead_.idtgsk),v_debug,m_verbose);
 }

@@ -56,7 +56,6 @@ if (tool=="RunwiseEnergyCut") ret=new RunwiseEnergyCut;
 if (tool=="WallCut") ret=new WallCut;
 if (tool=="RelicCandidates") ret=new RelicCandidates;
 if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
-if (tool=="WriteMatchedInfo") ret=new WriteMatchedInfo;
 if (tool=="WriteSpallCand") ret=new WriteSpallCand;
 if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
 

@@ -32,7 +32,7 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 	
 	fout = new TFile(foutname.c_str(), "RECREATE");
 	c_subtriggers = new TCanvas("c_subtriggers","c_subtriggers",1024,800);
-	gROOT->cd();
+	gDirectory->cd();
 	
 	return true;
 }
@@ -186,7 +186,7 @@ bool PlotHitTimes::Execute(){
 	h_hits.Draw();
 	std::string canv_name = "event_"+std::to_string(myTreeReader->GetEntryNumber());
 	c_subtriggers->Write(canv_name.c_str());
-	gROOT->cd();
+	gDirectory->cd();
 	
 	return true;
 }

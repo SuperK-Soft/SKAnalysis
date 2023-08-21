@@ -10,6 +10,7 @@
 #include "Constants.h"
 #include "type_name_as_string.h"
 #include "MTreeSelection.h"
+#include "TreeManagerMod.h"
 #include "fortran_routines.h"
 #include "SK_helper_functions.h"
 
@@ -288,7 +289,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					// but what if we don't want that? We can hack it just a little.
 					TreeManager* mgr = skroot_get_mgr(&LUN);
 					TreeManagerMod* mgrmod = (TreeManagerMod*)(mgr);
-					mgrmod->Initialise(treeName);
+					mgrmod->Initialize(treeName);
 				}
 			}
 			

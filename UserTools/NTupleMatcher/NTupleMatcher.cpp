@@ -48,12 +48,12 @@ bool NTupleMatcher::Execute()
     // get event number from skread
     Log(Form("skhead_.nevsk: %d, eventNo: %d", skhead_.nevsk, eventNo));
     if (skhead_.nevsk < eventNo) {
-        Log(Form("No matching event in the ntuple. Skipping...", skhead_.nevsk, eventNo));
+        Log(Form("No matching event in the ntuple (skhead_.nevsk %d, eventNo: %d). Skipping...", skhead_.nevsk, eventNo));
         m_data->vars.Set("Skip",true);
     }
     else if (skhead_.nevsk == eventNo) {
         SetNTupleVariables();
-        Log(Form("A matching event exists in the ntuple! Continuing toolchain execution...", eventNo));
+        Log(Form("A matching event exists for event %d in the ntuple! Continuing toolchain execution...", eventNo));
         //try { GetNewEntry(); }
         //catch(...){}
         //catch (ExceptionBehavior& e) { throw e; }

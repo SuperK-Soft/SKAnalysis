@@ -2,7 +2,9 @@
 #include "Constants.h"
 
 #include "fortran_routines.h"
-#include "SK_helper_functions.h"
+#include "softtrg_tbl.h" // FIXME we can't put this in `fortran_routines.h`
+// because someone forgot to declare the structs in it as 'extern'!!
+// TODO run fh2h.pl on $SKOFL_ROOT/inc/softtrg_tblF.h and put it in $SKOFL_ROOT/inc
 
 #include <bitset>
 
@@ -25,12 +27,14 @@ bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 	// add a cut to the selector if being used
 	get_ok = m_variables.Get("selectorName", selectorName);
 	if(get_ok){
-		std::string description="accept events with a coincident HE+OD trigger pair anywhere in the readout window. Coincidence defined as within "+toString(coincidence_threshold)+" ns";
+		std::string description="accept events with a coincident HE+OD trigger pair anywhere"
+		                        " in the readout window. Coincidence defined as within "
+		                        +toString(coincidence_threshold)+" ns";
 		m_data->AddCut(selectorName, m_unique_name, description);
 	}
 	
 	// convert coincidence_threshold from ns to clock ticks for it0sk and swtrgt0ctr
-	coincidence_threshold *= COUNT_PER_NS;
+	coincidence_threshold *= COUNT_PER_NSEC;
 	
 	return true;
 }
@@ -38,11 +42,8 @@ bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 
 bool MuonSearch::Execute(){
 	
-	std::bitset<sizeof(int)*8> triggerID = skhead_.idtgsk;
-	
-	int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
-	
 	// get trigger settings from file (why bother?)
+	int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
 	softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
 	
 	// disable all triggers except 1 (HE) and 3 (OD) by setting threshold to 100k and window size to 0
@@ -61,30 +62,29 @@ bool MuonSearch::Execute(){
 	int max_qb = 1280;
 	int one = 1;
 	int zero = 0;
-	int ntrg = softtrg_inittrgtbl_(&myHeader->nrunsk, &zero, &one, &max_qb);
+	int ntrg = softtrg_inittrgtbl_(&skhead_.nrunsk, &zero, &one, &max_qb);
 	
-	std::vector<float> untaggedMuonTime;
+	std::vector<int> untaggedMuonTime;
 	
 	// search for pairs of HE+OD within a 100ns window - consider these muons
 	for(int i = 0; i < ntrg; i++){                                                   // loop over triggers found
 		if(swtrgtbl_.swtrgtype[i] == 1){                                             // for each HE trigger...
 			for(int j = 0; j < ntrg; j++){                                           // loop over triggers again
 				if( (swtrgtbl_.swtrgtype[j] == 3) &&                                 // looking for OD triggers...
-					(abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])          // within e.g. ~100ns
-					     < coincidence_threshold)){
-						untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
-					}
+				    (abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])< coincidence_threshold)){
+					untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
 				}
 			}
 		}
 	}
 	
 	// seems redundant, but we can also check the primary trigger
+	std::bitset<sizeof(int)*8> triggerID = skhead_.idtgsk;
 	if(triggerID.test(1) && triggerID.test(3)){
 		if(untaggedMuonTime.empty()){
 			// worrying if we did not find it...
 			Log(m_unique_name+" Warning! software trigger scan did not pick up primary muon event!",
-			    v_error,verbosity);
+			    v_error,m_verbose);
 			untaggedMuonTime.push_back(skheadqb_.it0sk);
 		} else {
 			// this is probably the first entry from our scan
@@ -92,14 +92,14 @@ bool MuonSearch::Execute(){
 				// time difference of >100ns??
 				Log(m_unique_name+" Warning! software trigger scan first HE+OD event at "
 				   +toString(untaggedMuonTime.front())+" does not line up with primary trigger HE+OD event at "
-				   +toString(skheadqb_.it0sk),v_warning,verbosity);
+				   +toString(skheadqb_.it0sk),v_warning,m_verbose);
 				// i guess we can scan for a more robust check...?
 				bool foundit=false;
 				for(auto&& atime : untaggedMuonTime){
 					if(std::abs(atime - skheadqb_.it0sk) < coincidence_threshold){
 						foundit=true;
 						Log(m_unique_name+" found match (Δt="+toString(std::abs(atime - skheadqb_.it0sk))
-						    +") in later subtrigger",v_warning,verbosity);
+						    +") in later subtrigger",v_warning,m_verbose);
 					}
 				}
 				// add it to our list i guess
@@ -108,7 +108,7 @@ bool MuonSearch::Execute(){
 		}
 	} else if(!untaggedMuonTime.empty()){
 		// primary trigger says not a muon event, but we found one in subtriggers
-		Log(m_unique_name+": Untagged muon found!",v_debug,verbosity);
+		Log(m_unique_name+": Untagged muon found!",v_debug,m_verbose);
 	}
 	
 	// if we found any muons
@@ -116,12 +116,12 @@ bool MuonSearch::Execute(){
 		// flag it for downstream tools (this will not be a relic candidate)
 		m_data->vars.Set("newMuon", true);
 		// and pass their times
-		m_data->vars.Set("muonTimes", untaggedMuonTime);
+		m_data->CStore.Set("muonTimes", untaggedMuonTime);
 		// mark this event as 'passing' the cut
 		if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, m_unique_name);
 	} else {
 		m_data->vars.Set("newMuon", false);
-		m_data->vars.Set("muonTimes", std::vector<float>{});
+		m_data->CStore.Set("muonTimes", std::vector<int>{});
 	}
 	
 	return true;

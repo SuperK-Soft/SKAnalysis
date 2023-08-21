@@ -768,7 +768,7 @@ namespace constants{
 		{31,"(EVNT HDR)&(SOFTWARE TRG)"}
 	};
 	
-	static const std::map<int, std::string> string_to_flag_SKI_III{
+	static const std::map<std::string, int> string_to_flag_SKI_III{
 		{"ATM", 0},
 		{"TRG", 1},
 		{"SMP_REGISTER", 2},
@@ -803,7 +803,7 @@ namespace constants{
 		{"TRG_IS_AVAILABLE", 31}
 	};
 	
-	static const std::map<int, std::string> string_to_flag_SKIV{
+	static const std::map<std::string, int> string_to_flag_SKIV{
 		{"QBEE_TQ", 0},
 		{"HARD_TRG", 1},
 		{"QBEE_STAT", 2},

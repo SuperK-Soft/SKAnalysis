@@ -91,27 +91,32 @@ bool MTreeSelection::NoteCut(std::string cutname, std::string description, doubl
 	return true;
 }
 
-void MTreeSelection::AddCut(std::string cutname, std::string description, double low, double high){
+bool MTreeSelection::AddCut(std::string cutname, std::string description, double low, double high){
 	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
+		return false;
 	}
 	cut_pass_entries.at(cutname)->Initialize(0, treereader, distros_tree);
+	return true;
 }
 
-void MTreeSelection::AddCut(std::string cutname, std::string description, std::string branchname, double low, double high){
+bool MTreeSelection::AddCut(std::string cutname, std::string description, std::string branchname, double low, double high){
 	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
+		return false;
 	}
 	if(branchname=="") std::cerr<<"empty branchname passed for cut "<<cutname<<std::endl; // XXX
 	cut_pass_entries.at(cutname)->Initialize(1, branchname, FindLinkedBranches(branchname), treereader, distros_tree);
+	return true;
 }
 
-void MTreeSelection::AddCut(std::string cutname, std::string description, std::vector<std::string> branchnames, double low, double high){
+bool MTreeSelection::AddCut(std::string cutname, std::string description, std::vector<std::string> branchnames, double low, double high){
 	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
+		return false;
 	}
 	if(branchnames.size()==0){
 		cut_pass_entries.at(cutname)->Initialize(0, treereader, distros_tree);
@@ -125,6 +130,7 @@ void MTreeSelection::AddCut(std::string cutname, std::string description, std::v
 		}
 		cut_pass_entries.at(cutname)->Initialize(2, branchnames, linked_branch_lists, treereader, distros_tree);
 	}
+	return true;
 }
 
 void MTreeSelection::PrintCuts(){

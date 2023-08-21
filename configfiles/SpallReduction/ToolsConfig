@@ -12,20 +12,20 @@ SkipTriggers SkipTriggers configfiles/SpallReduction/SkipTriggersConfig
 # remove LED burst events
 SkipEventFlags SkipEventFlags configfiles/SpallReduction/SkipEventFlagsConfig
 # apply software trigger to search for HE+OD events within 100ns, and flag such events as containing a muon
-SpallCandidates SpallCandidates configfiles/SpallReduction/SpallCandidatesConfig
+MuonSearch MuonSearch configfiles/SpallReduction/MuSearchConfig
 # for events without a muon, cut the event if there are more than 200 hits in 1.3us of the primary trigger
-HitsCut HitsCut configfiles/SpallReduction/HitsCutConfig
+IDHitsCut IDHitsCut configfiles/SpallReduction/IDHitsCutConfig
 # for events without a muon, cut the event if there's an OD trigger or more than 20 OD hits in 500-1300ns
-ODCut ODCut configfiles/SpallReduction/WallCutConfig
+#ODCut ODCut configfiles/SpallReduction/ODCutConfig
 # do standard lowe reconstruction
-lfallfit lf_allfit_new configfiles/SpallReduction/lf_allfit_newConfig
+#lfallfit lfallfit configfiles/SpallReduction/lfallfitConfig
 # for events without a muon, cut if bsenergy > 100, or <8/10 MeV, depending on run number
-RunwiseEnergyCut RunEnergyCut configfiles/SpallReduction/RunEnergyCutConfig
+#RunwiseEnergyCut RunEnergyCut configfiles/SpallReduction/RunEnergyCutConfig
 # for events without a muon, cut the event if the distance from the ID wall < 200cm
-WallCut WallCut configfiles/SpallReduction/WallCutConfig
+#WallCut WallCut configfiles/SpallReduction/WallCutConfig
 # open an SKROOT file for writing
 muTreeWriter TreeReader configfiles/SpallReduction/muWriterConfig
 # hack an additional Tree into the file
 relicTreeWriter AddTree configfiles/SpallReduction/relicWriterConfig
 # match muons with close-in-time relics. Reconstruct matched muons. Write out matched events.
-RelicMuonMatching RelicMuonMatching configfiles/SpallReduction/WallCutConfig
+RelicMuonMatching RelicMuonMatching configfiles/SpallReduction/RelicMuMatchingConfig

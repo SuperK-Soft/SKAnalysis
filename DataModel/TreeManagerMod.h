@@ -3,7 +3,8 @@
 #include "TreeManager.h"
 
 class TreeManagerMod : public TreeManager {
-	void Initialise(std::string treename);
+	public:
+	void Initialize(std::string treename);
 };
 
 #endif

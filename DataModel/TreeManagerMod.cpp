@@ -1,3 +1,6 @@
+#include "TreeManagerMod.h"
+#include <string>
+
 // this is literally just a copy-paste of TreeManager::Initialise,
 // but takes a tree name instead of hard-coding it to 'data'
 void TreeManagerMod::Initialize(std::string treename)

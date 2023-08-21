@@ -1,3 +1,0 @@
-verbosity 1
-hitLimit 1000  # reject event if 'newMuon' flag is negative and nqisk > hitLimit
-selectorName relicCuts

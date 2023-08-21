@@ -17,8 +17,6 @@
 * $Date: 2019/05/28 10:44:00 $
 */
 
-class MTreeSelection;
-
 class RunwiseEnergyCut: public Tool {
 	
 	public:
@@ -30,9 +28,9 @@ class RunwiseEnergyCut: public Tool {
 	bool ParseOptions(std::string& configfile);
 	
 	private:
-	MTreeSelection* mySelector=nullptr;
+	std::string selectorName;
 	int Nskipped = 0;
-	std::vector<std::pair<int,int>,std::pair<float,float>> cuts;
+	std::vector<std::pair<std::pair<int,int>,std::pair<float,float>>> cuts;
 };
 
 

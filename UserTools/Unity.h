@@ -51,7 +51,6 @@
 #include "WallCut.h"
 #include "RelicCandidates.h"
 #include "RelicMuonMatching.h"
-#include "WriteMatchedInfo.h"
 #include "WriteSpallCand.h"
 #include "ReconstructMatchedMuons.h"
 #include "SkipTriggers.h"

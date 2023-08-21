@@ -1,3 +1,5 @@
+#ifndef FORTRAN_ROUTINES_H
+#define FORTRAN_ROUTINES_H
 // (c-versions of) headers that define fortran common blocks
 // these are offficial in $SKOFL_ROOT/inc/
 #include "skheadC.h"
@@ -217,3 +219,5 @@ extern "C" {
     void spfinalsep_();
 //	float pttruewaterlen_(float&);
 }
+
+#endif

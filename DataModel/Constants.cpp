@@ -186,7 +186,7 @@ int TriggerNameToID(std::string trigname){
 }
 
 std::string GetTriggerNames(int32_t trigid){
-	std::bitset<32> triggerID{trigid};
+	std::bitset<32> triggerID(trigid);
 	std::string Trigs="";
 	for(int i=0; i<=31; i++){
 		if(triggerID.test(i)){
@@ -219,7 +219,7 @@ std::string EventFlagToString(int ifevsk, int sk_geometry){
 }
 
 std::string GetEventFlagNames(int32_t flagid){
-	std::bitset<32> flagID{flagid};
+	std::bitset<32> flagID(flagid);
 	std::string Flags="";
 	for(int i=0; i<=31; i++){
 		if(flagID.test(i)){
