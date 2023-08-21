@@ -106,7 +106,7 @@ class DataModel {
   bool LoadAFT(std::string ReaderName="");
   bool LoadCommons(int entry_i, std::string ReaderName="");
   // tracking fortran logic unit numbers (LUNs, file handles)
-  int GetNextLUN(int lun=10, std::string reader="reader");
+  int GetNextLUN(std::string reader="reader", int lun=0);
   int GetLUN(std::string reader);
   bool FreeLUN(int lun, std::string reader="");
   // wrapper to check if we've called this yet, since we should probably only call it the once?

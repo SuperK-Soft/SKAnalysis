@@ -20,21 +20,8 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	
 	std::string relicWriterName, muWriterName;
 	m_variables.Get("rfmReaderName", rfmReaderName);
-	m_variables.Get("muWriterName", muWriterName);
-	m_variables.Get("relicWriterName", relicWriterName);
-	
 	if(m_data->Trees.count(rfmReaderName)==0){
 		Log(m_unique_name+" Error! Failed to find TreeReader "+rfmReaderName+" in DataModel!",v_error,m_verbose);
-		m_data->vars.Set("StopLoop",1);
-		return false;
-	}
-	if(m_data->Trees.count(muWriterName)==0){
-		Log(m_unique_name+" Error! Failed to find TreeReader "+muWriterName+" in DataModel!",v_error,m_verbose);
-		m_data->vars.Set("StopLoop",1);
-		return false;
-	}
-	if(m_data->Trees.count(relicWriterName)==0){
-		Log(m_unique_name+" Error! Failed to find TreeReader "+relicWriterName+" in DataModel!",v_error,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 		return false;
 	}
@@ -43,8 +30,20 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	rfmReader = m_data->Trees.at(rfmReaderName);
 	
 	// get LUNs needed to passing common block data from reco algorithms to TTrees
+	m_variables.Get("muWriterName", muWriterName);
+	m_variables.Get("relicWriterName", relicWriterName);
 	muWriterLUN = m_data->GetLUN(muWriterName);
+	if(muWriterLUN<0){
+		Log(m_unique_name+" Error! Failed to find TreeReader "+muWriterName+" in DataModel!",v_error,m_verbose);
+		m_data->vars.Set("StopLoop",1);
+		return false;
+	}
 	relicWriterLUN = m_data->GetLUN(relicWriterName);
+	if(relicWriterLUN<0){
+		Log(m_unique_name+" Error! Failed to find "+relicWriterName+" in DataModel!",v_error,m_verbose);
+		m_data->vars.Set("StopLoop",1);
+		return false;
+	}
 	
 	// Get output TTrees and add new branches to store matches
 	TreeManager* muMgr = skroot_get_mgr(&muWriterLUN);
@@ -193,8 +192,8 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, float currentTime, int sub
 				relicsToRemove.push_back(targetCand.EntryNumber);
 				// make a note of this relic and its number of matches
 				if(!relicSelectorName.empty()){
-					m_data->AddPassingEvent(relicSelectorName, m_unique_name,
-					                        targetCand.matchedParticleEvNum.size());
+					m_data->ApplyCut(relicSelectorName, m_unique_name,
+					                 targetCand.matchedParticleEvNum.size());
 				}
 			} else {
 				//we'll find a lot of muons, but we're only interested in ones matched to relic candidates.
@@ -206,8 +205,8 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, float currentTime, int sub
 				muonsToRemove.push_back(targetCand.EntryNumber);
 				// make a note of this muon and its number of matches
 				if(!muSelectorName.empty()){
-					m_data->AddPassingEvent(muSelectorName, m_unique_name,
-					                        targetCand.matchedParticleEvNum.size());
+					m_data->ApplyCut(muSelectorName, m_unique_name,
+					                 targetCand.matchedParticleEvNum.size());
 				}
 			}
 		}

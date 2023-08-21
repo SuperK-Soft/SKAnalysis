@@ -45,7 +45,7 @@
 #include "VertexFitter.h"
 #include "CombinedFitter.h"
 #include "MuonSearch.h"
-#include "IDChargeCut.h"
+#include "IDHitsCut.h"
 #include "ODCut.h"
 #include "RunwiseEnergyCut.h"
 #include "WallCut.h"

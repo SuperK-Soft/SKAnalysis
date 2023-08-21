@@ -631,35 +631,35 @@ namespace constants{
 		{0, "LE"},
 		{1, "HE"},
 		{2, "SLE"},
-		{3, "OD or Fission"},  // in normal run/SK-IV+: OD trigger. in SKI-III Nickel run: fission trigger
+		{3, "OD_or_Fission"},  // in normal run/SK-IV+: OD trigger. in SKI-III Nickel run: fission trigger
 		{4, "Periodic"},       // one of {nothing (null) trigger, TQ map laser, water atten. laser, Xenon ball}
-		{5, "AFT or Cal"},     // in normal run: AFT trigger, in calib run, one of: {laser, Xenon, Nickel, Linac}
-		{6, "Veto Start"},
-		{7, "Veto Stop"},
-		{8, "unknown 8 (15005)"},
-		{9, "unknown 9 (15006)"},
-		{10, "unknown 10 (15007)"},
-		{11, "Random Wide"},
-		{12, "Laser (ID, Usho Laser)"},
+		{5, "AFT_or_Cal"},     // in normal run: AFT trigger, in calib run, one of: {laser, Xenon, Nickel, Linac}
+		{6, "Veto_Start"},
+		{7, "Veto_Stop"},
+		{8, "unknown_8"},   //  (cable 15005)
+		{9, "unknown_9"},   //  (cable 15006)
+		{10, "unknown_10"}, //  (cable 15007)
+		{11, "Random_Wide"},
+		{12, "ID_Laser"},   // (Usho Laser)
 		{13, "LED"},
 		{14, "Ni"},
-		{15, "Laser (OD, AutoTQlaser)"},
-		{16, "LE (hitsum)"},
-		{17, "HE (hitsum)"},
-		{18, "SLE (hitsum)"},
-		{19, "OD (hitsum)"},
-		{20, "unknown 20"},
-		{21, "unknown 21"},
-		{22, "SN Burst"},
-		{23, "mu->e Decay"},
+		{15, "OD_Laser"},   // (AutoTQlaser)
+		{16, "LE_hitsum"},
+		{17, "HE_hitsum"},
+		{18, "SLE_hitsum"},
+		{19, "OD_hitsum"},
+		{20, "unknown_20"},
+		{21, "unknown_21"},
+		{22, "SN_Burst"},
+		{23, "mue_Decay"},
 		{24, "LINAC"},
-		{25, "LINAC Microwave"},
-		{26, "unknown 26 (15023)"},
-		{27, "Periodic (simple)"},
-		{28, "SHE (SW)"},
-		{29, "AFT (SW)"},
-		{30, "Pedestal (SW)"},
-		{31, "T2K (SW)"}
+		{25, "LINAC_RF"},  // (LINAC Microwave)
+		{26, "unknown_26"}, // (cable 15023)
+		{27, "Periodic_simple"},
+		{28, "SHE"},      // (SW)
+		{29, "AFT"},      // (SW)
+		{30, "Pedestal"}, // (SW)
+		{31, "T2K"}       // (SW)
 	};
 	
 	static const std::map<std::string, int> Trigger_To_Trigger_ID{
@@ -667,35 +667,35 @@ namespace constants{
 		{"LE", 0},
 		{"HE", 1},
 		{"SLE", 2},
-		{"OD or Fission", 3},
+		{"OD_or_Fission", 3},
 		{"Periodic", 4},
-		{"AFT or Cal", 5},
-		{"Veto Start", 6},
-		{"Veto Stop", 7},
-		{"unknown 8 (15005)", 8},
-		{"unknown 9 (15006)", 9},
-		{"unknown 10 (15007)", 10},
-		{"Random Wide", 11},
-		{"Laser (ID, Usho Laser)", 12},
+		{"AFT_or_Cal", 5},
+		{"Veto_Start", 6},
+		{"Veto_Stop", 7},
+		{"unknown_8", 8},   // (cable # 15005)
+		{"unknown_9", 9},   // (cable # 15006)
+		{"unknown_10", 10}, // (cable # 15007)
+		{"Random_Wide", 11},
+		{"ID_Laser", 12},   //  (Usho Laser)
 		{"LED", 13},
 		{"Ni", 14},
-		{"Laser (OD, AutoTQlaser)", 15},
-		{"LE (hitsum)", 16},
-		{"HE (hitsum)", 17},
-		{"SLE (hitsum)", 18},
-		{"OD (hitsum)", 19},
-		{"unknown 20", 20},
-		{"unknown 21", 21},
-		{"SN Burst", 22},
-		{"mu->e Decay", 23},
+		{"OD_Laser", 15}, // (AutoTQlaser)
+		{"LE_hitsum", 16},
+		{"HE_hitsum", 17},
+		{"SLE_hitsum", 18},
+		{"OD_hitsum", 19},
+		{"unknown_20", 20},
+		{"unknown_21", 21},
+		{"SN_Burst", 22},
+		{"mue_Decay", 23},
 		{"LINAC", 24},
-		{"LINAC Microwave", 25},
-		{"unknown 26 (15023)", 26},
-		{"Periodic (simple)", 27},
-		{"SHE (SW)", 28},
-		{"AFT (SW)", 29},
-		{"Pedestal (SW)", 30},
-		{"T2K (SW)", 31}
+		{"LINAC_RF", 25},   // (LINAC Microwave)
+		{"unknown_26", 26}, // (cable # 15023)
+		{"Periodic_simple", 27},
+		{"SHE", 28}, // (SW)
+		{"AFT", 29}, // (SW)
+		{"Pedestal", 30}, // (SW)
+		{"T2K", 31} // (SW)
 	};
 	
 	static const std::map<int, std::string> flag_to_string_SKI_III{

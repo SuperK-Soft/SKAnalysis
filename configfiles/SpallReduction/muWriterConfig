@@ -1,6 +1,6 @@
 verbosity 1
 treeName data
-treeReaderName spallWriter
+readerName muWriter
 skFile 1
 skrootMode 1
 outputFile test_jacks.root

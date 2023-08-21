@@ -19,6 +19,11 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("renameDataTo", renameDataTo);
 	m_variables.Get("newTreeName", newTreeName);
 	m_variables.Get("treeReaderName", treeReaderName);
+	int LUN=0;
+	m_variables.Get("LUN",LUN);
+	// arbitrary numbers are awful, let's give it a name and put it in the datamodel map
+	std::string treeWriterName;
+	m_variables.Get("treeWriterName", treeWriterName);
 	
 	if(m_data->Trees.count(treeReaderName)==0){
 		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
@@ -27,10 +32,11 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 		myTreeReader = m_data->Trees.at(treeReaderName);
 	}
 	
-	TTree* existingTree = myTreeReader->GetTree();
-	
 	// to prevent clash we may wish to rename the existing hard-coded 'data' tree
-	if(renameDataTo!="") existingTree->SetName(renameDataTo.c_str());
+	if(renameDataTo!=""){
+		TTree* existingTree = myTreeReader->GetTree();
+		existingTree->SetName(renameDataTo.c_str());
+	}
 	
 	// set the associated file as active
 	myTreeReader->GetFile()->cd();
@@ -40,10 +46,18 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	// to fail, but this is not checked, so the code subsequently carries on,
 	// making a new managed Tree, associated with the current ROOT directory
 	// (i.e. our existing file)
-	int LUN = m_data->GetNextLUN(LUN, treeReaderName);
+	LUN = m_data->GetNextLUN(treeWriterName, LUN);
 	skroot_open_write_(&LUN, "", 0);
 	TreeManager* mgr = skroot_get_mgr(&LUN);
-	thistree = mgr->GetTree();
+	if(mgr==nullptr){
+		Log(m_unique_name+" Error! TreeManager not found!",v_error,m_verbose);
+		return false;
+	}
+	thistree = mgr->GetOTree();
+	if(thistree==nullptr){
+		Log(m_unique_name+" Error! New output tree is null!",v_error,m_verbose);
+		return false;
+	}
 	thistree->SetName(newTreeName.c_str());
 	// don't think this is actually needed
 	//thistree->SetDirectory(myTreeReader->GetFile());
@@ -67,7 +81,10 @@ bool AddTree::Finalise(){
 	// destructor of all the TreeManagers, causing each to Write and Close their files.
 	// So, it should be fine if we call Write on this Tree in Finalise, because the
 	// parent file will not be Closed and deleted until the application terminates.
-	myTreeReader->GetFile()->cd();
+	// ...
+	// unless we close it manually! Whoops! CloseLUN now commented out in TreeReader::Finalise...
+	// FIXME find a better solution?
+	thistree->GetCurrentFile()->cd();
 	thistree->Write("",TObject::kOverwrite);
 	
 	return true;

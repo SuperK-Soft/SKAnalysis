@@ -1,9 +1,9 @@
-#include "IDChargeCut.h"
+#include "IDHitsCut.h"
 
-IDChargeCut::IDChargeCut():Tool(){}
+IDHitsCut::IDHitsCut():Tool(){}
 
 
-bool IDChargeCut::Initialise(std::string configfile, DataModel &data){
+bool IDHitsCut::Initialise(std::string configfile, DataModel &data){
 	
 	if(configfile!="")  m_variables.Initialise(configfile);
 	//m_variables.Print();
@@ -24,7 +24,7 @@ bool IDChargeCut::Initialise(std::string configfile, DataModel &data){
 }
 
 
-bool IDChargeCut::Execute(){
+bool IDHitsCut::Execute(){
 	
 	totalHits = skq_.nqisk;
 	
@@ -45,7 +45,7 @@ bool IDChargeCut::Execute(){
 }
 
 
-bool IDChargeCut::Finalise(){
+bool IDHitsCut::Finalise(){
 	
 	return true;
 }

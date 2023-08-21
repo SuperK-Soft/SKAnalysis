@@ -64,7 +64,7 @@ class TreeReader: public Tool {
 	SKROOTMODE skrootMode=SKROOTMODE::READ;  // default to read
 	int skreadMode=0;                 // 0=skread only, 1=skrawread only, 2=both
 	int skreadUser=0;                 // 0=auto, 1=skread only, 2=skrawread only, 3=both
-	int LUN=10;                       // Assumed 10 by some SK routines, only change if you know what you're doing!
+	int LUN=0;                        // Assumed 10 by some SK routines, only change if you know what you're doing!
 	std::string skroot_options="31";  // 31 = read HEADER (required).
 	int skroot_badopt=23;             // 23 = LOWE default (mask bad chs, dead chs, noisy ID chs and OD chs)
 	int skroot_badch_ref_run=0;       // reference run for bad channel list for e.g. MC.

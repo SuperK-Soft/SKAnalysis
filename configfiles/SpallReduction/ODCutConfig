@@ -1,4 +1,4 @@
 treeReaderName spallReader
-writerName spallWriter
+writerName muWriter
 hitsThreshold 20
 selectionsName spallCuts

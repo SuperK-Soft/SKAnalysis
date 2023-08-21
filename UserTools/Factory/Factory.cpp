@@ -50,7 +50,7 @@ if (tool=="PlotHitTimes") ret=new PlotHitTimes;
 if (tool=="VertexFitter") ret=new VertexFitter;
 if (tool=="CombinedFitter") ret=new CombinedFitter;
 if (tool=="MuonSearch") ret=new MuonSearch;
-if (tool=="IDChargeCut") ret=new IDChargeCut;
+if (tool=="IDHitsCut") ret=new IDHitsCut;
 if (tool=="ODCut") ret=new ODCut;
 if (tool=="RunwiseEnergyCut") ret=new RunwiseEnergyCut;
 if (tool=="WallCut") ret=new WallCut;

@@ -156,7 +156,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// will fail if you try to subsequently open a new file with this LUN. Doh!
 		// TODO fix the SuperManager.
 		// For now we'll just keep our own list of LUNs in the DataModel
-		LUN = m_data->GetNextLUN(LUN, readerName);
+		LUN = m_data->GetNextLUN(readerName, LUN);
 		
 		// "initialize data structures".
 		// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
@@ -755,7 +755,8 @@ bool TreeReader::Finalise(){
 	if(myTreeSelections) delete myTreeSelections;
 	
 	if(skrootMode!=SKROOTMODE::NONE){
-		CloseLUN();                 // deletes tree, file, TreeManager.
+		//CloseLUN();                 // deletes tree, file, TreeManager.
+		// FIXME hacked to disable for now; see AddTree::Finalise for why
 		myTreeReader.SetClosed();   // tell the MTreeReader the file is closed.
 	}
 	// otherwise the MTreeReader destructor will close the file.
