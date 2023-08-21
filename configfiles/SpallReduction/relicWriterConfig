@@ -1,5 +1,4 @@
 verbosity 10
-treeReaderName spallReader
+treeReaderName muWriter
 treeWriterName relicWriter
-renameDataTo mu
 newTreeName relic

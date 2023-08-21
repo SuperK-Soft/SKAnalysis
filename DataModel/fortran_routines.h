@@ -128,6 +128,7 @@ extern "C" void lfallfit_sk4_gain_corr_mc_(float* watert, int* nhitcut, int* fla
 
 extern "C" void rluxgo_(int*, int*, int*, int*);
 extern "C" float rlu_();  // src/monlib/rlu.F
+extern "C" void ran_verbosity_(int*);
 
 extern "C" void slmcmklow_(int*, int*, int*, int*, float*);  // $SKOFL_ROOT/lowe/sollib/slmcmklow.F
 extern "C" void slredtimev_(int*, int*, int*, int*, int*, float*, float*, int*); // $SKOFL_ROOT/lowe/sollib/slredtimev.f

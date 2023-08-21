@@ -1,6 +1,6 @@
 verbosity 1
 treeReaderName spallReader  # for use with dataSrc=1
-plotVar 0                  # 0 = charge, 1 = time
-dataSrc -1                  # 0 = sktqz_, 1 = TQREAL, 2 = SKT and SKQ
-plotStyle 0                # 0 = point array, 1 = histogram
-
+plotVar 1                   # 0 = charge, 1 = time
+dataSrc 1                  # 0 = sktqz_, 1 = TQREAL, 2 = SKT and SKQ
+plotStyle 2                 # 0 = point array, 1 = histogram, 2=neither
+inGateOnly 0                # whether to only plot hits in trigger gate

@@ -42,7 +42,8 @@ const std::vector<std::string> default_branches{
 	"MISMATCHEDHITS",
 	"GPSLIST",
 	"T2KGPSLIST",
-	"IDODXTLK"
+	"IDODXTLK",
+	"SN"
 };
 
 bool TreeReader::Initialise(std::string configfile, DataModel &data){
@@ -115,9 +116,9 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// i don't think it'll seg as long as at least one file has a 'data' tree
 		// XXX although, perhaps it would be better to check all of them?
 		TFile* f_temp = TFile::Open(list_of_files.front().c_str(),"READ");
-		TTree* t_temp= (TTree*)f_temp->Get("data");
+		TTree* t_temp= (TTree*)f_temp->Get(treeName.c_str());
 		if(t_temp==nullptr){
-			Log(m_unique_name+" ERROR! input file "+list_of_files.front()+" has no 'data' TTree!",v_error,m_verbose);
+			Log(m_unique_name+" ERROR! input file "+list_of_files.front()+" has no '"+treeName+"' TTree!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
@@ -164,7 +165,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		
 		// slight change in initialization depending on SK root vs zebra
 		if(not (skrootMode==SKROOTMODE::ZEBRA)){
-			Log(m_unique_name+" doing SKROOT initialization",v_debug,m_verbose);
+			Log(m_unique_name+": callling skroot_open_*",v_debug,m_verbose);
 			
 			// There are 3 modes to the TreeManager:
 			// skroot_open_read_ calls the TreeManager constructor with mode = 2;
@@ -198,6 +199,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			
 			// the following are not relevant for WRITE mode
 			if(skrootMode!=SKROOTMODE::WRITE){
+				Log(m_unique_name+": adding files to read...",v_debug,m_verbose);
 				// set the input file(s) to read.
 				// These need to be paths to files - glob patterns are not supported.
 				// Only the first will be used to retrieve the RareList, but multiple calls can
@@ -230,10 +232,16 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				
 				// disable unused input branches.
 				int io_dir = 0; // 0 for input branch, 1 for output branch
+				Log(m_unique_name+": disabling unused branches...",v_debug,m_verbose);
+				Log(m_unique_name+": we have "+toString(SkippedInputBranches.size())+" user skipped branches"
+				                  ", "+toString(ActiveInputBranches.size())+" user-selected active branches"
+				                  ", and "+toString(present_branches.size())+"/"+toString(default_branches.size())
+				                  +" standard branches present", v_debug,m_verbose);
 				
 				// ok first disable branches via a list of inactive branches specified by the user
 				for(auto&& abranch : SkippedInputBranches){
 					if(abranch=="HEADER") continue; // always required
+					Log(m_unique_name+": disabling user-skipped input branch "+abranch,v_debug,m_verbose);
 					skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 				}
 				
@@ -244,6 +252,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 						if(std::find(ActiveInputBranches.begin(),ActiveInputBranches.end(),abranch) ==
 							ActiveInputBranches.end()){
 							if(abranch=="HEADER") continue; // always required
+							Log(m_unique_name+": disabling user-disallowed input branch "+abranch,v_debug,m_verbose);
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
@@ -253,11 +262,13 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				// and segfaults if they don't exist... SO let's explicitly disable everything standard
 				// if it's not actually present
 				for(auto&& abranch : default_branches){
-					if(std::find(present_branches.begin(), present_branches.end(), abranch)==default_branches.end()){
+					if(std::find(present_branches.begin(), present_branches.end(), abranch)==present_branches.end()){
 						Log(m_unique_name+": disabling absent input branch "+abranch,v_debug,m_verbose);
 						skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 					}
 				}
+				
+				Log(m_unique_name+": done disabling unused branches",v_debug,m_verbose);
 			}
 			// disable unwanted output branches. Only applicable to COPY mode
 			if(skrootMode==SKROOTMODE::COPY){
@@ -265,6 +276,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				// first from list of disabled branches from user
 				for(auto&& abranch : SkippedOutputBranches){
 					if(abranch=="HEADER") continue; // always required
+					Log(m_unique_name+": disabling user-skipped output branch "+abranch,v_debug,m_verbose);
 					skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 				}
 				// alternatively from a list of enabled branches from user
@@ -273,24 +285,42 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 						if(std::find(ActiveOutputBranches.begin(),ActiveOutputBranches.end(),abranch) ==
 							ActiveOutputBranches.end()){
 							if(abranch=="HEADER") continue; // always required
+							Log(m_unique_name+": disabling user-disallowed output branch "+abranch,v_debug,m_verbose);
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
 				}
+				/*
+				// and anything else which isn't present in the input file? XXX not sure this is needed
+				for(auto&& abranch : default_branches){
+					if(std::find(present_branches.begin(), present_branches.end(), abranch)==default_branches.end()){
+						Log(m_unique_name+": disabling output branch "+abranch+" as it is absent from input Tree",v_debug,m_verbose);
+						skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+					}
+				}
+				*/
 			}
 			
 			// ok now we perform the actual file opening, TTree cloning, and branch address setting.
 			// except in the case of 'write', where all necessary steps are done on construction
 			if(skrootMode!=SKROOTMODE::WRITE){
 				if(treeName=="data"){
-					skroot_init_(&LUN); // this just invokes TreeManager::Initialise()
+					// this mostly just invokes TreeManager::Initialise()
+					skroot_init_(&LUN);
 				} else {
 					// TreeManager::Initialise hard-codes the name of the tree to 'data'.
 					// but what if we don't want that? We can hack it just a little.
 					TreeManager* mgr = skroot_get_mgr(&LUN);
 					TreeManagerMod* mgrmod = (TreeManagerMod*)(mgr);
 					mgrmod->Initialize(treeName);
+					skheadf_.sk_file_format = 1;
+					skheadf_.root_id = LUN;
 				}
+			} else {
+				// if the user asked for a different tree name than 'data', apply that now...
+				TreeManager* mgr = skroot_get_mgr(&LUN);
+				TTree* otree = mgr->GetOTree();
+				otree->SetName(treeName.c_str());
 			}
 			
 		} else {
@@ -372,7 +402,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			TTree* intree = skroot_get_tree(&LUN);  // n.b. no trailing underscore for this one
 			get_ok = myTreeReader.Load(intree);
 			if(not get_ok){
-				Log(m_unique_name+" failed to open reader on tree "+treeName,v_error,m_verbose);
+				Log(m_unique_name+" failed to make MTreeReader",v_error,m_verbose);
 				return false;
 			}
 			
@@ -412,7 +442,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				}
 				++tmp_entry;
 			}
-			Log(m_unique_name+" read "+toString(tmp_entry)+" entries before determining that isMC = "
+			Log(m_unique_name+" read "+toString(tmp_entry+1)+" entries before determining that isMC = "
 			    +toString(isMC),v_debug,m_verbose);
 			
 			/*
@@ -430,9 +460,12 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			
 			// if we're processing MC, we should probably only call `skread`. If we're processing
 			// data, we probably need to call `skrawread` as well. (see ReadEntry for more info).
+			// SKRAWREAD also requires the presence of a TQLIST branch.
 			// We'll use this as a default, but allow ourselves to be overridden by a user.
 			if(skreadUser==0){
-				skreadMode = (isMC) ? 0 : 2;  // 0=skread only, 1=skrawread only, 2=both
+				bool no_tqlist = (std::find(present_branches.begin(), present_branches.end(), "TQLIST")==present_branches.end());
+				 // skreadMode 0=skread only, 1=skrawread only, 2=both
+				skreadMode = (isMC || no_tqlist) ? 0 : 2;
 			} else {
 				skreadMode = skreadUser-1;
 			}
@@ -754,6 +787,13 @@ bool TreeReader::Finalise(){
 	
 	if(myTreeSelections) delete myTreeSelections;
 	
+	// FIXME this shouldn't be needed? is AddTree messing it up?
+	// do we also need to do this in copy mode now? if we're adding a tree?
+	if(skrootMode==SKROOTMODE::WRITE){
+		std::cout<<m_unique_name<<" calling Write() on output file"<<std::endl;
+		TreeManager* mgr = skroot_get_mgr(&LUN);
+		mgr->write();
+	}
 	if(skrootMode!=SKROOTMODE::NONE){
 		//CloseLUN();                 // deletes tree, file, TreeManager.
 		// FIXME hacked to disable for now; see AddTree::Finalise for why
@@ -789,7 +829,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 		// * SKRAWREAD only works on data, not MC
 		// * They both only call SOME branch getters
 		
-		// supposedly skrawread only reads the head, tq and pedestal branches < check this
+		// supposedly skrawread only reads the head, tq and pedestal branches < check this.
 		// Supposedly skrawread loads some "constant tables" ...
 		// These seem to be needed to call e.g. bonsai on data; if only skread
 		// is called bonsai complains `neighbsk: error - ISEQ is <0 or > MAXPM! 0`

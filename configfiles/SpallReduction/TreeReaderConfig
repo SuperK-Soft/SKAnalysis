@@ -7,7 +7,9 @@ inputFile /disk02/data7/sk6/run/0867/086730/rfm_run086730.000001.root
 treeName data
 readerName spallReader
 skFile 1
+#skrootMode 0 # root2root
+#outputFile muWriter
 skoptn 31,30,26,25
-maxEntries 1000                       # max num input entries to process
+maxEntries -1                       # max num input entries to process
 skbadopt 23   # 55? we need to re-read with 0 for muons
 SK_GEOMETRY 6

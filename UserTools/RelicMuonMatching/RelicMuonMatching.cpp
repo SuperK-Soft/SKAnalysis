@@ -67,6 +67,9 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 		m_data->AddCut(relicSelectorName, m_unique_name, "record number of muons within +-60s");
 	}
 	
+	int zero=0;
+	ran_verbosity_(&zero);
+	
 	
 	return true;
 }
@@ -336,9 +339,6 @@ bool RelicMuonMatching::WriteMuonInfo(){
 			m_data->getTreeEntry(rfmReaderName, muonsToRec[i].EntryNumber);
 		}
 		
-		rfmReader->Get("HEADER", myHeader);
-		int currentEventNum = myHeader->nevsk;
-		
 		int muyn_org, muynf;
 		float mbentry [4];
 		float mm_entry [36];
@@ -377,7 +377,7 @@ bool RelicMuonMatching::WriteMuonInfo(){
 		float muboy_tracklength, muboy_goodness;
 		
 		//Apply muboy
-		muboy_zbs_(&currentEventNum,
+		muboy_zbs_(&skhead_.nevsk,
 		           &skroot_mu_.muboy_status,
 		           &mbentry,
 		           &skroot_mu_.muboy_dir,
@@ -422,10 +422,10 @@ bool RelicMuonMatching::WriteMuonInfo(){
 		// recalculate muon energy with run-wise water transparency
 		// first get water transparency for the current run
 		float watert;
-		if(myHeader->nrunsk != lastRun){
+		if(skhead_.nrunsk != lastRun){
 			int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];
 			lfwater_(&days_to_run_start, &watert);
-			lastRun = myHeader->nrunsk;
+			lastRun = skhead_.nrunsk;
 		}
 		
 		float muentry[4];

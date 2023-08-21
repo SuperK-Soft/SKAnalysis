@@ -19,48 +19,58 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("renameDataTo", renameDataTo);
 	m_variables.Get("newTreeName", newTreeName);
 	m_variables.Get("treeReaderName", treeReaderName);
-	int LUN=0;
-	m_variables.Get("LUN",LUN);
-	// arbitrary numbers are awful, let's give it a name and put it in the datamodel map
+	int lun2=0;
+	m_variables.Get("LUN",lun2);
+	// give it a name to put it in the datamodel map for downstream Tools
 	std::string treeWriterName;
 	m_variables.Get("treeWriterName", treeWriterName);
 	
-	if(m_data->Trees.count(treeReaderName)==0){
-		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
+	// set the associated file as active
+	int lun1 = m_data->GetLUN(treeReaderName);
+	TreeManager* mgr1 = skroot_get_mgr(&lun1);
+	if(mgr1==nullptr){
+		Log(m_unique_name+" Error! Couldn't find manager associated with existing tree '"+treeReaderName+"'",
+		    v_error,m_verbose);
 		return false;
-	} else {
-		myTreeReader = m_data->Trees.at(treeReaderName);
 	}
-	
+	TTree* otree1 = mgr1->GetOTree();
+	if(otree1==nullptr){
+		Log(m_unique_name+" Error! Null output tree for existing tree '"+treeReaderName+"'",
+		    v_error,m_verbose);
+		return false;
+	}
 	// to prevent clash we may wish to rename the existing hard-coded 'data' tree
 	if(renameDataTo!=""){
-		TTree* existingTree = myTreeReader->GetTree();
-		existingTree->SetName(renameDataTo.c_str());
+		otree1->SetName(renameDataTo.c_str());
 	}
-	
-	// set the associated file as active
-	myTreeReader->GetFile()->cd();
+	ofile = otree1->GetCurrentFile();
+	if(ofile==nullptr){
+		Log(m_unique_name+" Error! No output file associated to existing output tree?!",v_error,m_verbose);
+		return false;
+	}
+	ofile->cd();
 	
 	// make a new TreeManager in Write mode, but give it an empty file name.
 	// this causes the internal call to 'new TFile(filename, "RECREATE")'
 	// to fail, but this is not checked, so the code subsequently carries on,
 	// making a new managed Tree, associated with the current ROOT directory
 	// (i.e. our existing file)
-	LUN = m_data->GetNextLUN(treeWriterName, LUN);
-	skroot_open_write_(&LUN, "", 0);
-	TreeManager* mgr = skroot_get_mgr(&LUN);
-	if(mgr==nullptr){
+	lun2 = m_data->GetNextLUN(treeWriterName, lun2);
+	std::cerr<<"The following error '<TFile::TFile>: file name is not specified' may be safely ignored"<<std::endl;
+	skroot_open_write_(&lun2, "", 0);
+	TreeManager* mgr2 = skroot_get_mgr(&lun2);
+	if(mgr2==nullptr){
 		Log(m_unique_name+" Error! TreeManager not found!",v_error,m_verbose);
 		return false;
 	}
-	thistree = mgr->GetOTree();
+	thistree = mgr2->GetOTree();
 	if(thistree==nullptr){
 		Log(m_unique_name+" Error! New output tree is null!",v_error,m_verbose);
 		return false;
 	}
 	thistree->SetName(newTreeName.c_str());
 	// don't think this is actually needed
-	//thistree->SetDirectory(myTreeReader->GetFile());
+	//thistree->SetDirectory(ofile);
 	
 	return true;
 }
@@ -84,7 +94,7 @@ bool AddTree::Finalise(){
 	// ...
 	// unless we close it manually! Whoops! CloseLUN now commented out in TreeReader::Finalise...
 	// FIXME find a better solution?
-	thistree->GetCurrentFile()->cd();
+	ofile->cd();
 	thistree->Write("",TObject::kOverwrite);
 	
 	return true;

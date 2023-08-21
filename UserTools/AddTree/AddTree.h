@@ -30,6 +30,7 @@ class AddTree: public Tool {
 	private:
 	MTreeReader* myTreeReader=nullptr;
 	TTree* thistree=nullptr;
+	TFile* ofile=nullptr;
 };
 
 
