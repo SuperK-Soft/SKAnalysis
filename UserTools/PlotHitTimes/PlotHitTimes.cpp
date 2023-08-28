@@ -7,10 +7,7 @@
 #include "ColourWheel.h"
 #include "Constants.h"
 
-PlotHitTimes::PlotHitTimes():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+PlotHitTimes::PlotHitTimes():Tool(){}
 
 bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 	
@@ -23,10 +20,10 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	std::string foutname = "subtriggers.root";
 	m_variables.Get("outputfile",foutname);
-	
-	// get the reader for inputs
 	std::string treeReaderName;
 	m_variables.Get("treeReaderName",treeReaderName);
+	
+	// get the reader for inputs
 	if(m_data->Trees.count(treeReaderName)==0){
 		Log(m_unique_name+" Error! Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
@@ -35,6 +32,7 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 	
 	fout = new TFile(foutname.c_str(), "RECREATE");
 	c_subtriggers = new TCanvas("c_subtriggers","c_subtriggers",1024,800);
+	gDirectory->cd();
 	
 	return true;
 }
@@ -85,6 +83,13 @@ bool PlotHitTimes::Execute(){
 		n_triggers += GetSubtriggerFlags(thetrigtype, in_subtrigger_flags, n_triggers);
 	}
 	
+	// tell ROOT not to assume ownership of histograms (not add them to its list of histograms)
+	// without this, ROOT "remembers" the name of a histogram that no longer exists
+	// and spits out a warning that it is being replaced with a potential memory leak.
+	// this is a blunt tool as it's a global directive; alternative is to explicitly
+	// remove them from gDirectory on cleanup.
+	//TH1::AddDirectory(kFALSE);
+	
 	// histograms for out-of-gate, in-gate, and each 1.3us window for the primary and all subtriggers
 	// times will be plotted in the frame of reference of the primary trigger
 	THStack h_hits("h_hits","Hit Times");
@@ -114,14 +119,19 @@ bool PlotHitTimes::Execute(){
 		
 		// see if it's in one of the 1.3us windows
 		if(in_subtrigger_flags.at(i).any()){
-			// it's in one of the subtriggers; add it to the appropriate histogram
-			// sanity check if it's in more than one: I believe they are not supposed to overlap.
-			// (this doesn't seem to happen, so that seems correct)
-			if(multi_subtrigger_hits>0 && in_subtrigger_flags.at(i).count()>1){
-				std::cerr<<"Hit "<<i<<" is in "<<in_subtrigger_flags.at(i).count()<<" subtriggers!"<<std::endl;
+			// it's in one of the subtriggers
+			
+			// sanity check to see if this hit is in more than one subtrigger: they are not supposed to overlap.
+			// (except of course with the primary trigger, which is independent from the subtrigger search)
+			int in_prim = (in_subtrigger_flags.at(i).test(0)) ? 1 : 0;
+			if(multi_subtrigger_hits>0 && in_subtrigger_flags.at(i).count()>(in_prim+1)){
+				std::cerr<<"Hit "<<i<<" is in "<<(in_subtrigger_flags.at(i).count()-in_prim)
+				         <<" subtriggers!"<<std::endl;
+				if(multi_subtrigger_hits==0) std::cerr<<"suppressing further warnings..."<<std::endl;
 				--multi_subtrigger_hits;
 			}
-			// i guess take the first trigger we encounter if this happens (it doesn't seem to anyway)
+			// add it to the appropriate histogram. prioritise the primary trigger
+			// otherwise take the first subtrigger if multiple (it doesn't seem to happen)
 			for(int j=0; j<32; ++j){
 				if(in_subtrigger_flags.at(i).test(j)){
 					ahist = (TH1D*)h_hits.GetHists()->At(2+j);
@@ -152,6 +162,9 @@ bool PlotHitTimes::Execute(){
 		std::cout<<" ("<<ahist->GetEntries()<<")\n";
 	}
 	
+	// FIXME right now a subtrigger may wholly overlap with the primary trigger,
+	// which will result in an empty subtrigger. Maybe we can identify and prune such cases.
+	
 	// we combine all our histograms into one plot to produce one histogram of all hits,
 	// but since we have each group as a separate TH1 we can give them each different fill colours
 	
@@ -171,11 +184,17 @@ bool PlotHitTimes::Execute(){
 	}
 	
 	fout->cd();
-	c_subtriggers->Clear();
 	c_subtriggers->cd();
 	h_hits.Draw();
 	std::string canv_name = "event_"+std::to_string(myTreeReader->GetEntryNumber());
 	c_subtriggers->Write(canv_name.c_str());
+	gDirectory->cd();
+	
+	// NO, ROOT, YOU DO NOT OWN THESE. THEY DON'T EVEN EXIST ANY MORE. STOP IT.
+	for(int i=0; i<h_hits.GetHists()->GetEntries(); ++i){
+		gDirectory->GetList()->Remove(h_hits.GetHists()->At(i));
+	}
+	c_subtriggers->Clear();
 	
 	return true;
 }

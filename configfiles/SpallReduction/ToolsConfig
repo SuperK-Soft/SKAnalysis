@@ -1,0 +1,31 @@
+# gracefully handle SIGINT and call Finalise
+GracefulStop GracefulStop configfiles/SpallReduction/GracefulStopConfig
+# parse a list of file names from text file list, pattern or similar
+#FileList LoadFileList configfiles/SpallReduction/LoadFileListConfig
+# Read next Tree entry
+TreeReader TreeReader configfiles/SpallReduction/TreeReaderConfig
+# Make an MTreeSelection to record data reduction
+muonCutRecorder CutRecorder configfiles/SpallReduction/muCutRecorderConfig
+relicCutRecorder CutRecorder configfiles/SpallReduction/relicCutRecorderConfig
+# remove periodic, calibration, veto, t2k, LED, Nickel, LINAC etc triggers
+SkipTriggers SkipTriggers configfiles/SpallReduction/SkipTriggersConfig
+# remove LED burst events
+SkipEventFlags SkipEventFlags configfiles/SpallReduction/SkipEventFlagsConfig
+# apply software trigger to search for HE+OD events within 100ns, and flag such events as containing a muon
+MuonSearch MuonSearch configfiles/SpallReduction/MuSearchConfig
+# for events without a muon, cut the event if there are more than 200 hits in 1.3us of the primary trigger
+IDHitsCut IDHitsCut configfiles/SpallReduction/IDHitsCutConfig
+# for events without a muon, cut the event if there's an OD trigger or more than 20 OD hits in 500-1300ns
+#ODCut ODCut configfiles/SpallReduction/ODCutConfig
+# do standard lowe reconstruction
+#lfallfit lfallfit configfiles/SpallReduction/lfallfitConfig
+# for events without a muon, cut if bsenergy > 100, or <8/10 MeV, depending on run number
+#RunwiseEnergyCut RunEnergyCut configfiles/SpallReduction/RunEnergyCutConfig
+# for events without a muon, cut the event if the distance from the ID wall < 200cm
+#WallCut WallCut configfiles/SpallReduction/WallCutConfig
+# open an SKROOT file for writing
+muTreeWriter TreeReader configfiles/SpallReduction/muWriterConfig
+# hack an additional Tree into the file
+relicTreeWriter AddTree configfiles/SpallReduction/relicWriterConfig
+# match muons with close-in-time relics. Reconstruct matched muons. Write out matched events.
+RelicMuonMatching RelicMuonMatching configfiles/SpallReduction/RelicMuMatchingConfig

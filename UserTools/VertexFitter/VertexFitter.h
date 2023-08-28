@@ -6,12 +6,6 @@
 
 #include "Tool.h"
 
-#include "SkrootHeaders.h" // MCInfo, Header etc.
-#include "skonl/softtrg_tbl.h"
-
-#include "basic_array.h"
-#include "fortran_routines.h"
-
 #include "pmt_geometry.h"
 #include "bonsaifit.h"
 #include "likelihood.h"
@@ -48,7 +42,6 @@ class VertexFitter: public Tool {
     
 	// tool variables
     // ==============
-    std::string toolName;
 //	std::string treeReaderName;
 //	MTreeReader* myTreeReader=nullptr; 
 	TTree* t;
@@ -57,15 +50,6 @@ class VertexFitter: public Tool {
     int nsubsk_last=0;    // same for new badch list, loaded on new run and subrun
     float watert;         // water transparency
 	int numPMTs;          // total number of PMTs
-
-    // verbosity levels: if 'verbosity' < this level, the message type will be logged.
-    int verbosity;
-    int v_error=0;
-    int v_warning=1;
-    int v_message=2;
-    int v_debug=3;
-    std::string logmessage="";
-    int get_ok=0;
 
 	float prev_t_nsec=0;
 	TH1D *ht = new TH1D();

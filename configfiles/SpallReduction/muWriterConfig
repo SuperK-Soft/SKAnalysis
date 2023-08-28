@@ -1,0 +1,7 @@
+verbosity 1
+treeName mu
+readerName muWriter
+skFile 1
+skrootMode 1
+outputFile ~/disk02/test_jacks.root
+#outputFile /disk03/usr8/jfannon/data/tool_lomu_075097.root

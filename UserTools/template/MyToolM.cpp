@@ -3,12 +3,8 @@
 
 #include "Algorithms.h"
 #include "Constants.h"
-#include "type_name_as_string.h"
 
-MyToolM::MyToolM():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+MyToolM::MyToolM():Tool(){}
 
 bool MyToolM::Initialise(std::string configfile, DataModel &data){
 	
@@ -17,11 +13,11 @@ bool MyToolM::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	
 	return true;
 }

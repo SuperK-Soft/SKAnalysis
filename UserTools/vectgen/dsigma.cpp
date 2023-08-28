@@ -4,10 +4,7 @@
 #include <math.h>
 #include <ctime>
 #include <string>
-#include <map>
 #include "dsigma.h"
-
-using namespace std;
 
 /****************************************************************************/
 /*          This code contains useful functions to generate the             */

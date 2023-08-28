@@ -3,10 +3,7 @@
 
 #include "MTreeReader.h"
 
-ReadMCParticles::ReadMCParticles():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+ReadMCParticles::ReadMCParticles():Tool(){}
 
 namespace {
 	// used for removing redundant particles/vertices
@@ -22,15 +19,15 @@ bool ReadMCParticles::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	
-	Log(m_unique_name+": Initializing",v_debug,verbosity);
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
 	std::string treeReaderName;
 	m_variables.Get("TreeReaderName",treeReaderName);
 	m_variables.Get("dataSrc",dataSrc);
 	m_variables.Get("debugEntryNum",debugEntryNum);
+	
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the TreeReader
 	// ------------------
@@ -50,29 +47,38 @@ bool ReadMCParticles::Initialise(std::string configfile, DataModel &data){
 
 bool ReadMCParticles::Execute(){
 	
-	Log(m_unique_name+": Executing event "+toString(myTreeReader->GetEntryNumber()),v_debug,verbosity);
+	Log(m_unique_name+": Executing event "+toString(myTreeReader->GetEntryNumber()),v_debug,m_verbose);
 	
 	m_data->eventVertices.clear();
 	m_data->eventParticles.clear();
 	
-	if(debugEntryNum>=0 && myTreeReader->GetEntryNumber()==debugEntryNum) verbosity=99;
+	if(debugEntryNum>=0 && myTreeReader->GetEntryNumber()==debugEntryNum) m_verbose=99;
 	
 	// N.B. times printed by the Print functions here are before adding MC_TIME_OFFSET
 	if(dataSrc==0){
-		if(verbosity>5) PrintSecondaryInfo();
+		if(m_verbose>5) PrintSecondaryInfo();
 		GetSecondaryInfo();
 	} else if(dataSrc==1){
-		if(verbosity>5) PrintSecondaryVectors(true);
+		if(m_verbose>5) PrintSecondaryVectors(true);
 		GetSecondaryVectors();
 	}
 	
-	if(verbosity>2) PrintEvent();
+	if(m_verbose>2) PrintEvent();
 	
-	// MC adds 1,000 to all hit times, which means hits and reconstructed variables are all offset by 1,000
-	// wrt to MC truth variables (i.e. particle times). Add that offset now so we align them.
+	// SKG4 adds 1,000ms to all hit times, then applies the software trigger, and outputs times
+	// relative to the primary trigger T0*. The primary trigger time, without the 1,000 offset,
+	// is stored in MCInfo::prim_pret0. So, in order for our particle times (which don't have any time fudging)
+	// to line up with our hit times, we need to add (1,000-prim_pret0[0])...
+	// *FIXME what if the software trigger finds nothing? how do we tell the number of valid entries in prim_pret0?
+	get_ok = myTreeReader->GetBranchValue("MC",mc_info);
+	if(!get_ok) return false;
 	for(auto&& avertex : m_data->eventVertices){
-		avertex.time += MC_TIME_OFFSET;
+		avertex.time += MC_TIME_OFFSET - mc_info->prim_pret0[0];
 	}
+	// It then(?) adds noise over the range [???,1.7us], which extends beyond the pre-trigger window,
+	// but usually cut off before the end of the readout window, so we normally add noise from 1.7us onwards
+	// with some external program. (n.b. or hit times of 2.7us+, because of the 1000ns hit time offset).
+	// (use the PrintHits Tool to visualise this)
 	
 	//if(debugEntryNum>=0 && myTreeReader->GetEntryNumber()==debugEntryNum) m_data->vars.Set("StopLoop",1);
 	
@@ -109,7 +115,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 	sec_info = nullptr;
 	get_ok = (myTreeReader->GetBranchValue("SECONDARY",sec_info));
 	if(!get_ok){
-		Log(m_unique_name+": Error getting Secondary branch from tree!",v_error,verbosity);
+		Log(m_unique_name+": Error getting Secondary branch from tree!",v_error,m_verbose);
 		return false;
 	}
 	// Print method should have been const-qualified. Hack around it.
@@ -136,7 +142,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 	if(vertexes_consistent){
 		std::cout<<"had "<<asize<<" vertices\n";
 	} else {
-		Log(m_unique_name+" Error! Secondary vertex vectors are not of consistent size!",v_error,verbosity);
+		Log(m_unique_name+" Error! Secondary vertex vectors are not of consistent size!",v_error,m_verbose);
 		for(std::pair<const std::string, size_t>& avec : vec_sizes){
 			std::cout<<"size of "<<avec.first<<" = "<<avec.second<<std::endl;
 		}
@@ -158,7 +164,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 	if(tracks_consistent){
 		std::cout<<"had "<<asize<<" tracks\n";
 	} else {
-		Log(m_unique_name+" Error! Secondary track vectors are not of consistent size!",v_error,verbosity);
+		Log(m_unique_name+" Error! Secondary track vectors are not of consistent size!",v_error,m_verbose);
 		for(std::pair<const std::string, size_t>& avec : vec_sizes){
 			std::cout<<"size of "<<avec.first<<" = "<<avec.second<<std::endl;
 		}
@@ -212,7 +218,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 			         <<"\ttermination_vtx (index) = "<<sec_info->track_termination_vtx.at(i)<<"\n";
 		}
 	} catch(std::exception& e){
-		Log(m_unique_name+"::PrintSecondaryVectors caught "+e.what(),v_error,verbosity);
+		Log(m_unique_name+"::PrintSecondaryVectors caught "+e.what(),v_error,m_verbose);
 	}
 	std::cout<<std::endl;
 	
@@ -227,13 +233,13 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 			if(start_vtx_idx<0){
 				// shouldn't happen: we should always have a start vertex
 				Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
-					+" has negative start vtx idx ("+toString(start_vtx_idx)+")!",v_error,verbosity);
+					+" has negative start vtx idx ("+toString(start_vtx_idx)+")!",v_error,m_verbose);
 					consistent=false;
 			} else if(start_vtx_idx>=sec_info->vertex_time.size()){
 				// references index out of bounds! uh-oh
 				Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 					+" has creation vtx idx out of bounds ("+toString(start_vtx_idx)
-					+"/"+toString(sec_info->vertex_time.size())+")!",v_error,verbosity);
+					+"/"+toString(sec_info->vertex_time.size())+")!",v_error,m_verbose);
 					consistent=false;
 			} else {
 				// valid creation vertex.
@@ -242,12 +248,12 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 				   std::abs(sec_info->vertex_incident_particle.at(start_vtx_idx))){
 					Log(m_unique_name+": secondary vectors track "+toString(tracki)+" parent track "
 					   +toString(sec_info->track_parent.at(tracki))+" is consitent with incident track "
-						" of creation vertex",v_debug,verbosity);
+						" of creation vertex",v_debug,m_verbose);
 				} else {
 					Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 					   +" has parent track index "+toString(sec_info->track_parent.at(tracki))
 					   +" but that vertex has incident track index "
-					   +toString(sec_info->vertex_incident_particle.at(start_vtx_idx)),v_error,verbosity);
+					   +toString(sec_info->vertex_incident_particle.at(start_vtx_idx)),v_error,m_verbose);
 					consistent=false;
 				}
 				// check that if this is marked primary, that the creation vertex incident_pdg_code
@@ -258,7 +264,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 							+" has no track parent (primary particle), but start vtx (idx "
 							+toString(start_vtx_idx)+") has incident pdg code !=-1 ("
 							+toString(sec_info->vertex_incident_particle_pdg_code.at(start_vtx_idx))
-							+")!",v_error,verbosity);
+							+")!",v_error,m_verbose);
 						consistent=false;
 					}
 				}
@@ -269,24 +275,24 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 			if(end_vtx_idx<0){
 				// shouldn't happen: we should always have an end vertex
 				Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
-					+" has negative end vtx idx ("+toString(end_vtx_idx)+")!",v_error,verbosity);
+					+" has negative end vtx idx ("+toString(end_vtx_idx)+")!",v_error,m_verbose);
 					consistent=false;
 			} else if(end_vtx_idx >= sec_info->vertex_time.size()){
 				// references index out of bounds! uh-oh
 				Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 					+" has termination vtx idx out of bounds ("+toString(end_vtx_idx)
-					+"/"+toString(sec_info->vertex_time.size())+")!",v_error,verbosity);
+					+"/"+toString(sec_info->vertex_time.size())+")!",v_error,m_verbose);
 					consistent=false;
 			} else {
 				// check that the termination vertex incident particle is this one
 				if(sec_info->vertex_incident_particle.at(end_vtx_idx)==tracki){
 					Log(m_unique_name+": secondary vectors track "+toString(tracki)+" end vertex "
-						"incident particle index is consitent with this track ",v_debug,verbosity);
+						"incident particle index is consitent with this track ",v_debug,m_verbose);
 				} else {
 					Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 					   +" termination vertex has incident particle index "
 					   +toString(sec_info->vertex_incident_particle.at(end_vtx_idx))
-					   +" but this track is index "+toString(tracki),v_error,verbosity);
+					   +" but this track is index "+toString(tracki),v_error,m_verbose);
 					consistent=false;
 				}
 			}
@@ -301,7 +307,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 					Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 					   +" has parent type "+toString(parent_pdg)+" (from parent track "+toString(parent_index)
 					   +" but creation vertex "+toString(start_vtx_idx)+" says incident particle type was "
-					   +toString(vtx_parent_pdg)+"!",v_error,verbosity);
+					   +toString(vtx_parent_pdg)+"!",v_error,m_verbose);
 					consistent=false;
 				}
 			}
@@ -309,12 +315,12 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 			// check that no track is its own parent
 			if(sec_info->track_parent.at(tracki)==tracki){
 				Log(m_unique_name+": Error; secondary vectors track "+toString(tracki)
-				   +" is its own parent!",v_error,verbosity);
+				   +" is its own parent!",v_error,m_verbose);
 				consistent=false;
 			}
 		}
 	} catch(std::exception& e){
-		Log(m_unique_name+"::PrintSecondaryVectors caught "+e.what(),v_error,verbosity);
+		Log(m_unique_name+"::PrintSecondaryVectors caught "+e.what(),v_error,m_verbose);
 	}
 	
 	return consistent;
@@ -324,18 +330,18 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 // ========================================
 bool ReadMCParticles::GetSecondaryVectors(){
 	// the easy one; i added this to skdetsim. maybe i'm biased.
-	Log(m_unique_name+" Getting MC Particles from SECONDARY vectors",v_debug,verbosity);
+	Log(m_unique_name+" Getting MC Particles from SECONDARY vectors",v_debug,m_verbose);
 	
 	// SecondaryInfo vectors contain both primaries and secondaries
 	sec_info = nullptr;
 	get_ok = (myTreeReader->GetBranchValue("SECONDARY",sec_info));
 	if(!get_ok){
-		Log(m_unique_name+": Error getting Secondary branch from tree!",v_error,verbosity);
+		Log(m_unique_name+": Error getting Secondary branch from tree!",v_error,m_verbose);
 		return false;
 	}
 	
 	// print event; should give ~same output as ReadMCParticles::PrintEvent once we're done
-	if(verbosity>3){
+	if(m_verbose>3){
 		PrintSecondaryVectors();
 	}
 	
@@ -402,7 +408,7 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		if(i<aparticle.GetNearestParentIndex()){
 			Log(m_unique_name+" Error! Particle at index "+toString(i)+" has parent at index "
 			    +toString(sec_info->track_parent.at(i))+"; unable to set this as its daughter!",
-			    v_error,verbosity);
+			    v_error,m_verbose);
 			// this is easy to fix: just add another loop after this loop creating particles
 			// just for setting daughters. For now though, don't think it's necessary.
 			// FIXME maybe remove this when we're more confident....
@@ -426,19 +432,19 @@ bool ReadMCParticles::GetSecondaryVectors(){
 // populated by skdetsim and SKG4
 // ==================================================
 bool ReadMCParticles::GetSecondaryInfo(){
-	Log(m_unique_name+" Getting MC Particles from SECONDARY c-style arrays",v_debug,verbosity);
+	Log(m_unique_name+" Getting MC Particles from SECONDARY c-style arrays",v_debug,m_verbose);
 	
 	// MCInfo contains primary particles
 	// SecondaryInfo contains secondary particles
 	get_ok = (myTreeReader->GetBranchValue("SECONDARY",sec_info)) &&
 	         (myTreeReader->GetBranchValue("MC",mc_info));
 	if(!get_ok){
-		Log(m_unique_name+": Error getting Secondary and MCInfo branches from tree!",v_error,verbosity);
+		Log(m_unique_name+": Error getting Secondary and MCInfo branches from tree!",v_error,m_verbose);
 		return false;
 	}
 	
 	// debug; print MCInfo
-	if(verbosity>3){
+	if(m_verbose>3){
 		// Print method should have been const-qualified. Hack around it.
 		MCInfo* mci = const_cast<MCInfo*>(mc_info);
 	}
@@ -505,11 +511,11 @@ bool ReadMCParticles::GetSecondaryInfo(){
 	
 	// first primary vertices
 	std::map<int,int> primary_vertex_map;   // for removing redundant copies
-	Log(m_unique_name+" looping over "+toString(n_primary_vertices)+" primary vertices",v_debug,verbosity);
+	Log(m_unique_name+" looping over "+toString(n_primary_vertices)+" primary vertices",v_debug,m_verbose);
 	for(int i=0; i<n_primary_vertices; ++i){
 		// secondary information stores one vertex for each primary, but often they are all identical!
 		// so first see if this there's a matching vertex already.
-		Log(m_unique_name+" check for existing vtx",v_debug,verbosity);
+		Log(m_unique_name+" check for existing vtx",v_debug,m_verbose);
 		int vertex_idx=-1;
 		for(int j=0; j<m_data->eventVertices.size(); ++j){
 			if((m_data->eventVertices.at(j).time-primary_vtx_time.at(i))>TIME_TOLERANCE) continue;
@@ -520,7 +526,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			break;
 		}
 		if(vertex_idx<0){
-			Log(m_unique_name+" no matching index found, making a new one",v_debug,verbosity);
+			Log(m_unique_name+" no matching index found, making a new one",v_debug,m_verbose);
 			MVertex avertex;
 			avertex.pos = TVector3{primary_vtx_pos.at(i).data()};
 			avertex.time = primary_vtx_time.at(i);
@@ -543,12 +549,12 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			m_data->eventVertices.push_back(avertex);
 		} else {
 			Log(m_unique_name+" this primary vertex is the same as vertex "
-			    +toString(vertex_idx)+", skipping",v_debug,verbosity);
+			    +toString(vertex_idx)+", skipping",v_debug,m_verbose);
 		}
 	}
 	
 	// then primary particles
-	Log(m_unique_name+" looping over "+toString(n_outgoing_primaries)+" primary particles",v_debug,verbosity);
+	Log(m_unique_name+" looping over "+toString(n_outgoing_primaries)+" primary particles",v_debug,m_verbose);
 	for(int i=0; i<n_outgoing_primaries; ++i){
 		MParticle aparticle;
 		aparticle.pdg = primary_PDG_code.at(i);
@@ -573,7 +579,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		Log(m_unique_name+" primary particle "+toString(i)+" (pdg "+toString(aparticle.pdg)+")"
 		         " has primary parent idx "+toString(primary_parent_idx.at(i)-1)+
 		         " and vtx id "+toString(aparticle.start_vtx_idx)+", which has parent particle "
-		         +toString(primary_vtx_parent.at(aparticle.start_vtx_idx)),v_debug,verbosity);
+		         +toString(primary_vtx_parent.at(aparticle.start_vtx_idx)),v_debug,m_verbose);
 		
 		// check these vertices agree with the direct information in the primary particle arrays
 		TVector3 astart{primary_start_vertex.at(i).data()};
@@ -582,18 +588,18 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			Log(m_unique_name+" Error! conflicting start vertices: primary "+toString(i)
 			     +" has primary_start_vtx "+toString(astart)+", but primary vtx id "
 			     +toString(aparticle.start_vtx_idx)+" which has position "+toString(otherstart)
-			     ,v_error,verbosity);
+			     ,v_error,m_verbose);
 		} else {
 			Log(m_unique_name+" redundant primary vertex: primary_start_vertex["+toString(i)
 			     +"] == primary_vtx_pos["+toString(aparticle.start_vtx_idx)+"] = "
-			     +toString(astart),v_debug,verbosity);
+			     +toString(astart),v_debug,m_verbose);
 		}
 		
 		m_data->eventParticles.push_back(aparticle);
 	}
 	
 	// secondary particles
-	Log(m_unique_name+" looping over "+toString(n_secondaries)+" secondaries",v_debug,verbosity);
+	Log(m_unique_name+" looping over "+toString(n_secondaries)+" secondaries",v_debug,m_verbose);
 	for(int i=0; i<n_secondaries; ++i){
 		MParticle aparticle;
 		//std::cout<<"init"<<std::endl;
@@ -604,7 +610,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		if(aparent_index>=(n_outgoing_primaries+n_secondaries)){
 			// secondary index out of bounds!
 			Log(m_unique_name+" Error! secondary parent index "+toString(aparent_index)+"/"
-			   +toString(n_outgoing_primaries+n_secondaries)+" out of bounds!", v_error,verbosity);
+			   +toString(n_outgoing_primaries+n_secondaries)+" out of bounds!", v_error,m_verbose);
 			aparent_index=-1;
 		} else if(aparent_index>=0){
 			// if >= 0 this is an index in the secondaries array, but since we merged with the
@@ -613,7 +619,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		} else if((std::abs(aparent_index)-1)>n_outgoing_primaries){
 			// primary index out of bounds!
 			Log(m_unique_name+" Error! primary parent index "+toString(std::abs(aparent_index)-2)+"/"
-			    +toString(n_outgoing_primaries)+" out of bounds!", v_error,verbosity);
+			    +toString(n_outgoing_primaries)+" out of bounds!", v_error,m_verbose);
 			aparent_index=-1;
 		} else if(aparent_index<-1){
 			// atmpd arrays use negative indices to indicate primary particles,
@@ -627,7 +633,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			// index 0 (made -1 by our fortran indexing correction) means no recorded parent
 			// maybe we have an indirect parent primary?
 			Log(m_unique_name+" using primary parent index as no valid secondary parent index",
-			      v_debug,verbosity);
+			      v_debug,m_verbose);
 			aparent_index = secondary_parent_primary_idx.at(i) - 1; // fortran indexing
 			// if valid, indicate to MParticle class that this is an indirect parent
 			if(aparent_index!=-1) aparent_index = -(aparent_index+2);
@@ -639,7 +645,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		// validate that this doesn't happen (pretty sure it doesn't).
 		if(aparticle.GetParent()==nullptr){
 			Log(m_unique_name+" Error! Parent index "+toString(aparent_index)+" not yet "
-			     "in event particles!",v_error,verbosity);
+			     "in event particles!",v_error,m_verbose);
 			// FIXME remove if we're confident this isn't our problem
 			std::cerr<<"\nDumping event "<<myTreeReader->GetEntryNumber()<<" info for debug\n";
 			PrintSecondaryInfo();
@@ -654,7 +660,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		// secondaries store their own vertices, so we need to make a vertex from the start/stop info.
 		// But, if there are multiple recorded secondaries from one interaction, we will get duplicate
 		// vertices. so first see if this there's a matching vertex already.
-		Log(m_unique_name+" check for existing vtx",v_debug,verbosity);
+		Log(m_unique_name+" check for existing vtx",v_debug,m_verbose);
 		int vertex_idx=-1;
 		for(int j=0; j<m_data->eventVertices.size(); ++j){
 			if((m_data->eventVertices.at(j).time-secondary_start_time.at(i))>TIME_TOLERANCE) continue;
@@ -663,18 +669,18 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			// warning
 			if(vertex_idx>0){
 				Log(m_unique_name+" secondary "+toString(i)+" start vertex matches more than"
-				    " one vertex in eventParticles! Reduce matching tolerance!",v_warning,verbosity);
+				    " one vertex in eventParticles! Reduce matching tolerance!",v_warning,m_verbose);
 			}
 			vertex_idx = j;
 			// if we don't care about the warning, we can just break after finding the first one
 			break;
 		}
-		Log(m_unique_name+" check done, vertex_idx "+toString(vertex_idx),v_debug,verbosity);
+		Log(m_unique_name+" check done, vertex_idx "+toString(vertex_idx),v_debug,m_verbose);
 		if(vertex_idx>0){
 			// we found an existing vertex; use this one
 			aparticle.start_vtx_idx = vertex_idx;
 			// debug print
-			if(verbosity>v_debug){
+			if(m_verbose>v_debug){
 				std::cout<<"secondary "<<i
 					     <<" has a start vertex at the same time and position as one already recorded: "
 					     <<" this start_vtx ("<<secondary_start_time.at(i)<<", "
@@ -688,7 +694,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			}
 		} else {
 			// no matching vertex; make one
-			Log(m_unique_name+" no matching vtx, making one",v_debug,verbosity);
+			Log(m_unique_name+" no matching vtx, making one",v_debug,m_verbose);
 			MVertex start_vtx;
 			start_vtx.type = 2;        // XXX clarify!
 			start_vtx.pos = TVector3{secondary_start_vertex.at(i).data()};
@@ -714,7 +720,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		aparticle.end_vtx_idx = -1;  // though this is default anyway
 		
 		// add this particle as a daughter of its parent
-		Log(m_unique_name+" daughter scan, parent_idx "+toString(aparent_index),v_debug,verbosity);
+		Log(m_unique_name+" daughter scan, parent_idx "+toString(aparent_index),v_debug,m_verbose);
 		if(aparticle.GetParent()!=nullptr){
 			// parent particle is in the event particles vector
 			MParticle* parent = aparticle.GetParent();
@@ -726,7 +732,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			if(aparticle.IsParentDirect() && parent->pdg!=secondary_parent_PDG_code.at(i)){
 				Log(m_unique_name+" Warning! parent_PDG_code "+toString(secondary_parent_PDG_code.at(i))
 				         +" for secondary "+toString(i)+" does not match event particle at parent index "
-				         +toString(aparent_index)+" which has pdg "+toString(parent->pdg),v_debug,verbosity);
+				         +toString(aparent_index)+" which has pdg "+toString(parent->pdg),v_debug,m_verbose);
 				// best i can tell this happens, and isn't our problem? seems to be indirect parents
 				// e.g. reports parent pdg '22' for secondary proton indirectly from primary positron annihilation
 				/*
@@ -739,7 +745,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			} else if(aparticle.IsParentDirect()) {
 				Log(m_unique_name+" sanity check passed; parent_PDG_code "
 				     +toString(secondary_parent_PDG_code.at(i))+" for secondary "+toString(i)
-				     +" matches event particle at parent index "+toString(aparent_index),v_debug,verbosity);
+				     +" matches event particle at parent index "+toString(aparent_index),v_debug,m_verbose);
 			} // else not a direct parent, can't do the comparison
 			
 			// another: check start position consistency
@@ -748,7 +754,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			if(aparticle.IsParentDirect() && (pstart1 - pstart2).Mag()>POS_TOLERANCE){
 				Log(m_unique_name+" Warning! parent_init_pos for secondary "+toString(i)
 				      +": "+toString(pstart2)+" does not match that of event particle at parent index "
-				      +toString(aparent_index)+" which has start pos "+toString(pstart1),v_debug,verbosity);
+				      +toString(aparent_index)+" which has start pos "+toString(pstart1),v_debug,m_verbose);
 				/*
 				// best i can tell this happens... and isn't our problem? not sure why.
 				std::cerr<<"\nDumping event "<<myTreeReader->GetEntryNumber()<<" info for debug\n";
@@ -760,7 +766,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			} else if(aparticle.IsParentDirect()){
 				Log(m_unique_name+" sanity check passed; parent_init_pos for secondary "+toString(i)
 				    +" matches the start pos of event particle at parent index "
-				    +toString(aparent_index),v_debug,verbosity);
+				    +toString(aparent_index),v_debug,m_verbose);
 			}
 			// could also compare parent start momentum using secondary_parent_init_mom
 			
@@ -774,12 +780,12 @@ bool ReadMCParticles::GetSecondaryInfo(){
 				// this may happen if the parent has multiple recorded daughters
 				Log(m_unique_name+" secondary "+toString(i)+" parent index "+toString(aparent_index)
 				      +" already has an end vtx id "+toString(parent->end_vtx_idx)
-				      +" (perhaps from another daughter?)",v_debug,verbosity);
+				      +" (perhaps from another daughter?)",v_debug,m_verbose);
 			} // else this isn't a direct parent, so don't do this
 			
 		} else {
 			Log(m_unique_name+" secondary "+toString(i)+" parent index out of bounds ("
-			 +toString(aparent_index)+"/"+toString(m_data->eventParticles.size())+")",v_debug,verbosity);
+			 +toString(aparent_index)+"/"+toString(m_data->eventParticles.size())+")",v_debug,m_verbose);
 		}
 		
 		// extra info
@@ -796,7 +802,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		Log(m_unique_name+" secondary "+toString(i)+" has parent idx "+toString(secondary_parent_index.at(i))
 		         +", primary parent index "+toString(secondary_parent_primary_idx.at(i))
 		         +", parent G3 trackid "+toString(secondary_parent_G3_trackid.at(i))
-		         +", parent G3 stack "+toString(secondary_parent_G3_stackid.at(i)),v_debug,verbosity);
+		         +", parent G3 stack "+toString(secondary_parent_G3_stackid.at(i)),v_debug,m_verbose);
 		
 		m_data->eventParticles.push_back(aparticle);
 		
@@ -815,7 +821,7 @@ bool ReadMCParticles::PrintSecondaryInfo(){
 	get_ok = (myTreeReader->GetBranchValue("SECONDARY",sec_info)) &&
 	         (myTreeReader->GetBranchValue("MC",mc_info));
 	if(!get_ok){
-		Log(m_unique_name+": Error getting Secondary and MCInfo branches from tree!",v_error,verbosity);
+		Log(m_unique_name+": Error getting Secondary and MCInfo branches from tree!",v_error,m_verbose);
 		return false;
 	}
 	

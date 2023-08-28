@@ -6,6 +6,7 @@ Dependencies
 main
 *.d
 *.root
+*.zbs
 *.so
 *.a
 *.pcm
@@ -18,3 +19,4 @@ BStore_RootDict.h
 BStore_Linkdef_1.hh
 \#*#
 .DS_Store
+*.png

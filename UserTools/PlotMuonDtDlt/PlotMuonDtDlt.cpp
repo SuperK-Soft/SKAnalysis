@@ -19,10 +19,7 @@
 #include <cmath>  // fabs
 
 
-PlotMuonDtDlt::PlotMuonDtDlt():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+PlotMuonDtDlt::PlotMuonDtDlt():Tool(){}
 
 bool PlotMuonDtDlt::Initialise(std::string configfile, DataModel &data){
 	
@@ -31,11 +28,11 @@ bool PlotMuonDtDlt::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	m_variables.Get("outputFile",outputFile);          // where to save data. If empty, current TFile
 	m_variables.Get("treeReaderName",treeReaderName);
 	
@@ -54,7 +51,7 @@ bool PlotMuonDtDlt::Execute(){
 	// only consider first muboy muon (only for multi-mu events?)
 	std::set<size_t> pre_muboy_first_muons = myTreeSelections->GetPassingIndexes("pre_muon_muboy_i==0");
 	for(size_t mu_i : pre_muboy_first_muons){
-		Log(toolName+" filling spallation dt and dlt distributions",v_debug+2,verbosity);
+		Log(m_unique_name+" filling spallation dt and dlt distributions",v_debug+2,m_verbose);
 		dlt_vals_pre.at(mu_class[mu_i]).push_back(dlt_mu_lowe[mu_i]);   // FIXME weight by num_pre_muons
 		dt_vals_pre.at(mu_class[mu_i]).push_back(dt_mu_lowe[mu_i]);     // FIXME weight by num_pre_muons
 		
@@ -62,10 +59,10 @@ bool PlotMuonDtDlt::Execute(){
 		// since we're interested in the effect on the spallation sample, which is given by
 		// the total - post-muon sample, record both pre- and post- muon samples with various dt cuts
 		for(int dt_cut_i=0; dt_cut_i<num_dt_cuts; ++dt_cut_i){
-			Log(toolName+" checking nominal dlt cut systematic",v_debug+2,verbosity);
+			Log(m_unique_name+" checking nominal dlt cut systematic",v_debug+2,m_verbose);
 			if(myTreeSelections->GetPassesCut("pre_mu_dt_cut_"+toString(dt_cut_i),mu_i)){
-				Log(toolName+" filling spallation dlt distribution for dt cut "
-				            +toString(dt_cut_i),v_debug+2,verbosity);
+				Log(m_unique_name+" filling spallation dlt distribution for dt cut "
+				            +toString(dt_cut_i),v_debug+2,m_verbose);
 				dlt_systematic_dt_cuts_pre.at(dt_cut_i).push_back(dt_mu_lowe[mu_i]);
 			}
 		}
@@ -73,15 +70,15 @@ bool PlotMuonDtDlt::Execute(){
 	// post muons
 	std::set<size_t> post_muboy_first_muons = myTreeSelections->GetPassingIndexes("post_muon_muboy_i==0");
 	for(size_t mu_i : post_muboy_first_muons){
-		Log(toolName+" filling spallation dt and dlt distributions",v_debug+2,verbosity);
+		Log(m_unique_name+" filling spallation dt and dlt distributions",v_debug+2,m_verbose);
 		dlt_vals_post.at(mu_class[mu_i]).push_back(dlt_mu_lowe[mu_i]);   // FIXME weight by num_post_muons
 		dt_vals_post.at(mu_class[mu_i]).push_back(dt_mu_lowe[mu_i]);     // FIXME weight by num_post_muons
 		
 		for(int dt_cut_i=0; dt_cut_i<num_dt_cuts; ++dt_cut_i){
-			Log(toolName+" checking nominal dlt cut systematic",v_debug+2,verbosity);
+			Log(m_unique_name+" checking nominal dlt cut systematic",v_debug+2,m_verbose);
 			if(myTreeSelections->GetPassesCut("post_mu_dt_cut_"+toString(dt_cut_i),mu_i)){
-				Log(toolName+" filling spallation dlt distribution for dt cut "
-				            +toString(dt_cut_i),v_debug+2,verbosity);
+				Log(m_unique_name+" filling spallation dlt distribution for dt cut "
+				            +toString(dt_cut_i),v_debug+2,m_verbose);
 				dlt_systematic_dt_cuts_post.at(dt_cut_i).push_back(dt_mu_lowe[mu_i]);
 			}
 		}
@@ -111,15 +108,15 @@ bool PlotMuonDtDlt::Finalise(){
 		fout->cd();
 	} else {
 		if(gDirectory->GetFile()==nullptr){
-			Log(toolName+" Error! No output file given and no file open!",v_error,verbosity);
+			Log(m_unique_name+" Error! No output file given and no file open!",v_error,m_verbose);
 			return true;
 		}
 	}
 	
 	// subtract distribution of post-muons from pre-muons to obtain lt and dt distributions of mu-lowe pairs
-	Log(toolName+" making plots of muon-lowe Dt distributions",v_debug,verbosity);
+	Log(m_unique_name+" making plots of muon-lowe Dt distributions",v_debug,m_verbose);
 	PlotMuonDt();
-	Log(toolName+" making plots of muon-lowe Dlt distributions",v_debug,verbosity);
+	Log(m_unique_name+" making plots of muon-lowe Dlt distributions",v_debug,m_verbose);
 	PlotMuonDlt();
 	
 	// measure dlt cut systematic TODO

@@ -1,0 +1,5 @@
+verbosity 2
+selectorName muCuts
+selectionsFile mu_cuts.root
+distributionsFile mu_distributions.root
+treeReaderName spallReader

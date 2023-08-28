@@ -11,7 +11,7 @@ bool MyTool::Initialise(std::string configfile, DataModel &data){
   m_data= &data;
   m_log= m_data->Log;
 
-  if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+  if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 
   return true;
 }

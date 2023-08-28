@@ -30,22 +30,12 @@ class ReadMCParticles: public Tool {
 	bool PrintEvent();
 	bool PrintSecondaryInfo();
 	bool PrintSecondaryVectors(bool checkconsistency=false);
-	std::string m_unique_name;
 	MTreeReader* myTreeReader=nullptr;
 	int dataSrc=0; // 0= SecondaryInfo atmpd arrays, 1=SecondaryInfo vectors
 	int debugEntryNum=-1; // crank up verbosity for this event
 	
 	const SecondaryInfo * sec_info = nullptr;
 	const MCInfo* mc_info = nullptr;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 };
 

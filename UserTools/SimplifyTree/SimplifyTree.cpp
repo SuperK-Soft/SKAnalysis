@@ -6,10 +6,7 @@
 #include <bitset>
 #include <unistd.h>
 
-SimplifyTree::SimplifyTree():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+SimplifyTree::SimplifyTree():Tool(){}
 
 bool SimplifyTree::Initialise(std::string configfile, DataModel &data){
 	
@@ -18,18 +15,18 @@ bool SimplifyTree::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	std::string treeReaderName;
 	m_variables.Get("treeReaderName",treeReaderName);
 	m_variables.Get("OutputDir",outputdir);
 	
 	// check for input TreeReader
 	 if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	} else {
 		// retrieve the TreeReader
@@ -68,15 +65,15 @@ bool SimplifyTree::Initialise(std::string configfile, DataModel &data){
 
 bool SimplifyTree::Execute(){
 	
-	Log(toolName+": Executing",v_debug,verbosity);
-	if(iexecute%1000==0) Log(toolName+": "+std::to_string(iexecute),v_message,verbosity);
+	Log(m_unique_name+": Executing",v_debug,m_verbose);
+	if(iexecute%1000==0) Log(m_unique_name+": "+std::to_string(iexecute),v_message,m_verbose);
 	++iexecute;
 	
 	// check if processing a new file
 	if(infilename!=iTreeReader->GetFile()->GetName()){
 		
 		// new input file -> new output file
-		Log(toolName+": New input file, new output file",v_debug,verbosity);
+		Log(m_unique_name+": New input file, new output file",v_debug,m_verbose);
 		
 		// write out and close the current output file, if there is one
 		if(fout){
@@ -93,10 +90,10 @@ bool SimplifyTree::Execute(){
 		outfname = outfname.substr(0, outfname.size()-5);
 		outfname += "_simple.root";
 		if(outputdir!="") outfname=outputdir+"/"+outfname;
-		Log(toolName+": New output simple file: "+outfname,v_debug,verbosity);
+		Log(m_unique_name+": New output simple file: "+outfname,v_debug,m_verbose);
 		fout = new TFile(outfname.c_str(), "recreate");
 		if(!fout || fout->IsZombie()){
-			Log(toolName+": Error making output file "+outfname,v_error,verbosity);
+			Log(m_unique_name+": Error making output file "+outfname,v_error,m_verbose);
 			return false;
 		}
 		fout->cd();
@@ -195,7 +192,7 @@ bool SimplifyTree::Execute(){
 			n_hits = rawtqinfo_.nhitaz_raw;
 		}
 		
-		Log(toolName+": had "+std::to_string(n_hits)+" "+id_or_od+" hits",v_debug,verbosity);
+		Log(m_unique_name+": had "+std::to_string(n_hits)+" "+id_or_od+" hits",v_debug,m_verbose);
 		
 		int n_ingate_hits=0;
 		
@@ -423,7 +420,7 @@ bool SimplifyTree::Execute(){
 		}
 		*/
 		
-		if(verbosity>3 && id_or_od=="ID"){
+		if(m_verbose>3 && id_or_od=="ID"){
 			// some trigger flag checks just for info
 			// hardware NHITS triggers do not seem to be set, at least for rfm_run080008.000008.root
 			std::bitset<8*sizeof(int)> trigger_bits(trigger_flags);

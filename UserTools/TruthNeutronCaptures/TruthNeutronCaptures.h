@@ -42,16 +42,6 @@ class TruthNeutronCaptures: public Tool {
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
 	
 	private:
-	std::string toolName;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// file stuff
 	std::string inputFile;                      // if just passing a single filename directly to this tool

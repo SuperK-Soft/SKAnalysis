@@ -16,7 +16,7 @@ bool WriteOutput::Initialise(std::string configfile, DataModel &data)
     if(configfile!="")  m_variables.Initialise(configfile);
     m_data= &data;
     m_data->tool_configs[name] = &m_variables;
-    m_variables.Get("tool_verbosity",m_verbose);
+    m_variables.Get("verbosity",m_verbose);
     
     // get info about the current application git revision
     std::string gitcommit = getOutputFromFunctionCall(system, "git rev-parse HEAD");

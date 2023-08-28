@@ -23,6 +23,10 @@ DataModel::~DataModel(){
 	eventVertices.clear();
 	NCaptureCandidates.clear();
 	NCapturesTrue.clear();
+	// finalise bonsai if it was initialised
+	if(bonsai_initialised){
+		cfbsexit_();
+	}
 }
 
 // open a file, making it if necessary. Useful for adding data to the same file from multiple Tools.
@@ -315,30 +319,58 @@ bool DataModel::GeoSet(int sk_geometry_in){
 		//exit(-1); // should we do this? printouts are easy to miss...
 		return false;
 	} else {
-		skheadg_.sk_geometry = sk_geometry;
+		skheadg_.sk_geometry = sk_geometry_in;
 		geoset_();
 	}
 	return true;
 }
 
+bool DataModel::BonsaiInit(){
+	if(!bonsai_initialised){
+		// initialize bonsai
+		int MAXPM_var = MAXPM;
+		float* xyzpm = &geopmt_.xyzpm[0][0];
+		cfbsinit_(&MAXPM_var, xyzpm);
+		bonsai_initialised=true;
+		return true;
+	}
+	return false;
+}
+
 // return a new LUN. We accept a hint, but will only apply it if not already assigned.
-int DataModel::GetNextLUN(int lun, std::string reader){
+int DataModel::GetNextLUN(std::string reader, int lun){
+	if(reader==""){
+		std::cerr<<"DataModel::GetNextLUN called with empty reader name!"<<std::endl;
+		return false;
+	}
 	// each LUN (logic unit number, a fortran file handle (ID) and/or an ID used
 	// by the SuperManager to identify the TreeManager associated with a file) must be unique.
 	std::map<std::string,int> lunlist;
 	CStore.Get("LUNList",lunlist);
+	if(lunlist.count(reader)){
+		std::cerr<<"DataModel::GetNextLUN called for reader '"<<reader
+		         <<"', which is already associated with LUN "<<lunlist.at(reader)<<std::endl;
+		return false;
+	}
 	// check if this LUN is free, otherwise print a warning and assign a different LUN
 	// since we map names to LUNs, to check if a LUN is free we need to scan by value, not by key.
 	// easiest way to do this while also sorting by LUN is to reverse the map.
 	// sorting allows us to immediately know the next free LUN in case this one is in use.
 	std::map<int,std::string> revlist;
 	for(auto&& apair : lunlist){ revlist.emplace(apair.second,apair.first); }
-	if(revlist.count(lun)){
+	if(lun!=0 && revlist.count(lun)){
 		int reqLUN=lun;
 		lun = revlist.rbegin()->first; // get the last assigned LUN
 		++lun;                         // we'll use the next one
-		std::cerr<<"DataModel::GenerateNewLUN Warning! Cannot assign LUN "<<reqLUN
-			 <<" as it is already taken. Assigning "<<lun<<" instead."<<std::endl;
+		std::cerr<<"DataModel::GetNextLUN Warning! Cannot assign LUN "<<reqLUN
+		         <<" as it is already taken. Assigning "<<lun<<" instead."<<std::endl;
+	} else if(revlist.size()) {
+		// if given lun 0, just pass out the next one without warning
+		lun = revlist.rbegin()->first;
+		++lun;
+	} else {
+		// default to 10
+		lun = 10;
 	}
 	//assign the LUN
 	lunlist.emplace(reader,lun);

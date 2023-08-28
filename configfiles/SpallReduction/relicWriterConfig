@@ -1,0 +1,4 @@
+verbosity 10
+treeReaderName muWriter
+treeWriterName relicWriter
+newTreeName relic

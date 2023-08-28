@@ -1,0 +1,5 @@
+# specify trigger types to pass
+verbosity 2
+allowedTriggers SLE LE HE SHE AFT OD_or_Fission SLE_hitsum LE_hitsum HE_hitsum AFT_or_Cal OD_hitsum
+#skippedTriggers also allowed, trigger bit numbers or names
+selectorName all

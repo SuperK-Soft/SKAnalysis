@@ -42,8 +42,12 @@
 #include "MParticle.h"
 #include "MVertex.h"
 
+#include "ParticleCand.h"
+#include "skroot_loweC.h"
+
+#include "MTreeSelection.h"
+
 class MTreeReader;
-class MTreeSelection;
 class TreeReader;
 class ConnectionTable;
 
@@ -102,18 +106,29 @@ class DataModel {
   bool LoadAFT(std::string ReaderName="");
   bool LoadCommons(int entry_i, std::string ReaderName="");
   // tracking fortran logic unit numbers (LUNs, file handles)
-  int GetNextLUN(int lun=10, std::string reader="reader");
+  int GetNextLUN(std::string reader="reader", int lun=0);
   int GetLUN(std::string reader);
   bool FreeLUN(int lun, std::string reader="");
   // wrapper to check if we've called this yet, since we should probably only call it the once?
   void KZInit();
   bool kz_initialized=false;
   bool GeoSet(int sk_geometry_in);
+  bool BonsaiInit();
+  bool bonsai_initialised=false;
   
   TFile* OpenFileForWriting(std::string file, bool alreadyopenonly=false);
   TFile* OpenFileForReading(std::string file, bool fromdisk=true);
   bool CloseFile(std::string file);
   bool CloseFile(TFile* fptr);
+  
+  // helper functions for working with MTreeSelections
+  // (basically just needed for the case of adding cuts to multiple selectors at once)
+  template<typename... Args>
+  bool AddCut(std::string selector, std::string cut, std::string description, Args... rest);
+  template<typename... Args>
+  bool ApplyCut(std::string selector, std::string cut, double val, Args... rest);
+  template<typename... Args>
+  bool AddPassingEvent(std::string selector, std::string cut, Args... rest);
   
   // Event vars
   BStore* eventVariables_p; // TODO replace with a pointer and update tools to use -> instead of .
@@ -136,7 +151,27 @@ class DataModel {
   
   std::map<std::string, Store*> tool_configs;
   StoreToTTree StoreConverter;
-
+  
+  // for muon-lowe matching
+  // ----------------------
+  bool newMuon = false;   // flag for a new muon
+  bool newRelic = false;  //flag for a new relic candidate
+  
+  //deques of ALL muon candidates and relic candidates (before/during matching)
+  std::deque<ParticleCand> muonCandDeque;
+  std::deque<ParticleCand> relicCandDeque;
+  
+  //deque of muons that need to be reconstructed (i.e. those matched to a relic candidate)
+  std::vector<ParticleCand> muonsToRec;
+  
+  //vector of relic candidate ready to be written out (muon scan done)
+  std::vector<ParticleCand> writeOutRelics;
+  
+  //cached lowe common blocks, for use during matching
+  std::map<long, skroot_lowe_common> loweCommonBufferMap;
+  
+  // -----------------------
+  
  private:
 
 
@@ -153,6 +188,64 @@ class DataModel {
   
   
 };
+
+
+template<typename... Args>
+bool DataModel::AddCut(std::string selector, std::string cut, std::string description, Args... rest){
+	if(selector!="all" && Selectors.count(selector)==0){
+		std::cerr<<"DataModel::AddCut Error! Unrecognised selector "<<selector
+		         <<" for cut "<<cut<<std::endl;
+		return false;
+	}
+	bool ret=true;
+	if(selector=="all"){
+		// add this event to all selectors
+		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
+			ret &= sel->second->AddCut(cut, description, rest...);
+		}
+	} else {
+		ret = Selectors.at(selector)->AddCut(cut, description, rest...);
+	}
+	return ret;
+}
+
+template<typename... Args>
+bool DataModel::ApplyCut(std::string selector, std::string cut, double val, Args... rest){
+	if(selector!="all" && Selectors.count(selector)==0){
+		std::cerr<<"DataModel::ApplyCut Error! Unrecognised selector "<<selector
+		         <<" for cut "<<cut<<std::endl;
+		return false;
+	}
+	bool ret=true;
+	if(selector=="all"){
+		// add this event to all selectors
+		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
+			ret &= sel->second->ApplyCut(cut, val, rest...);
+		}
+	} else {
+		ret = Selectors.at(selector)->ApplyCut(cut, val, rest...);
+	}
+	return ret;
+}
+
+template<typename... Args>
+bool DataModel::AddPassingEvent(std::string selector, std::string cut, Args... rest){
+	if(selector!="all" && Selectors.count(selector)==0){
+		std::cerr<<"DataModel::AddPassingEvent Error! Unrecognised selector "<<selector
+		         <<" for cut "<<cut<<std::endl;
+		return false;
+	}
+	bool ret=true;
+	if(selector=="all"){
+		// add this event to all selectors
+		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
+			ret &= sel->second->AddPassingEvent(cut, rest...);
+		}
+	} else {
+		ret = Selectors.at(selector)->AddPassingEvent(cut, rest...);
+	}
+	return ret;
+}
 
 
 #endif

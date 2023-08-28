@@ -1,3 +1,5 @@
+#ifndef FORTRAN_ROUTINES_H
+#define FORTRAN_ROUTINES_H
 // (c-versions of) headers that define fortran common blocks
 // these are offficial in $SKOFL_ROOT/inc/
 #include "skheadC.h"
@@ -83,9 +85,10 @@ extern "C" void get_sub_triggers2_(int*, int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
 extern "C" void set_timing_gate_nsec_(float*);
 extern "C" int make_swtrg_list(int*,int*);
-extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*);
-extern "C" int softtrg_inittrgtbl(int , int, int, int);
 extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);
+// for these two, see $SKOFL_ROOT/src/softtrg/softtrg_ofldata.c
+extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*); // probably call this
+extern "C" int softtrg_inittrgtbl(int , int, int, int);    // which internally calls this
 
 // the following are provided by libwtlib_5.1.a
 extern "C" void skrunday_();
@@ -125,6 +128,7 @@ extern "C" void lfallfit_sk4_gain_corr_mc_(float* watert, int* nhitcut, int* fla
 
 extern "C" void rluxgo_(int*, int*, int*, int*);
 extern "C" float rlu_();  // src/monlib/rlu.F
+extern "C" void ran_verbosity_(int*);
 
 extern "C" void slmcmklow_(int*, int*, int*, int*, float*);  // $SKOFL_ROOT/lowe/sollib/slmcmklow.F
 extern "C" void slredtimev_(int*, int*, int*, int*, int*, float*, float*, int*); // $SKOFL_ROOT/lowe/sollib/slredtimev.f
@@ -136,6 +140,19 @@ extern "C" void darklf_(int*);  // $SKOFL_ROOT/lowe/sklowe/darklf.F
 // after that there were many undefined references, e.g. `sortzv_`, `hf1_`, `hf2_`...
 // after some trial and error these are resolved, but i lost track of which provided what.
 // cernlibs in particular resolved a lot of repeated undefined issues, they may be the main culprit.
+
+// muon reconstruction
+extern "C" void fix_maxqisk_();
+extern "C" void lfmufit_sk4_();
+extern "C" void newmufit_(float (*)[3], float (*)[3], float*);
+extern "C" void makededx_(float (*)[4], float (*)[3], int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, float (*)[200]);
+extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, int*, float (*)[200], int (*)[334380], int*);
+extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
+extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
+extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
+
+// vectgen
+extern "C" void spectrum_(int*,int*,int*,float*,int*,float*,float*,int*);
 
 // SK I/O
 extern "C" {
@@ -203,3 +220,5 @@ extern "C" {
     void spfinalsep_();
 //	float pttruewaterlen_(float&);
 }
+
+#endif

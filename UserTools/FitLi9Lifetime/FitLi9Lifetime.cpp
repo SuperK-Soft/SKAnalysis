@@ -28,10 +28,7 @@
 #include "Math/WrappedMultiTF1.h"
 //#include "HFitInterface.h"
 
-FitLi9Lifetime::FitLi9Lifetime():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+FitLi9Lifetime::FitLi9Lifetime():Tool(){}
 
 // from 2015 paper Table I
 const double li9_lifetime_secs = 0.26;
@@ -44,11 +41,11 @@ bool FitLi9Lifetime::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	m_variables.Get("li9_lifetime_dtmin",li9_lifetime_dtmin);
 	m_variables.Get("li9_lifetime_dtmax",li9_lifetime_dtmax);
 	m_variables.Get("outputFile",outputFile);          // where to save data. If empty, current TFile
@@ -67,14 +64,14 @@ bool FitLi9Lifetime::Execute(){
 	
 	// the following cuts are based on muon-lowe pair variables, so loop over muon-lowe pairs
 	std::set<size_t> spall_mu_indices = myTreeSelections->GetPassingIndexes("dlt_mu_lowe>200cm");
-	Log(toolName+" Looping over "+toString(spall_mu_indices.size())
-				+" preceding muons to look for spallation events",v_debug,verbosity);
+	Log(m_unique_name+" Looping over "+toString(spall_mu_indices.size())
+				+" preceding muons to look for spallation events",v_debug,m_verbose);
 	for(size_t mu_i : spall_mu_indices){
 		// check whether this passed the additional Li9 cuts
 		if(not myTreeSelections->GetPassesCut("ntag_FOM>0.995")) continue;
 		
 		// plot distribution of beta energies from passing triplets, compare to fig 4
-		Log(toolName+" filling li9 candidate distributions",v_debug+2,verbosity);
+		Log(m_unique_name+" filling li9 candidate distributions",v_debug+2,m_verbose);
 		li9_e_vals.push_back(LOWE->bsenergy); // FIXME weight by num_post_muons
 		
 		// plot distirbution of mu->beta   dt from passing triplets, compare to fig 6
@@ -103,15 +100,15 @@ bool FitLi9Lifetime::Finalise(){
 		fout->cd();
 	} else {
 		if(gDirectory->GetFile()==nullptr){
-			Log(toolName+" Error! No output file given and no file open!",v_error,verbosity);
+			Log(m_unique_name+" Error! No output file given and no file open!",v_error,m_verbose);
 			return true;
 		}
 	}
 	
-	Log(toolName+" making plot of Li9 candidates Dt distribution",v_debug,verbosity);
+	Log(m_unique_name+" making plot of Li9 candidates Dt distribution",v_debug,m_verbose);
 	PlotLi9LifetimeDt();
 	
-	Log(toolName+" making plot of Li9 candidates beta energy distribution",v_debug,verbosity);
+	Log(m_unique_name+" making plot of Li9 candidates beta energy distribution",v_debug,m_verbose);
 	PlotLi9BetaEnergy();
 	
 	if(fout!=nullptr){
@@ -235,7 +232,7 @@ double FitLi9Lifetime::BinnedLi9DtChi2Fit(TH1F* li9_muon_dt_hist){
 	}
 	//float fitchi2 = fitresult->Chi2();                               // same as below, which
 	float fitchi2 = li9_muon_dt_func.GetChisquare();         // doesn't need fitresultptr
-	Log(toolName+" li9 mu->lowe dt fit chi2 was "+toString(fitchi2),v_message,verbosity);
+	Log(m_unique_name+" li9 mu->lowe dt fit chi2 was "+toString(fitchi2),v_message,m_verbose);
 	
 	// draw result
 	/*

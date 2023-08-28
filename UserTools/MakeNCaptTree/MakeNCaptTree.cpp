@@ -12,10 +12,7 @@
 #include "TLorentzVector.h"
 
 
-MakeNCaptTree::MakeNCaptTree():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+MakeNCaptTree::MakeNCaptTree():Tool(){}
 
 bool MakeNCaptTree::Initialise(std::string configfile, DataModel &data){
 	
@@ -24,11 +21,11 @@ bool MakeNCaptTree::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	std::string treeReaderName;
 	m_variables.Get("treeReaderName",treeReaderName);  // name of input TreeReader
 	m_variables.Get("outputFile",outputFile);          // output file to write
@@ -38,7 +35,7 @@ bool MakeNCaptTree::Initialise(std::string configfile, DataModel &data){
 	// get the TreeReader(s)
 	// ---------------------
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log(toolName+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,verbosity);
+		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	} else {
 		myTreeReader = m_data->Trees.at(treeReaderName);
@@ -71,7 +68,7 @@ bool MakeNCaptTree::Initialise(std::string configfile, DataModel &data){
 
 
 bool MakeNCaptTree::Execute(){
-	Log(toolName+" processing entry "+toString(entrynum),v_debug,verbosity);
+	Log(m_unique_name+" processing entry "+toString(entrynum),v_debug,m_verbose);
 	entrynum++;
 	
 	get_ok = GetBranches();
@@ -83,12 +80,12 @@ bool MakeNCaptTree::Execute(){
 
 int MakeNCaptTree::FillFriend(){
 	// don't carry anything over
-	Log(toolName+" clearing output ttree variables",v_debug,verbosity);
+	Log(m_unique_name+" clearing output ttree variables",v_debug,m_verbose);
 	ClearOutputTreeBranches();
 	
 	// loop over primaries and extract the neutrino and primary muon,
 	// since we want their momenta for later derived values
-	Log(toolName+" getting primary nu/mu momenta",v_debug,verbosity);
+	Log(m_unique_name+" getting primary nu/mu momenta",v_debug,m_verbose);
 	int neutrino_pdg = 12;    // skdetsim has just one neutrino type, which gets saved as ν-e FIXME for SKG4?
 	int muon_pdg = 13;
 	for(size_t primary_i=0; primary_i<primary_pdg->size(); ++primary_i){
@@ -101,7 +98,7 @@ int MakeNCaptTree::FillFriend(){
 	}
 	
 	// loop over neutrons in this entry and build the auxilliary info for the friend tree
-	Log(toolName+" calculating neutron travel components",v_debug,verbosity);
+	Log(m_unique_name+" calculating neutron travel components",v_debug,m_verbose);
 	for(size_t neutron_i=0; neutron_i<neutron_start_pos->size(); ++neutron_i){
 		// longitudinal distance = (neutron_travel_vector).(neutrino_direction_vector)
 		TVector3 neutron_travel_vector = 
@@ -131,7 +128,7 @@ int MakeNCaptTree::FillFriend(){
 	}
 	
 	// XXX any further event-wise info we want to add to the friend tree?
-	Log(toolName+" filling friendTree",v_debug,verbosity);
+	Log(m_unique_name+" filling friendTree",v_debug,m_verbose);
 	friendTree->Fill();
 	if((entrynum%WRITE_FREQUENCY)==0) WriteTree();
 	
@@ -164,7 +161,7 @@ int MakeNCaptTree::FillFriend(){
 bool MakeNCaptTree::Finalise(){
 	
 	// write out the friend tree
-	Log(toolName+" writing output TTree",v_debug,verbosity);
+	Log(m_unique_name+" writing output TTree",v_debug,m_verbose);
 	outfile->cd();
 	friendTree->Write("",TObject::kOverwrite);
 	
@@ -177,7 +174,7 @@ bool MakeNCaptTree::Finalise(){
 	friendTree->AddFriend(intree->GetName(), intree->GetCurrentFile()->GetName());
 	// of course the corresponding file will probably not remain at that location...
 	
-	Log(toolName+" cleanup",v_debug,verbosity);
+	Log(m_unique_name+" cleanup",v_debug,m_verbose);
 	friendTree->ResetBranchAddresses();
 	if(outfile){ outfile->Close(); delete outfile; outfile=nullptr; }
 	
@@ -212,7 +209,7 @@ int MakeNCaptTree::GetBranches(){
 //	(myTreeReader->GetBranchValue("electron_time",electron_time))
 	);
 	if(!success){
-		Log(toolName+" Error! failed to get all required branch values!",v_error,verbosity);
+		Log(m_unique_name+" Error! failed to get all required branch values!",v_error,m_verbose);
 	}
 	return success;
 }
@@ -231,15 +228,15 @@ void MakeNCaptTree::ClearOutputTreeBranches(){
 }
 
 int MakeNCaptTree::WriteTree(){
-	Log(toolName+" writing TTree",v_debug,verbosity);
+	Log(m_unique_name+" writing TTree",v_debug,m_verbose);
 	outfile->cd();
 	// TObject::Write returns the total number of bytes written to the file.
 	// It returns 0 if the object cannot be written.
 	int bytes = friendTree->Write("",TObject::kOverwrite);
 	if(bytes<=0){
-		Log(toolName+" Error writing TTree!",v_error,verbosity);
-	} else if(verbosity>2){
-		Log(toolName+ " Wrote "+toString(get_ok)+" bytes",v_debug,verbosity);
+		Log(m_unique_name+" Error writing TTree!",v_error,m_verbose);
+	} else if(m_verbose>2){
+		Log(m_unique_name+ " Wrote "+toString(get_ok)+" bytes",v_debug,m_verbose);
 	}
 	return bytes;
 }

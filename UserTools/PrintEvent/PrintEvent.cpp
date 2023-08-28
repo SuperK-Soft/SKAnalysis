@@ -4,10 +4,7 @@
 #include "SuperWrapper.h"
 #include <bitset>
 
-PrintEvent::PrintEvent():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+PrintEvent::PrintEvent():Tool(){}
 
 
 bool PrintEvent::Initialise(std::string configfile, DataModel &data){
@@ -970,6 +967,9 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 		
 		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerIDToName(i));
 		if(trigit==triggers_of_interest.end()) continue;
+		
+		// also, by definition searching for subtriggers of type AFT doesn't make sense
+		if(i==int(TriggerType::AFT)) continue;
 		
 		int ntrigsfound=0;
 		int MAX_SUBTRIGS=100;

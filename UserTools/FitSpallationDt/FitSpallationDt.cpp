@@ -17,10 +17,7 @@
 #include "TFitResult.h"
 #include "TFitResultPtr.h"
 
-FitSpallationDt::FitSpallationDt():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+FitSpallationDt::FitSpallationDt():Tool(){}
 
 const double fiducial_vol = 22.5;               // kton, from paper
 const double paper_livetime = 1890;             // days, from paper
@@ -99,11 +96,11 @@ bool FitSpallationDt::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);              // how verbose to be
+	m_variables.Get("verbosity",m_verbose);              // how verbose to be
 	m_variables.Get("outputFile",outputFile);            // where to save data. If empty, current TFile
 	// hacky way to scale the total number of events when comparing to the paper plots
 	m_variables.Get("paper_scaling",paper_scaling);      // overall scaling factor of paper
@@ -174,15 +171,15 @@ bool FitSpallationDt::Analyse(){
 	
 	// the following cuts are based on muon-lowe pair variables, so loop over muon-lowe pairs
 	std::set<size_t> spall_mu_indices = myTreeSelections->GetPassingIndexes("dlt_mu_lowe>200cm");
-	Log(toolName+" Looping over "+toString(spall_mu_indices.size())
-				+" preceding muons to look for spallation events",v_debug,verbosity);
+	Log(m_unique_name+" Looping over "+toString(spall_mu_indices.size())
+				+" preceding muons to look for spallation events",v_debug,m_verbose);
 	for(size_t mu_i : spall_mu_indices){
 		// record the distribution of dt_mu_lowe
-		Log(toolName+" filling mu->lowe dt distribution for spallation entries",v_debug+2,verbosity);
+		Log(m_unique_name+" filling mu->lowe dt distribution for spallation entries",v_debug+2,m_verbose);
 		// this *should* only contain pre muons with dt < 0:
 		if(dt_mu_lowe[mu_i]>0){
-			Log(toolName+" error! Spallation muon with time "+toString(dt_mu_lowe[mu_i])+" after lowe event!",
-				v_warning,verbosity);
+			Log(m_unique_name+" error! Spallation muon with time "+toString(dt_mu_lowe[mu_i])+" after lowe event!",
+				v_warning,m_verbose);
 			continue;
 		}
 		dt_mu_lowe_vals.push_back(dt_mu_lowe[mu_i]);  // FIXME weight by num_pre_muons
@@ -248,7 +245,7 @@ bool FitSpallationDt::Finalise(){
 		get_ok = m_data->CStore.Get("livetime",livetime);
 	}
 	
-	Log(toolName+"fitting "+toString(dt_mu_lowe_vals.size())+" spallation dt values",v_debug,verbosity);
+	Log(m_unique_name+"fitting "+toString(dt_mu_lowe_vals.size())+" spallation dt values",v_debug,m_verbose);
 	
 	// make a new output file for fit results if given a filename
 	// or if no file name is given, check there is a valid ROOT file open, and if so we'll write to it
@@ -258,13 +255,13 @@ bool FitSpallationDt::Finalise(){
 		fout->cd();
 	} else {
 		if(gDirectory->GetFile()==nullptr){
-			Log(toolName+" Error! No output file given and no file open!",v_error,verbosity);
+			Log(m_unique_name+" Error! No output file given and no file open!",v_error,m_verbose);
 			return true;
 		}
 	}
 	
 	// Fit the data, extract the abundances
-	Log(toolName+" Fitting spallation dt distribution",v_debug,verbosity);
+	Log(m_unique_name+" Fitting spallation dt distribution",v_debug,m_verbose);
 	PlotSpallationDt();
 	
 	if(fout!=nullptr){
@@ -364,7 +361,7 @@ bool FitSpallationDt::PlotSpallationDt(){
 		TDirectoryFile* spal1 = (TDirectoryFile*)f->Get("spal1");
 		spal1->cd();
 		the_hist_to_fit = (TH1D*)gDirectory->Get("data_dt-random1_dt");
-		Log(toolName+": Fitting dt histogram from file "+laurasfile,v_error,verbosity);
+		Log(m_unique_name+": Fitting dt histogram from file "+laurasfile,v_error,m_verbose);
 		current_dir->cd();
 	}
 	
@@ -446,19 +443,19 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 	case 0:{
 		// fit range 50us -> 0.1s with 12B + 12N only
 		// make the function which we'll fit
-		Log(toolName+"calling BuildFunction for time range case "+toString(rangenum)
-			+", 12B+12N",v_debug,verbosity);
+		Log(m_unique_name+"calling BuildFunction for time range case "+toString(rangenum)
+			+", 12B+12N",v_debug,m_verbose);
 		TF1 func_sum = BuildFunction({"12B","12N"},50e-6,0.1);
 		// do the fit
-		Log(toolName+" doing case "+toString(rangenum)+" fit",v_debug,verbosity);
-		std::string fitopt = (verbosity>2) ? "Rq" : "R";
+		Log(m_unique_name+" doing case "+toString(rangenum)+" fit",v_debug,m_verbose);
+		std::string fitopt = (m_verbose>2) ? "Rq" : "R";
 		dt_mu_lowe_hist.Fit(&func_sum,fitopt.c_str(),"",50e-6,0.1);
 		// record the results for the next step
-		Log(toolName+" recording results from case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" recording results from case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PushFitAmp(func_sum,"12B");
 		PushFitAmp(func_sum,"12N");
 		fit_amps["const_0"] = func_sum.GetParameter("const");
-		if(verbosity){
+		if(m_verbose){
 			std::cout<<"recorded results were: "<<std::endl
 					 <<"12B: "<<fit_amps["12B"]<<std::endl
 					 <<"12N: "<<fit_amps["12N"]<<std::endl
@@ -479,18 +476,18 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 		}
 	case 1:{
 		// fit range 6-30s with 16N + 11B only
-		Log(toolName+"calling BuildFunction for time range case "+toString(rangenum)
-			+", 16N+11Be",v_debug,verbosity);
+		Log(m_unique_name+"calling BuildFunction for time range case "+toString(rangenum)
+			+", 16N+11Be",v_debug,m_verbose);
 		TF1 func_sum = BuildFunction({"16N","11Be"},6,30);
-		Log(toolName+" doing case "+toString(rangenum)+" fit",v_debug,verbosity);
-		std::string fitopt = (verbosity>2) ? "Rq" : "R";
+		Log(m_unique_name+" doing case "+toString(rangenum)+" fit",v_debug,m_verbose);
+		std::string fitopt = (m_verbose>2) ? "Rq" : "R";
 		dt_mu_lowe_hist.Fit(&func_sum,fitopt.c_str(),"",6,30);
 		// record the results for the next step
-		Log(toolName+" recording results from case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" recording results from case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PushFitAmp(func_sum,"16N");
 		PushFitAmp(func_sum,"11Be");
 		fit_amps["const_1"] = func_sum.GetParameter("const");
-		if(verbosity){
+		if(m_verbose){
 			std::cout<<"recorded results were: "<<std::endl
 					 <<"16N: "<<fit_amps["16N"]<<std::endl
 					 <<"11Be: "<<fit_amps["11Be"]<<std::endl
@@ -512,26 +509,26 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 	case 2:{
 		// fit the range 0.1-0.8s with the components previously fit now fixed,
 		// allowing additional components Li9 + a combination of 8He+9C
-		Log(toolName+"calling BuildFunction for time range case "+toString(rangenum)
-			+", 9Li+8He_9C+8Li_8B+12B+12N+16N+11Be",v_debug,verbosity);
+		Log(m_unique_name+"calling BuildFunction for time range case "+toString(rangenum)
+			+", 9Li+8He_9C+8Li_8B+12B+12N+16N+11Be",v_debug,m_verbose);
 		TF1 func_sum = BuildFunction({"9Li","8He_9C","8Li_8B","12B","12N","16N","11Be"},0.1,0.8);
-		Log(toolName+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		// pull fit results from the last two stages
 		PullFitAmp(func_sum,"12B");
 		PullFitAmp(func_sum,"12N");
 		PullFitAmp(func_sum,"16N");
 		PullFitAmp(func_sum,"11Be");
 		// fit the new components
-		Log(toolName+" doing case "+toString(rangenum)+" fit",v_debug,verbosity);
-		std::string fitopt = (verbosity>2) ? "Rq" : "R";
+		Log(m_unique_name+" doing case "+toString(rangenum)+" fit",v_debug,m_verbose);
+		std::string fitopt = (m_verbose>2) ? "Rq" : "R";
 		dt_mu_lowe_hist.Fit(&func_sum,fitopt.c_str(),"",0.1,0.8);
 		// record the results for the next step
-		Log(toolName+" recording results from case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" recording results from case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PushFitAmp(func_sum,"9Li");
 		PushFitAmp(func_sum,"8He_9C");
 		PushFitAmp(func_sum,"8Li_8B");
 		fit_amps["const_2"] = func_sum.GetParameter("const");
-		if(verbosity){
+		if(m_verbose){
 			std::cout<<"recorded results were: "<<std::endl
 					 <<"9Li: "<<fit_amps["9Li"]<<std::endl
 					 <<"8He_9C: "<<fit_amps["8He_9C"]<<std::endl
@@ -589,16 +586,16 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 	case 3:{
 		// fit the range 0.8-6s with the components previously fit now fixed,
 		// allowing additional components 15C + 16N
-		Log(toolName+"calling BuildFunction for time range case "+toString(rangenum)
-			+", 15C+16N+8Li_8B",v_debug,verbosity);  // FIXME update if we're going to keep everything
+		Log(m_unique_name+"calling BuildFunction for time range case "+toString(rangenum)
+			+", 15C+16N+8Li_8B",v_debug,m_verbose);  // FIXME update if we're going to keep everything
 		/*
 		TF1 func_sum = BuildFunction({"15C","16N","8Li_8B"},0.8,6);
-		Log(toolName+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PullFitAmp(func_sum,"8Li_8B");
 		PullFitAmp(func_sum,"16N",false); // FIXME add back in
 		*/
 		TF1 func_sum = BuildFunction({"12B","12N","16N","11Be","9Li","8He_9C","8Li_8B","15C"},0.8,6);
-		Log(toolName+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PullFitAmp(func_sum,"12B");
 		PullFitAmp(func_sum,"12N");
 		PullFitAmp(func_sum,"11Be");
@@ -608,16 +605,16 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 		PullFitAmp(func_sum,"16N",false);
 		
 		// fit the new components
-		Log(toolName+" doing case "+toString(rangenum)+" fit",v_debug,verbosity);
-		std::string fitopt = (verbosity>2) ? "Rq" : "R";
+		Log(m_unique_name+" doing case "+toString(rangenum)+" fit",v_debug,m_verbose);
+		std::string fitopt = (m_verbose>2) ? "Rq" : "R";
 		dt_mu_lowe_hist.Fit(&func_sum,fitopt.c_str(),"",0.8,6);
 		// record the results for the next step
-		Log(toolName+" recording results from case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" recording results from case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PushFitAmp(func_sum,"15C");
 		PushFitAmp(func_sum,"16N");
 		fit_amps["const_3"] = func_sum.GetParameter("const");
 		
-		if(verbosity){
+		if(m_verbose){
 			std::cout<<"recorded results were: "<<std::endl
 					 <<"15C: "<<fit_amps["15C"]<<std::endl
 					 <<"16N: "<<fit_amps["16N"]<<std::endl
@@ -638,11 +635,11 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 		}
 	case 4:{
 		// final case: release all the parameters but keep the previously fit values as starting points.
-		Log(toolName+"calling BuildFunction for time range case "+toString(rangenum)
-			+", everything",v_debug,verbosity);
+		Log(m_unique_name+"calling BuildFunction for time range case "+toString(rangenum)
+			+", everything",v_debug,m_verbose);
 		TF1 func_sum = BuildFunction({"12B","12N","16N","11Be","9Li","8He_9C","8Li_8B","15C"},0,30);
 		func_sum.SetLineColor(kRed);
-		Log(toolName+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,verbosity);
+		Log(m_unique_name+" retrieving results from past fits in case "+toString(rangenum)+" fit",v_debug,m_verbose);
 		PullFitAmp(func_sum,"12B",false);
 		PullFitAmp(func_sum,"12N",false);
 		PullFitAmp(func_sum,"16N",false);
@@ -652,12 +649,12 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 		PullFitAmp(func_sum,"8Li_8B",false);
 		PullFitAmp(func_sum,"15C",false);
 		
-		Log(toolName+" doing case "+toString(rangenum)+" fit",v_debug,verbosity);
-		std::string fitopt = (verbosity>2) ? "RSq" : "RS";
+		Log(m_unique_name+" doing case "+toString(rangenum)+" fit",v_debug,m_verbose);
+		std::string fitopt = (m_verbose>2) ? "RSq" : "RS";
 		TFitResultPtr fitresult =  dt_mu_lowe_hist.Fit(&func_sum,fitopt.c_str(),"",0,30);
 		
-		Log(toolName+" recording results from case "+toString(rangenum)+" fit",v_debug,verbosity);
-		if(verbosity) std::cout<<"recorded results were: "<<std::endl;
+		Log(m_unique_name+" recording results from case "+toString(rangenum)+" fit",v_debug,m_verbose);
+		if(m_verbose) std::cout<<"recorded results were: "<<std::endl;
 		// for some reason TF1::GetParameter() was returning double values truncated to integer
 		// Maybe this was something that happens when we fix the sign in PushFitAmp
 		// Anyway, using the TFitResultPtr as that seems to work...
@@ -666,12 +663,12 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 			int par_number = func_sum.GetParNumber(("amp_"+anisotope.first).c_str());
 			double amp = fitresult->Parameter(par_number);
 			PushFitAmp(abs(amp),anisotope.first);
-			if(verbosity) std::cout<<anisotope.first<<": "<<amp<<std::endl;
+			if(m_verbose) std::cout<<anisotope.first<<": "<<amp<<std::endl;
 		}
 		fit_amps["const_4"] = func_sum.GetParameter("const");
 		
 		// Debug check
-		Log(toolName+" correcting fit parameter signs",v_debug,verbosity);
+		Log(m_unique_name+" correcting fit parameter signs",v_debug,m_verbose);
 		// we want to constrain the number of each isotope to be >0, which would
 		// mean putting a lower limit of 0 on the amplitude in the fit.
 		// unfortunately ROOT only lets us put both upper and lower limits (not just one)
@@ -713,7 +710,7 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 		// the 2015 paper had a lower energy threshold, so adjust results
 		// based on the different efficiency of selection, to ease comparison
 		bool correct_energy_threshold = true;
-		Log(toolName+" getting paper parameters for comparsion function",v_debug,verbosity);
+		Log(m_unique_name+" getting paper parameters for comparsion function",v_debug,m_verbose);
 		PullPaperAmp(func_paper,"12B",correct_energy_threshold,paper_scaling);
 		PullPaperAmp(func_paper,"12N",correct_energy_threshold,paper_scaling);
 		PullPaperAmp(func_paper,"16N",correct_energy_threshold,paper_scaling);
@@ -808,7 +805,7 @@ bool FitSpallationDt::FitDtDistribution(TH1& dt_mu_lowe_hist, int rangenum){
 		break;
 		}
 	default:
-		Log(toolName+" FitSubRangeDt invoked with invalid range "+toString(rangenum),v_error,verbosity);
+		Log(m_unique_name+" FitSubRangeDt invoked with invalid range "+toString(rangenum),v_error,m_verbose);
 	}
 	
 	return true;

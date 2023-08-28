@@ -10,6 +10,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       subroutine zbsinit
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       implicit none
+      
+#include "skhead.h"
+#include "skparm.h"
+#include "geopmt.h"
+#include "sktq.h"
 
       integer idim
       parameter (idim=4000000)

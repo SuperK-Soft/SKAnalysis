@@ -51,12 +51,11 @@ class TreeReader: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string inputFile="";
-	std::string FileListName="InputFileList";
+	std::string FileListName="";
 	std::string selectionsFile="";
 	std::string cutName="";
-	std::string treeName;
+	std::string treeName="data";
 	std::string readerName;
 	int maxEntries=-1;
 	int firstEntry=0;
@@ -65,7 +64,7 @@ class TreeReader: public Tool {
 	SKROOTMODE skrootMode=SKROOTMODE::READ;  // default to read
 	int skreadMode=0;                 // 0=skread only, 1=skrawread only, 2=both
 	int skreadUser=0;                 // 0=auto, 1=skread only, 2=skrawread only, 3=both
-	int LUN=10;                       // Assumed 10 by some SK routines, only change if you know what you're doing!
+	int LUN=0;                        // Assumed 10 by some SK routines, only change if you know what you're doing!
 	std::string skroot_options="31";  // 31 = read HEADER (required).
 	int skroot_badopt=23;             // 23 = LOWE default (mask bad chs, dead chs, noisy ID chs and OD chs)
 	int skroot_badch_ref_run=0;       // reference run for bad channel list for e.g. MC.
@@ -85,21 +84,14 @@ class TreeReader: public Tool {
 	long buffered_entry = -1;
 	long file_cursor=0;
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
-	
 	// variables to read in
 	// ====================
 	MTreeReader myTreeReader;                  // the TTree reader
 	MTreeSelection* myTreeSelections=nullptr;  // a set of entries one or more cuts
 	std::vector<std::string> ActiveInputBranches;
 	std::vector<std::string> ActiveOutputBranches;
+	std::vector<std::string> SkippedInputBranches;
+	std::vector<std::string> SkippedOutputBranches;
 	
 	// functions involved in buffering common blocks
 	// to load SHE+AFT pairs together

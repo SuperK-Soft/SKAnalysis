@@ -34,19 +34,11 @@ class PlotHitTimes: public Tool {
 	int GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32>>& in_subtrigger_flags, int n_triggers);
 	
 	private:
-	std::string m_unique_name="";
 	
 	MTreeReader* myTreeReader=nullptr;
 	TFile* fout = nullptr;
 	TCanvas* c_subtriggers = nullptr;
 	ColourWheel colourwheel;
-	
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 };
 

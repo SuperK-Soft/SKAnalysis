@@ -13,10 +13,7 @@
 
 // TODO rename this tool
 
-NCaptInfo::NCaptInfo():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+NCaptInfo::NCaptInfo():Tool(){}
 
 bool NCaptInfo::Initialise(std::string configfile, DataModel &data){
 	
@@ -26,7 +23,7 @@ bool NCaptInfo::Initialise(std::string configfile, DataModel &data){
 	m_data= &data;
 	m_log= m_data->Log;
 	
-	m_variables.Get("verbosity",verbosity);
+	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("time_match_tolerance",time_match_tolerance); // [ns]
 	m_variables.Get("dist_match_tolerance",dist_match_tolerance); // [cm]
 	// whether to try to match candidates to non-neutron-capture truth vertices
@@ -54,10 +51,10 @@ bool NCaptInfo::Execute(){
 	candidates.clear();
 	
 	// call specialised class method to get information for a given algorithm
-	Log(m_unique_name+": Getting candidates",v_debug,verbosity);
+	Log(m_unique_name+": Getting candidates",v_debug,m_verbose);
 	get_ok = GetCandidates(candidates);
 	if(not get_ok){
-		Log(m_unique_name+": Error getting candidates!",v_error,verbosity);
+		Log(m_unique_name+": Error getting candidates!",v_error,m_verbose);
 		return false;
 	}
 	
@@ -75,7 +72,7 @@ bool NCaptInfo::Execute(){
 	// fill histograms
 	if(outfilename!="") MakePlots(1);
 	
-	//Log(m_unique_name+": "+toString(candidates.size())+" candidates this entry",v_debug,verbosity);
+	//Log(m_unique_name+": "+toString(candidates.size())+" candidates this entry",v_debug,m_verbose);
 	
 	return true;
 }
@@ -115,7 +112,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 	            std::vector<double>(m_data->NCapturesTrue.size(),999999));
 	
 	// loop over candidates
-	Log(m_unique_name+" matching "+toString(candidates.size())+" candidates",v_debug,verbosity);
+	Log(m_unique_name+" matching "+toString(candidates.size())+" candidates",v_debug,m_verbose);
 	for(int candi=0; candi<candidates.size(); ++candi){
 		NCaptCandidate& candidate = candidates.at(candi);
 		// we could place a cut on likelihood metric first
@@ -131,12 +128,12 @@ bool NCaptInfo::MatchToTrueCaptures(){
 			TVector3* truepos =truecap.GetPos();
 			if(truetime==nullptr || truepos==nullptr){
 				Log(m_unique_name+" Error! True capture "+toString(truecapi)
-				   +" returned nullptr for time or position!",v_error,verbosity);
+				   +" returned nullptr for time or position!",v_error,m_verbose);
 				return false;
 			}
 			double timediff = (candidate.capture_time - *truetime)/1000.;
 			double posdiff = (*truepos - candidate.capture_pos).Mag();
-			if(verbosity>v_debug){
+			if(m_verbose>v_debug){
 				std::cout<<"candidate "<<candi<<" has position "<<toString(candidate.capture_pos)
 					     <<", vs true cap "<<truecapi<<" which has position "<<toString(*truepos)
 					     <<" giving distance "<<posdiff<<" compared to tolerance "
@@ -166,7 +163,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 				double* old_posdiff = candidate.GetCaptPosErr();
 				if(old_timediff==nullptr || old_posdiff==nullptr){
 					Log(m_unique_name+" Error! Existing true match for candidate "+toString(candi)
-					   +" returned nullptr for time or position!",v_error,verbosity);
+					   +" returned nullptr for time or position!",v_error,m_verbose);
 					return false;
 				}
 				double old_match_metric = std::sqrt(pow(*old_timediff/1000.,2.)+pow(*old_posdiff,2.));
@@ -198,7 +195,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 			Log(m_unique_name+"checking if candidate passes cuts:\n"+
 			    +"timediff: "+toString(timediff)+" vs tolerance "+toString(time_match_tolerance)
 			    +"\nposdiff: "+toString(posdiff)+" vs tolerance "+toString(dist_match_tolerance),
-			    v_debug,verbosity);
+			    v_debug,m_verbose);
 			if(timediff>time_match_tolerance) continue;
 			if(posdiff>dist_match_tolerance) continue;
 			
@@ -224,7 +221,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 			// to do this, we first build a map of all possible match metrics,
 			// then scan over the map, removing candidate+true capture pairs
 			// in descending order of match quality.
-			Log(m_unique_name+"passed tolerances: match metric is "+toString(match_metric),v_debug,verbosity);
+			Log(m_unique_name+"passed tolerances: match metric is "+toString(match_metric),v_debug,m_verbose);
 			match_merits.at(candi).at(truecapi)=match_metric;
 			*/
 			
@@ -234,7 +231,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 	/*
 	// scan over the map to pull out the best matching pairs (optionally with a threshold on FOM)
 	// XXX see Note 1
-	Log(m_unique_name+" scanning for best matches",v_debug,verbosity);
+	Log(m_unique_name+" scanning for best matches",v_debug,m_verbose);
 	double merit_threshold=999999; // a candidate must have at least this goodness metric to be matched
 	while(true){
 		double currentmin=999999.;
@@ -253,15 +250,15 @@ bool NCaptInfo::MatchToTrueCaptures(){
 		}
 		// found the best (minimum) match goodness
 		Log(m_unique_name+" best match is candidate "+toString(candi)
-		     +", truecap "+toString(truecapi),v_debug,verbosity);
+		     +", truecap "+toString(truecapi),v_debug,m_verbose);
 		// check if we found any match merits
 		if(candi<0 || truecapi<0) break;
 		// check if the next best match merit passes our minimum requirement
 		double minFOM = match_merits.at(candi).at(truecapi);
-		Log(m_unique_name+"corresponding metric is "+toString(minFOM),v_debug,verbosity);
+		Log(m_unique_name+"corresponding metric is "+toString(minFOM),v_debug,m_verbose);
 		// if the next best match isn't good enough, we're done
 		if(minFOM>merit_threshold) break;
-		Log(m_unique_name+" passes merit_threshold check",v_debug,verbosity);
+		Log(m_unique_name+" passes merit_threshold check",v_debug,m_verbose);
 		
 		// otherwise, make this match
 		NCaptCandidate& candidate = candidates.at(candi);
@@ -301,7 +298,7 @@ bool NCaptInfo::MakePlots(int step){
 		// initialisation; make histograms
 		out_file = new TFile(outfilename.c_str(),"RECREATE");
 		if(out_file==nullptr || out_file->IsZombie()){
-			Log(m_unique_name+" Error making histogram file "+outfilename,v_error,verbosity);
+			Log(m_unique_name+" Error making histogram file "+outfilename,v_error,m_verbose);
 			return false;
 		}
 		out_file->cd();
@@ -363,7 +360,7 @@ bool NCaptInfo::MakePlots(int step){
 		cibranchvars["nevsk"] = skhead_.nevsk;
 		
 		std::vector<NCaptCandidate>& candidates = m_data->NCaptureCandidates[m_unique_name];
-		Log(m_unique_name+" Filling "+toString(candidates.size())+" candidates",v_debug,verbosity);
+		Log(m_unique_name+" Filling "+toString(candidates.size())+" candidates",v_debug,m_verbose);
 		for(int cand_i=0; cand_i<candidates.size(); ++cand_i){
 			cibranchvars["cand_num"] = cand_i;
 			NCaptCandidate& acand = candidates.at(cand_i);
@@ -670,7 +667,7 @@ bool NCaptInfo::MakePlots(int step){
 		}
 		*/
 		// c1 is deleted when canvas is closed, so only delete if not shown & closed
-		Log(m_unique_name+": Cleanup",v_debug,verbosity);
+		Log(m_unique_name+": Cleanup",v_debug,m_verbose);
 		if(gROOT->FindObject(canvasname.c_str())!=nullptr) delete c1;
 		
 		matchtree->RemoveFriend(candtree);

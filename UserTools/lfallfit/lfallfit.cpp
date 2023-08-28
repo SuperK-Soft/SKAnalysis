@@ -1,9 +1,9 @@
 /* vim:set noexpandtab tabstop=4 wrap */
-#include "lf_allfit_new.h"
+#include "lfallfit.h"
 
 #include "Algorithms.h"
 #include "Constants.h"
-#include "type_name_as_string.h"
+#include "MTreeReader.h"
 
 #include <string>
 #include <vector>
@@ -12,64 +12,54 @@
 // declarations and #includes for SK fortran routines
 #include "fortran_routines.h"
 
-lf_allfit_new::lf_allfit_new():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+lfallfit::lfallfit():Tool(){}
 
-bool lf_allfit_new::Initialise(std::string configfile, DataModel &data){
+bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	
 	if(configfile!="")  m_variables.Initialise(configfile);
 	//m_variables.Print();
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
-	m_variables.Get("readerName",readerName);          // name given to the TreeReader used for file handling
-	m_variables.Get("delete_outside_hits",delete_outside_hits); // should we call this after reconstruction
-	m_variables.Get("writeout",writeout);              // whether to write out to a new file or not (just reconstruction vs inline)
-	reference_watert_run = 85609;                      // reference run for water transparency
+	m_variables.Get("verbosity",m_verbose);
+	m_variables.Get("readerName",readerName);
 	m_variables.Get("reference_watert_run", reference_watert_run);
 	
-	// use the readerName to find the LUN associated with this file
-	std::map<std::string,int> lunlist;
-	m_data->CStore.Get("LUNList",lunlist);
-	if(lunlist.count(readerName)==0){
-		Log(toolName+" error! No LUN associated with readerName "+readerName,v_error,verbosity);
+	// check the upstream TreeReader name
+	if(m_data->Trees.count(readerName)==0){
+		Log("Failed to find TreeReader "+readerName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
-	lun = lunlist.at(readerName);
-	
-	// determine if this file is MC or not, so we can use the appropriate lf_allfit version
-	TTree* t = skroot_get_tree(&lun);
-	if(t) MC = (t->FindBranch("MC")!=nullptr);
+	// we need the associated LUN number for skroot_* functions
+	lun = m_data->GetLUN(readerName);
+	// and to check if this file is MC or not, so we can use the appropriate lf_allfit version
+	MC = m_data->Trees.at(readerName)->GetMCFlag();
 	
 	// initialize water transparency table
 	skrunday_();
 	skwt_gain_corr_();
 	
 	// initialize bonsai
-	int MAXPM_var = MAXPM;
-	float* xyzpm = &geopmt_.xyzpm[0][0];
-	cfbsinit_(&MAXPM_var, xyzpm);
+	m_data->BonsaiInit();
 	
 	if(MC && skhead_.nrunsk==999999){
-		Log(toolName+" using reference run "+toString(reference_watert_run)
-		    +" for water transparency",v_warning,verbosity);
+		Log(m_unique_name+" using reference run "+toString(reference_watert_run)
+		    +" for water transparency",v_warning,m_verbose);
 	}
 	
 	return true;
 }
 
 
-bool lf_allfit_new::Execute(){
+bool lfallfit::Execute(){
 	
 	if((nread%10000)==0){
-		Log(toolName+" read loop "+toString(nread)+", current run "+toString(skhead_.nrunsk),v_message,verbosity);
+		Log(m_unique_name+" read loop "+toString(nread)+", current run "
+		    +toString(skhead_.nrunsk),v_message,m_verbose);
 	}
 	++nread;
 	
@@ -81,8 +71,8 @@ bool lf_allfit_new::Execute(){
 	if(MC && skhead_.nrunsk==999999){
 		// nrunsk of 999999 is expected for MC...
 		// this gets printed every time as SKREAD overwrites nrunsk with each new event
-		//Log(toolName+" using reference run "+toString(reference_watert_run)
-		//    +" for water transparency",v_debug,verbosity);
+		//Log(m_unique_name+" using reference run "+toString(reference_watert_run)
+		//    +" for water transparency",v_debug,m_verbose);
 		skhead_.nrunsk = reference_watert_run;
 	}
 	
@@ -90,8 +80,8 @@ bool lf_allfit_new::Execute(){
 	if(skhead_.nrunsk!=nrunsk_last){
 		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];  // defined in skdayC.h
 		lfwater_(&days_to_run_start, &watert);
-		Log(toolName+" loaded new water transparency value "+toString(watert)
-			+" for run "+toString(skhead_.nrunsk),v_debug,verbosity);
+		Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+			+" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
 		nrunsk_last = skhead_.nrunsk;
 	}
 	
@@ -116,7 +106,7 @@ bool lf_allfit_new::Execute(){
 	int log_level;
 	int flag_skip=0;
 	
-	/* these have mostly the same signature:
+	/* the variants of lfallfit have mostly the same signature:
 		inputs:
 			watert     water transparency for fit (will be stored in lwatert)
 			nhitcut    max. nqisk for clusfit
@@ -137,8 +127,8 @@ bool lf_allfit_new::Execute(){
 			case 1:  //lfallfit_sk1_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
 			case 2:  //lfallfit_sk2_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
 			case 3:  //lfallfit_sk3_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
-				Log(toolName+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
-				    +" MC!",v_error,verbosity);
+				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
+				    +" MC!",v_error,m_verbose);
 				return false;
 			case 4: {
 				// which lfallfit_sk4 would you prefer...?
@@ -157,8 +147,8 @@ bool lf_allfit_new::Execute(){
 				break;
 			}
 			default: {
-				Log(toolName+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
-				    +" MC!",v_error,verbosity);
+				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
+				    +" MC!",v_error,m_verbose);
 				return false;
 			}
 		}
@@ -174,7 +164,7 @@ bool lf_allfit_new::Execute(){
 			}
 			case 3: {
 				// lfallfit_sk3_data_(&watert, &NHITCUT, &lfflag); // does not exist
-				Log(toolName+": Error! lfallfit does not exist for SK-III!",v_error,verbosity);
+				Log(m_unique_name+": Error! lfallfit does not exist for SK-III!",v_error,m_verbose);
 				return false;
 			}
 			case 4: {
@@ -193,8 +183,8 @@ bool lf_allfit_new::Execute(){
 				break;
 			}
 			default: {
-				Log(toolName+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
-				    +" data!",v_error,verbosity);
+				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
+				    +" data!",v_error,m_verbose);
 				return false;
 			}
 		}
@@ -217,30 +207,12 @@ bool lf_allfit_new::Execute(){
 	                 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
 	                 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
 	
-	// remove hits outside 1.3 microsec - FIXME should we.... do this??? here???
-	if(delete_outside_hits) delete_outside_hits_();
-	
-	// pass reconstructed info back to the LoweInfo class object
-	// skroot_set_tree.F is just a wrapper around another couple of calls like skroot_set_lowe,
-	// that simply pull variables from fortran common blocks and pass them to the TreeManager
-	skroot_set_tree_(&lun);
-	
-	// if the writeout variable is set then pass reconstructed information
-	// from the skroot_lowe_ common block to the output skroot file
-	if(writeout){
-		// invokes TTree::Fill. Only use it in SKROOT mode WRITE or COPY!
-		skroot_fill_tree_(&lun);
-	}
-	
 	return true;
 	
 }
 
 
-bool lf_allfit_new::Finalise(){
-	
-	// terminate bonsai
-	cfbsexit_();
+bool lfallfit::Finalise(){
 	
 	return true;
 }

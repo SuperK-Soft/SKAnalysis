@@ -51,16 +51,6 @@ class TestTool: public Tool {
         std::map<std::string, bool> known_types;
         std::map<std::string, std::string> underlying_types;
         
-        // verbosity levels: if 'verbosity' < this level, the message type will be logged.
-        int verbosity=1;
-        int v_error=0;
-        int v_warning=1;
-        int v_message=2;
-        int v_debug=3;
-        std::string logmessage="";
-        int get_ok=0;
-        std::string toolName="TestTool";
-
         void MakeBranches(TTree* tree, Store* store);
         void MakeBranches(TTree* tree, BStore* store);
         void SetBranches(TTree* tree, Store* store);  // never used, addresses need to be

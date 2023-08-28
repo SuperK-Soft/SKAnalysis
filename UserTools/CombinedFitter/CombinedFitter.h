@@ -7,13 +7,6 @@
 
 #include "Tool.h"
 
-#include "SkrootHeaders.h" // MCInfo, Header etc.
-#include "skonl/softtrg_tbl.h"
-#include "SuperManager.h"
-
-#include "basic_array.h"
-#include "fortran_routines.h"
-
 #include "pmt_geometry.h"
 #include "bonsaifit.h"
 #include "pairlikelihood.h"
@@ -59,7 +52,6 @@ class CombinedFitter: public Tool {
 
 	// tool variables
 	// ==============
-	std::string toolName;
 	//	std::string treeReaderName;
 	//	MTreeReader* myTreeReader=nullptr; 
 	// skroot tree
@@ -101,15 +93,6 @@ class CombinedFitter: public Tool {
 	float darkmc=0;
 	float watert;         // water transparency
 	int numPMTs;          // total number of PMTs
-
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	//    std::string logmessage="";
-	int get_ok=0;
 
 
 	// variables to read in

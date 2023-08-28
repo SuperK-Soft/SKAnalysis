@@ -30,8 +30,6 @@ class LoadFileList: public Tool {
 	private:
 	int GetFileList();
 	
-	std::string toolName;
-	
 	std::string inputFile="";
 	std::string inputDirectory=".";
 	std::string fileList="";
@@ -40,14 +38,6 @@ class LoadFileList: public Tool {
 	bool useRegex=false;
 	std::string FileListName="InputFileList";
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 };
 
 

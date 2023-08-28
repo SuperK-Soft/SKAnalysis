@@ -89,7 +89,7 @@ class basic_array /*: public generic_array*/ {
 	~basic_array(){};
 	
 	const W& at(int i) const {
-		if(i<0||i>a_size){
+		if(i<0||size_t(i)>a_size){
 			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" of "+std::to_string(a_size)+" in "+__FILE__+"::"+std::to_string(__LINE__));
 		}
 		return addr[i];
@@ -214,7 +214,7 @@ class basic_array<T,true> /*: public generic_array*/ {
 		
 		bool is_nested_ptr = (std::is_pointer<T>::value && 
 			      std::is_pointer<typename std::remove_pointer<T>::type>::value);
-		for(int i=0; i<a_size; ++i){
+		for(size_t i=0; i<a_size; ++i){
 			W* subaddr = (is_nested_ptr) ? (W*)addr[i] :
 						       (W*)&addr[i]; // : *(addr[i]);
 			void* subaddr_v = (void*)subaddr;
@@ -231,7 +231,7 @@ class basic_array<T,true> /*: public generic_array*/ {
 	~basic_array(){};
 	
 	const V& at(int i) const {
-		if(i<0||i>a_size){
+		if(i<0||size_t(i)>a_size){
 			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" of "+std::to_string(a_size)+" in "+__FILE__+"::"+std::to_string(__LINE__));
 		}
 		return subarray.at(i);

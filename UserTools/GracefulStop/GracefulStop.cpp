@@ -11,6 +11,7 @@ bool GracefulStop::Initialise(std::string configfile, DataModel &data){
 	/////////////////// Useful header ///////////////////////
 	if(configfile!="") m_variables.Initialise(configfile); //loading config file
 	//m_variables.Print();
+	m_variables.Get("verbosity", m_verbose);
 	
 	m_data= &data; //assigning transient data pointer
 	/////////////////////////////////////////////////////////////////
@@ -18,13 +19,13 @@ bool GracefulStop::Initialise(std::string configfile, DataModel &data){
 	// TODO potentially we could take from config file what type of signal we wish to look for.
 	
 	if(signal((int) SIGUSR1, GracefulStop::stopSignalHandler) == SIG_ERR){
-		Log("GracefulStop Tool: Failed to setup SIGUSR1 handler!", v_error, verbosity);
+		Log("GracefulStop Tool: Failed to setup SIGUSR1 handler!", v_error, m_verbose);
 		return false;
 	}
 	
 	// also catch SIGINT because otherwise toolchains can run rampant for ages before they die
 	if(signal((int) SIGINT, GracefulStop::interruptSignalHandler) == SIG_ERR){
-		Log("GracefulStop Tool: Failed to setup SIGINT handler!", v_error, verbosity);
+		Log("GracefulStop Tool: Failed to setup SIGINT handler!", v_error, m_verbose);
 		return false;
 	}
 	
@@ -48,7 +49,7 @@ void GracefulStop::interruptSignalHandler(int _ignored){
 
 bool GracefulStop::Execute(){
 	if(gotStopSignal || gotInterruptSignal){
-		Log("GracefulStop Tool: Received SIGUSR1 or SIGINT, terminating ToolChain",v_error,verbosity);
+		Log("GracefulStop Tool: Received SIGUSR1 or SIGINT, terminating ToolChain",v_error,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 		gotStopSignal=false;
 		gotInterruptSignal=false;

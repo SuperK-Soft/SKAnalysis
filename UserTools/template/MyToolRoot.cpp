@@ -3,12 +3,8 @@
 
 #include "Algorithms.h"
 #include "Constants.h"
-#include "type_name_as_string.h"
 
-MyToolRoot::MyToolRoot():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+MyToolRoot::MyToolRoot():Tool(){}
 
 bool MyToolRoot::Initialise(std::string configfile, DataModel &data){
 	
@@ -17,18 +13,18 @@ bool MyToolRoot::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	std::string treeReaderName="";
 	m_variables.Get("treeReaderName",treeReaderName);  // the name of the TTree to process
 	
 	// open the input TFile and TTree
 	// ------------------------------
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log(toolName+": Failed to find TreeReader "+treeReaderName+" in DataModel!",0,0);
+		Log(m_unique_name+": Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
 	myTreeReader = m_data->Trees.at(treeReaderName);
@@ -39,21 +35,10 @@ bool MyToolRoot::Initialise(std::string configfile, DataModel &data){
 
 bool MyToolRoot::Execute(){
 	
-	Log(toolName+" executing...",v_debug,verbosity);
+	Log(m_unique_name+" executing...",v_debug,m_verbose);
 	
 	// retrieve desired branches
-	get_ok = GetBranches();
-	
-	// process the data
-	try{
-		Analyse();
-	}
-	catch(std::exception& e){
-		// catch any exceptions to ensure we always increment the event number
-		// and load the next entry. This prevents us getting stuck in a loop
-		// forever processing the same broken entry!
-		Log(toolName+" encountered error "+e.what()+" during Analyse()",v_error,verbosity);
-	}
+	get_ok = GetBranchValues();
 	
 	return true;
 }
@@ -64,12 +49,7 @@ bool MyToolRoot::Finalise(){
 	return true;
 }
 
-bool MyToolRoot::Analyse(){
-	
-	return true;
-}
-
-int MyToolRoot::GetBranches(){
+int MyToolRoot::GetBranchValues(){
 	int success = (
 //		(myTreeReader->GetBranchValue("filename",filename))                         &&
 //		(myTreeReader->GetBranchValue("gamma_time",gamma_time))

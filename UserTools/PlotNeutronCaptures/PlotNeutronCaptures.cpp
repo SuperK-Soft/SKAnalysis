@@ -21,10 +21,7 @@
 #include "TStyle.h"
 #include "TLeaf.h"
 
-PlotNeutronCaptures::PlotNeutronCaptures():Tool(){
-	// get the name of the tool from its class name
-	m_unique_name=type_name<decltype(this)>(); m_unique_name.pop_back();
-}
+PlotNeutronCaptures::PlotNeutronCaptures():Tool(){}
 
 bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 	
@@ -33,11 +30,11 @@ bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	
-	Log(m_unique_name+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);                        // how verbose to be
+	m_variables.Get("verbosity",m_verbose);                        // how verbose to be
 	std::string inputFile, friendFile;
 	m_variables.Get("inputFile",inputFile);                        // name of a file directly
 	m_variables.Get("friendFile",friendFile);                      // name of a friend file if rqd
@@ -50,7 +47,7 @@ bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 	
 	inTree = (TTree*)infile->Get("eventtree");
 	if(!inTree){
-		Log(m_unique_name+" Couldn't find 'eventtree' in file "+inputFile,v_error,verbosity);
+		Log(m_unique_name+" Couldn't find 'eventtree' in file "+inputFile,v_error,m_verbose);
 		return false;
 	}
 	
@@ -61,7 +58,7 @@ bool PlotNeutronCaptures::Initialise(std::string configfile, DataModel &data){
 		if(friendfile==nullptr || friendfile->IsZombie()) return false;
 		friendTree = (TTree*)friendfile->Get("ntree");
 		if(!friendTree){
-			Log(m_unique_name+" Couldn't find 'ntree' in file "+friendFile,v_error,verbosity);
+			Log(m_unique_name+" Couldn't find 'ntree' in file "+friendFile,v_error,m_verbose);
 			return false;
 		}
 	}
@@ -79,10 +76,10 @@ bool PlotNeutronCaptures::Execute(){
 bool PlotNeutronCaptures::Finalise(){
 	
 	// make and write out histograms
-	Log(m_unique_name+" making histograms",v_debug,verbosity);
+	Log(m_unique_name+" making histograms",v_debug,m_verbose);
 	MakeHistos();
 	
-	Log(m_unique_name+" cleanup",v_debug,verbosity);
+	Log(m_unique_name+" cleanup",v_debug,m_verbose);
 	m_data->CloseFile(outfile);
 	
 	return true;
@@ -97,7 +94,7 @@ int PlotNeutronCaptures::MakeHistos(){
 	// ======================
 	// cumulative plots
 	// ======================
-	Log(m_unique_name+" making aggregate plots",v_debug,verbosity);
+	Log(m_unique_name+" making aggregate plots",v_debug,m_verbose);
 	// neutron energy
 	TH1D hNeutronE("hNeutronE","Neutron Energy;Neutron Energy [MeV];Num Events",100,0,25);
 	inTree->Draw("neutron_start_energy>>hNeutronE");
@@ -170,13 +167,13 @@ int PlotNeutronCaptures::MakeHistos(){
 	hSumDaughterE.Write();
 	
 	// pie chart of capture nuclei
-	Log(m_unique_name+" making pie chart",v_debug,verbosity);
+	Log(m_unique_name+" making pie chart",v_debug,m_verbose);
 	// since the daughter nuclides are integers, but are very sparse, we can't uses TTree::Draw
 	// to get the set of relevant pdg values (they'll be binned). Just have to do it the old fashioned way.
 	std::map<int,int> capture_nuclide_vs_count;
 	TBranch* bp = inTree->GetBranch("nuclide_daughter_pdg");
 	if(!bp){
-		Log(m_unique_name+" Error! No branch 'nuclide_daughter_pdg'!",v_error,verbosity);
+		Log(m_unique_name+" Error! No branch 'nuclide_daughter_pdg'!",v_error,m_verbose);
 	} else {
 		TLeaf* lf = (TLeaf*)bp->GetListOfLeaves()->At(0);
 		int* nuclidepdgptr = (int*)(lf->GetValuePointer());
@@ -185,7 +182,7 @@ int PlotNeutronCaptures::MakeHistos(){
 			capture_nuclide_vs_count[*nuclidepdgptr]++;
 		}
 	}
-	Log(m_unique_name+" found "+toString(capture_nuclide_vs_count.size())+" unique nuclides",v_debug,verbosity);
+	Log(m_unique_name+" found "+toString(capture_nuclide_vs_count.size())+" unique nuclides",v_debug,m_verbose);
 	TPie pCaptureNuclidePdg = TPie("pCaptureNuclidePdg", "Captures by Nuclide",capture_nuclide_vs_count.size());
 	// OK the TPie class sucks - Google sheets is a much better alternative, but one of the biggest
 	// problems is that when we have two small slices next to each other, the labels don't have space so overlap.
@@ -212,7 +209,7 @@ int PlotNeutronCaptures::MakeHistos(){
 			count = bwit->second;
 			++bwit;
 		}
-		Log(m_unique_name+": nuclide "+toString(anuclide)+" ("+PdgToString(anuclide)+") had "+toString(count)+" entries",v_debug,verbosity);
+		Log(m_unique_name+": nuclide "+toString(anuclide)+" ("+PdgToString(anuclide)+") had "+toString(count)+" entries",v_debug,m_verbose);
 		pCaptureNuclidePdg.SetEntryLabel(i,PdgToString(anuclide).c_str());
 		pCaptureNuclidePdg.SetEntryVal(i,count);
 	}
@@ -241,7 +238,7 @@ int PlotNeutronCaptures::MakeHistos(){
 	// ==============================
 	// broken down by capture nucleus
 	// ==============================
-	Log(m_unique_name+" making total gamma energy stack",v_debug,verbosity);
+	Log(m_unique_name+" making total gamma energy stack",v_debug,m_verbose);
 	auto statsboxdefault = gStyle->GetOptStat();
 	gStyle->SetOptStat(0); // turn off stats box; overlaps with legends
 	// Total Gamma Energy
@@ -284,7 +281,7 @@ int PlotNeutronCaptures::MakeHistos(){
 	
 	// Gamma Multiplicity
 	// -------------------
-	Log(m_unique_name+" making gamma multiplicity stack",v_debug,verbosity);
+	Log(m_unique_name+" making gamma multiplicity stack",v_debug,m_verbose);
 	// capture on H
 	TH1D hNumGammas_H("hNumGammas_H", "Gamma Multiplicity (Capture on H);Num Gammas;Num Events",100,0,10);
 	inTree->Draw("Length$(gamma_energy[])>>hNumGammas_H","(nuclide_daughter_pdg==100045 || nuclide_daughter_pdg==1000010020)");
@@ -313,7 +310,7 @@ int PlotNeutronCaptures::MakeHistos(){
 	
 	// Gamma Energy Spectrum
 	// ---------------------
-	Log(m_unique_name+" making gamma spectrum stack",v_debug,verbosity);
+	Log(m_unique_name+" making gamma spectrum stack",v_debug,m_verbose);
 	// capture on H
 	TH1D hGammaE_H("hGammaE_H", "Gamma Energy (Capture on H);Gamma Energy [MeV];Num Events",100,0,10);
 	inTree->Draw("gamma_energy>>hGammaE_H","(nuclide_daughter_pdg==100045 || nuclide_daughter_pdg==1000010020)");
