@@ -78,54 +78,41 @@ $(function() {
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;MTreeReader.h&quot;</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;SkrootHeaders.h&quot;</span> <span class="comment">// MCInfo, Header etc.</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classMyToolRoot.html">   21</a></span>&#160;<span class="keyword">class </span><a class="code" href="classMyToolRoot.html">MyToolRoot</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    </div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <a class="code" href="classMyToolRoot.html#afcda0d442abb02793df12daa16f1a647">MyToolRoot</a>();         </div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classMyToolRoot.html#ae2f89bc47c29abbcfeef375a34a5e9c0">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classMyToolRoot.html#a507788a13c31995434d902fdefcd344c">Execute</a>();   </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classMyToolRoot.html#ad556b624d0bda80a8f5602db7fc035dd">Finalise</a>();  </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="comment">// functions</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="comment">// =========</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">int</span> GetBranches();</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">bool</span> Analyse();</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="comment">// tool variables</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="comment">// ==============</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    std::string toolName;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">int</span> entrynum=0;</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="classMyToolRoot.html">   20</a></span>&#160;<span class="keyword">class </span><a class="code" href="classMyToolRoot.html">MyToolRoot</a>: <span class="keyword">public</span> Tool {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <a class="code" href="classMyToolRoot.html#afcda0d442abb02793df12daa16f1a647">MyToolRoot</a>();         </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classMyToolRoot.html#ae2f89bc47c29abbcfeef375a34a5e9c0">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classMyToolRoot.html#a507788a13c31995434d902fdefcd344c">Execute</a>();   </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classMyToolRoot.html#ad556b624d0bda80a8f5602db7fc035dd">Finalise</a>();  </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="comment">// functions</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="comment">// =========</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">int</span> GetBranchValues();</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    </div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="comment">// tool variables</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="comment">// ==============</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="comment">// variables to read in</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="comment">// ====================</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader=<span class="keyword">nullptr</span>; <span class="comment">// the TTree reader</span></div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="comment">// verbosity levels: if &#39;verbosity&#39; &lt; this level, the message type will be logged.</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> verbosity=1;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">int</span> v_error=0;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">int</span> v_warning=1;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">int</span> v_message=2;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">int</span> v_debug=3;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::string logmessage=<span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">int</span> get_ok=0;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="comment">// variables to read in</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">// ====================</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader=<span class="keyword">nullptr</span>; <span class="comment">// the TTree reader</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    </div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="comment">// variables to write out</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="comment">// ======================</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;};</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:61</div></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="comment">// variables to write out</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// ======================</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;};</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
-<div class="ttc" id="aclassMyToolRoot_html"><div class="ttname"><a href="classMyToolRoot.html">MyToolRoot</a></div><div class="ttdef"><b>Definition:</b> MyToolRoot.h:21</div></div>
-<div class="ttc" id="aclassMyToolRoot_html_a507788a13c31995434d902fdefcd344c"><div class="ttname"><a href="classMyToolRoot.html#a507788a13c31995434d902fdefcd344c">MyToolRoot::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:40</div></div>
-<div class="ttc" id="aclassMyToolRoot_html_ad556b624d0bda80a8f5602db7fc035dd"><div class="ttname"><a href="classMyToolRoot.html#ad556b624d0bda80a8f5602db7fc035dd">MyToolRoot::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:62</div></div>
-<div class="ttc" id="aclassMyToolRoot_html_ae2f89bc47c29abbcfeef375a34a5e9c0"><div class="ttname"><a href="classMyToolRoot.html#ae2f89bc47c29abbcfeef375a34a5e9c0">MyToolRoot::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:13</div></div>
-<div class="ttc" id="aclassMyToolRoot_html_afcda0d442abb02793df12daa16f1a647"><div class="ttname"><a href="classMyToolRoot.html#afcda0d442abb02793df12daa16f1a647">MyToolRoot::MyToolRoot</a></div><div class="ttdeci">MyToolRoot()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:8</div></div>
+<div class="ttc" id="aclassMyToolRoot_html"><div class="ttname"><a href="classMyToolRoot.html">MyToolRoot</a></div><div class="ttdef"><b>Definition:</b> MyToolRoot.h:20</div></div>
+<div class="ttc" id="aclassMyToolRoot_html_a507788a13c31995434d902fdefcd344c"><div class="ttname"><a href="classMyToolRoot.html#a507788a13c31995434d902fdefcd344c">MyToolRoot::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:36</div></div>
+<div class="ttc" id="aclassMyToolRoot_html_ad556b624d0bda80a8f5602db7fc035dd"><div class="ttname"><a href="classMyToolRoot.html#ad556b624d0bda80a8f5602db7fc035dd">MyToolRoot::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:47</div></div>
+<div class="ttc" id="aclassMyToolRoot_html_ae2f89bc47c29abbcfeef375a34a5e9c0"><div class="ttname"><a href="classMyToolRoot.html#ae2f89bc47c29abbcfeef375a34a5e9c0">MyToolRoot::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:9</div></div>
+<div class="ttc" id="aclassMyToolRoot_html_afcda0d442abb02793df12daa16f1a647"><div class="ttname"><a href="classMyToolRoot.html#afcda0d442abb02793df12daa16f1a647">MyToolRoot::MyToolRoot</a></div><div class="ttdeci">MyToolRoot()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> MyToolRoot.cpp:7</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

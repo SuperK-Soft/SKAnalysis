@@ -70,7 +70,7 @@ $(function() {
 <li>For SK files (ROOT or ZEBRA), <code>skread</code> and/or <code>skrawread</code> will be called to populate fortran common blocks. For SK ROOT files both means of data access will be available.</li>
 </ol>
 <p>Typically, one entry will be loaded per Execute call (i.e per ToolChain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling 'LoadAFT' or 'LoadSHE' the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.</p>
-<h1><a class="anchor" id="autotoc_md56"></a>
+<h1><a class="anchor" id="autotoc_md65"></a>
 Configuration</h1>
 <p>The following options are available. Defaults, when applicable, are given in parentheses. </p><div class="fragment"><div class="line">verbosity 1                                    # tool verbosity (1)</div>
 <div class="line">readerName MyReader                            # the name to associate to this reader instance in the DataModel</div>
@@ -104,22 +104,24 @@ Configuration</h1>
 <li>if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see $SKOFL_ROOT/src/skrd/skoptn.F for all options)</li>
 <li>LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.</li>
 <li>skipPedestals will load the next entry for which <code>skread</code> or <code>skrawread</code> did not return 3 or 4 (not pedestal or runinfo entry).</li>
-<li>When reading ROOT files, only enable branches you intend to use. Specify a list of input branches as follows: <div class="fragment"><div class="line">StartInputBranchList</div>
+<li>Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use: <div class="fragment"><div class="line">StartSkippedInputBranches</div>
 <div class="line">branchA</div>
 <div class="line">branchB</div>
-<div class="line">branchC</div>
-<div class="line">EndInputBranchList</div>
+<div class="line">EndSkippedInputBranches</div>
 </div><!-- fragment --></li>
-<li>this will disable all branches other than <code>branchA</code>, <code>branchB</code> and <code>branchC</code>.</li>
-<li>for skroot files in <code>copy</code> mode, an output file will be created and entries may be copied from input to output file. Unused input branches should be disabled as above, but branches that are needed for processing but not desired in the output can be removed from the copy operation by listing only the desired output branches as follows: <div class="fragment"><div class="line">StartOutputBranchList</div>
+<li>Alternatively to disable all branches other than those specified, use: <div class="fragment"><div class="line">StartActiveInputBranches</div>
 <div class="line">branchA</div>
 <div class="line">branchB</div>
-<div class="line">EndOutputBranchList</div>
+<div class="line">EndActiveInputBranches</div>
 </div><!-- fragment --></li>
-<li>in this case branches <code>branchA</code>,<code>branchB</code> and <code>branchC</code> will be read in and accessible, but the output file will only contain branches <code>branchA</code> and <code>branchB</code>.</li>
+<li>this will disable all branches other than <code>branchA</code> and <code>branchB</code>.</li>
+<li>for skroot files in <code>copy</code> mode, an output file will be created where entries can be copied straight from input to output.</li>
+<li>Branches not desired in the output can be omitted from the copy by listing them in a similar fashion as above, using either</li>
+<li><code>Start/EndSkippedOutputBranches</code> or <code>Start/EndActiveOutputBranches</code>. Branches disabled in the output but not the input</li>
+<li>will be read in and accessible, but the output file will not contain them.</li>
 <li>outputFile is only applicable in skroot copy or write mode.</li>
 <li>In write mode you will need to call <code>skroot_set_***</code> and <code>skroot_fill_tree_</code> functions as required. If you need to read inputs from another file, you will need to use another <a class="el" href="classTreeReader.html">TreeReader</a> instance.</li>
-<li>N.B. The minimum set of active input branches for calling <a class="el" href="classlf__allfit.html">lf_allfit</a> seems to be:</li>
+<li>N.B. The minimum set of active input branches for calling lf_allfit seems to be:</li>
 <li>SOFTWARETRG</li>
 <li>EVENTHEADER</li>
 <li>PEDESTALS</li>

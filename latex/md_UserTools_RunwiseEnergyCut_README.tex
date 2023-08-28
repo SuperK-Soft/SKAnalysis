@@ -1,0 +1,19 @@
+The Run\+Energy\+Cut Tool places a run-\/wise cut on the bsenergy. Cuts should be specified in the config file in the following way\+: \begin{DoxyVerb}cut runmin runmax energymin energymax
+\end{DoxyVerb}
+
+\begin{DoxyItemize}
+\item The first word should be \textquotesingle{}cut\textquotesingle{} and identifies a cut line.
+\item runmin and runmax specify the range of run numbers over which the cut is active.
+\item energymin and energymax specify the range of energies to ACCEPT.
+\end{DoxyItemize}
+
+i.\+e. reject any event for which the following is true\+: \begin{DoxyVerb}(runmin <= run <= runmax) && NOT (energymin < bsenergy < energymax)
+\end{DoxyVerb}
+ Use a value of -\/1 to indicate a value of \textquotesingle{}any\textquotesingle{}. For example, to specify a cut which is active for any runs up to and including run 68670, that would reject any events with bsenergy less than 10MeV (but with no upper limit), use a line of\+: \begin{DoxyVerb}cut -1 68670 10 -1
+\end{DoxyVerb}
+
+\begin{DoxyItemize}
+\item Any line in the config file matching this format will be added to the set of cuts applied.
+\item Any number of cuts can be applied.
+\item Any other configuration variables (.e.\+g verbosity) can also be included and will be used as normal. 
+\end{DoxyItemize}

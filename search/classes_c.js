@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['openinganglestats_285',['OpeningAngleStats',['../structOpeningAngleStats.html',1,'']]]
+  ['odcut_312',['ODCut',['../classODCut.html',1,'']]],
+  ['openinganglestats_313',['OpeningAngleStats',['../structOpeningAngleStats.html',1,'']]]
 ];

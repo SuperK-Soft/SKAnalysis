@@ -1,0 +1,75 @@
+A simple Tool to reject events based on the event flags. Specify a set of allowed flags with\+: \begin{DoxyVerb}allowedFlags 1,2,3
+\end{DoxyVerb}
+ to only allow events where event flag bits 1, 2 or 3 are set and reject any events where none of these bits are set. Alternatively specify a set of rejected flags with\+: \begin{DoxyVerb}skippedFlags 11,12,13
+\end{DoxyVerb}
+ to skip events where flag bits 11, 12 or 13 are set. Flag bits are retrieved from skhead\+\_\+.\+ifevsk.
+
+Triggers may be specified by their bit number, or by their name\+:
+\begin{DoxyItemize}
+\item Flags for SK-\/\+I-\/\+III\+:
+\item \char`\"{}\+ATM\char`\"{} = 0
+\item \char`\"{}\+TRG\char`\"{} = 1
+\item \char`\"{}\+SMP\+\_\+\+REGISTER\char`\"{} = 2
+\item \char`\"{}\+SCALER\char`\"{} = 3
+\item \char`\"{}\+PEDESTAL\+\_\+\+START\char`\"{} = 4
+\item \char`\"{}\+PEDESTAL\+\_\+\+DATA(\+ATM)\char`\"{} = 5
+\item \char`\"{}\+PEDESTAL\+\_\+\+HISTOGRAM\char`\"{} = 6
+\item \char`\"{}\+PEDESTAL\+\_\+\+END\char`\"{} = 7
+\item \char`\"{}\+END\+\_\+\+OF\+\_\+\+RUN\char`\"{} = 8
+\item \char`\"{}\+PEDESTAL\+\_\+\+ON\char`\"{} = 9
+\item \char`\"{}unknown\+\_\+10\char`\"{} = 10
+\item \char`\"{}\+GPS\+\_\+\+DATA\char`\"{} = 11
+\item \char`\"{}\+CAMAC\+\_\+\+ADC\char`\"{} = 12
+\item \char`\"{}\+ANTI\+\_\+\+DATA\char`\"{} = 13
+\item \char`\"{}\+INNER\+\_\+\+SLOW\+\_\+\+DATA\char`\"{} = 14
+\item \char`\"{}\+RUN\+\_\+\+INFORMATION\char`\"{} = 15
+\item \char`\"{}\+ERROR\+\_\+\+TKO-\/\+PS\char`\"{} = 16
+\item \char`\"{}\+ERROR\+\_\+\+HV-\/\+PS\char`\"{} = 17
+\item \char`\"{}\+ERROR\+\_\+\+TEMPERATURE\char`\"{} = 18
+\item \char`\"{}unknown\+\_\+19\char`\"{} = 19
+\item \char`\"{}\+UNCOMPLETED\+\_\+\+ATM\+\_\+\+DATA\char`\"{} = 20
+\item \char`\"{}\+INVALID\+\_\+\+ATM\+\_\+\+DATA\char`\"{} = 21
+\item \char`\"{}unknown\+\_\+22\char`\"{} = 22
+\item \char`\"{}unknown\+\_\+23\char`\"{} = 23
+\item \char`\"{}\+ERROR\+\_\+\+DATA\char`\"{} = 24
+\item \char`\"{}\+UNREASONABLE\+\_\+\+DATA\char`\"{} = 25
+\item \char`\"{}\+LED\+\_\+\+BURST\+\_\+\+ON\char`\"{} = 26
+\item \char`\"{}unknown\+\_\+27\char`\"{} = 27
+\item \char`\"{}\+INNER\+\_\+\+DETECTOR\+\_\+\+OFF\char`\"{} = 28
+\item \char`\"{}\+ANTI\+\_\+\+DETECTOR\+\_\+\+OFF\char`\"{} = 29
+\item \char`\"{}unknown\+\_\+30\char`\"{} = 30
+\item \char`\"{}\+TRG\+\_\+\+IS\+\_\+\+AVAILABLE\char`\"{} = 31
+\item Flags for SK-\/\+IV+
+\item \char`\"{}\+QBEE\+\_\+\+TQ\char`\"{} = 0
+\item \char`\"{}\+HARD\+\_\+\+TRG\char`\"{} = 1
+\item \char`\"{}\+QBEE\+\_\+\+STAT\char`\"{} = 2
+\item \char`\"{}\+DB\+\_\+\+STAT\+\_\+\+BLOCK\char`\"{} = 3
+\item \char`\"{}\+CORRUPTED\+\_\+\+CHECKSUM\char`\"{} = 4
+\item \char`\"{}\+MISSING\+\_\+\+SPACER\char`\"{} = 5
+\item \char`\"{}\+PED\+\_\+\+HIST\+\_\+\+BLOCK\char`\"{} = 6
+\item \char`\"{}unknown\+\_\+7\char`\"{} = 7
+\item \char`\"{}unknown\+\_\+8\char`\"{} = 8
+\item \char`\"{}\+PEDESTAL\+\_\+\+ON\char`\"{} = 9
+\item \char`\"{}\+RAW\+\_\+\+AMT\+\_\+\+BLOCK\char`\"{} = 10
+\item \char`\"{}\+GPS\+\_\+\+DATA\char`\"{} = 11
+\item \char`\"{}\+PEDESTAL\+\_\+\+CHECK\char`\"{} = 12
+\item \char`\"{}\+SEND\+\_\+\+BLOCK\char`\"{} = 13
+\item \char`\"{}\+INNER\+\_\+\+SLOW\+\_\+\+DATA\char`\"{} = 14
+\item \char`\"{}\+RUN\+\_\+\+INFORMATION\char`\"{} = 15
+\item \char`\"{}\+PREV\+\_\+\+T0\+\_\+\+BLOCK\char`\"{} = 16
+\item \char`\"{}unknown\+\_\+17\char`\"{} = 17
+\item \char`\"{}\+FE\+\_\+\+TRL\+\_\+\+BLOCK\char`\"{} = 18
+\item \char`\"{}\+SPACER\+\_\+\+BLOCK\char`\"{} = 19
+\item \char`\"{}\+INCOMPLETE\+\_\+\+TQ\char`\"{} = 20
+\item \char`\"{}\+CORRUPT\+\_\+\+TQ\+\_\+\+BLOCK\char`\"{} = 21
+\item \char`\"{}\+TRG\+\_\+\+MISMATCH\+\_\+\+TQ\char`\"{} = 22
+\item \char`\"{}\+QBEE\+\_\+\+ERROR\char`\"{} = 23
+\item \char`\"{}\+SORT\+\_\+\+BLOCK\char`\"{} = 24
+\item \char`\"{}\+CORRUPTED\+\_\+\+BLOCK\char`\"{} = 25
+\item \char`\"{}\+LED\+\_\+\+BURST\+\_\+\+ON\char`\"{} = 26
+\item \char`\"{}\+EVNT\+\_\+\+TRAILER\char`\"{} = 27
+\item \char`\"{}\+INNER\+\_\+\+DETECTOR\+\_\+\+OFF\char`\"{} = 28
+\item \char`\"{}\+ANTI\+\_\+\+DETECTOR\+\_\+\+OFF\char`\"{} = 29
+\item \char`\"{}\+T2\+K\+\_\+\+GPS\char`\"{} = 30
+\item \char`\"{}\+EVNT\+\_\+\+HDR\+\_\+\&\+\_\+\+SOFTWARE\+\_\+\+TRG\char`\"{} = 31 
+\end{DoxyItemize}

@@ -1,0 +1,63 @@
+\hypertarget{classODCut}{}\doxysection{ODCut Class Reference}
+\label{classODCut}\index{ODCut@{ODCut}}
+
+
+{\ttfamily \#include $<$ODCut.\+h$>$}
+
+Inheritance diagram for ODCut\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classODCut}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classODCut_af4c7248310f9d292fc2b138f9e001b4a}\label{classODCut_af4c7248310f9d292fc2b138f9e001b4a}} 
+\mbox{\hyperlink{classODCut_af4c7248310f9d292fc2b138f9e001b4a}{ODCut}} ()
+\begin{DoxyCompactList}\small\item\em Simple constructor. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classODCut_aa2623bd0834e842549ada0805a7f3e32}{Initialise}} (std\+::string configfile, \mbox{\hyperlink{classDataModel}{Data\+Model}} \&data)
+\begin{DoxyCompactList}\small\item\em Initialise Function for setting up Tool resorces. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classODCut_aab0581f8a0ecca32c849d5dca356874e}\label{classODCut_aab0581f8a0ecca32c849d5dca356874e}} 
+bool \mbox{\hyperlink{classODCut_aab0581f8a0ecca32c849d5dca356874e}{Execute}} ()
+\begin{DoxyCompactList}\small\item\em Execute function used to perform Tool perpose. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classODCut_a547517837a768657f8ff7dfcec850ba8}\label{classODCut_a547517837a768657f8ff7dfcec850ba8}} 
+bool \mbox{\hyperlink{classODCut_a547517837a768657f8ff7dfcec850ba8}{Finalise}} ()
+\begin{DoxyCompactList}\small\item\em Finalise funciton used to clean up resorces. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Remove events without the \textquotesingle{}new\+Muon\textquotesingle{} flag set, which have either the OD trigger bit set within the primary trigger window, or more than hits\+Threshold OD hits within 500-\/1300us following the primary trigger.
+
+\begin{DoxyParagraph}{Author}
+B.\+Richards 
+\end{DoxyParagraph}
+\begin{DoxyParagraph}{Date}
+2019/05/28 10\+:44\+:00 
+\end{DoxyParagraph}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classODCut_aa2623bd0834e842549ada0805a7f3e32}\label{classODCut_aa2623bd0834e842549ada0805a7f3e32}} 
+\index{ODCut@{ODCut}!Initialise@{Initialise}}
+\index{Initialise@{Initialise}!ODCut@{ODCut}}
+\doxysubsubsection{\texorpdfstring{Initialise()}{Initialise()}}
+{\footnotesize\ttfamily bool ODCut\+::\+Initialise (\begin{DoxyParamCaption}\item[{std\+::string}]{configfile,  }\item[{\mbox{\hyperlink{classDataModel}{Data\+Model}} \&}]{data }\end{DoxyParamCaption})}
+
+
+
+Initialise Function for setting up Tool resorces. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em configfile} & The path and name of the dynamic configuration file to read in.\\
+\hline
+{\em data} & A reference to the transient data class used to pass information between Tools. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+User\+Tools/\+ODCut/ODCut.\+h\item 
+User\+Tools/\+ODCut/ODCut.\+cpp\end{DoxyCompactItemize}

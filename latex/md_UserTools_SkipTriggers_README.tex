@@ -1,0 +1,45 @@
+A simple Tool to reject a set of triggers. Specify a set of allowed triggers with\+: \begin{DoxyVerb}allowedTriggers 1,2,3
+\end{DoxyVerb}
+ to only allow events where trigger bits 1, 2 or 3 are set and reject any events where none of these bits are set. Alternatively specify a set of rejected triggers with\+: \begin{DoxyVerb}skippedTriggers 11,12,13
+\end{DoxyVerb}
+ to skip events where trigger bits 11, 12 or 13 are set. Trigger bits are retrieved from skhead\+\_\+.\+idtgsk.
+
+Triggers may be specified by their bit number, or by their name\+:
+\begin{DoxyItemize}
+\item LE=0
+\item HE=1
+\item SLE=2
+\item OD\+\_\+or\+\_\+\+Fission=3
+\item Periodic=4
+\item AFT\+\_\+or\+\_\+\+Cal=5
+\item Veto\+\_\+\+Start=6
+\item Veto\+\_\+\+Stop=7
+\item unknown\+\_\+8=8
+\item unknown\+\_\+9=9
+\item unknown\+\_\+10=10
+\item Random\+\_\+\+Wide=11
+\item ID\+\_\+\+Laser=12
+\item LED=13
+\item Ni=14
+\item OD\+\_\+\+Laser=15
+\item LE\+\_\+hitsum=16
+\item HE\+\_\+hitsum=17
+\item SLE\+\_\+hitsum=18
+\item OD\+\_\+hitsum=19
+\item unknown\+\_\+20=20
+\item unknown\+\_\+21=21
+\item SN\+\_\+\+Burst=22
+\item mue\+\_\+\+Decay=23
+\item LINAC=24
+\item LINAC\+\_\+\+RF=25
+\item unknown\+\_\+26=26
+\item Periodic\+\_\+simple=27
+\item SHE=28
+\item AFT=29
+\item Pedestal=30
+\item T2K=31
+\end{DoxyItemize}
+
+Note these options may also be given directly to the \mbox{\hyperlink{classTreeReader}{Tree\+Reader}} Tool. Using this Tool permits more flexibility in the placement of such selections. For example, a simple Tool\+Chain may contain\+: \begin{DoxyVerb}TreeReader -> PlotQismsk -> SkipTriggers -> PlotQismsk
+\end{DoxyVerb}
+ The hypothetical Plot\+Qismsk Tool makes a plot of qismsk. The \mbox{\hyperlink{classSkipTriggers}{Skip\+Triggers}} rejects all events where the SHE trigger bit is not set. This toolchain would then allow one to compare the distribution of qismsk for all events vs those for which the SHE trigger bit is set. 

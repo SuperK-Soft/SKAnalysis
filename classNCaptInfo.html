@@ -122,9 +122,6 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a33fdc9f6421f5360e5404d979d8168ea"><td class="memItemLeft" align="right" valign="top"><a id="a33fdc9f6421f5360e5404d979d8168ea"></a>
 <a class="el" href="classMTreeReader.html">MTreeReader</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>myTreeReader</b></td></tr>
 <tr class="separator:a33fdc9f6421f5360e5404d979d8168ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a419cec7816f8bd123b77089168a6d522"><td class="memItemLeft" align="right" valign="top"><a id="a419cec7816f8bd123b77089168a6d522"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>m_unique_name</b> =&quot;&quot;</td></tr>
-<tr class="separator:a419cec7816f8bd123b77089168a6d522"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab195e8a5bd20259be82cc90a9f835d8e"><td class="memItemLeft" align="right" valign="top"><a id="ab195e8a5bd20259be82cc90a9f835d8e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>match_mistags</b> =false</td></tr>
 <tr class="separator:ab195e8a5bd20259be82cc90a9f835d8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -191,27 +188,6 @@ std::unordered_map&lt; std::string, int &gt;&#160;</td><td class="memItemRight" 
 <tr class="memitem:a6efdacc822934fd491eb07f4cdeffe3f"><td class="memItemLeft" align="right" valign="top"><a id="a6efdacc822934fd491eb07f4cdeffe3f"></a>
 std::unordered_map&lt; std::string, double &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mdbranchvars</b></td></tr>
 <tr class="separator:a6efdacc822934fd491eb07f4cdeffe3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1688c8995b6fff30e6c1cd2b97d2176d"><td class="memItemLeft" align="right" valign="top"><a id="a1688c8995b6fff30e6c1cd2b97d2176d"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>verbosity</b> =1</td></tr>
-<tr class="separator:a1688c8995b6fff30e6c1cd2b97d2176d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae314d9522e2aabc913df43c431671ed3"><td class="memItemLeft" align="right" valign="top"><a id="ae314d9522e2aabc913df43c431671ed3"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>v_error</b> =0</td></tr>
-<tr class="separator:ae314d9522e2aabc913df43c431671ed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8109c7030054224e09369f34f8ef2772"><td class="memItemLeft" align="right" valign="top"><a id="a8109c7030054224e09369f34f8ef2772"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>v_warning</b> =1</td></tr>
-<tr class="separator:a8109c7030054224e09369f34f8ef2772"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ebac0f84a20a10af110de59f68f12d6"><td class="memItemLeft" align="right" valign="top"><a id="a0ebac0f84a20a10af110de59f68f12d6"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>v_message</b> =2</td></tr>
-<tr class="separator:a0ebac0f84a20a10af110de59f68f12d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc7356614a82ec651d8fbe4de2462835"><td class="memItemLeft" align="right" valign="top"><a id="adc7356614a82ec651d8fbe4de2462835"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>v_debug</b> =3</td></tr>
-<tr class="separator:adc7356614a82ec651d8fbe4de2462835"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a76e67639eef069ece0d84d8b07d917aa"><td class="memItemLeft" align="right" valign="top"><a id="a76e67639eef069ece0d84d8b07d917aa"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><b>logmessage</b> =&quot;&quot;</td></tr>
-<tr class="separator:a76e67639eef069ece0d84d8b07d917aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aabdf096a52874a064fb68383e886e45a"><td class="memItemLeft" align="right" valign="top"><a id="aabdf096a52874a064fb68383e886e45a"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>get_ok</b> =0</td></tr>
-<tr class="separator:aabdf096a52874a064fb68383e886e45a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This is an abstract base class for a Tool that converts neutron tagging information into a generalised form. Add support for your own ntagger by making a class that derives from this, and overrides the pure virtual functions InitCandidateReader and GetCandidates. See existing cases for examples.</p>

@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['datamodel_340',['DataModel',['../classDataModel.html#abff03aef2cb531142a35781bb87c3365',1,'DataModel']]],
-  ['dummytool_341',['DummyTool',['../classDummyTool.html#a33914471b4de346168aa92b5febb6f9c',1,'DummyTool']]]
+  ['combinedfitter_377',['CombinedFitter',['../classCombinedFitter.html#a72d19eb714ba7d04e2ec42aa6ba8a36b',1,'CombinedFitter']]],
+  ['comparerootfiles_378',['CompareRootFiles',['../classCompareRootFiles.html#af9456208b0503b0988eed685173836a7',1,'CompareRootFiles']]],
+  ['createthread_379',['CreateThread',['../classUtilities.html#ae52d1dd16b34518b2ef4de01660cb8b2',1,'Utilities']]],
+  ['cutrecorder_380',['CutRecorder',['../classCutRecorder.html#a7b94ca56dc075f5d9fa498a0b78d933f',1,'CutRecorder']]]
 ];

@@ -1,7 +1,4 @@
 var searchData=
 [
-  ['lf_5fallfit_352',['lf_allfit',['../classlf__allfit.html#a5fcbdc38985840f02e4a39f9e27cdabc',1,'lf_allfit']]],
-  ['lf_5fallfit_5fnew_353',['lf_allfit_new',['../classlf__allfit__new.html#a2a498b5936c0b30f5effb1792c7d535a',1,'lf_allfit_new']]],
-  ['loadbetaspectrafluka_354',['LoadBetaSpectraFluka',['../classLoadBetaSpectraFluka.html#aec21c84b97450dac0afe6b53c7145b20',1,'LoadBetaSpectraFluka']]],
-  ['loadfilelist_355',['LoadFileList',['../classLoadFileList.html#aa5c6230911c53f4417e650f88ff922d9',1,'LoadFileList']]]
+  ['killthread_393',['KillThread',['../classUtilities.html#a6f1c1d53b9ce59bb26c56a3bebdbb255',1,'Utilities::KillThread(Thread_args *&amp;args)'],['../classUtilities.html#a8c17a46ce33b0b647797f24bc859bd7a',1,'Utilities::KillThread(std::string ThreadName)'],['../classUtilities.html#af4091a68d8a27a3b806d029cc9b2135e',1,'Utilities::KillThread(T *pointer)']]]
 ];

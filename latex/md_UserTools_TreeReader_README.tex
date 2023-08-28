@@ -4,7 +4,7 @@ A tool for reading in data from ROOT or ZEBRA files. Access to file data is prov
 \item For SK files (ROOT or ZEBRA), {\ttfamily skread} and/or {\ttfamily skrawread} will be called to populate fortran common blocks. For SK ROOT files both means of data access will be available.
 \end{DoxyEnumerate}
 
-Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md56}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md56}
+Typically, one entry will be loaded per Execute call (i.\+e per Tool\+Chain loop). Optionally, for SHE entries with a subsequent AFT entry, both SHE+\+AFT entries may be read together in one call. The SHE data will be loaded initially, but by calling \textquotesingle{}Load\+AFT\textquotesingle{} or \textquotesingle{}Load\+SHE\textquotesingle{} the user may access the desired data. See below for how to invoke these functions. The reader can be configured to return only SHE+\+AFT pairs (skipping SHE events without an associated AFT) or it may return all events, loading AFT data together with an SHE event only when it is available.\hypertarget{md_UserTools_TreeReader_README_autotoc_md65}{}\doxysection{Configuration}\label{md_UserTools_TreeReader_README_autotoc_md65}
 The following options are available. Defaults, when applicable, are given in parentheses. 
 \begin{DoxyCode}{0}
 \DoxyCodeLine{verbosity 1                                    \# tool verbosity (1)}
@@ -62,30 +62,32 @@ Notes\+:
 \item if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see \$\+SKOFL\+\_\+\+ROOT/src/skrd/skoptn.F for all options)
 \item LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.
 \item skip\+Pedestals will load the next entry for which {\ttfamily skread} or {\ttfamily skrawread} did not return 3 or 4 (not pedestal or runinfo entry).
-\item When reading ROOT files, only enable branches you intend to use. Specify a list of input branches as follows\+: 
+\item Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use\+: 
 \begin{DoxyCode}{0}
-\DoxyCodeLine{StartInputBranchList}
+\DoxyCodeLine{StartSkippedInputBranches}
 \DoxyCodeLine{branchA}
 \DoxyCodeLine{branchB}
-\DoxyCodeLine{branchC}
-\DoxyCodeLine{EndInputBranchList}
+\DoxyCodeLine{EndSkippedInputBranches}
 
 \end{DoxyCode}
 
-\item this will disable all branches other than {\ttfamily branchA}, {\ttfamily branchB} and {\ttfamily branchC}.
-\item for skroot files in {\ttfamily copy} mode, an output file will be created and entries may be copied from input to output file. Unused input branches should be disabled as above, but branches that are needed for processing but not desired in the output can be removed from the copy operation by listing only the desired output branches as follows\+: 
+\item Alternatively to disable all branches other than those specified, use\+: 
 \begin{DoxyCode}{0}
-\DoxyCodeLine{StartOutputBranchList}
+\DoxyCodeLine{StartActiveInputBranches}
 \DoxyCodeLine{branchA}
 \DoxyCodeLine{branchB}
-\DoxyCodeLine{EndOutputBranchList}
+\DoxyCodeLine{EndActiveInputBranches}
 
 \end{DoxyCode}
 
-\item in this case branches {\ttfamily branchA},{\ttfamily branchB} and {\ttfamily branchC} will be read in and accessible, but the output file will only contain branches {\ttfamily branchA} and {\ttfamily branchB}.
+\item this will disable all branches other than {\ttfamily branchA} and {\ttfamily branchB}.
+\item for skroot files in {\ttfamily copy} mode, an output file will be created where entries can be copied straight from input to output.
+\item Branches not desired in the output can be omitted from the copy by listing them in a similar fashion as above, using either
+\item {\ttfamily Start/\+End\+Skipped\+Output\+Branches} or {\ttfamily Start/\+End\+Active\+Output\+Branches}. Branches disabled in the output but not the input
+\item will be read in and accessible, but the output file will not contain them.
 \item output\+File is only applicable in skroot copy or write mode.
 \item In write mode you will need to call {\ttfamily skroot\+\_\+set\+\_\+$\ast$$\ast$$\ast$} and {\ttfamily skroot\+\_\+fill\+\_\+tree\+\_\+} functions as required. If you need to read inputs from another file, you will need to use another \mbox{\hyperlink{classTreeReader}{Tree\+Reader}} instance.
-\item N.\+B. The minimum set of active input branches for calling \mbox{\hyperlink{classlf__allfit}{lf\+\_\+allfit}} seems to be\+:
+\item N.\+B. The minimum set of active input branches for calling lf\+\_\+allfit seems to be\+:
 \item SOFTWARETRG
 \item EVENTHEADER
 \item PEDESTALS

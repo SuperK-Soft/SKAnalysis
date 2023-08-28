@@ -104,61 +104,51 @@ $(function() {
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    </div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="comment">// tool variables</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="comment">// ==============</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    std::string toolName;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::string outputFile=<span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    std::string treeReaderName;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <a class="code" href="classMTreeSelection.html">MTreeSelection</a>* myTreeSelections=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="comment">// maps of muboy class vs a histogram of mu-&gt;lowe time and transverse distance</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_vals_pre{6};</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dt_vals_pre{6};</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_vals_post{6};</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dt_vals_post{6};</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="comment">// varying muon-&gt;lowe dt thresholds for assessing systematic of dlt cut</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">int</span> num_dt_cuts=5; <span class="comment">// this is the size of the spall_lifetimes vector in PurewaterLi9Rate tool</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="comment">// moreover it&#39;s the number of cuts named &quot;pre/post_mu_dt_cut_%d&quot; we have.</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="comment">// TODO retrieve the list of cuts from the MTreeSelection, count how many we have of this type?</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_systematic_dt_cuts_pre{5};</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_systematic_dt_cuts_post{5};</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="comment">// each entry is a different dt cut, inner vector is the dlts of passing events</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// for a given dt cut, the difference between values gives the distribution of *spallation* dlt.</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="comment">// across the various dt cuts, the difference between spallation dlt distributions gives</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="comment">// the systematic error in dlt cut efficiency.</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="comment">// We&#39;re particularly interested in the variation in the bin corresponding to cut value of dlt=200cm,</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="comment">// so make sure we have a bin edge at that value</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="comment">// verbosity levels: if &#39;verbosity&#39; &lt; this level, the message type will be logged.</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">int</span> verbosity=1;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">int</span> v_error=0;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">int</span> v_warning=1;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">int</span> v_message=2;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordtype">int</span> v_debug=3;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    std::string logmessage=<span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">int</span> get_ok=0;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="comment">// variables to read in</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="comment">// ====================</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <a class="code" href="classbasic__array.html">basic_array&lt;int*&gt;</a>   mu_class;                    <span class="comment">// muboy muon classification (see enum class at top)</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <a class="code" href="classbasic__array.html">basic_array&lt;float*&gt;</a> dt_mu_lowe;                  <span class="comment">// time between muon and lowe event [seconds]</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <a class="code" href="classbasic__array.html">basic_array&lt;float*&gt;</a> dlt_mu_lowe;                 <span class="comment">// transverse distance between muon and lowe event [cm]</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="comment">// variables to write out</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="comment">// ======================</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;};</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:61</div></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    std::string outputFile=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::string treeReaderName;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <a class="code" href="classMTreeSelection.html">MTreeSelection</a>* myTreeSelections=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">// maps of muboy class vs a histogram of mu-&gt;lowe time and transverse distance</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_vals_pre{6};</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dt_vals_pre{6};</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_vals_post{6};</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dt_vals_post{6};</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// varying muon-&gt;lowe dt thresholds for assessing systematic of dlt cut</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">int</span> num_dt_cuts=5; <span class="comment">// this is the size of the spall_lifetimes vector in PurewaterLi9Rate tool</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="comment">// moreover it&#39;s the number of cuts named &quot;pre/post_mu_dt_cut_%d&quot; we have.</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="comment">// TODO retrieve the list of cuts from the MTreeSelection, count how many we have of this type?</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_systematic_dt_cuts_pre{5};</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    std::vector&lt;std::vector&lt;float&gt;&gt; dlt_systematic_dt_cuts_post{5};</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="comment">// each entry is a different dt cut, inner vector is the dlts of passing events</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="comment">// for a given dt cut, the difference between values gives the distribution of *spallation* dlt.</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// across the various dt cuts, the difference between spallation dlt distributions gives</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="comment">// the systematic error in dlt cut efficiency.</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <span class="comment">// We&#39;re particularly interested in the variation in the bin corresponding to cut value of dlt=200cm,</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="comment">// so make sure we have a bin edge at that value</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="comment">// variables to read in</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="comment">// ====================</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <a class="code" href="classbasic__array.html">basic_array&lt;int*&gt;</a>   mu_class;                    <span class="comment">// muboy muon classification (see enum class at top)</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <a class="code" href="classbasic__array.html">basic_array&lt;float*&gt;</a> dt_mu_lowe;                  <span class="comment">// time between muon and lowe event [seconds]</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <a class="code" href="classbasic__array.html">basic_array&lt;float*&gt;</a> dlt_mu_lowe;                 <span class="comment">// transverse distance between muon and lowe event [cm]</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="comment">// variables to write out</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="comment">// ======================</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;};</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:17</div></div>
 <div class="ttc" id="aclassMTreeSelection_html"><div class="ttname"><a href="classMTreeSelection.html">MTreeSelection</a></div><div class="ttdef"><b>Definition:</b> MTreeSelection.h:29</div></div>
 <div class="ttc" id="aclassPlotMuonDtDlt_html"><div class="ttname"><a href="classPlotMuonDtDlt.html">PlotMuonDtDlt</a></div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.h:25</div></div>
-<div class="ttc" id="aclassPlotMuonDtDlt_html_a60c47c73d9616eed9f85b5fca7772d6c"><div class="ttname"><a href="classPlotMuonDtDlt.html#a60c47c73d9616eed9f85b5fca7772d6c">PlotMuonDtDlt::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:105</div></div>
+<div class="ttc" id="aclassPlotMuonDtDlt_html_a60c47c73d9616eed9f85b5fca7772d6c"><div class="ttname"><a href="classPlotMuonDtDlt.html#a60c47c73d9616eed9f85b5fca7772d6c">PlotMuonDtDlt::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:102</div></div>
 <div class="ttc" id="aclassPlotMuonDtDlt_html_a87e6e1a156c7da6fe617eb33c527f8fd"><div class="ttname"><a href="classPlotMuonDtDlt.html#a87e6e1a156c7da6fe617eb33c527f8fd">PlotMuonDtDlt::PlotMuonDtDlt</a></div><div class="ttdeci">PlotMuonDtDlt()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:22</div></div>
-<div class="ttc" id="aclassPlotMuonDtDlt_html_ac986fccf38769a91e360cc26fa75877f"><div class="ttname"><a href="classPlotMuonDtDlt.html#ac986fccf38769a91e360cc26fa75877f">PlotMuonDtDlt::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:27</div></div>
-<div class="ttc" id="aclassPlotMuonDtDlt_html_afa1d34e8b2563f91539db8a35050b43f"><div class="ttname"><a href="classPlotMuonDtDlt.html#afa1d34e8b2563f91539db8a35050b43f">PlotMuonDtDlt::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:48</div></div>
+<div class="ttc" id="aclassPlotMuonDtDlt_html_ac986fccf38769a91e360cc26fa75877f"><div class="ttname"><a href="classPlotMuonDtDlt.html#ac986fccf38769a91e360cc26fa75877f">PlotMuonDtDlt::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:24</div></div>
+<div class="ttc" id="aclassPlotMuonDtDlt_html_afa1d34e8b2563f91539db8a35050b43f"><div class="ttname"><a href="classPlotMuonDtDlt.html#afa1d34e8b2563f91539db8a35050b43f">PlotMuonDtDlt::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> PlotMuonDtDlt.cpp:45</div></div>
 <div class="ttc" id="aclassbasic__array_html"><div class="ttname"><a href="classbasic__array.html">basic_array&lt; int * &gt;</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['combinedfitter_337',['CombinedFitter',['../classCombinedFitter.html#a72d19eb714ba7d04e2ec42aa6ba8a36b',1,'CombinedFitter']]],
-  ['comparerootfiles_338',['CompareRootFiles',['../classCompareRootFiles.html#af9456208b0503b0988eed685173836a7',1,'CompareRootFiles']]],
-  ['createthread_339',['CreateThread',['../classUtilities.html#ae52d1dd16b34518b2ef4de01660cb8b2',1,'Utilities']]]
+  ['buildhist_376',['BuildHist',['../classBuildHist.html#a73db88cc818d4d948f1c91cf129e2380',1,'BuildHist']]]
 ];

@@ -111,9 +111,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadAFT</b> (std::str
 <tr class="memitem:a87dcbcfd29a861c119bb292ad828d411"><td class="memItemLeft" align="right" valign="top"><a id="a87dcbcfd29a861c119bb292ad828d411"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>LoadCommons</b> (int entry_i, std::string ReaderName=&quot;&quot;)</td></tr>
 <tr class="separator:a87dcbcfd29a861c119bb292ad828d411"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6023cca61b409a87652a119d37db3ffe"><td class="memItemLeft" align="right" valign="top"><a id="a6023cca61b409a87652a119d37db3ffe"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>GetNextLUN</b> (int lun=10, std::string reader=&quot;reader&quot;)</td></tr>
-<tr class="separator:a6023cca61b409a87652a119d37db3ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aece2249d6bd88650e5857686246b9eca"><td class="memItemLeft" align="right" valign="top"><a id="aece2249d6bd88650e5857686246b9eca"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>GetNextLUN</b> (std::string reader=&quot;reader&quot;, int lun=0)</td></tr>
+<tr class="separator:aece2249d6bd88650e5857686246b9eca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a53b15fb6d74badf2333402bfac3d622a"><td class="memItemLeft" align="right" valign="top"><a id="a53b15fb6d74badf2333402bfac3d622a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>GetLUN</b> (std::string reader)</td></tr>
 <tr class="separator:a53b15fb6d74badf2333402bfac3d622a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,6 +126,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>KZInit</b> ()</td></t
 <tr class="memitem:a408371d6ed7f88eaf3e43fda5a3985b4"><td class="memItemLeft" align="right" valign="top"><a id="a408371d6ed7f88eaf3e43fda5a3985b4"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>GeoSet</b> (int sk_geometry_in)</td></tr>
 <tr class="separator:a408371d6ed7f88eaf3e43fda5a3985b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70510a6addfb57fb4ef262672a2dedd9"><td class="memItemLeft" align="right" valign="top"><a id="a70510a6addfb57fb4ef262672a2dedd9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>BonsaiInit</b> ()</td></tr>
+<tr class="separator:a70510a6addfb57fb4ef262672a2dedd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5588f608115ca6647726c4b612d291bc"><td class="memItemLeft" align="right" valign="top"><a id="a5588f608115ca6647726c4b612d291bc"></a>
 TFile *&#160;</td><td class="memItemRight" valign="bottom"><b>OpenFileForWriting</b> (std::string file, bool alreadyopenonly=false)</td></tr>
 <tr class="separator:a5588f608115ca6647726c4b612d291bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,6 +141,18 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>CloseFile</b> (std::s
 <tr class="memitem:ae940bc56dd0c3e00a6e0794bada7d5fa"><td class="memItemLeft" align="right" valign="top"><a id="ae940bc56dd0c3e00a6e0794bada7d5fa"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>CloseFile</b> (TFile *fptr)</td></tr>
 <tr class="separator:ae940bc56dd0c3e00a6e0794bada7d5fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a607a5c98e3f3e0a84dca532cbe38c724"><td class="memTemplParams" colspan="2"><a id="a607a5c98e3f3e0a84dca532cbe38c724"></a>
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:a607a5c98e3f3e0a84dca532cbe38c724"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>AddCut</b> (std::string selector, std::string cut, std::string description, Args... rest)</td></tr>
+<tr class="separator:a607a5c98e3f3e0a84dca532cbe38c724"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab225b90c91a9c7cf5f9038203b9f89f4"><td class="memTemplParams" colspan="2"><a id="ab225b90c91a9c7cf5f9038203b9f89f4"></a>
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:ab225b90c91a9c7cf5f9038203b9f89f4"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>ApplyCut</b> (std::string selector, std::string cut, double val, Args... rest)</td></tr>
+<tr class="separator:ab225b90c91a9c7cf5f9038203b9f89f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac5b460f10855dc23ba1df4a73f89a32"><td class="memTemplParams" colspan="2"><a id="aac5b460f10855dc23ba1df4a73f89a32"></a>
+template&lt;typename... Args&gt; </td></tr>
+<tr class="memitem:aac5b460f10855dc23ba1df4a73f89a32"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>AddPassingEvent</b> (std::string selector, std::string cut, Args... rest)</td></tr>
+<tr class="separator:aac5b460f10855dc23ba1df4a73f89a32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -189,6 +204,9 @@ std::map&lt; std::string, BStore * &gt;&#160;</td><td class="memItemRight" valig
 <tr class="memitem:a11496d293cb40fdf06196cfc28423718"><td class="memItemLeft" align="right" valign="top"><a id="a11496d293cb40fdf06196cfc28423718"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>kz_initialized</b> =false</td></tr>
 <tr class="separator:a11496d293cb40fdf06196cfc28423718"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a047351e3e1fd7e90047948a94caa58c9"><td class="memItemLeft" align="right" valign="top"><a id="a047351e3e1fd7e90047948a94caa58c9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>bonsai_initialised</b> =false</td></tr>
+<tr class="separator:a047351e3e1fd7e90047948a94caa58c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a032c6e93e713432b0069c9ef2e4149f3"><td class="memItemLeft" align="right" valign="top"><a id="a032c6e93e713432b0069c9ef2e4149f3"></a>
 BStore *&#160;</td><td class="memItemRight" valign="bottom"><b>eventVariables_p</b></td></tr>
 <tr class="separator:a032c6e93e713432b0069c9ef2e4149f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -234,6 +252,27 @@ std::map&lt; std::string, Store * &gt;&#160;</td><td class="memItemRight" valign
 <tr class="memitem:a61376b2b951b3360fd4f4c81e22e9bb2"><td class="memItemLeft" align="right" valign="top"><a id="a61376b2b951b3360fd4f4c81e22e9bb2"></a>
 <a class="el" href="classStoreToTTree.html">StoreToTTree</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StoreConverter</b></td></tr>
 <tr class="separator:a61376b2b951b3360fd4f4c81e22e9bb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99448bab5fff25cbbec62425d8424b62"><td class="memItemLeft" align="right" valign="top"><a id="a99448bab5fff25cbbec62425d8424b62"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>newMuon</b> = false</td></tr>
+<tr class="separator:a99448bab5fff25cbbec62425d8424b62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fc6733cb9c50415150b34dc1cbacc2d"><td class="memItemLeft" align="right" valign="top"><a id="a1fc6733cb9c50415150b34dc1cbacc2d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>newRelic</b> = false</td></tr>
+<tr class="separator:a1fc6733cb9c50415150b34dc1cbacc2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab728c2e0bfd4b9f82a9414f2736b71de"><td class="memItemLeft" align="right" valign="top"><a id="ab728c2e0bfd4b9f82a9414f2736b71de"></a>
+std::deque&lt; <a class="el" href="structParticleCand.html">ParticleCand</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>muonCandDeque</b></td></tr>
+<tr class="separator:ab728c2e0bfd4b9f82a9414f2736b71de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a0601cd719789849404cb050e816a55"><td class="memItemLeft" align="right" valign="top"><a id="a1a0601cd719789849404cb050e816a55"></a>
+std::deque&lt; <a class="el" href="structParticleCand.html">ParticleCand</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>relicCandDeque</b></td></tr>
+<tr class="separator:a1a0601cd719789849404cb050e816a55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95c336c567a2ca1295fc169fb718d51d"><td class="memItemLeft" align="right" valign="top"><a id="a95c336c567a2ca1295fc169fb718d51d"></a>
+std::vector&lt; <a class="el" href="structParticleCand.html">ParticleCand</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>muonsToRec</b></td></tr>
+<tr class="separator:a95c336c567a2ca1295fc169fb718d51d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52caef7eea5a11c5824a69a1e239365d"><td class="memItemLeft" align="right" valign="top"><a id="a52caef7eea5a11c5824a69a1e239365d"></a>
+std::vector&lt; <a class="el" href="structParticleCand.html">ParticleCand</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>writeOutRelics</b></td></tr>
+<tr class="separator:a52caef7eea5a11c5824a69a1e239365d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76cd304311e717c6637575a24b62e619"><td class="memItemLeft" align="right" valign="top"><a id="a76cd304311e717c6637575a24b62e619"></a>
+std::map&lt; long, skroot_lowe_common &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>loweCommonBufferMap</b></td></tr>
+<tr class="separator:a76cd304311e717c6637575a24b62e619"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>

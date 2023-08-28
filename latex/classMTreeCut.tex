@@ -9,29 +9,23 @@ Inheritance diagram for MTree\+Cut\+:\begin{figure}[H]
 \doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classMTreeCut_a23f520549ff7dd301894cab359242799}\label{classMTreeCut_a23f520549ff7dd301894cab359242799}} 
-{\bfseries MTree\+Cut} (TFile $\ast$outfilein, std\+::string cutname)
+\mbox{\Hypertarget{classMTreeCut_a1887943849c46c8ca7b90a4e5a945a4a}\label{classMTreeCut_a1887943849c46c8ca7b90a4e5a945a4a}} 
+{\bfseries MTree\+Cut} (TFile $\ast$outfilein, std\+::string cutname, std\+::string description, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
 \item 
 \mbox{\Hypertarget{classMTreeCut_af58bf1c07a56e67ca134caf3ca839ca8}\label{classMTreeCut_af58bf1c07a56e67ca134caf3ca839ca8}} 
 {\bfseries MTree\+Cut} (std\+::string cutname, TEntry\+List $\ast$inelist, TTree $\ast$intree)
 \item 
-\mbox{\Hypertarget{classMTreeCut_a713c591bec6cf8fe7d7cc5d8ee11717b}\label{classMTreeCut_a713c591bec6cf8fe7d7cc5d8ee11717b}} 
-void {\bfseries Initialize} (int type\+\_\+in)
+\mbox{\Hypertarget{classMTreeCut_addaae97d01d3116cc2fc6c80b352b827}\label{classMTreeCut_addaae97d01d3116cc2fc6c80b352b827}} 
+void {\bfseries Initialize} (int type\+\_\+in, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader\+In, TTree $\ast$distro\+\_\+tree=nullptr)
 \item 
-\mbox{\Hypertarget{classMTreeCut_a5ac3becc04ea90dee48f3fb4c7d067df}\label{classMTreeCut_a5ac3becc04ea90dee48f3fb4c7d067df}} 
-void {\bfseries Initialize} (int type\+\_\+in, std\+::string indexcutbranch, std\+::vector$<$ std\+::string $>$ linkedbranches)
+\mbox{\Hypertarget{classMTreeCut_a3916bd91b9907578431d536d2b493ee3}\label{classMTreeCut_a3916bd91b9907578431d536d2b493ee3}} 
+void {\bfseries Initialize} (int type\+\_\+in, std\+::string indexcutbranch, std\+::vector$<$ std\+::string $>$ linkedbranches, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader\+In, TTree $\ast$distro\+\_\+tree=nullptr)
 \item 
-\mbox{\Hypertarget{classMTreeCut_a118704b439ef69f7ea9b79a68c0bd536}\label{classMTreeCut_a118704b439ef69f7ea9b79a68c0bd536}} 
-void {\bfseries Initialize} (int type\+\_\+in, std\+::vector$<$ std\+::string $>$ indexcutbranches, std\+::vector$<$ std\+::vector$<$ std\+::string $>$$>$ linkedbranches)
+\mbox{\Hypertarget{classMTreeCut_ad1a6eeea7643b65d9b5683e4f1ace993}\label{classMTreeCut_ad1a6eeea7643b65d9b5683e4f1ace993}} 
+void {\bfseries Initialize} (int type\+\_\+in, std\+::vector$<$ std\+::string $>$ indexcutbranches, std\+::vector$<$ std\+::vector$<$ std\+::string $>$$>$ linkedbranches, \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$reader\+In, TTree $\ast$distro\+\_\+tree=nullptr)
 \item 
-\mbox{\Hypertarget{classMTreeCut_ac266c8d05a4c23f9db46e8548e1a91a3}\label{classMTreeCut_ac266c8d05a4c23f9db46e8548e1a91a3}} 
-void {\bfseries Set\+Entry\+List} (TEntry\+List $\ast$inelist)
-\item 
-\mbox{\Hypertarget{classMTreeCut_afe1f667e18db1d7bd206136a57e0f24a}\label{classMTreeCut_afe1f667e18db1d7bd206136a57e0f24a}} 
-void {\bfseries Set\+Tree} (TTree $\ast$intree)
-\item 
-\mbox{\Hypertarget{classMTreeCut_a9f59214ca62ab272cf4134a79dae33fc}\label{classMTreeCut_a9f59214ca62ab272cf4134a79dae33fc}} 
-void {\bfseries Set\+Save\+File} (TFile $\ast$outfilein)
+\mbox{\Hypertarget{classMTreeCut_a921137e8a5e0fdf14691ccf3769ceabe}\label{classMTreeCut_a921137e8a5e0fdf14691ccf3769ceabe}} 
+bool {\bfseries Make\+Distro\+Branches} (TTree $\ast$distros\+\_\+tree)
 \item 
 \mbox{\Hypertarget{classMTreeCut_aeb56de9487df8ce6177e94ec89efdf25}\label{classMTreeCut_aeb56de9487df8ce6177e94ec89efdf25}} 
 void {\bfseries Set\+Branch\+Addresses} ()
@@ -39,14 +33,26 @@ void {\bfseries Set\+Branch\+Addresses} ()
 \mbox{\Hypertarget{classMTreeCut_a40b541b9d7d5355e8105df8c713df961}\label{classMTreeCut_a40b541b9d7d5355e8105df8c713df961}} 
 bool {\bfseries Get\+Meta\+Info} ()
 \item 
-\mbox{\Hypertarget{classMTreeCut_a9d87914ce10285c68c9a580494eb0400}\label{classMTreeCut_a9d87914ce10285c68c9a580494eb0400}} 
-bool {\bfseries Enter} (Long64\+\_\+t entry\+\_\+number, TTree $\ast$treeptr=nullptr)
+\mbox{\Hypertarget{classMTreeCut_a7ec4e4670b0cee7f5e5aa8f940036472}\label{classMTreeCut_a7ec4e4670b0cee7f5e5aa8f940036472}} 
+void {\bfseries Set\+Description} (std\+::string desc)
 \item 
-\mbox{\Hypertarget{classMTreeCut_a4607366b9207111e4917c763328f5f02}\label{classMTreeCut_a4607366b9207111e4917c763328f5f02}} 
-bool {\bfseries Enter} (Long64\+\_\+t entry\+\_\+number, size\+\_\+t index, TTree $\ast$treeptr=nullptr)
+\mbox{\Hypertarget{classMTreeCut_a7ecde773c65532190c5cf12dee2177ea}\label{classMTreeCut_a7ecde773c65532190c5cf12dee2177ea}} 
+bool {\bfseries Enter} ()
 \item 
-\mbox{\Hypertarget{classMTreeCut_a37819180e8133516b63a85a3657b8c3e}\label{classMTreeCut_a37819180e8133516b63a85a3657b8c3e}} 
-bool {\bfseries Enter} (Long64\+\_\+t entry\+\_\+number, std\+::vector$<$ size\+\_\+t $>$ \&indices, TTree $\ast$treeptr=nullptr)
+\mbox{\Hypertarget{classMTreeCut_aec77112bcdee2979b2cfb7a21cd916cb}\label{classMTreeCut_aec77112bcdee2979b2cfb7a21cd916cb}} 
+bool {\bfseries Enter} (size\+\_\+t index)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a50fbbe2a8ea3cc547aa185df7e3133ec}\label{classMTreeCut_a50fbbe2a8ea3cc547aa185df7e3133ec}} 
+bool {\bfseries Enter} (std\+::vector$<$ size\+\_\+t $>$ \&indices)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a2b013420d424cd1fe8169d9316afb5ad}\label{classMTreeCut_a2b013420d424cd1fe8169d9316afb5ad}} 
+bool {\bfseries Apply} (double value)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a188c459db161ac3d61ea90a19116d648}\label{classMTreeCut_a188c459db161ac3d61ea90a19116d648}} 
+bool {\bfseries Apply} (double value, size\+\_\+t index)
+\item 
+\mbox{\Hypertarget{classMTreeCut_a7c8601f69c7643f061ffa180da31281c}\label{classMTreeCut_a7c8601f69c7643f061ffa180da31281c}} 
+bool {\bfseries Apply} (double value, std\+::vector$<$ size\+\_\+t $>$ indices)
 \item 
 \mbox{\Hypertarget{classMTreeCut_ac2577f283d13ee98ae144c3648b78ec1}\label{classMTreeCut_ac2577f283d13ee98ae144c3648b78ec1}} 
 bool {\bfseries Flush} ()
@@ -125,6 +131,39 @@ bool {\bfseries Print} ()
 \item 
 \mbox{\Hypertarget{classMTreeCut_af2ac32d8e7fce2751ef6ecd903cbcef9}\label{classMTreeCut_af2ac32d8e7fce2751ef6ecd903cbcef9}} 
 std\+::string {\bfseries Get\+Version} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a441481e18dcb4fe173d88da3c805be70}\label{classMTreeCut_a441481e18dcb4fe173d88da3c805be70}} 
+bool {\bfseries got\+\_\+low\+\_\+thresh} =false
+\item 
+\mbox{\Hypertarget{classMTreeCut_a5f6a34442ac901c299e732233c5b3a2f}\label{classMTreeCut_a5f6a34442ac901c299e732233c5b3a2f}} 
+double {\bfseries low\+\_\+thresh} =DOUBLE\+\_\+\+MIN
+\item 
+\mbox{\Hypertarget{classMTreeCut_a19d61de7bbbb5cda65667ac1ab2e9987}\label{classMTreeCut_a19d61de7bbbb5cda65667ac1ab2e9987}} 
+bool {\bfseries got\+\_\+high\+\_\+thresh} =false
+\item 
+\mbox{\Hypertarget{classMTreeCut_aa3345a174ced4a4124006a933fd1f432}\label{classMTreeCut_aa3345a174ced4a4124006a933fd1f432}} 
+double {\bfseries high\+\_\+thresh} =DOUBLE\+\_\+\+MAX
+\item 
+\mbox{\Hypertarget{classMTreeCut_a11e671785b0f95c4bd570114f2f3a783}\label{classMTreeCut_a11e671785b0f95c4bd570114f2f3a783}} 
+bool {\bfseries got\+\_\+bool\+\_\+req} =false
+\item 
+\mbox{\Hypertarget{classMTreeCut_aff6986d53f7e1cfc97f83548cfe7985e}\label{classMTreeCut_aff6986d53f7e1cfc97f83548cfe7985e}} 
+bool {\bfseries save\+\_\+distros} =false
+\item 
+\mbox{\Hypertarget{classMTreeCut_ac2032fdf5a59116e81972ef3204b259b}\label{classMTreeCut_ac2032fdf5a59116e81972ef3204b259b}} 
+double {\bfseries branch\+\_\+val}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a162a58242a99d9c1f7adb2bcc3c99732}\label{classMTreeCut_a162a58242a99d9c1f7adb2bcc3c99732}} 
+bool {\bfseries pass\+\_\+val}
+\item 
+\mbox{\Hypertarget{classMTreeCut_a1d1f519848bd637d70ad037ed5d00885}\label{classMTreeCut_a1d1f519848bd637d70ad037ed5d00885}} 
+TBranch $\ast$ {\bfseries values\+\_\+branch} =nullptr
+\item 
+\mbox{\Hypertarget{classMTreeCut_a40d095337055a6e0036f5f229a349854}\label{classMTreeCut_a40d095337055a6e0036f5f229a349854}} 
+TBranch $\ast$ {\bfseries pass\+\_\+branch} =nullptr
 \end{DoxyCompactItemize}
 
 

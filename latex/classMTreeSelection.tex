@@ -9,32 +9,44 @@ Inheritance diagram for MTree\+Selection\+:\begin{figure}[H]
 \doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classMTreeSelection_a6a3defe743ffc3fe6b8ed7d87191fa0b}\label{classMTreeSelection_a6a3defe743ffc3fe6b8ed7d87191fa0b}} 
-{\bfseries MTree\+Selection} (\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$treereader, std\+::string fname)
+\mbox{\Hypertarget{classMTreeSelection_a9a3fe5b36d3b709e4439da3e2fb6c189}\label{classMTreeSelection_a9a3fe5b36d3b709e4439da3e2fb6c189}} 
+{\bfseries MTree\+Selection} (\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$treereader, std\+::string fname, std\+::string distrofname=\char`\"{}\char`\"{})
 \item 
 \mbox{\Hypertarget{classMTreeSelection_a243d3f3a25ead2103828a328f2128289}\label{classMTreeSelection_a243d3f3a25ead2103828a328f2128289}} 
 {\bfseries MTree\+Selection} (std\+::string cut\+Filein)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_aeb173a1ee9e858d9f668f774a6351803}\label{classMTreeSelection_aeb173a1ee9e858d9f668f774a6351803}} 
-void {\bfseries Make\+Output\+File} (std\+::string fname)
-\item 
 \mbox{\Hypertarget{classMTreeSelection_a86b9e276ebec98efcc92aa409700402d}\label{classMTreeSelection_a86b9e276ebec98efcc92aa409700402d}} 
 bool {\bfseries Set\+Tree\+Reader} (\mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$treereaderin)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_a841b0c6caa7d00fafec95dddeada4ce3}\label{classMTreeSelection_a841b0c6caa7d00fafec95dddeada4ce3}} 
-void {\bfseries Add\+Cut} (std\+::string cutname)
+\mbox{\Hypertarget{classMTreeSelection_ae7ff5ba7628b853a962b26a6cb59af3d}\label{classMTreeSelection_ae7ff5ba7628b853a962b26a6cb59af3d}} 
+void {\bfseries Make\+Output\+File} (std\+::string fname, std\+::string distrofname=\char`\"{}\char`\"{})
 \item 
-\mbox{\Hypertarget{classMTreeSelection_a998bbfe9b193328e3ef6f3a310871af7}\label{classMTreeSelection_a998bbfe9b193328e3ef6f3a310871af7}} 
-void {\bfseries Add\+Cut} (std\+::string cutname, std\+::string branchname)
+\mbox{\Hypertarget{classMTreeSelection_a9f7b51e770380d1d59a3c7d6eff1f858}\label{classMTreeSelection_a9f7b51e770380d1d59a3c7d6eff1f858}} 
+bool {\bfseries Note\+Cut} (std\+::string cutname, std\+::string description, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_a1bbb08413012909a28fb60c781154252}\label{classMTreeSelection_a1bbb08413012909a28fb60c781154252}} 
-void {\bfseries Add\+Cut} (std\+::string cutname, std\+::vector$<$ std\+::string $>$ branchnames)
+\mbox{\Hypertarget{classMTreeSelection_a777bd9cf13ad18bb9e2cdce689a0d0d2}\label{classMTreeSelection_a777bd9cf13ad18bb9e2cdce689a0d0d2}} 
+bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a9d4136137b679c1b11a8fd7eabb3e112}\label{classMTreeSelection_a9d4136137b679c1b11a8fd7eabb3e112}} 
+bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, std\+::string branchname, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aed95c145b13b13c6b9abd77f60003956}\label{classMTreeSelection_aed95c145b13b13c6b9abd77f60003956}} 
+bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, std\+::vector$<$ std\+::string $>$ branchnames, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aca748ac8d0b55a98a92d9b0d660eb56b}\label{classMTreeSelection_aca748ac8d0b55a98a92d9b0d660eb56b}} 
+bool {\bfseries Check\+Cut} (std\+::string cutname)
 \item 
 \mbox{\Hypertarget{classMTreeSelection_a182f1bba37f1ee4a1f30771fe0c119c6}\label{classMTreeSelection_a182f1bba37f1ee4a1f30771fe0c119c6}} 
 void {\bfseries Increment\+Event\+Count} (std\+::string cutname)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_ae8486622887b69099b0fb5a40dbfb595}\label{classMTreeSelection_ae8486622887b69099b0fb5a40dbfb595}} 
-bool {\bfseries Note\+Cut} (std\+::string cutname)
+\mbox{\Hypertarget{classMTreeSelection_a947634c16c639718ac0e0cef735b9b22}\label{classMTreeSelection_a947634c16c639718ac0e0cef735b9b22}} 
+bool {\bfseries Apply\+Cut} (std\+::string cutname, double val)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a743bd0f3778ee9a766707d55aa98a685}\label{classMTreeSelection_a743bd0f3778ee9a766707d55aa98a685}} 
+bool {\bfseries Apply\+Cut} (std\+::string cutname, double val, size\+\_\+t index)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_aa430211662a9d18ff19bc29d800e6694}\label{classMTreeSelection_aa430211662a9d18ff19bc29d800e6694}} 
+bool {\bfseries Apply\+Cut} (std\+::string cutname, double val, std\+::vector$<$ size\+\_\+t $>$ indices)
 \item 
 \mbox{\Hypertarget{classMTreeSelection_a08cef92f272900e46d1fcf17eeeb6958}\label{classMTreeSelection_a08cef92f272900e46d1fcf17eeeb6958}} 
 bool {\bfseries Add\+Passing\+Event} (std\+::string cutname)
@@ -44,15 +56,6 @@ bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, size\+\_\+t index)
 \item 
 \mbox{\Hypertarget{classMTreeSelection_a957a4d213c79ae6c11790cca94b4efb6}\label{classMTreeSelection_a957a4d213c79ae6c11790cca94b4efb6}} 
 bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, std\+::vector$<$ size\+\_\+t $>$ indices)
-\item 
-\mbox{\Hypertarget{classMTreeSelection_a1d454de8df7c53ddd105d814a454fe12}\label{classMTreeSelection_a1d454de8df7c53ddd105d814a454fe12}} 
-bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, TTree $\ast$thetree, Long64\+\_\+t entry\+\_\+number)
-\item 
-\mbox{\Hypertarget{classMTreeSelection_a0d43811a85a351d9ad36f1017837254e}\label{classMTreeSelection_a0d43811a85a351d9ad36f1017837254e}} 
-bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, TTree $\ast$thetree, Long64\+\_\+t entry\+\_\+number, std\+::string branchname, size\+\_\+t index)
-\item 
-\mbox{\Hypertarget{classMTreeSelection_ad407b149f970027a2be4c7e006ead44e}\label{classMTreeSelection_ad407b149f970027a2be4c7e006ead44e}} 
-bool {\bfseries Add\+Passing\+Event} (std\+::string cutname, TTree $\ast$thetree, Long64\+\_\+t entry\+\_\+number, std\+::vector$<$ std\+::string $>$ branchnames, std\+::vector$<$ size\+\_\+t $>$ indices)
 \item 
 \mbox{\Hypertarget{classMTreeSelection_a5350b566543a59f1158fc7427f358ce3}\label{classMTreeSelection_a5350b566543a59f1158fc7427f358ce3}} 
 std\+::string {\bfseries Branch\+Address\+To\+Name} (intptr\+\_\+t branchptr)

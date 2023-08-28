@@ -65,6 +65,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="classMTreeCut-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">MTreeCut Class Reference</div>  </div>
@@ -79,45 +80,51 @@ Inheritance diagram for MTreeCut:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a23f520549ff7dd301894cab359242799"><td class="memItemLeft" align="right" valign="top"><a id="a23f520549ff7dd301894cab359242799"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>MTreeCut</b> (TFile *outfilein, std::string cutname)</td></tr>
-<tr class="separator:a23f520549ff7dd301894cab359242799"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1887943849c46c8ca7b90a4e5a945a4a"><td class="memItemLeft" align="right" valign="top"><a id="a1887943849c46c8ca7b90a4e5a945a4a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>MTreeCut</b> (TFile *outfilein, std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
+<tr class="separator:a1887943849c46c8ca7b90a4e5a945a4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af58bf1c07a56e67ca134caf3ca839ca8"><td class="memItemLeft" align="right" valign="top"><a id="af58bf1c07a56e67ca134caf3ca839ca8"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>MTreeCut</b> (std::string cutname, TEntryList *inelist, TTree *intree)</td></tr>
 <tr class="separator:af58bf1c07a56e67ca134caf3ca839ca8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a713c591bec6cf8fe7d7cc5d8ee11717b"><td class="memItemLeft" align="right" valign="top"><a id="a713c591bec6cf8fe7d7cc5d8ee11717b"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (int type_in)</td></tr>
-<tr class="separator:a713c591bec6cf8fe7d7cc5d8ee11717b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ac3becc04ea90dee48f3fb4c7d067df"><td class="memItemLeft" align="right" valign="top"><a id="a5ac3becc04ea90dee48f3fb4c7d067df"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (int type_in, std::string indexcutbranch, std::vector&lt; std::string &gt; linkedbranches)</td></tr>
-<tr class="separator:a5ac3becc04ea90dee48f3fb4c7d067df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a118704b439ef69f7ea9b79a68c0bd536"><td class="memItemLeft" align="right" valign="top"><a id="a118704b439ef69f7ea9b79a68c0bd536"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (int type_in, std::vector&lt; std::string &gt; indexcutbranches, std::vector&lt; std::vector&lt; std::string &gt;&gt; linkedbranches)</td></tr>
-<tr class="separator:a118704b439ef69f7ea9b79a68c0bd536"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac266c8d05a4c23f9db46e8548e1a91a3"><td class="memItemLeft" align="right" valign="top"><a id="ac266c8d05a4c23f9db46e8548e1a91a3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetEntryList</b> (TEntryList *inelist)</td></tr>
-<tr class="separator:ac266c8d05a4c23f9db46e8548e1a91a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe1f667e18db1d7bd206136a57e0f24a"><td class="memItemLeft" align="right" valign="top"><a id="afe1f667e18db1d7bd206136a57e0f24a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetTree</b> (TTree *intree)</td></tr>
-<tr class="separator:afe1f667e18db1d7bd206136a57e0f24a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f59214ca62ab272cf4134a79dae33fc"><td class="memItemLeft" align="right" valign="top"><a id="a9f59214ca62ab272cf4134a79dae33fc"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>SetSaveFile</b> (TFile *outfilein)</td></tr>
-<tr class="separator:a9f59214ca62ab272cf4134a79dae33fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addaae97d01d3116cc2fc6c80b352b827"><td class="memItemLeft" align="right" valign="top"><a id="addaae97d01d3116cc2fc6c80b352b827"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (int type_in, <a class="el" href="classMTreeReader.html">MTreeReader</a> *readerIn, TTree *distro_tree=nullptr)</td></tr>
+<tr class="separator:addaae97d01d3116cc2fc6c80b352b827"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3916bd91b9907578431d536d2b493ee3"><td class="memItemLeft" align="right" valign="top"><a id="a3916bd91b9907578431d536d2b493ee3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (int type_in, std::string indexcutbranch, std::vector&lt; std::string &gt; linkedbranches, <a class="el" href="classMTreeReader.html">MTreeReader</a> *readerIn, TTree *distro_tree=nullptr)</td></tr>
+<tr class="separator:a3916bd91b9907578431d536d2b493ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1a6eeea7643b65d9b5683e4f1ace993"><td class="memItemLeft" align="right" valign="top"><a id="ad1a6eeea7643b65d9b5683e4f1ace993"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Initialize</b> (int type_in, std::vector&lt; std::string &gt; indexcutbranches, std::vector&lt; std::vector&lt; std::string &gt;&gt; linkedbranches, <a class="el" href="classMTreeReader.html">MTreeReader</a> *readerIn, TTree *distro_tree=nullptr)</td></tr>
+<tr class="separator:ad1a6eeea7643b65d9b5683e4f1ace993"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a921137e8a5e0fdf14691ccf3769ceabe"><td class="memItemLeft" align="right" valign="top"><a id="a921137e8a5e0fdf14691ccf3769ceabe"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>MakeDistroBranches</b> (TTree *distros_tree)</td></tr>
+<tr class="separator:a921137e8a5e0fdf14691ccf3769ceabe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb56de9487df8ce6177e94ec89efdf25"><td class="memItemLeft" align="right" valign="top"><a id="aeb56de9487df8ce6177e94ec89efdf25"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>SetBranchAddresses</b> ()</td></tr>
 <tr class="separator:aeb56de9487df8ce6177e94ec89efdf25"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40b541b9d7d5355e8105df8c713df961"><td class="memItemLeft" align="right" valign="top"><a id="a40b541b9d7d5355e8105df8c713df961"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>GetMetaInfo</b> ()</td></tr>
 <tr class="separator:a40b541b9d7d5355e8105df8c713df961"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d87914ce10285c68c9a580494eb0400"><td class="memItemLeft" align="right" valign="top"><a id="a9d87914ce10285c68c9a580494eb0400"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Enter</b> (Long64_t entry_number, TTree *treeptr=nullptr)</td></tr>
-<tr class="separator:a9d87914ce10285c68c9a580494eb0400"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4607366b9207111e4917c763328f5f02"><td class="memItemLeft" align="right" valign="top"><a id="a4607366b9207111e4917c763328f5f02"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Enter</b> (Long64_t entry_number, size_t index, TTree *treeptr=nullptr)</td></tr>
-<tr class="separator:a4607366b9207111e4917c763328f5f02"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37819180e8133516b63a85a3657b8c3e"><td class="memItemLeft" align="right" valign="top"><a id="a37819180e8133516b63a85a3657b8c3e"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>Enter</b> (Long64_t entry_number, std::vector&lt; size_t &gt; &amp;indices, TTree *treeptr=nullptr)</td></tr>
-<tr class="separator:a37819180e8133516b63a85a3657b8c3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ec4e4670b0cee7f5e5aa8f940036472"><td class="memItemLeft" align="right" valign="top"><a id="a7ec4e4670b0cee7f5e5aa8f940036472"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>SetDescription</b> (std::string desc)</td></tr>
+<tr class="separator:a7ec4e4670b0cee7f5e5aa8f940036472"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ecde773c65532190c5cf12dee2177ea"><td class="memItemLeft" align="right" valign="top"><a id="a7ecde773c65532190c5cf12dee2177ea"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Enter</b> ()</td></tr>
+<tr class="separator:a7ecde773c65532190c5cf12dee2177ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec77112bcdee2979b2cfb7a21cd916cb"><td class="memItemLeft" align="right" valign="top"><a id="aec77112bcdee2979b2cfb7a21cd916cb"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Enter</b> (size_t index)</td></tr>
+<tr class="separator:aec77112bcdee2979b2cfb7a21cd916cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50fbbe2a8ea3cc547aa185df7e3133ec"><td class="memItemLeft" align="right" valign="top"><a id="a50fbbe2a8ea3cc547aa185df7e3133ec"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Enter</b> (std::vector&lt; size_t &gt; &amp;indices)</td></tr>
+<tr class="separator:a50fbbe2a8ea3cc547aa185df7e3133ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b013420d424cd1fe8169d9316afb5ad"><td class="memItemLeft" align="right" valign="top"><a id="a2b013420d424cd1fe8169d9316afb5ad"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Apply</b> (double value)</td></tr>
+<tr class="separator:a2b013420d424cd1fe8169d9316afb5ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a188c459db161ac3d61ea90a19116d648"><td class="memItemLeft" align="right" valign="top"><a id="a188c459db161ac3d61ea90a19116d648"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Apply</b> (double value, size_t index)</td></tr>
+<tr class="separator:a188c459db161ac3d61ea90a19116d648"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c8601f69c7643f061ffa180da31281c"><td class="memItemLeft" align="right" valign="top"><a id="a7c8601f69c7643f061ffa180da31281c"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>Apply</b> (double value, std::vector&lt; size_t &gt; indices)</td></tr>
+<tr class="separator:a7c8601f69c7643f061ffa180da31281c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2577f283d13ee98ae144c3648b78ec1"><td class="memItemLeft" align="right" valign="top"><a id="ac2577f283d13ee98ae144c3648b78ec1"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>Flush</b> ()</td></tr>
 <tr class="separator:ac2577f283d13ee98ae144c3648b78ec1"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -197,6 +204,39 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Print</b> ()</td></tr
 <tr class="memitem:af2ac32d8e7fce2751ef6ecd903cbcef9"><td class="memItemLeft" align="right" valign="top"><a id="af2ac32d8e7fce2751ef6ecd903cbcef9"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>GetVersion</b> ()</td></tr>
 <tr class="separator:af2ac32d8e7fce2751ef6ecd903cbcef9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a441481e18dcb4fe173d88da3c805be70"><td class="memItemLeft" align="right" valign="top"><a id="a441481e18dcb4fe173d88da3c805be70"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>got_low_thresh</b> =false</td></tr>
+<tr class="separator:a441481e18dcb4fe173d88da3c805be70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f6a34442ac901c299e732233c5b3a2f"><td class="memItemLeft" align="right" valign="top"><a id="a5f6a34442ac901c299e732233c5b3a2f"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>low_thresh</b> =DOUBLE_MIN</td></tr>
+<tr class="separator:a5f6a34442ac901c299e732233c5b3a2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19d61de7bbbb5cda65667ac1ab2e9987"><td class="memItemLeft" align="right" valign="top"><a id="a19d61de7bbbb5cda65667ac1ab2e9987"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>got_high_thresh</b> =false</td></tr>
+<tr class="separator:a19d61de7bbbb5cda65667ac1ab2e9987"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3345a174ced4a4124006a933fd1f432"><td class="memItemLeft" align="right" valign="top"><a id="aa3345a174ced4a4124006a933fd1f432"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>high_thresh</b> =DOUBLE_MAX</td></tr>
+<tr class="separator:aa3345a174ced4a4124006a933fd1f432"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11e671785b0f95c4bd570114f2f3a783"><td class="memItemLeft" align="right" valign="top"><a id="a11e671785b0f95c4bd570114f2f3a783"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>got_bool_req</b> =false</td></tr>
+<tr class="separator:a11e671785b0f95c4bd570114f2f3a783"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff6986d53f7e1cfc97f83548cfe7985e"><td class="memItemLeft" align="right" valign="top"><a id="aff6986d53f7e1cfc97f83548cfe7985e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>save_distros</b> =false</td></tr>
+<tr class="separator:aff6986d53f7e1cfc97f83548cfe7985e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2032fdf5a59116e81972ef3204b259b"><td class="memItemLeft" align="right" valign="top"><a id="ac2032fdf5a59116e81972ef3204b259b"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>branch_val</b></td></tr>
+<tr class="separator:ac2032fdf5a59116e81972ef3204b259b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a162a58242a99d9c1f7adb2bcc3c99732"><td class="memItemLeft" align="right" valign="top"><a id="a162a58242a99d9c1f7adb2bcc3c99732"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>pass_val</b></td></tr>
+<tr class="separator:a162a58242a99d9c1f7adb2bcc3c99732"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d1f519848bd637d70ad037ed5d00885"><td class="memItemLeft" align="right" valign="top"><a id="a1d1f519848bd637d70ad037ed5d00885"></a>
+TBranch *&#160;</td><td class="memItemRight" valign="bottom"><b>values_branch</b> =nullptr</td></tr>
+<tr class="separator:a1d1f519848bd637d70ad037ed5d00885"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40d095337055a6e0036f5f229a349854"><td class="memItemLeft" align="right" valign="top"><a id="a40d095337055a6e0036f5f229a349854"></a>
+TBranch *&#160;</td><td class="memItemRight" valign="bottom"><b>pass_branch</b> =nullptr</td></tr>
+<tr class="separator:a40d095337055a6e0036f5f229a349854"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>DataModel/<a class="el" href="MTreeCut_8h_source.html">MTreeCut.h</a></li>
