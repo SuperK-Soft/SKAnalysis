@@ -1609,6 +1609,16 @@ bool PrintEvent::PrintHeaderInfo(){
 	NT48SK was unstable at start of SKIV, so instead a PREVT0 branch is added.
 	*/
 	
+	// alternatively(?) we have counter_32 and it0sk... not sure how these relate to nt48sk.
+	// but apparently together these represent a 47-bit (not 48?) clock that runs at 1.92 ticks per ns
+	// (#defined as COUNT_PER_NSEC)
+	// this resets when a new run is manually started (automaton run changes do not reset it).
+	// the upper 32 bits of this clock are in skheadqb_.nevhwsk
+	// the lower 15 bits are in the lower 15 bits of it0sk.
+	// XXX what are the upper bits of it0sk? are they meaningful? or filled?
+	// XXX can we relate this 47-bit clock to an absolute time?
+	// does 0 ticks align with a similiarly precise timestamp defined elsewhere?
+	
 	int runMode = myHeader->mdrnsk;           // skhead_.mdrnsk == RunInfo::run_mode
 	std::cout<<"This run was a "<<RunModeToName(runMode)<<" run"<<std::endl;
 	

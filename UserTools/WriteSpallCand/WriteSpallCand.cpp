@@ -49,11 +49,11 @@ bool WriteSpallCand::Execute(){
 	
 	for(int writeEvent = 0; writeEvent < m_data->writeOutRelics.size(); writeEvent++){
 		int currentEntry = myTreeReader->GetEntryNumber();
-		if(m_data->writeOutRelics[writeEvent].EntryNumber != currentEntry){
+		if(m_data->writeOutRelics[writeEvent].InEntryNumber != currentEntry){
 			// don't use this anymore. m_data->GetTreeEntry(treeReaderName, entryNum) has now been added and 
 			// can be used instead
 			//myTreeReader->GetEntry(m_data->writeOutRelics[writeEvent]);
-			m_data->getTreeEntry(treeReaderName, m_data->writeOutRelics[writeEvent].EntryNumber);
+			m_data->getTreeEntry(treeReaderName, m_data->writeOutRelics[writeEvent].InEntryNumber);
 		}
 		int io = 1;
 		

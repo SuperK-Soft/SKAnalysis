@@ -1,0 +1,8 @@
+verbosity 1
+inputFile ~/disk02/test_jacks.root
+#FileListName MyFileList
+
+treeName mu
+readerName muReader
+skFile 0
+maxEntries -1                       # max num input entries to process

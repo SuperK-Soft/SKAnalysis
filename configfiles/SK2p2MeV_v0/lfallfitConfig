@@ -1,0 +1,4 @@
+verbosity 1
+readerName sk2p2mevReader
+StepsToPerform 0   # 0=everything, 1=energy only, 2=everything except vertex? (energy, clik, msg, etc)
+#hitLimitForClusfit 800

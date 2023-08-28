@@ -2,6 +2,7 @@
 #include "ConnectionTable.h"
 #include "skheadC.h" // for skheadg_.sk_geometry needed to construct the ConnectionTable
 #include "fortran_routines.h"
+#include "MTreeReader.h"
 
 DataModel* DataModel::thisptr=0;
 
@@ -178,7 +179,7 @@ MTreeReader* DataModel::GetTreeReader(){
 	return nullptr;
 }
 
-int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
+int DataModel::getTreeEntry(std::string ReaderName, long entrynum, bool justdoit){
 	if(ReaderName==""){
 		// if no name given but we have only one TreeReader Tool, use that
 		if(getEntrys.size()) ReaderName = getEntrys.begin()->first;
@@ -189,6 +190,10 @@ int DataModel::getTreeEntry(std::string ReaderName, long entrynum){
 		// to a Tree which is being actively written by an upstream Tool, so we can't have users
 		// switching events
 		if(getEntrys.at(ReaderName)){
+			// skip if they've asked for the currently loaded entry, unless forced
+			if(!justdoit && Trees.at(ReaderName)->GetEntryNumber()==entrynum){
+				return true;
+			}
 			return getEntrys.at(ReaderName)(entrynum);
 		} else {
 			std::cerr<<"DataModel::getTreeEntry is not available for treeReader "<<ReaderName

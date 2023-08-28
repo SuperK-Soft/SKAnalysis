@@ -17,3 +17,4 @@ triggerMasks 28 29                                # only pass on SHE (28) and AF
 SK_GEOMETRY 6
 skoptn 31,30,25                                   # add 26 to read bad ch from data file
 skbadchrun 85609                                  # reference run for SK6 from SKG4 template macro
+referenceWaterRun 85609                           # reference run for water transparency

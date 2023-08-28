@@ -79,12 +79,12 @@ enum class TriggerType{
 };
 
 enum class muboy_classes{
-	misfit=0,
-	single_thru_going=1,
-	single_stopping=2,
-	multiple_mu_1=3,
-	multiple_mu_2=4,
-	corner_clipper=5
+	misfit=0,            // too few valid hits (<10) after cuts
+	single_thru_going=1, // good confidence in single throughgoing
+	single_stopping=2,   // 
+	multiple_mu_1=3,     // Scott says: "80% of multiple muons are this type..."
+	multiple_mu_2=4,     // "...and 20% are of this type". What is the difference??
+	corner_clipper=5     // 
 };
 
 namespace constants{
@@ -490,7 +490,17 @@ namespace constants{
 		{muboy_classes::single_thru_going,"single_thru_going"},
 		{muboy_classes::single_stopping,"single_stopping"},
 		{muboy_classes::multiple_mu_1,"multiple_mu_1"},
-		{muboy_classes::multiple_mu_2,"multiple_mu_2"}
+		{muboy_classes::multiple_mu_2,"multiple_mu_2"},
+		{muboy_classes::corner_clipper,"corner_clipper"}
+	};
+	
+	const std::map<std::string,muboy_classes> muboy_name_to_class{
+		{"misfit",muboy_classes::misfit},
+		{"single_thru_going",muboy_classes::single_thru_going},
+		{"single_stopping",muboy_classes::single_stopping},
+		{"multiple_mu_1",muboy_classes::multiple_mu_1},
+		{"multiple_mu_2",muboy_classes::multiple_mu_2},
+		{"corner_clipper",muboy_classes::corner_clipper}
 	};
 	
 	const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();
@@ -615,14 +625,6 @@ namespace constants{
 	// TODO TParticleTable allows a 'DecayList' of daughter nuclides
 	// could we use this to connect daughter nuclei to their parent?
 	// we will probably need to build this decay list ourselves though.
-	
-	const std::map<std::string,muboy_classes> muboy_name_to_class{
-		{"misfit",muboy_classes::misfit},
-		{"single_thru_going",muboy_classes::single_thru_going},
-		{"single_stopping",muboy_classes::single_stopping},
-		{"multiple_mu_1",muboy_classes::multiple_mu_1},
-		{"multiple_mu_2",muboy_classes::multiple_mu_2}
-	};
 	
 	static const std::map<int, std::string> Trigger_ID_To_Trigger{
 		// from skheadC.h

@@ -1,0 +1,3 @@
+relicReader TreeReader configfiles/MakeSpallVariables/relicReaderConfig
+muReader TreeReader configfiles/MakeSpallVariables/muReaderConfig
+RelicMuPlots RelicMuonPlots configfiles/MakeSpallVariables/RelicMuonPlotsConfig

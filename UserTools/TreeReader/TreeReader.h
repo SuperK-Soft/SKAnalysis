@@ -46,6 +46,10 @@ class TreeReader: public Tool {
 	void PrintTriggerBits();
 	int LoadConfig(std::string configfile);
 	void CloseLUN();
+	// triggered on detection of a change in run/subrun numbers
+	bool RunChange();
+	bool SubrunChange();
+	bool SkipThisRun(); // skip the current run (called if bad)
 	
 	void PrintSubTriggers();
 	
@@ -76,6 +80,8 @@ class TreeReader: public Tool {
 	int entriesPerExecute=1;          // alternatively, read and buffer N entries per Execute call
 	std::vector<int> allowedTriggers; // one of these trigger bits must be set to return an entry
 	std::vector<int> skippedTriggers; // if any of these bits are set the entry will be skipped
+	bool skipbadruns=false;           // should we try to skip any runs identified as bad by lfbadrun?
+	int reference_watert_run=-1;      // run to use for water transparency (for use with MC)
 	
 	std::vector<std::string> list_of_files;
 	
@@ -100,6 +106,10 @@ class TreeReader: public Tool {
 	int FlushCommons();
 	bool LoadCommons(int buffer_i);
 	bool LoadNextZbsFile();
+	
+	// keep track of run and subrun so we can notify on changes
+	int last_nrunsk=0;
+	int last_nsubsk=0;
 	
 	// common blocks to buffer
 	// =======================

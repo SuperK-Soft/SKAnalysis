@@ -98,7 +98,7 @@ class DataModel {
   // This function is used to register a TreeReader tool's member functions with the DataModel,
   // which provides access from other Tools
   bool RegisterReader(std::string readerName, MTreeReader* reader, std::function<bool()> hasAFT={}, std::function<bool()> loadSHE={}, std::function<bool()> loadAFT={}, std::function<bool(int)> loadCommon={}, std::function<int(long)> getTreeEntry={});
-  int getTreeEntry(std::string ReaderName="", long entrynum=0);
+  int getTreeEntry(std::string ReaderName="", long entrynum=0, bool justdoit=false);
   // These retain function pointers to call the corresponding TreeReader functions.
   // The TreeReader instance is obtained from the name specified in their config file.
   bool HasAFT(std::string ReaderName="");

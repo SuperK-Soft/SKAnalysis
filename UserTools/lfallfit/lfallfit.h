@@ -8,8 +8,6 @@
 #include "Tool.h"
 #include "SkrootHeaders.h" // MCInfo, Header etc.
 
-#include "basic_array.h"
-
 /**
 * \class lfallfit
 *
@@ -28,29 +26,12 @@ class lfallfit: public Tool {
 	bool Finalise();  ///< Finalise funciton used to clean up resources.
 	
 	private:
-	// functions
-	// =========
-	
-	// tool variables
-	// ==============
-	
-	int nread=0;                     // just track num loops for printing
-	int nrunsk_last=0;               // to know when to read in new transparency data at start of each new run
-	int nsubsk_last=0;               // same for new badch list, loaded on new run and subrun
-	float watert;                    // water transparency
-	int reference_watert_run=85609;  // reference run for water properties if MC
-	
-	// variables to read in
-	// ====================
+	int nread=0;  // track num loops for printing
 	std::string readerName="";
 	int lun=0;
 	bool MC=false;
-	int writeout=0;
-	bool delete_outside_hits=false;
-	
-	// variables to write out
-	// ======================
-	
+	int NHITCUT;
+	int flag_skip=0;   // what reconstruction steps to do (or what to skip). Default (0): everything.
 };
 
 
