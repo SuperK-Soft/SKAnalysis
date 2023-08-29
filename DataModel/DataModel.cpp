@@ -179,7 +179,7 @@ MTreeReader* DataModel::GetTreeReader(){
 	return nullptr;
 }
 
-int DataModel::getTreeEntry(std::string ReaderName, long entrynum, bool justdoit){
+int DataModel::getTreeEntry(std::string ReaderName, long entrynum, bool reloadevenifcurrententry){
 	if(ReaderName==""){
 		// if no name given but we have only one TreeReader Tool, use that
 		if(getEntrys.size()) ReaderName = getEntrys.begin()->first;
@@ -191,7 +191,7 @@ int DataModel::getTreeEntry(std::string ReaderName, long entrynum, bool justdoit
 		// switching events
 		if(getEntrys.at(ReaderName)){
 			// skip if they've asked for the currently loaded entry, unless forced
-			if(!justdoit && Trees.at(ReaderName)->GetEntryNumber()==entrynum){
+			if(!reloadevenifcurrententry && Trees.at(ReaderName)->GetEntryNumber()==entrynum){
 				return true;
 			}
 			return getEntrys.at(ReaderName)(entrynum);

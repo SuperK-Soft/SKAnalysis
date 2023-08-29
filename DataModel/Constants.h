@@ -485,7 +485,7 @@ namespace constants{
 		{52, "NC elastic"}
 	};
 	
-	const std::map<muboy_classes,std::string> muboy_class_to_name{
+	static const std::map<muboy_classes,std::string> muboy_class_to_name{
 		{muboy_classes::misfit,"misfit"},
 		{muboy_classes::single_thru_going,"single_thru_going"},
 		{muboy_classes::single_stopping,"single_stopping"},
@@ -494,7 +494,7 @@ namespace constants{
 		{muboy_classes::corner_clipper,"corner_clipper"}
 	};
 	
-	const std::map<std::string,muboy_classes> muboy_name_to_class{
+	static const std::map<std::string,muboy_classes> muboy_name_to_class{
 		{"misfit",muboy_classes::misfit},
 		{"single_thru_going",muboy_classes::single_thru_going},
 		{"single_stopping",muboy_classes::single_stopping},
@@ -503,7 +503,7 @@ namespace constants{
 		{"corner_clipper",muboy_classes::corner_clipper}
 	};
 	
-	const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();
+	static const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();
 	/* populating this is now done in pdg_to_name_nuclei.cc, as its real big
 	static const std::map<int,std::string> pdg_to_string{
 		// FIXME use TParticlePDG for greater coverage, but need to add nuclei
