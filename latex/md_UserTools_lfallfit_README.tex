@@ -1,11 +1,9 @@
-lf\+\_\+allfit\+\_\+new\hypertarget{md_UserTools_lfallfit_README_autotoc_md30}{}\doxysection{Data}\label{md_UserTools_lfallfit_README_autotoc_md30}
-Describe any data formats lf\+\_\+allfit\+\_\+new creates, destroys, changes, analyzes, or its usage.\hypertarget{md_UserTools_lfallfit_README_autotoc_md31}{}\doxysection{Configuration}\label{md_UserTools_lfallfit_README_autotoc_md31}
-Describe any configuration variables for lf\+\_\+allfit\+\_\+new.
+This is a Tool wrapper for the various different lfallfit functions. It chooses an appropriate version based on the SK geometry (phase), and whether the input is MC or data. For SK-\/\+IV, it currently uses {\ttfamily lfallfit\+\_\+sk4\+\_\+final\+\_\+qe43\+\_\+mc\+\_\+} for MC and {\ttfamily lfallfit\+\_\+sk4\+\_\+final\+\_\+qe43\+\_\+} for data. These are currently hard-\/coded, so comment out the one you want (or add a config variable to control it).\hypertarget{md_UserTools_lfallfit_README_autotoc_md30}{}\doxysection{Data}\label{md_UserTools_lfallfit_README_autotoc_md30}
+Hits from the {\ttfamily skt\+\_\+}, {\ttfamily skq\+\_\+} and {\ttfamily skchnl\+\_\+} common block, which should be populated for any kind of SK file. Also relies on the water transparency, which should be automatically updated by the \mbox{\hyperlink{classTreeReader}{Tree\+Reader}}. For MC, you should provide a a suitable value for the \mbox{\hyperlink{classTreeReader}{Tree\+Reader}} config file variable {\ttfamily reference\+Water\+Run}.\hypertarget{md_UserTools_lfallfit_README_autotoc_md31}{}\doxysection{Configuration}\label{md_UserTools_lfallfit_README_autotoc_md31}
 
-
-\begin{DoxyCode}{0}
-\DoxyCodeLine{param1 value1}
-\DoxyCodeLine{param2 value2}
-
-\end{DoxyCode}
- 
+\begin{DoxyItemize}
+\item {\ttfamily verbosity}\+: how verbose to be
+\item {\ttfamily reader\+Name}\+: name of a \mbox{\hyperlink{classTreeReader}{Tree\+Reader}} Tool which is reading the input events to reconstruct.
+\item {\ttfamily hit\+Limit\+For\+Clusfit} (aka NHITCUT)\+: Maximum number of hits for clusfit to be attempted. Above this, lfallfit skips the clusfit pre-\/fit step and goes straight to bonsai.
+\item {\ttfamily Steps\+To\+Perform} (aka flag\+\_\+skip in lfallfit)\+: 0 (default)\+: do everything (vertex, direction, distance to wall, energy, clik pattern likelihood, etc. 1\+: just recalculate energy and related variables 2\+: recalculate energy, clik, msg and related variables 
+\end{DoxyItemize}

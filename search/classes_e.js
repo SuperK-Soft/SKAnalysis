@@ -1,13 +1,14 @@
 var searchData=
 [
-  ['readhits_328',['ReadHits',['../classReadHits.html',1,'']]],
-  ['readmcinfo_329',['ReadMCInfo',['../classReadMCInfo.html',1,'']]],
-  ['readmcparticles_330',['ReadMCParticles',['../classReadMCParticles.html',1,'']]],
-  ['reconstructmatchedmuons_331',['ReconstructMatchedMuons',['../classReconstructMatchedMuons.html',1,'']]],
-  ['reliccandidates_332',['RelicCandidates',['../classRelicCandidates.html',1,'']]],
-  ['relicmuonmatching_333',['RelicMuonMatching',['../classRelicMuonMatching.html',1,'']]],
-  ['results_5ft_334',['results_t',['../structresults__t.html',1,'']]],
-  ['rob_335',['Rob',['../structRob.html',1,'']]],
-  ['rootreadtest_336',['RootReadTest',['../classRootReadTest.html',1,'']]],
-  ['runwiseenergycut_337',['RunwiseEnergyCut',['../classRunwiseEnergyCut.html',1,'']]]
+  ['readhits_330',['ReadHits',['../classReadHits.html',1,'']]],
+  ['readmcinfo_331',['ReadMCInfo',['../classReadMCInfo.html',1,'']]],
+  ['readmcparticles_332',['ReadMCParticles',['../classReadMCParticles.html',1,'']]],
+  ['reconstructmatchedmuons_333',['ReconstructMatchedMuons',['../classReconstructMatchedMuons.html',1,'']]],
+  ['reliccandidates_334',['RelicCandidates',['../classRelicCandidates.html',1,'']]],
+  ['relicmuonmatching_335',['RelicMuonMatching',['../classRelicMuonMatching.html',1,'']]],
+  ['relicmuonplots_336',['RelicMuonPlots',['../classRelicMuonPlots.html',1,'']]],
+  ['results_5ft_337',['results_t',['../structresults__t.html',1,'']]],
+  ['rob_338',['Rob',['../structRob.html',1,'']]],
+  ['rootreadtest_339',['RootReadTest',['../classRootReadTest.html',1,'']]],
+  ['runwiseenergycut_340',['RunwiseEnergyCut',['../classRunwiseEnergyCut.html',1,'']]]
 ];

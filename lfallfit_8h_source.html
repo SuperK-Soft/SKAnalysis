@@ -79,49 +79,30 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;SkrootHeaders.h&quot;</span> <span class="comment">// MCInfo, Header etc.</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;basic_array.h&quot;</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
-<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="classlfallfit.html">   22</a></span>&#160;<span class="keyword">class </span><a class="code" href="classlfallfit.html">lfallfit</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <a class="code" href="classlfallfit.html#a839b4a3b28f25c51ec50b1bab271ebb5">lfallfit</a>();         </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classlfallfit.html#aec914298ef655307ff219f34a439ffdd">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classlfallfit.html#a36e2be382953c3f60ac6a1faeefeb3bd">Execute</a>();   </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classlfallfit.html#aa187cb37c53929600123af8272129eb4">Finalise</a>();  </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="comment">// functions</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="comment">// =========</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="comment">// tool variables</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="comment">// ==============</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordtype">int</span> nread=0;                     <span class="comment">// just track num loops for printing</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">int</span> nrunsk_last=0;               <span class="comment">// to know when to read in new transparency data at start of each new run</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">int</span> nsubsk_last=0;               <span class="comment">// same for new badch list, loaded on new run and subrun</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">float</span> watert;                    <span class="comment">// water transparency</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> reference_watert_run=85609;  <span class="comment">// reference run for water properties if MC</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="comment">// variables to read in</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="comment">// ====================</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    std::string readerName=<span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">int</span> lun=0;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">bool</span> MC=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">int</span> writeout=0;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">bool</span> delete_outside_hits=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="comment">// variables to write out</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="comment">// ======================</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;};</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="classlfallfit.html">   20</a></span>&#160;<span class="keyword">class </span><a class="code" href="classlfallfit.html">lfallfit</a>: <span class="keyword">public</span> Tool {</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <a class="code" href="classlfallfit.html#a839b4a3b28f25c51ec50b1bab271ebb5">lfallfit</a>();         </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classlfallfit.html#aec914298ef655307ff219f34a439ffdd">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classlfallfit.html#a36e2be382953c3f60ac6a1faeefeb3bd">Execute</a>();   </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classlfallfit.html#aa187cb37c53929600123af8272129eb4">Finalise</a>();  </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordtype">int</span> nread=0;  <span class="comment">// track num loops for printing</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    std::string readerName=<span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">int</span> lun=0;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">bool</span> MC=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">int</span> NHITCUT;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keywordtype">int</span> flag_skip=0;   <span class="comment">// what reconstruction steps to do (or what to skip). Default (0): everything.</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;};</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
-<div class="ttc" id="aclasslfallfit_html"><div class="ttname"><a href="classlfallfit.html">lfallfit</a></div><div class="ttdef"><b>Definition:</b> lfallfit.h:22</div></div>
-<div class="ttc" id="aclasslfallfit_html_a36e2be382953c3f60ac6a1faeefeb3bd"><div class="ttname"><a href="classlfallfit.html#a36e2be382953c3f60ac6a1faeefeb3bd">lfallfit::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> lfallfit.cpp:58</div></div>
+<div class="ttc" id="aclasslfallfit_html"><div class="ttname"><a href="classlfallfit.html">lfallfit</a></div><div class="ttdef"><b>Definition:</b> lfallfit.h:20</div></div>
+<div class="ttc" id="aclasslfallfit_html_a36e2be382953c3f60ac6a1faeefeb3bd"><div class="ttname"><a href="classlfallfit.html#a36e2be382953c3f60ac6a1faeefeb3bd">lfallfit::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> lfallfit.cpp:56</div></div>
 <div class="ttc" id="aclasslfallfit_html_a839b4a3b28f25c51ec50b1bab271ebb5"><div class="ttname"><a href="classlfallfit.html#a839b4a3b28f25c51ec50b1bab271ebb5">lfallfit::lfallfit</a></div><div class="ttdeci">lfallfit()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> lfallfit.cpp:15</div></div>
-<div class="ttc" id="aclasslfallfit_html_aa187cb37c53929600123af8272129eb4"><div class="ttname"><a href="classlfallfit.html#aa187cb37c53929600123af8272129eb4">lfallfit::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> lfallfit.cpp:215</div></div>
+<div class="ttc" id="aclasslfallfit_html_aa187cb37c53929600123af8272129eb4"><div class="ttname"><a href="classlfallfit.html#aa187cb37c53929600123af8272129eb4">lfallfit::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> lfallfit.cpp:190</div></div>
 <div class="ttc" id="aclasslfallfit_html_aec914298ef655307ff219f34a439ffdd"><div class="ttname"><a href="classlfallfit.html#aec914298ef655307ff219f34a439ffdd">lfallfit::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> lfallfit.cpp:17</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

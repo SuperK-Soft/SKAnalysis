@@ -1,0 +1,83 @@
+\hypertarget{classHistogramBuilder}{}\doxysection{Histogram\+Builder Class Reference}
+\label{classHistogramBuilder}\index{HistogramBuilder@{HistogramBuilder}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_ad982faf189a0a13ee986161360007326}\label{classHistogramBuilder_ad982faf189a0a13ee986161360007326}} 
+TFile $\ast$ {\bfseries Make\+File} (std\+::string filename, bool notree\+\_\+in=false)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a850c74321bb540d99b7d0eba43543091}\label{classHistogramBuilder_a850c74321bb540d99b7d0eba43543091}} 
+TTree $\ast$ {\bfseries Make\+Tree} (std\+::string treename)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_aa7e23d1689fc0fe322c14c3e6c820dbe}\label{classHistogramBuilder_aa7e23d1689fc0fe322c14c3e6c820dbe}} 
+void {\bfseries Save\+Hists} (bool dosavehists)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_ae2097408c2f3d94b6668f68656bee811}\label{classHistogramBuilder_ae2097408c2f3d94b6668f68656bee811}} 
+void {\bfseries Set\+Verbosity} (int verb)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a4934d3a3fc58f9ac424e50eab804784d}\label{classHistogramBuilder_a4934d3a3fc58f9ac424e50eab804784d}} 
+bool {\bfseries Save} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_ae40754f6e05c35bbef9f78077e8ee1f3}\label{classHistogramBuilder_ae40754f6e05c35bbef9f78077e8ee1f3}} 
+bool {\bfseries Close} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a3eb07a7fb271015795e362548d932948}\label{classHistogramBuilder_a3eb07a7fb271015795e362548d932948}} 
+TFile $\ast$ {\bfseries Get\+File} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a92d9aa90b6392ce360fba1a13c75b7ae}\label{classHistogramBuilder_a92d9aa90b6392ce360fba1a13c75b7ae}} 
+TTree $\ast$ {\bfseries Get\+Tree} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a2cd3d1a98397e06baef95386ff7b72ca}\label{classHistogramBuilder_a2cd3d1a98397e06baef95386ff7b72ca}} 
+int {\bfseries Set\+Tree\+Entries} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a5ac6b07b92b2106816f1433fc621593d}\label{classHistogramBuilder_a5ac6b07b92b2106816f1433fc621593d}} 
+size\+\_\+t {\bfseries Get\+NHists} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a77d5eb67d5ea574dc5a80612ac6e6f64}\label{classHistogramBuilder_a77d5eb67d5ea574dc5a80612ac6e6f64}} 
+std\+::map$<$ std\+::string, TH1 $\ast$ $>$ {\bfseries Get\+Hists} ()
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_aacb5af1c215649fea2b868ddbf04d796}\label{classHistogramBuilder_aacb5af1c215649fea2b868ddbf04d796}} 
+TH1 $\ast$ {\bfseries Get\+Hist} (std\+::string hname, std\+::string cut, int unbinned=-\/1)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_ae2659d614a6bdacfb5ed29b3dcf06460}\label{classHistogramBuilder_ae2659d614a6bdacfb5ed29b3dcf06460}} 
+TH1 $\ast$ {\bfseries Get\+Hist} (size\+\_\+t i)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_afa9082fb9d62742dbdaaefa89b09d37a}\label{classHistogramBuilder_afa9082fb9d62742dbdaaefa89b09d37a}} 
+{\footnotesize template$<$typename T $>$ }\\TH1 $\ast$ {\bfseries Add\+Hist} (std\+::string histname, T type)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a4a2bbf70965fe9df47dc4fd6bec42930}\label{classHistogramBuilder_a4a2bbf70965fe9df47dc4fd6bec42930}} 
+{\footnotesize template$<$typename T $>$ }\\TH1 $\ast$ {\bfseries Add\+Hist} (std\+::string histname, T type1, T type2)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a4310b3b67658f7e904c356f9d9f357c7}\label{classHistogramBuilder_a4310b3b67658f7e904c356f9d9f357c7}} 
+{\footnotesize template$<$typename T $>$ }\\TH1 $\ast$ {\bfseries Add\+Hist} (std\+::string histname, T type1, T type2, T type3)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a2b4ae7fe06198a0fd321016176d12746}\label{classHistogramBuilder_a2b4ae7fe06198a0fd321016176d12746}} 
+{\footnotesize template$<$typename T $>$ }\\TBranch $\ast$ {\bfseries Add\+Branch} (std\+::string branchname, T type, typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+arithmetic$<$ T $>$\+::value, bool $>$\+::type potato=true)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a166f88ab61303f99031040a9dbfec4e5}\label{classHistogramBuilder_a166f88ab61303f99031040a9dbfec4e5}} 
+{\footnotesize template$<$typename T $>$ }\\TH1 $\ast$ {\bfseries Add\+Hist} (std\+::string histname, T type, std\+::array$<$ double, 3 $>$ binning)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a7e4ca93b8fa846bdbe2269f9a1111e2f}\label{classHistogramBuilder_a7e4ca93b8fa846bdbe2269f9a1111e2f}} 
+{\footnotesize template$<$typename T $>$ }\\TH2 $\ast$ {\bfseries Add\+Hist} (std\+::string histname, T type, std\+::array$<$ double, 6 $>$ binning)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_aefafe8cd9c9ccabcec7e38a71386fc63}\label{classHistogramBuilder_aefafe8cd9c9ccabcec7e38a71386fc63}} 
+{\footnotesize template$<$typename T $>$ }\\TH3 $\ast$ {\bfseries Add\+Hist} (std\+::string histname, T type, std\+::array$<$ double, 9 $>$ binning)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a91d18a41d13b4a1ff800d6ebc25ce44b}\label{classHistogramBuilder_a91d18a41d13b4a1ff800d6ebc25ce44b}} 
+{\footnotesize template$<$typename T $>$ }\\bool {\bfseries Fill} (std\+::string name, T val)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a84486b91730b3fca16a63a03ef5a514d}\label{classHistogramBuilder_a84486b91730b3fca16a63a03ef5a514d}} 
+{\footnotesize template$<$typename T $>$ }\\bool {\bfseries Fill} (std\+::string name, T val1, T val2)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a0d35e06f8cd22acaa1a48aa2ed08f50a}\label{classHistogramBuilder_a0d35e06f8cd22acaa1a48aa2ed08f50a}} 
+{\footnotesize template$<$typename T $>$ }\\bool {\bfseries Fill} (std\+::string name, T val1, T val2, T val3)
+\item 
+\mbox{\Hypertarget{classHistogramBuilder_a7288b9566a71da60575376d4bbf598d5}\label{classHistogramBuilder_a7288b9566a71da60575376d4bbf598d5}} 
+{\footnotesize template$<$typename T $>$ }\\bool {\bfseries Fill} (std\+::string name, std\+::vector$<$ T $>$ vals)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+Data\+Model/Histogram\+Builder.\+h\item 
+Data\+Model/Histogram\+Builder.\+cpp\end{DoxyCompactItemize}
