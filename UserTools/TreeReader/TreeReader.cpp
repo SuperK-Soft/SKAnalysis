@@ -55,7 +55,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// Get the Tool configuration variables
 	// ------------------------------------
 	LoadConfig(configfile);
-	m_unique_name = m_unique_name+" "+readerName;
+	m_unique_name = "TreeReader "+readerName;
 	m_data->tool_configs[m_unique_name] = &m_variables;
 	myTreeReader.SetName(readerName);
 	
@@ -456,7 +456,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// put this MC flag into the MTreeReader
 			myTreeReader.SetMCFlag(isMC);
 			m_data->vars.Set("inputIsMC",isMC);
-			m_variables.Set("is_mc",isMC);
 			
 			// if we're processing MC, we should probably only call `skread`. If we're processing
 			// data, we probably need to call `skrawread` as well. (see ReadEntry for more info).
@@ -541,6 +540,27 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				}
 			}
 		}
+		
+		// initialize water transparency table
+		skrunday_();
+		skwt_gain_corr_();
+		if(reference_watert_run>0 && (skhead_.nrunsk==0 || skhead_.nrunsk == 999999)){
+			Log(m_unique_name+" using reference run "+toString(reference_watert_run)
+				+" for water transparency",v_warning,m_verbose);
+			// update water transparency
+			float watert;
+			int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
+			lfwater_(&days_to_run_start, &watert);
+			Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+			    +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+			// pass to downstream tools
+			m_data->vars.Set("watert",watert);
+			
+		}
+		
+		
+		// make a note of is_mc in m_variables so it gets saved in m_data->tool_configs
+		m_variables.Set("is_mc",isMC);
 		
 	} else {
 		// else not SK ROOT or zebra file; just a plain ROOT file.
@@ -746,7 +766,6 @@ bool TreeReader::Execute(){
 		if(get_ok==0) break;  // end of file
 	} // read and buffer loop
 	
-	Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
 	
 	// when processing SKROOT files we can't rely on LoadTree(next_entry)
 	// to indicate that there are more events to process - all remaining entries
@@ -755,6 +774,22 @@ bool TreeReader::Execute(){
 	if(get_ok==0){
 		m_data->vars.Set("Skip",true);
 		m_data->vars.Set("StopLoop",true);
+	} else {
+		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
+		
+		m_data->vars.Set("newRun",false);
+		m_data->vars.Set("newSubrun",false);
+		// check if we've changed run or subrun, and if so, update things like
+		// water transparency and bad channel masking
+		if(skhead_.nrunsk != last_nrunsk){
+			RunChange();
+			SubrunChange();
+			last_nrunsk=skhead_.nrunsk;
+			last_nsubsk=skhead_.nsubsk;
+		} else if(skhead_.nsubsk != last_nsubsk){
+			SubrunChange();
+			last_nsubsk=skhead_.nsubsk;
+		}
 	}
 	
 	++readEntries;      // keep track of the number of entries we've actually returned
@@ -780,6 +815,71 @@ bool TreeReader::Execute(){
 	in fact the current in-memory event data relates to the last entry from the previous file.
 	*/
 	
+	return true;
+}
+
+bool TreeReader::RunChange(){
+	m_data->vars.Set("newRun",true);
+	get_ok = true;
+	
+	// check if this run is bad
+	int isbad = lfbadrun_(&skhead_.nrunsk, &skhead_.nsubsk);
+	if(isbad){
+		Log(m_unique_name+" run "+toString(skhead_.nrunsk)+" flagged as a bad run by lfbadrun!",
+		    v_warning,m_verbose);
+		if(skipbadruns) SkipThisRun();
+	}
+	
+	// update water transparency
+	float watert;
+	int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
+	lfwater_(&days_to_run_start, &watert);
+	Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+	    +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+	// pass to downstream tools
+	m_data->vars.Set("watert",watert);
+	
+	return get_ok;
+}
+
+bool TreeReader::SubrunChange(){
+	m_data->vars.Set("newSubrun",true);
+	get_ok = true;
+	
+	// update bad channels
+	if(myTreeReader.GetMCFlag()){
+		// FIXME I believe this is only needed for MC...
+		// For data isn't bad channel masking automatically updated?
+		// But the run number is normally 0 for MC, so this will only work if the run number
+		// was overridden to mimic a specific run...? maybe that's the use-case here.
+		
+		// apparently a loglevel of 4 suppresses outputs...
+		combad_.log_level_skbadch = 0;
+		int ierr;
+		// read badch info & puts it into combad_ common block
+		skbadch_(&skhead_.nrunsk,&skhead_.nsubsk,&ierr);
+		if(ierr<0){
+			Log(m_unique_name+" Error calling skbadch_ in SubrunChange!",v_error,m_verbose);
+			get_ok = false;
+		} else {
+			Log(m_unique_name+" loaded bad channels for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+		}
+	}
+	
+	// update dark rate
+	if(myTreeReader.GetMCFlag()){
+		// FIXME presume this is as per above
+		// What is this doing/required by?
+		darklf_(&skhead_.nrunsk);
+	}
+	
+	return get_ok;
+}
+
+bool TreeReader::SkipThisRun(){
+	Log(m_unique_name+" SkipThisRun called, but this feature is not yet implemented!",v_error,m_verbose);
+	// uhhh maybe we should scan the HEADER branch until the run number changes again?
+	// Or can we somehow just jump straight to the next file (TTree) in the TChain?
 	return true;
 }
 
@@ -1347,11 +1447,11 @@ int TreeReader::LoadConfig(std::string configfile){
 		}
 		// or the list of input or output branches to skip
 		if (thekey=="StartSkippedInputBranches"){
-			settingActiveInputBranches = true;
+			settingSkippedInputBranches = true;
 			push_variable=false;
 		}
 		else if(thekey=="EndSkippedInputBranches"){
-			settingActiveInputBranches = false;
+			settingSkippedInputBranches = false;
 			push_variable=false;
 		}
 		else if(settingSkippedInputBranches){
@@ -1396,6 +1496,8 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="entriesPerExecute") entriesPerExecute = stoi(thevalue);
 		else if(thekey=="allowedTriggers") allowedTriggersString = thevalue;
 		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
+		else if(thekey=="skipBadRuns") skipbadruns = stoi(thevalue);
+		else if(thekey=="referenceWaterRun") reference_watert_run = stoi(thevalue);
 		else {
 			Log(m_unique_name+" error parsing config file line: \""+LineCopy
 				+"\" - unrecognised variable \""+thekey+"\"",v_error,m_verbose);

@@ -3,6 +3,6 @@ myLoadFileList LoadFileList configfiles/TreeReaderDemoSkroot/LoadFileListConfig
 myTreeReader TreeReader configfiles/TreeReaderDemoSkroot/TreeReaderConfigSKG4
 #myTreeReader TreeReader configfiles/TreeReaderDemoSkroot/TreeReaderConfig
 #myTreeReader TreeReader configfiles/TreeReaderDemoSkroot/TreeReaderConfig_2
-##mylf_allfit_new lf_allfit_new configfiles/TreeReaderDemoSkroot/lf_allfit_newConfig
+##mylfallfit lfallfit configfiles/TreeReaderDemoSkroot/lfallfitConfig
 myevDisp1 evDisp configfiles/TreeReaderDemoSkroot/evDispConfig_1
 #myevDisp2 evDisp configfiles/TreeReaderDemoSkroot/evDispConfig_2

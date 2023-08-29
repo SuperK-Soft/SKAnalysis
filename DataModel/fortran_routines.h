@@ -145,7 +145,8 @@ extern "C" void darklf_(int*);  // $SKOFL_ROOT/lowe/sklowe/darklf.F
 extern "C" void fix_maxqisk_();
 extern "C" void lfmufit_sk4_();
 extern "C" void newmufit_(float (*)[3], float (*)[3], float*);
-extern "C" void makededx_(float (*)[4], float (*)[3], int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, float (*)[200]);
+// this function (from atmpd) is apparently bad? replace it with kirk's one
+//extern "C" void makededx_(float (*)[4], float (*)[3], int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, float (*)[200]);
 extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, int*, float (*)[200], int (*)[334380], int*);
 extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
 extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
@@ -219,6 +220,17 @@ extern "C" {
     void sppang_(int&, float&, float&);
     void spfinalsep_();
 //	float pttruewaterlen_(float&);
+
+// from Kirk
+extern "C" void getdl_(float* mudir, float* x, float* y, float* z, float* muentry, float* lt, float* proj);
+// note: this conflicts with the standard atmpd makededx: we either need to modify kirk's
+// source code to give it a new name, or we can only link against one of them.
+// it seems like the previous relic analysers used only kirk and scott's ones, so do the same....
+extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float(*dedx)[200]);
+// special version from relic_sk4_ana/lomufit/mufit/src/makdedx.F that takes water transparency.
+// kirk's original version does not! oh, so many choices
+//extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float* watert, float(*dedx)[200]);
+
 }
 
 #endif

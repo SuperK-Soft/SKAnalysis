@@ -65,6 +65,7 @@ if (tool=="CutRecorder") ret=new CutRecorder;
 if (tool=="SkipEventFlags") ret=new SkipEventFlags;
 if (tool=="AddTree") ret=new AddTree;
 if (tool=="WriteSkEvent") ret=new WriteSkEvent;
+if (tool=="RelicMuonPlots") ret=new RelicMuonPlots;
 return ret;
 }
 

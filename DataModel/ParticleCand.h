@@ -6,8 +6,10 @@
 struct ParticleCand {
 	int EventNumber;
 	int SubTriggerNumber;
-	float EventTime;
-	int EntryNumber;
+	int it0xsk;
+	int64_t EventTime;
+	int InEntryNumber;  // entry number in input file TTree
+	int OutEntryNumber; // entry number in output file TTree
 	int PID = 0; //0 = muon 1 = LowE
 	std::vector<int> matchedParticleEvNum;
 	std::vector<float> matchedParticleTimeDiff;

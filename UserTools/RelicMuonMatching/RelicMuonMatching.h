@@ -27,13 +27,13 @@ class RelicMuonMatching: public Tool {
 	private:
 	
 	MTreeReader* rfmReader = nullptr;
-	const Header* myHeader=nullptr;
 	
+	int rfmReaderLUN;
 	int muWriterLUN;
 	int relicWriterLUN;
 	
 	bool RemoveFromDeque(std::vector<int>& particlesToRemove, std::deque<ParticleCand>& particleDeque);
-	bool RelicMuonMatch(bool muonFlag, float currentTime, int subtrg_num=0);
+	bool RelicMuonMatch(bool muonFlag, int64_t currentTime, int subtrg_num=0, int32_t it0xsk=0);
 	
 	bool WriteRelicInfo();
 	bool WriteMuonInfo();
@@ -41,12 +41,18 @@ class RelicMuonMatching: public Tool {
 	bool muonFlag;
 	int currentSubRun;
 	int lastRun = 0;
+	double match_window = 60; // [seconds]
+	int64_t match_window_ticks;
 	
 	std::vector<int> relicsToRemove;
 	std::vector<int> muonsToRemove;
 	
 	std::vector<int> MatchedEvNums;
 	std::vector<float> MatchedTimeDiff;
+	std::vector<float> MatchedParticleE;
+	
+	int nextmuentry=0;
+	int nextrelicentry=0;
 	
 	std::string muSelectorName;
 	std::string relicSelectorName;

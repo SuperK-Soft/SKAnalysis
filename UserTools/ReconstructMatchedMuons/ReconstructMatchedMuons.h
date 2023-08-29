@@ -5,9 +5,6 @@
 #include <iostream>
 
 #include "Tool.h"
-#include "MTreeReader.h"
-#include "skroot.h"
-#include "ConnectionTable.h"
 
 class ReconstructMatchedMuons: public Tool {
 	
@@ -22,32 +19,8 @@ class ReconstructMatchedMuons: public Tool {
 	
 	private:
 	
-	bool WriteInfo(ParticleCand Event);
-	
-	int currentEntry = -1;
-	
-	std::string treeReaderName;
-	int treeWriterLUN;
-	
-	MTreeReader* myTreeReader = nullptr;
-	MTreeReader* myTreeWriter = nullptr;
-	
-	const Header* myHeader = nullptr;
-	
-	TTree* WriteTree=nullptr;
-	TBranch* MatchedEvNumsBranch=nullptr;
-	TBranch* MatchedTimeDiffBranch=nullptr;
-	TBranch* PIDBranch=nullptr;
-	
-	std::vector<int> MatchedEvNums;
-	std::vector<float> MatchedTimeDiff;
-	
-	int PID;
-	
-	std::vector<ParticleCand> muonsToRec;
-	
-	int lastRun;
-	float watert;
+	int lun=-1;        // where to put output results (skroot_set_mu)
+	bool noBFF=false;  // veto fallback to BFF
 	
 };
 

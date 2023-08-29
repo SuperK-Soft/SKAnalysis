@@ -17,6 +17,9 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	m_log= m_data->Log;
 	
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
+	m_variables.Get("match_window", match_window);  // [s]
+	match_window *= 1E9; // convert to [ns]
+	match_window_ticks = match_window * COUNT_PER_NSEC;
 	
 	std::string relicWriterName, muWriterName;
 	m_variables.Get("rfmReaderName", rfmReaderName);
@@ -27,6 +30,7 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	}
 	
 	// input reader
+	rfmReaderLUN = m_data->GetLUN(rfmReaderName);
 	rfmReader = m_data->Trees.at(rfmReaderName);
 	
 	// get LUNs needed to passing common block data from reco algorithms to TTrees
@@ -50,11 +54,13 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	TTree* muTree = muMgr->GetOTree();
 	muTree->Branch("MatchedEvNums", &MatchedEvNums);
 	muTree->Branch("MatchedTimeDiff", &MatchedTimeDiff);
+	muTree->Branch("MatchedParticleE", &MatchedParticleE);
 	
 	TreeManager* relicMgr = skroot_get_mgr(&relicWriterLUN);
 	TTree* relicTree = relicMgr->GetOTree();
 	relicTree->Branch("MatchedEvNums", &MatchedEvNums);
 	relicTree->Branch("MatchedTimeDiff", &MatchedTimeDiff);
+	relicTree->Branch("MatchedParticleE", &MatchedParticleE);
 	
 	// see if recording this as a cut, and if so make it
 	get_ok = m_variables.Get("muSelectorName",muSelectorName);
@@ -67,6 +73,7 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 		m_data->AddCut(relicSelectorName, m_unique_name, "record number of muons within +-60s");
 	}
 	
+	// thought this might suppress ranlux printouts, but it seems not...?
 	int zero=0;
 	ran_verbosity_(&zero);
 	
@@ -83,25 +90,37 @@ bool RelicMuonMatching::Execute(){
 	}
 	
 	// if the toolchain made it here, the current rfm file entry is either a muon or relic candidate!
-	// see which it is:
-	get_ok = m_data->vars.Get("newMuon", muonFlag);
+	get_ok = m_data->vars.Get("newMuon", muonFlag);  // is it a muon?
+	
+	// FIXME tdiff_muon masks the middle 17 bits. What in the damn hell is going on. Is that a bug?
+	
+	// for long-scale times we have a 47-bit clock that runs at 1.92 ticks per ns (#defined as COUNT_PER_NSEC)
+	// the upper 32 bits of this clock are in skheadqb_.nevhwsk
+	// the lower 15 bits are in the lower 15 bits of it0sk.
+	// this resets when a new run is manually started (automaton run changes do not reset it).
+	// (we currently handle rollover manually, but don't do anything to handle matching
+	//  across a manual run change that would have reset the 47-bit clock)
+	int64_t currentTime = (skheadqb_.nevhwsk << 15) + (skheadqb_.it0sk & int32_t(std::pow(2,15)));
 	
 	if(muonFlag){
-		// since we searched for muons using a software trigger scan, we may have found
-		// more than one muon event in this readout window. Each needs to be matched independently.
+		// since we searched for muons using a manual subtrigger trigger scan, we may have
+		// more than one muon in this event, each with different times.
+		// to do things properly, we need to loop over all these muons and account for thir t0_sub offsets.
+		
+		// n.b. our matching window is +-60s, compared to a readout window of only ~2ms at the most
+		// (T2K, AFT triggers). So it might be sufficient to just match against the primary trigger time...
+		
 		std::vector<int> muonTimes;
 		m_data->CStore.Get("muonTimes", muonTimes);
-		
 		for(int i=0; i<muonTimes.size(); ++i){
-			// FIXME muonTimes are 'swtrgt0ctr' value. Presume this is same units as counter_32?
-			float muonTime = muonTimes.at(i) * 32768./1.92;
-			RelicMuonMatch(muonFlag, muonTime, i);
+			// muonTimes are 'swtrgt0ctr' value, which is t0_sub from get_sub_triggers.
+			// this is a counts offset from it0sk, so:
+			currentTime += muonTimes.at(i);
+			RelicMuonMatch(muonFlag, currentTime, i, muonTimes.at(i));
 		}
 		
 	} else {
-		rfmReader->Get("HEADER", myHeader);
-		float currentTime = myHeader->counter_32 * 32768./1.92;
-		RelicMuonMatch(muonFlag, currentTime, 0);
+		RelicMuonMatch(muonFlag, currentTime, 0, 0);
 	}
 	
 	// prune any match candidates that have dropped off our window of interest
@@ -132,7 +151,7 @@ bool RelicMuonMatching::Finalise(){
 bool RelicMuonMatching::RemoveFromDeque(std::vector<int>& particlesToRemove, std::deque<ParticleCand>& particleDeque){
 	for(int j=0; j<particlesToRemove.size(); ++j){
 		for(int i=0; i<particleDeque.size(); ++i){
-			if(particleDeque[i].EntryNumber == particlesToRemove[j]){
+			if(particleDeque[i].EventNumber == particlesToRemove[j]){
 				particleDeque.erase(particleDeque.begin() + i);
 				break;
 			}
@@ -142,14 +161,15 @@ bool RelicMuonMatching::RemoveFromDeque(std::vector<int>& particlesToRemove, std
 	return true;
 }
 
-bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, float currentTime, int subtrg_num){
+bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, int64_t currentTime, int subtrg_num, int it0xsk){
 	
 	// make a new ParticleCand to encapsulate the minimal info about this muon/relic candidate.
 	ParticleCand currentParticle;
-	currentParticle.EventNumber = myHeader->nevsk;
+	currentParticle.EventNumber = skhead_.nevsk;
 	currentParticle.SubTriggerNumber = subtrg_num;
 	currentParticle.EventTime = currentTime;
-	currentParticle.EntryNumber = rfmReader->GetEntryNumber();
+	currentParticle.it0xsk = it0xsk;
+	currentParticle.InEntryNumber = rfmReader->GetEntryNumber();
 	currentParticle.LowECommon = skroot_lowe_;
 	
 	// get the deque of in-memory targets to match this new event against
@@ -160,39 +180,82 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, float currentTime, int sub
 		currentParticle.PID = 2;
 		currentDeque = &m_data->muonCandDeque;
 		targetDeque = &m_data->relicCandDeque;
+		// we'll assign its output tree entry number if/when it gets matched to a relic
 	} else {
 		currentParticle.PID = 1;
 		currentDeque = &m_data->relicCandDeque;
 		targetDeque = &m_data->muonCandDeque;
+		// we save every relic, so can already assign its output ttree entry number
+		currentParticle.OutEntryNumber = nextrelicentry;
+		++nextrelicentry;
 	}
 	
 	// scan over targets, oldest to newest
+	bool firstmatch=true;
 	for(int i = 0; i < targetDeque->size(); i++){
 		ParticleCand& targetCand = targetDeque->at(i);
 		//calculate time difference between this event and the target
-		float timeDiff = (currentTime - targetCand.EventTime);
+		int64_t timeDiff = (currentTime - targetCand.EventTime);
+		// to account for 48-bit clock rollover we can compare event numbers
+		if(currentParticle.EventNumber > targetCand.EventNumber){
+			// tdiff ought to be positive; correct for rollover if not
+			if(timeDiff<0) timeDiff += int64_t(std::pow(2,47));
+		} else {
+			if(timeDiff>0) timeDiff -= int64_t(std::pow(2,47));
+		}
 		//If the time difference between the two events is less than 60 seconds then "match" the particles.
 		//N.B. since events are time ordered, timediff is always positive
-		if(timeDiff < 60. * pow(10,9)){
+		if(timeDiff < match_window_ticks ){
+			
+			std::cout<<"matching "<<((muonFlag) ? "muon" : "relic") << " event "
+			         <<currentParticle.InEntryNumber<<" at "<<currentTime<<" to target event "
+			         <<targetCand.InEntryNumber<<" at "<<targetCand.EventTime<<"; tdiff "
+			         <<timeDiff<<"\n"
+			         <<"\tnext muon entry: "<<nextmuentry<<"\n"
+			         <<"\tnext relic entry: "<<nextrelicentry<<std::endl;
+			
+			// if this is the first match of this particle, set its event number in the output file
+			// and increment the counter for the next event which will be written out
+			if(firstmatch){
+				std::cout<<"first match for current "<<((muonFlag) ? "muon" : "relic") <<std::endl;
+				if(muonFlag){
+					currentParticle.OutEntryNumber = nextmuentry;
+					++nextmuentry;
+				}
+				firstmatch=false;
+			}
+			if(targetCand.matchedParticleEvNum.size()==0){
+				std::cout<<"first match for target "<<((muonFlag) ? "relic" : "muon") <<std::endl;
+				if(muonFlag){
+					targetCand.OutEntryNumber = nextrelicentry;
+					++nextrelicentry;
+				} else {
+					targetCand.OutEntryNumber = nextmuentry;
+					++nextmuentry;
+				}
+			}
+			
 			//add the event # of the current event to the target particle's "matched particle" list and add the
 			//event # of the target particle to the current particle's "matched particle" list
-			currentParticle.matchedParticleEvNum.push_back(targetCand.EventNumber);
-			currentParticle.matchedParticleTimeDiff.push_back(timeDiff * -1.);
+			currentParticle.matchedParticleEvNum.push_back(targetCand.OutEntryNumber);
+			currentParticle.matchedParticleTimeDiff.push_back(timeDiff * -COUNT_PER_NSEC);
 			currentParticle.matchedParticleBSEnergy.push_back(targetCand.LowECommon.bsenergy);
 			
-			targetCand.matchedParticleEvNum.push_back(currentParticle.EventNumber);
-			targetCand.matchedParticleTimeDiff.push_back(timeDiff);
+			targetCand.matchedParticleEvNum.push_back(currentParticle.OutEntryNumber);
+			targetCand.matchedParticleTimeDiff.push_back(timeDiff*COUNT_PER_NSEC);
 			targetCand.matchedParticleBSEnergy.push_back(currentParticle.LowECommon.bsenergy);
 			
 		//otherwise the current event came more than 60 seconds after the target event.
 		} else {
+			std::cout<<((muonFlag) ? "muon" : "relic")<<" event "<<currentParticle.InEntryNumber
+			         <<" is >60s after target event "<<targetCand.InEntryNumber<<std::endl;
 			//any subsequent events will also be >60s after this target event;
 			//which is to say we'll find no more matches for this target.
 			if(muonFlag){
 				// add it to the set of relic candidates ready to write out
 				m_data->writeOutRelics.push_back(targetCand);
 				// remove it from the set of relic candidates being matched
-				relicsToRemove.push_back(targetCand.EntryNumber);
+				relicsToRemove.push_back(targetCand.EventNumber);
 				// make a note of this relic and its number of matches
 				if(!relicSelectorName.empty()){
 					m_data->ApplyCut(relicSelectorName, m_unique_name,
@@ -205,7 +268,7 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, float currentTime, int sub
 					m_data->muonsToRec.push_back(targetCand);
 				}
 				// remove it from the set of muons being matched
-				muonsToRemove.push_back(targetCand.EntryNumber);
+				muonsToRemove.push_back(targetCand.EventNumber);
 				// make a note of this muon and its number of matches
 				if(!muSelectorName.empty()){
 					m_data->ApplyCut(muSelectorName, m_unique_name,
@@ -223,16 +286,23 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, float currentTime, int sub
 	//we could end up accumulating an unreasonably large stack of muons.
 	//We can safely prune any muons more than 60s older than the current event that have no matches.
 	//only bother with this scan if we have >150 muons (~60s) of muons
-	if(muonFlag && currentDeque->size() > 150){
+	// FIXME re-enable, and only do for muons?
+	//if(currentDeque->size() > 150){
 		for(int i = 0; i < currentDeque->size() - 1; i++){
-			float timeDiff = (currentTime - currentDeque->at(i).EventTime);
-			if(timeDiff > 60.e+9 && ! currentDeque->at(i).matchedParticleEvNum.size()){
-				muonsToRemove.push_back(currentDeque->at(i).EntryNumber);
+			int64_t timeDiff = (currentTime - currentDeque->at(i).EventTime);
+			if(currentParticle.EventNumber > currentDeque->at(i).EventNumber){
+				if(timeDiff<0) timeDiff += int64_t(std::pow(2,47));
+			} else {
+				if(timeDiff>0) timeDiff -= int64_t(std::pow(2,47));
+			}
+			if(timeDiff > match_window_ticks && ! currentDeque->at(i).matchedParticleEvNum.size()){
+				std::vector<int>* removedeq= (muonFlag) ? &muonsToRemove : &relicsToRemove;
+				removedeq->push_back(currentDeque->at(i).EventNumber);
 			} else {
 				break;
 			}
 		}
-	}
+	//}
 	
 	return true;
 }
@@ -246,11 +316,13 @@ bool RelicMuonMatching::WriteRelicInfo(){
 	
 	for(int writeEvent = 0; writeEvent < writeOutRelics.size(); writeEvent++){
 		
+		std::cout<<"writing out next relic; entry "<<writeOutRelics[writeEvent].OutEntryNumber<<std::endl;
+		
 		// reload the TTree entry for this lowe event
 		// (TODO not ideal as we're not reading linearly; can we buffer the required info?)
 		int currentEntry = rfmReader->GetEntryNumber();
-		if(writeOutRelics[writeEvent].EntryNumber != currentEntry){
-			m_data->getTreeEntry(rfmReaderName, writeOutRelics[writeEvent].EntryNumber);
+		if(writeOutRelics[writeEvent].InEntryNumber != currentEntry){
+			m_data->getTreeEntry(rfmReaderName, writeOutRelics[writeEvent].InEntryNumber);
 		}
 		
 		// for relics, keep the entire readout window. might be useful for spallation?
@@ -310,6 +382,7 @@ bool RelicMuonMatching::WriteRelicInfo(){
 		// update branch variables w/ info about matches
 		MatchedEvNums = writeOutRelics[writeEvent].matchedParticleEvNum;
 		MatchedTimeDiff = writeOutRelics[writeEvent].matchedParticleTimeDiff;
+		MatchedParticleE = writeOutRelics[writeEvent].matchedParticleBSEnergy;
 		
 		//invoke TTree::Fill
 		skroot_fill_tree_(&relicWriterLUN);
@@ -335,198 +408,39 @@ bool RelicMuonMatching::WriteMuonInfo(){
 	
 	for(int i = 0; i < muonsToRec.size(); i++){
 		
-		if(muonsToRec[i].EntryNumber != currentEntry){
-			m_data->getTreeEntry(rfmReaderName, muonsToRec[i].EntryNumber);
-		}
+		std::cout<<"writing out next muon; entry "<<muonsToRec[i].OutEntryNumber<<std::endl;
 		
-		int muyn_org, muynf;
-		float mbentry [4];
-		float mm_entry [36];
-		int n_left;
-		
-		//Muon reconstruction developed by Tomoeda and Yamaguchi
-		mfmuselect_(&skroot_mu_.muentpoint, &skroot_mu_.mudir, &skroot_mu_.mugoodness, &muyn_org);
-		
-		//muyn == 1 - good fit
-		//muyn == 0 - bad fit
-		
-		if(muyn_org > 0){
-			skroot_mu_.muyn = 1;
-		} else if(muyn_org < 0) {
-			skroot_mu_.muyn = 0;
-		} else {
-			Log("Muyn_org returning as == 0. Not supported yet", v_error, m_verbose);
-			return false;
-		}
-		
-		//Apply fast fit if mfmuselect has returned a bad fit
-		if(skroot_mu_.muyn == 0){
-			mffastfast_(&skroot_mu_.muentpoint, &skroot_mu_.mudir, &muynf);
-			skroot_mu_.mufast_flag = 1;
-		}else{
-			skroot_mu_.mufast_flag = 0;
-		}
-		
-		skroot_mu_.muyn = muyn_org;
-		if(skroot_mu_.muyn == 0){
-			skroot_mu_.muyn = muynf;
-		}
-		
-		int muboy_class, muboy_numtracks, muboy_numleft;
-		float muboy_entry [4], muboy_dir [3], muboy_otherentry [36];
-		float muboy_tracklength, muboy_goodness;
-		
-		//Apply muboy
-		muboy_zbs_(&skhead_.nevsk,
-		           &skroot_mu_.muboy_status,
-		           &mbentry,
-		           &skroot_mu_.muboy_dir,
-		           &skroot_mu_.muboy_length,
-		           &skroot_mu_.muboy_goodness,
-		           &skroot_mu_.muboy_ntrack,
-		           &mm_entry,
-		           &n_left);
-		
-		/*
-		muboy_zbs_(&skhead_.nevsk, &muboy_class, &muboy_entry,
-		           &muboy_dir, &muboy_tracklength, 
-		           &muboy_goodness, &muboy_numtracks,
-		           &muboy_otherentry, &muboy_numleft);
-		
-		std::cout << "muboy result:\n"
-		          << "\tclass: " << muboy_class << "\n"
-		          << "\tdir: (" << muboy_dir[0] << ", "
-		                        << muboy_dir[1] << ", "
-		                        << muboy_dir[2] << ")\n"
-		          << "\tentry: (" << muboy_entry[0] << ", "
-		                        << muboy_entry[1] << ","
-		                        << muboy_entry[2] << ")\n"
-		          << "\ttrack length: " << muboy_tracklength << std::endl;
-		*/
-		
-		// get muon track entry position(s)
-		for(int track = 0; track < skroot_mu_.muboy_ntrack; track++){
-			if(track == 0){
-				skroot_mu_.muboy_entpos[0][track] = 3;
-				skroot_mu_.muboy_entpos[1][track] = mbentry[1];
-				skroot_mu_.muboy_entpos[2][track] = mbentry[2];
-				skroot_mu_.muboy_entpos[3][track] = mbentry[3];
-			}else{
-				skroot_mu_.muboy_entpos[0][track] = mm_entry[4*track - 8];
-				skroot_mu_.muboy_entpos[1][track] = mm_entry[4*track - 7];
-				skroot_mu_.muboy_entpos[2][track] = mm_entry[4*track - 6];
-				skroot_mu_.muboy_entpos[3][track] = mm_entry[4*track - 5];
-			}
-		}
-		
-		// recalculate muon energy with run-wise water transparency
-		// first get water transparency for the current run
-		float watert;
-		if(skhead_.nrunsk != lastRun){
-			int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];
-			lfwater_(&days_to_run_start, &watert);
-			lastRun = skhead_.nrunsk;
-		}
-		
-		float muentry[4];
-		for(int j = 0; j < 4; j++){
-			muentry[j] = skroot_mu_.muboy_entpos[j][0];
-		}
-		
-		makededx_(&muentry,
-		          &skroot_mu_.muboy_dir,
-		          &skchnl_.ihcab,
-		          &skq_.qisk,
-		          &skt_.tisk,
-		          &geopmt_.xyzpm,
-		          &skq_.nqisk,
-		          &skroot_mu_.muboy_dedx);
-		
-		makededx_intg_(&muentry,
-		               &skroot_mu_.muboy_dir,
-		               &skroot_mu_.muboy_length,
-		               &skchnl_.ihcab,
-		               &skq_.qisk,
-		               &skt_.tisk,
-		               &geopmt_.xyzpm,
-		               &sktqz_.nqiskz,
-		               &skhead_.nrunsk,
-		               &skroot_mu_.muboy_dedx,
-		               &sktqz_.ihtiflz,
-		               &skhead_.nevsk);
-		
-		// try BFF if muboy failed and muon energy >12MeV
-		if(skroot_mu_.muboy_status == 1 && skroot_mu_.muboy_goodness < 0.4 &&
-		   *std::max_element(muonsToRec[i].matchedParticleBSEnergy.begin(),
-		   muonsToRec[i].matchedParticleBSEnergy.end()) > 12.){
+		// (re-)load the muon entry to save
+		if(muonsToRec[i].InEntryNumber != currentEntry){
+			// if we're going to call mufit we should disable bad channel masking.
+			// Since we don't do muon fitting here any more, this may be redundant...
+			// ...but will bad channel hits still be copied to the output file if they're masked?
+			int current_badch_masking = combad_.imaskbadopt;
+			int mufitbadopt = 0;
+			skbadopt_(&mufitbadopt); // literally all this does is update the common block value.
+			m_data->getTreeEntry(rfmReaderName, muonsToRec[i].InEntryNumber);
+			// reset for the next read
+			skbadopt_(&current_badch_masking);
 			
-			std::cout << "Starting muon BFF" << std::endl;
-			float bffpos[3];
-			float hpos[3];
-			float bffgood;
-			float modd;
-			newmufit_(&bffpos, &hpos, &bffgood);
-			modd = sqrt( pow((hpos[0]-bffpos[0]),2) + pow((hpos[1]-bffpos[1]),2) + pow((hpos[2]-bffpos[2]),2) );
-			for(int j = 0; j < 3; j++){
-				skroot_mu_.mubff_entpos[j] = bffpos[j];
-				skroot_mu_.mubff_dir[j] = (hpos[j] - bffpos[j])/modd;
-			}
-			std::cout << "Finished muon BFF" << std::endl;
-			
-			skroot_mu_.mubff_goodness = bffgood;
-			if(skroot_mu_.mubff_goodness > 0.3){
-				for(int j = 0; j < 3; j++){
-					muentry[j] = skroot_mu_.mubff_entpos[j];
+			// if this was an untagged muon we should also shift the time window accordingly
+			if(muonsToRec[i].SubTriggerNumber!=0){
+				set_timing_gate_(&muonsToRec[i].it0xsk);
+				int neglun = -std::abs(rfmReaderLUN);
+				skcread_(&neglun, &get_ok);
+				// get_ok = 0 (physics entry), 1 (error), 2 (EOF), other (non-physics)
+				if(get_ok!=0){
+					Log(m_unique_name+" Error! skcread returned "+toString(get_ok)
+					    +" when reloading muon subtrigger!",v_error,m_verbose);
+					return false;
 				}
 			}
-			
-			makededx_(&muentry,
-			          &skroot_mu_.muboy_dir,
-			          &skchnl_.ihcab,
-			          &skq_.qisk,
-			          &skt_.tisk,
-			          &geopmt_.xyzpm,
-			          &skq_.nqisk,
-			          &skroot_mu_.muboy_dedx);
-			
-			makededx_intg_(&muentry,
-			               &skroot_mu_.muboy_dir,
-			               &skroot_mu_.muboy_length,
-			               &skchnl_.ihcab,
-			               &skq_.qisk,
-			               &skt_.tisk,
-			               &geopmt_.xyzpm,
-			               &sktqz_.nqiskz,
-			               &skhead_.nrunsk,
-			               &skroot_mu_.muboy_dedx,
-			               &sktqz_.ihtiflz,
-			               &skhead_.nevsk);
 		}
 		
-		// pass reconstructed muon info to output Tree branch variables
-		skroot_set_mu_(&muWriterLUN,
-		               skroot_mu_.muentpoint,
-		               skroot_mu_.mudir,
-		               &skroot_mu_.mutimediff,
-		               &skroot_mu_.mugoodness,
-		               &skroot_mu_.muqismsk,
-		               &skroot_mu_.muyn,
-		               &skroot_mu_.mufast_flag,
-		               &skroot_mu_.muboy_status,
-		               &skroot_mu_.muboy_ntrack,
-		               skroot_mu_.muboy_entpos,
-		               skroot_mu_.muboy_dir,
-		               &skroot_mu_.muboy_goodness,
-		               &skroot_mu_.muboy_length,
-		               skroot_mu_.muboy_dedx,
-		               skroot_mu_.mubff_entpos,
-		               skroot_mu_.mubff_dir,
-		               &skroot_mu_.mubff_goodness,
-		               &skroot_mu_.muninfo,
-		               skroot_mu_.muinfo);
+		/* muon reconstruction now moved to later stage */
 		
 		// for muons, only keep hits around 1.3us trigger
 		delete_outside_hits_();
+		// FIXME um.... will this remove hits from any further muon subtriggers in this readout?
 		
 		// set header and tq info (epsecially updated hits)
 		skroot_set_tree_(&muWriterLUN);
@@ -534,6 +448,7 @@ bool RelicMuonMatching::WriteMuonInfo(){
 		// update branch variables w/ info about matches
 		MatchedEvNums = muonsToRec[i].matchedParticleEvNum;
 		MatchedTimeDiff = muonsToRec[i].matchedParticleTimeDiff;
+		MatchedParticleE = muonsToRec[i].matchedParticleBSEnergy;
 		
 		// invoke TTree::Fill
 		skroot_fill_tree_(&muWriterLUN);
@@ -553,20 +468,21 @@ bool RelicMuonMatching::WriteMuonInfo(){
 
 // DON'T LOOK AT THE CODE BELOW HERE SHHHHHHHHHHHHHHH
 
-/*float RelicMuonMatching::rollOver(unsigned long long int currentTime, unsigned long long int targetTime){
+/*
+float RelicMuonMatching::rollOver(unsigned long long int currentTime, unsigned long long int targetTime){
 	unsigned long long int bitOne = 1;
 	unsigned long long int tDiff;
 	tDiff = currentTime - targetTime;
 	tDiff = (bitOne << 47) + tDiff;
 	
-}*/
+}
 
-/*bool RelicMuonMatching::AddParticletoDeque(std::deque<ParticleCand>& addToThisDeque){
+bool RelicMuonMatching::AddParticletoDeque(std::deque<ParticleCand>& addToThisDeque){
 	unsigned long long int newTime = bitshiftTime(skheadqb_.it0xsk, skheadqb_.nevhwsk);
 	ParticleCand newParticle;
-	newParticle.EventNumber = myHeader->nevsk;
+	newParticle.EventNumber = skhead_.nevsk;
 	newParticle.EventTime = newTime;
-	newParticle.EntryNumber = rfmReader->GetEntryNumber();
+	newParticle.InEntryNumber = rfmReader->GetEntryNumber();
 	if(particleType == "LOWE"){
 		newParticle.ReconEnergy = skroot_lowe_.bsenergy;
 	} else{
@@ -575,9 +491,9 @@ bool RelicMuonMatching::WriteMuonInfo(){
 	addToThisDeque.push_back(newParticle);
 	
 	return true;
-	}*/
-	
-/*unsigned long long int RelicMuonMatching::bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime){
+}
+
+unsigned long long int RelicMuonMatching::bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime){
 	
 	unsigned long long int shiftedt0Time, shiftedhardwareTime, oneint;
 	
@@ -598,4 +514,5 @@ bool RelicMuonMatching::WriteMuonInfo(){
 	
 	
 	return t0Time;
-}*/
+}
+*/

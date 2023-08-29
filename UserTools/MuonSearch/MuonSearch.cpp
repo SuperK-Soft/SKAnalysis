@@ -64,15 +64,26 @@ bool MuonSearch::Execute(){
 	int zero = 0;
 	int ntrg = softtrg_inittrgtbl_(&skhead_.nrunsk, &zero, &one, &max_qb);
 	
+	Log(m_unique_name+" found "+toString(ntrg)+" software triggers...",v_debug,m_verbose);
+	
 	std::vector<int> untaggedMuonTime;
 	
 	// search for pairs of HE+OD within a 100ns window - consider these muons
 	for(int i = 0; i < ntrg; i++){                                                   // loop over triggers found
+		Log(m_unique_name+" trigger "+toString(i)+" is of type "
+		    +toString(swtrgtbl_.swtrgtype[i]),v_debug,m_verbose);
 		if(swtrgtbl_.swtrgtype[i] == 1){                                             // for each HE trigger...
+			Log(m_unique_name+" found HE trigger, looking for coincident OD trigger",v_debug,m_verbose);
 			for(int j = 0; j < ntrg; j++){                                           // loop over triggers again
-				if( (swtrgtbl_.swtrgtype[j] == 3) &&                                 // looking for OD triggers...
-				    (abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])< coincidence_threshold)){
-					untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
+				Log("\t"+m_unique_name+" trigger "+toString(i)+" is of type "
+				    +toString(swtrgtbl_.swtrgtype[i]),v_debug,m_verbose);
+				if(swtrgtbl_.swtrgtype[j] == 3){                                     // looking for OD triggers...
+					Log(m_unique_name+" SHE+OD pair with Δt="                        // in time coincidence
+					    +toString(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i]),v_debug,m_verbose);
+					if(abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])< coincidence_threshold){
+						// swtrgt0ctr is t0_sub, so time from it0sk. We would need to add it0sk to get it0xsk.
+						untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
+					}
 				}
 			}
 		}
@@ -85,25 +96,28 @@ bool MuonSearch::Execute(){
 			// worrying if we did not find it...
 			Log(m_unique_name+" Warning! software trigger scan did not pick up primary muon event!",
 			    v_error,m_verbose);
-			untaggedMuonTime.push_back(skheadqb_.it0sk);
+			Log(m_unique_name+" Trigger bits in this event were: "+GetTriggerNames(skhead_.idtgsk),
+			    v_error,m_verbose);
+			untaggedMuonTime.push_back(0);
 		} else {
 			// this is probably the first entry from our scan
-			if(std::abs(skheadqb_.it0sk - untaggedMuonTime.front()) > coincidence_threshold){
-				// time difference of >100ns??
+			if(std::abs(untaggedMuonTime.front()) > coincidence_threshold){
+				// time difference of >100ns from the primary trigger??
 				Log(m_unique_name+" Warning! software trigger scan first HE+OD event at "
-				   +toString(untaggedMuonTime.front())+" does not line up with primary trigger HE+OD event at "
-				   +toString(skheadqb_.it0sk),v_warning,m_verbose);
+				   +toString(untaggedMuonTime.front())+" does not line up with primary trigger HE+OD event?"
+				   " (why was this not picked up by online trigger?)",v_warning,m_verbose);
 				// i guess we can scan for a more robust check...?
+				// see if another match lines up with the primary trigger
 				bool foundit=false;
 				for(auto&& atime : untaggedMuonTime){
-					if(std::abs(atime - skheadqb_.it0sk) < coincidence_threshold){
+					if(std::abs(atime) < coincidence_threshold){
 						foundit=true;
 						Log(m_unique_name+" found match (Δt="+toString(std::abs(atime - skheadqb_.it0sk))
 						    +") in later subtrigger",v_warning,m_verbose);
 					}
 				}
 				// add it to our list i guess
-				if(!foundit) untaggedMuonTime.push_back(skheadqb_.it0sk);
+				if(!foundit) untaggedMuonTime.push_back(0);
 			}
 		}
 	} else if(!untaggedMuonTime.empty()){

@@ -27,7 +27,7 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	// ------------------------------------
 	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("readerName",readerName);
-	m_variables.Get("reference_watert_run", reference_watert_run);
+	m_variables.Get("StepsToPerform",flag_skip);
 	
 	// check the upstream TreeReader name
 	if(m_data->Trees.count(readerName)==0){
@@ -39,17 +39,15 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	// and to check if this file is MC or not, so we can use the appropriate lf_allfit version
 	MC = m_data->Trees.at(readerName)->GetMCFlag();
 	
-	// initialize water transparency table
-	skrunday_();
-	skwt_gain_corr_();
+	// skip clusfit if we have too many hits. get the limit for 'too many hits'
+	get_ok = m_variables.Get("hitLimitForClusfit",NHITCUT);
+	if(!get_ok){
+		// fall back to relic sk4 defaults...
+		NHITCUT = (MC) ? 800 : 1000;
+	}
 	
 	// initialize bonsai
 	m_data->BonsaiInit();
-	
-	if(MC && skhead_.nrunsk==999999){
-		Log(m_unique_name+" using reference run "+toString(reference_watert_run)
-		    +" for water transparency",v_warning,m_verbose);
-	}
 	
 	return true;
 }
@@ -63,48 +61,12 @@ bool lfallfit::Execute(){
 	}
 	++nread;
 	
-	// FIXME should this whole water transparency / bad channel thing be part of e.g. the TreeReader?
-	
-	// lfallfit requires a water transparency
-	// we can look up a suitable value with lfwater_, but we need a run number
-	// for MC, if the run number hasn't already been overridden, use a suitably representative run
-	if(MC && skhead_.nrunsk==999999){
-		// nrunsk of 999999 is expected for MC...
-		// this gets printed every time as SKREAD overwrites nrunsk with each new event
-		//Log(m_unique_name+" using reference run "+toString(reference_watert_run)
-		//    +" for water transparency",v_debug,m_verbose);
-		skhead_.nrunsk = reference_watert_run;
-	}
-	
-	// retreive new water transparency when changing runs
-	if(skhead_.nrunsk!=nrunsk_last){
-		int days_to_run_start = skday_data_.relapse[skhead_.nrunsk];  // defined in skdayC.h
-		lfwater_(&days_to_run_start, &watert);
-		Log(m_unique_name+" loaded new water transparency value "+toString(watert)
-			+" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
-		nrunsk_last = skhead_.nrunsk;
-	}
-	
-	// update the bad channel list when changing runs or subruns (MC only? FIXME does this make sense?)
-	if(MC){
-		if(skhead_.nrunsk!=nrunsk_last || skhead_.nsubsk!=nsubsk_last){
-			int ierr;
-			skbadch_(&skhead_.nrunsk,&skhead_.nsubsk,&ierr);
-			nrunsk_last = skhead_.nrunsk;
-			nsubsk_last = skhead_.nsubsk;
-			if(skhead_.nrunsk!=nrunsk_last) darklf_(&skhead_.nrunsk);
-		}
-	}
-	
 	// clear variables for low & mu fitters
 	lfclear_all_();
 	
-	// apply lowfit
-	int NHITCUT = (MC) ? 800 : 1000;  //  number of hit limit for clusfit
-	
-	int lfflag;
-	int log_level;
-	int flag_skip=0;
+	// fetch latest water transparency, which may have changed if we changed run.
+	float watert;
+	m_data->vars.Get("watert",watert);
 	
 	/* the variants of lfallfit have mostly the same signature:
 		inputs:
@@ -120,8 +82,12 @@ bool lfallfit::Execute(){
 				       4) do not print
 				       5) only prints when found
 		outputs:
-			lfflag is output: 0=fit success, -1=too many hits for lowe, -2: no hits
+			lfflag is output: 0=fit success, -1=too many hits for lowe, -2: no hits (nqisk==0)
 	*/
+	
+	int lfflag;
+	int flag_log;
+	
 	if(MC){
 		switch (skheadg_.sk_geometry) {
 			case 1:  //lfallfit_sk1_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
@@ -133,17 +99,17 @@ bool lfallfit::Execute(){
 			case 4: {
 				// which lfallfit_sk4 would you prefer...?
 				//lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
-				//lfallfit_sk4_final_qe41_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
-				lfallfit_sk4_final_qe43_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
-				//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				//lfallfit_sk4_final_qe41_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk4_final_qe43_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 5: {
-				lfallfit_sk5_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk5_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 6: {
-				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			default: {
@@ -169,17 +135,17 @@ bool lfallfit::Execute(){
 			}
 			case 4: {
 				//lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
-				//lfallfit_sk4_final_qe41_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
-				lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
-				//lfallfit_sk4_gain_corr_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				//lfallfit_sk4_final_qe41_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				//lfallfit_sk4_gain_corr_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 5: {
-				lfallfit_sk5_data_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk5_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 6: {
-				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			default: {
@@ -188,6 +154,15 @@ bool lfallfit::Execute(){
 				return false;
 			}
 		}
+	}
+	
+	if(lfflag==-1){
+		Log(m_unique_name+" Warning! lfallfit failed with status -1: 'too many hits for lowe'!\n"
+		    "Maybe an upstream nqisk cut is required?",v_warning,m_verbose);
+		//return true;   // XXX i guess maybe just record what we have?
+	} else if(lfflag==-2){
+		Log(m_unique_name+" Warning! lfallfit failed with status -2: 'no hits'!\n",v_error,m_verbose);
+		return false;    // XXX we really should not have events with no hits...!
 	}
 	
 	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
