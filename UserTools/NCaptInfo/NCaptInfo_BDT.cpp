@@ -1,4 +1,22 @@
 #include "NCaptInfo_BDT.h"
+#include "LoweCandidate.h"
+
+bool NCaptInfo_BDT::InitCandidateReader(){
+	
+	// tree reader to retreive candidates
+	std::string treeReaderName="";
+	m_variables.Get("treeReaderName",treeReaderName);
+	 if(m_data->Trees.count(treeReaderName)==0){
+		Log(m_unique_name+" failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
+		return false;
+	} else {
+		myTreeReader = m_data->Trees.at(treeReaderName);
+	}
+	
+	candidates_file = myTreeReader->GetFile()->GetName();
+	
+	return true;
+}
 
 bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	
@@ -9,6 +27,7 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	basic_array<float*> xs;
 	basic_array<float*> ys;
 	basic_array<float*> zs;
+	basic_array<float*> bses;
 	
 	get_ok  = myTreeReader->Get("neutron5",metrics);
 	get_ok &= myTreeReader->Get("nvx",xs);
@@ -16,9 +35,15 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	get_ok &= myTreeReader->Get("nvz",zs);
 	// dt= time of prompt event, dtn=time of capture event
 	get_ok &= myTreeReader->Get("dtn",times);
+	get_ok &= myTreeReader->Get("bse",bses);  // is this bonsai energy for the ncapture candidate?
+	
+	
+	// prompt information is from upstream LOWE branch which gets propagated
+	LoweInfo* myLowE=nullptr;
+	get_ok &= myTreeReader->Get("LOWE",myLowE);
 	
 	if(!get_ok){
-		Log(m_unique_name+": error getting candidates!",v_error,verbosity);
+		Log(m_unique_name+": error getting candidates!",v_error,m_verbose);
 		return false;
 	}
 	
@@ -26,17 +51,38 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	candidates.resize(times.size());
 	for(int icand=0; icand<times.size(); ++icand){
 		
-		Log(m_unique_name+": Get BDT candidate "+toString(icand),v_debug,verbosity);
+		Log(m_unique_name+": Get BDT candidate "+toString(icand),v_debug,m_verbose);
 		NCaptCandidate& cand = candidates.at(icand);
 		cand.algo = "BDT";
 		
 		// likelihood metric should be defined such that 1 is high confidence and 0 is no confidence.
-		// the BDT algorithm assigns things the opposite way round, so flip it. XXX FIXME check XXX XXX
-		cand.likelihood_metric = 1-metrics.at(icand);
+		// didn't NTag and the BDT define metrics in the opposite way...? one might need `1-metrics.at(icand)`
+		cand.capture_likelihood_metric = metrics.at(icand);
 		cand.capture_time = times.at(icand);
 		cand.capture_pos = TVector3(xs.at(icand),
 		                            ys.at(icand),
 		                            zs.at(icand));
+		cand.capture_E = bses.at(icand);
+		
+		// we ought to save some info about the prompt event too, as this is used for the search starting point
+		if(myLowE){
+			
+			LoweCandidate prompt;
+			prompt.algo = "bonsai";
+			prompt.event_pos = TVector3(myLowE->bsvertex[0],
+			                            myLowE->bsvertex[1],
+			                            myLowE->bsvertex[2]);
+			prompt.event_time = myLowE->bsvertex[3];
+			prompt.event_energy = myLowE->bsenergy;
+			prompt.goodness_metric = myLowE->bsgood[1]; // seems to be the main 'goodness' metric
+			prompt.recoVars.Set("bsgood",std::vector<float>{myLowE->bsgood,myLowE->bsgood+3});
+			prompt.recoVars.Set("bsdirks",myLowE->bsdirks);
+			prompt.recoVars.Set("ovaQ",myLowE->linfo[26]);
+			m_data->LoweCandidates.push_back(prompt);
+			cand.SetPromptEvent(m_data->LoweCandidates.size()-1);
+			
+		}
+		
 		// TODO
 		// populate feature variables used by the tagging algorithm?
 		//cand.featureMap = BStore(true, BSTORE_BINARY_FORMAT);

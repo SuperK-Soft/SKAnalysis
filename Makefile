@@ -2,9 +2,10 @@
 include ./skofl.gmk  # pulls in libskroot.so as well
 # skofl.gmk is copy of aboe with rfa removed from SITE_LIRBRARIES
 PWD=`pwd`
+Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -Wfatal-errors -fPIC -O3 -g -std=c++11 -Wfatal-errors -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -lgfortran # -Wpadded -Wpacked -malign-double -mpreferred-stack-boundary=8  # -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds  # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -16,11 +17,11 @@ endif
 #CXXFLAGS    += -g -pg -ggdb3
 
 # Fortran compiler flags. APPEND ONLY probably
-FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none # -falign-commons
+FCFLAGS += -w -fPIC -lstdc++ -fimplicit-none -O -falign-commons
 
 # SK Offline Library (SKOFL) Headers & Libraries
 # n.b. no spaces between -I and following path allowed here (rootcint doesn't like it)
-SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe
+SKOFLINCLUDE = -I$(SKOFL_ROOT)/include -I$(SKOFL_ROOT)/inc -I$(SKOFL_ROOT)/include/lowe -I$(SKOFL_ROOT)/inc/lowe -I$(SKOFL_ROOT)/lowe/bonsai
 
 # lowe libraries - some of these may not be required in this list
 SKOFLLIB = -L $(SKOFL_ROOT)/lib -lbonsai_3.3 -lsklowe_7.0 -lwtlib_5.1 -lsollib_4.0 -lgeom -lskrd -lastro -lzbs -lgeom -lsklib -llibrary -liolib -lskroot -lDataDefinition -ltqrealroot -lloweroot -latmpdroot -lmcinfo -lsofttrgroot -lidod_xtlk_root -lConnectionTableReader -lsnevtinfo
@@ -31,11 +32,15 @@ BINLIB = -L ${RFA_ROOT} -lrfa
 # Atmospheric, Muon and Proton Decay libraries (ATMPD) Headers & Libraries
 OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
 ATMPDINCLUDE = -I $(ATMPD_ROOT)/include -I $(OLD_NTAG_GD_ROOT) -I $(ATMPD_ROOT)/src/recon/fitqun
-ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k
+ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k -lska
+
+# functions from kirk bays. BFF (aka newmufit), getdl, ...
+KIRKLIB = -L $(Dependencies)/Kirk -lkirk
 
 # not all fortran routines are built into libraries as part of compiling SKOFL & ATMPD.
 # figure out why standalones don't need to specify a full path when listing in dependencies of a target....?
-LOCAL_OBJS = $(SKOFL_ROOT)/examples/root2zbs/fort_fopen.o $(ATMPD_ROOT)/src/analysis/neutron/merge/zbsinit.o
+LOCAL_OBJS = $(SKOFL_ROOT)/examples/root2zbs/fort_fopen.o 
+#$(ATMPD_ROOT)/src/analysis/neutron/merge/zbsinit.o
 #$(ATMPD_ROOT)/src/analysis/neutron/ntag/bonsai.o
 #$(RELICWORKDIR)/data_reduc/neutron_tagging/src/bonsai.o
 # ATMP version calls lfallfit_sk4_data, which invokes bonsaifit.
@@ -122,7 +127,11 @@ endif
 THIRDREDLIB = -L/home/moflaher/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
 
 # SKG4 Library
-SKG4LIB = ${SKG4Dir}/lib/libSKG4Root.so
+SKG4LIB = -L${SKG4Dir}/lib -lSKG4Root
+
+# PairBonsai; fit both prompt and neutron with a combined likelihood (by liz kneale)
+PAIRBONSAILIB= -L $(Dependencies)/pairbonsai -lpairbonsai
+PAIRBONSAIINCLUDE= -I $(Dependencies)/pairbonsai
 
 # all user classes that the user may wish to write to ROOT files require a dictionary.
 # TODO maybe we should put these in a separate directory or something so they don't need to be listed explicitly
@@ -133,9 +142,12 @@ ROOTCLASSES = DataModel/Candidate.h DataModel/Cluster.h DataModel/EventCandidate
 DataModelInclude = $(ROOTINCLUDE) $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PybindInclude)
 DataModelLib = $(ROOTLIB)
 
+#
+EXTRALIBS= -lstdc++fs
+
 # Combine all external libraries and headers needed by user Tools
-MyToolsInclude = $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PythonInclude) $(TMVAINCLUDE)
-MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS)
+MyToolsInclude = $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PythonInclude) $(TMVAINCLUDE) $(PAIRBONSAIINCLUDE)
+MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS) $(EXTRALIBS) $(PAIRBONSAILIB) $(KIRKLIB)
 
 # To add user classes:
 # 1. Add a rule to build them into a shared library (see libMyClass.so example)
@@ -146,8 +158,6 @@ UserLibs = lib/libMyClass.so
 # these can't be put in rules, they won't be executed there.
 USERLIBS1=$(patsubst %.so,%,$(UserLibs))
 USERLIBS2=$(patsubst lib/lib%,-l%,$(USERLIBS1))
-
-Dependencies=Dependencies
 
 debug: all
 
@@ -204,7 +214,7 @@ clean:
 	#rm -f map_string,string__LinkDef.h
 
 
-lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp)) lib/libRootDict.so
+lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst DataModel/%.cpp, DataModel/%.o, $(wildcard DataModel/*.cpp))  $(patsubst DataModel/%.F, DataModel/%.o, $(wildcard DataModel/*.F)) lib/libRootDict.so
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	g++ $(CXXFLAGS) -fvisibility=hidden -shared DataModel/*.o -I include -L lib -lStore -lLogging -o lib/libDataModel.so $(DataModelInclude) $(DataModelLib) -lRootDict
 
@@ -223,7 +233,8 @@ UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so inclu
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	cp UserTools/Factory/Factory.h include
 	cp UserTools/Unity.h include
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelib)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	#-L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelib)
 
 update:
 	@echo -e "\e[38;5;51m\n*************** Updating ****************\e[0m"
@@ -233,12 +244,14 @@ update:
 UserTools/%.o: UserTools/%.cpp lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so | include/Tool.h
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	-cp $(shell dirname $<)/*.h include
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelLib)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	#-L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelLib)
 
 UserTools/%.o: UserTools/%.cc lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so
 	@echo -e "\e[38;5;214m\n*************** Making c++ Tool " $@ "****************\e[0m"
 	-cp $(shell dirname $<)/*.h include 2>/dev/null || :
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lDataModel -lLogging $(MyToolsInclude) $(MyToolsLib) $(DataModelInclude) $(DataModelLib)
+	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	# -L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelLib)
 
 UserTools/%.o: UserTools/%.F lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so
 	@echo -e "\e[38;5;214m\n*************** Making fortran Tool " $@ "****************\e[0m"
@@ -251,10 +264,17 @@ remove:
 	echo "removing"
 	-rm UserTools/$(TOOL)/*.o
 
-DataModel/%.o: DataModel/%.cpp lib/libLogging.so lib/libStore.so  
-	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
-	cp $(shell dirname $<)/*.h include
+DataModel/%.o: DataModel/%.cpp lib/libLogging.so lib/libStore.so include/dummy
+	@echo -e "\e[38;5;214m\n*************** Making c++ object " $@ "****************\e[0m"
 	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
+
+DataModel/%.o: DataModel/%.F lib/libLogging.so lib/libStore.so include/dummy
+	@echo -e "\e[38;5;214m\n*************** Making fortran object " $@ "****************\e[0m"
+	-gfortran $(FCFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
+
+include/dummy: DataModel/*.h
+	 cp $(shell dirname $<)/*.h include
+	 touch include/dummy
 
 Docs:
 	doxygen Doxyfile

@@ -1,0 +1,4 @@
+treeReaderName spallReader
+writerName muWriter
+hitsThreshold 20
+selectionsName spallCuts

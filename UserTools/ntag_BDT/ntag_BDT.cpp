@@ -2,8 +2,6 @@
 #include "ntag_BDT.h"
 
 ntag_BDT::ntag_BDT():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
 	Py_Initialize(); // XXX THIS MUST BE CALLED IN THE CONSTRUCTOR TO USE PYBIND XXX
 }
 
@@ -20,9 +18,9 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	
 	// get the reader for inputs
 	std::string treeReaderName;
-	m_variables.Get("treeReaderName",treeReaderName);
+	get_ok = m_variables.Get("treeReaderName",treeReaderName);
 	if(m_data->Trees.count(treeReaderName)==0){
-		Log("Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
+		Log(m_unique_name+": Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
 		return false;
 	}
 	myTreeReader = m_data->Trees.at(treeReaderName);
@@ -60,12 +58,21 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	// make output tree with same branch structure as input tree
 	treeout = myTreeReader->GetTree()->CloneTree(0);
 	
+	// check if we have the 'type' or 'smearedvertex' branches (old relic analysis MC)
+	got_type = myTreeReader->Get("type",type);
+	got_smeared_vtx = myTreeReader->Get("smearedvertex", smearedvertex);
+	
 	// make output branch arrays
 	neutron5 = new float[MAX_EVENTS];
 	nlow = new int[MAX_EVENTS];
 	treeout->Branch("neutron5",  neutron5, "neutron5[np]/F");
 	treeout->Branch("nlow",      nlow,     "nlow[np]/I");
 	
+	// So that downstream Tools can access our results without needing to run a second
+	// ToolChain that reads the results off disk, make a TreeReader that they can use to
+	// retrieve results as they're generated, equivalently to with an upstream TreeReader Tool
+	outTreeReader.Load(treeout);
+	m_data->RegisterReader("ntag_BDT_OutTree", &outTreeReader);
 	
 	return true;
 }
@@ -73,18 +80,18 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 
 bool ntag_BDT::Execute(){
 	
-	Log(toolName+": Getting branch values",v_debug,m_verbose);
+	Log(m_unique_name+": Getting branch values",v_debug,m_verbose);
 	get_ok = GetBranchValues();
 	if(not get_ok){
-		Log(toolName+": Error getting branch values!",v_error,m_verbose);
+		Log(m_unique_name+": Error getting branch values!",v_error,m_verbose);
 		//return false;
 	}
-	Log(toolName+": "+toString(np)+" candidates this entry",v_debug,m_verbose);
+	Log(m_unique_name+": "+toString(np)+" candidates this entry",v_debug,m_verbose);
 	
 	// unlikely to have >500 neutron candidates in an event,
 	// but still better not to segfault if we can avoid it
 	if(np > MAX_EVENTS){
-		Log(toolName+": expanding output arrays",v_debug,m_verbose);
+		Log(m_unique_name+": expanding output arrays",v_debug,m_verbose);
 		delete[] neutron5;
 		delete[] nlow;
 		MAX_EVENTS = np;
@@ -92,6 +99,8 @@ bool ntag_BDT::Execute(){
 		nlow = new int[MAX_EVENTS];
 		treeout->SetBranchAddress("neutron5",  neutron5);
 		treeout->SetBranchAddress("nlow",      nlow);
+		outTreeReader.UpdateBranchPointer("neutron5");
+		outTreeReader.UpdateBranchPointer("nlow");
 	}
 	
 	// Compute position in detector for Nlow calculation (neutron tagging)
@@ -115,7 +124,7 @@ bool ntag_BDT::Execute(){
 	
 	// loop over neutron capture candidates
 	for(int j=0; j<np; j++){
-		Log(toolName+": Checking candidate "+toString(j)+", N10="+toString(n10[j]),v_debug,m_verbose);
+		Log(m_unique_name+": Checking candidate "+toString(j)+", N10="+toString(n10[j]),v_debug,m_verbose);
 		
 		// initialize output metric for this candidate
 		neutron5[j] = -10;
@@ -163,7 +172,7 @@ bool ntag_BDT::Execute(){
 		if(j==0) NTAG_VARS = neutronvars.size();
 		
 	}
-	Log(toolName+": "+toString(passing_indices.size())+" candidates passed preselection",v_debug,m_verbose);
+	Log(m_unique_name+": "+toString(passing_indices.size())+" candidates passed preselection",v_debug,m_verbose);
 	
 	// only need to do prediction if any candidates passed preselection
 	if(passing_indices.size()){
@@ -174,7 +183,7 @@ bool ntag_BDT::Execute(){
 		// Make a Numpy array with variable info for current event
 		// the constructor constructs a 2D Numpy array from a pointer and the dimensions
 		const int ncount = neutronvars.size()/NTAG_VARS;
-		Log(toolName+": Building pyarray from candidate data",v_debug,m_verbose);
+		Log(m_unique_name+": Building pyarray from candidate data",v_debug,m_verbose);
 		if(m_verbose>v_debug){
 			std::cout<<"ncount = "<<ncount<<", NTAG_VARS="<<NTAG_VARS
 				     <<", neutronvars.data()="<<neutronvars.data()
@@ -183,9 +192,9 @@ bool ntag_BDT::Execute(){
 		auto arr = py::array_t<double>{{ncount,NTAG_VARS}, neutronvars.data()};
 		
 		// Make predictions
-		Log(toolName+": Calling predict on candidates",v_debug,m_verbose);
+		Log(m_unique_name+": Calling predict on candidates",v_debug,m_verbose);
 		py::array_t<double, py::array::c_style | py::array::forcecast> probas5 = predict_proba5(arr);
-		Log(toolName+": Prediction done",v_debug,m_verbose);
+		Log(m_unique_name+": Prediction done",v_debug,m_verbose);
 		auto probas_u5 = probas5.unchecked<2>();
 		
 		// map the output metric values back onto the array of all neutron candidates
@@ -197,13 +206,13 @@ bool ntag_BDT::Execute(){
 	}
 	
 	// fill output tree with BDT metrics
-	Log(toolName+": Filling output branches",v_debug,m_verbose);
+	Log(m_unique_name+": Filling output branches",v_debug,m_verbose);
 	treeout->Fill();
 	
 	unsigned long num_entries = treeout->GetEntries();
 	if(num_entries%WRITE_FREQUENCY){
 		// write out intermittently for safety
-		Log(toolName+": Updating output TTree",v_debug,m_verbose);
+		Log(m_unique_name+": Updating output TTree",v_message,m_verbose);
 		outfile->Write("*",TObject::kOverwrite);
 	}
 	
@@ -220,6 +229,9 @@ bool ntag_BDT::Finalise(){
 		outfile = nullptr;
 	}
 	
+	// inform the TreeReader not to close the file when the destructor is called.
+	outTreeReader.SetClosed();
+	
 	return true;
 }
 
@@ -228,7 +240,6 @@ bool ntag_BDT::GetBranchValues(){
 	get_ok  = (myTreeReader->Get( "HEADER",          HEADER        ));
 	get_ok &= (myTreeReader->Get( "LOWE",            LOWE          ));
 	get_ok &= (myTreeReader->Get( "np",              np            ));
-	get_ok &= (myTreeReader->Get( "type",            type          ));
 	get_ok &= (myTreeReader->Get( "nhits",           nnhits        ));
 	get_ok &= (myTreeReader->Get( "N10",             n10           ));
 	get_ok &= (myTreeReader->Get( "N200M",           N200M         ));
@@ -254,11 +265,14 @@ bool ntag_BDT::GetBranchValues(){
 	get_ok &= (myTreeReader->Get( "fwall",           fwall         ));
 	get_ok &= (myTreeReader->Get( "N10d",            n10d          ));
 	get_ok &= (myTreeReader->Get( "dt",              dt            ));
-	get_ok &= (myTreeReader->Get( "smearedvertex",   smearedvertex )); // optional, MC only
 	//get_ok &= (myTreeReader->Get("neutron5",       neutron5      ));
 	//get_ok &= (myTreeReader->Get("pvx",            vx            ));
 	//get_ok &= (myTreeReader->Get("pvy",            vy            ));
 	//get_ok &= (myTreeReader->Get("pvz",            vz            ));
+	
+	// extra optional branches, exist only for MC w/ old relic analysis
+	if(got_smeared_vtx) get_ok &= (myTreeReader->Get( "smearedvertex", smearedvertex ));
+	if(got_type) get_ok &= (myTreeReader->Get( "type",type ));
 	
 	// we have a variable number of 'Nlow' branches.
 	// the current apply_ntag.C code defined the number of such branches
@@ -267,7 +281,7 @@ bool ntag_BDT::GetBranchValues(){
 	int i=0;
 	TTree* t = myTreeReader->GetTree();
 	Nlow.clear();
-	Log(toolName+": Scanning for Nlow branches",v_debug+1,m_verbose);
+	Log(m_unique_name+": Scanning for Nlow branches",v_debug+1,m_verbose);
 	while(true){
 		++i;
 		std::string nextbranchname = std::string("Nlow")+std::to_string(i);

@@ -1,5 +1,7 @@
 #include "PMTHit.h"
 
+PMTHit::~PMTHit() = default;
+
 PMTHit::PMTHit(float t, float q, int i)
 : T(t), Q(q), I(i), S(0), ToF(0) 
 {

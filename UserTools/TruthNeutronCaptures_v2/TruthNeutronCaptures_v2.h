@@ -9,7 +9,6 @@
 
 #include "Tool.h"
 
-#include "MTreeReader.h"
 #include "SkrootHeaders.h" // MCInfo, Header etc.
 
 class TApplication;
@@ -41,20 +40,9 @@ class TruthNeutronCaptures_v2: public Tool {
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
 	
 	private:
-	std::string toolName;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// file stuff
-	std::string inputFile;                      // if just passing a single filename directly to this tool
-	std::vector<std::string> input_file_names;  // if using upstream LoadFileList tool
+	std::string treeReaderName;                 // name of treereader
 	std::string outputFile;                     // name of output file to write
 	int MAX_EVENTS=-1;                          // max n events to process
 	int WRITE_FREQUENCY=10;                     // update output file every N fills
@@ -70,13 +58,12 @@ class TruthNeutronCaptures_v2: public Tool {
 	// =========
 	int CalculateVariables();
 	int GenerateHistograms();
-	int ReadEntry(long entry_number);
+	int GetBranchValues();
 	int CreateOutputFile(std::string outputFile);
 	void ClearOutputTreeBranches();
 	void PrintBranches();
 	int WriteTree();
 	void CloseFile();
-	int DisableUnusedBranches();
 	
 	// Member variables
 	// ================
@@ -84,7 +71,7 @@ class TruthNeutronCaptures_v2: public Tool {
 	
 	// variables to read in
 	// ====================
-	MTreeReader myTreeReader;                                   // the TTree reader
+	MTreeReader* myTreeReader     = nullptr;
 	const Header   *run_header    = nullptr;
 	const MCInfo   *mc_info       = nullptr;
 	const SecondaryInfo *sec_info = nullptr;

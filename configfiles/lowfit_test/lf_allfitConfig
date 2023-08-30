@@ -1,4 +1,0 @@
-# Dummy config file
-verbose 1
-fname_in $HOME/standalones/lowfit_wrapped/rfm_run062773.000033.root
-fname_out test_toolchain.root

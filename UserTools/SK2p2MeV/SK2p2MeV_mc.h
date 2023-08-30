@@ -44,6 +44,7 @@ class SK2p2MeV_mc: public SK2p2MeV {
     // additional input variables
     MCInfo *MC;
     ThirdRed *thirdred;
+    bool got_third_red=false;  // propagate only if input TTree has it
     
     // configuration variables
     Bool_t  fSmear;

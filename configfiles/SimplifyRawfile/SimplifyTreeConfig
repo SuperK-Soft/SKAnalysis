@@ -1,3 +1,4 @@
 # SimplifyTree config file
 verbosity 2
 treeReaderName rawReader
+OutputDir ./

@@ -23,10 +23,7 @@
 #include "Fit/FitConfig.h"
 #include "Math/WrappedMultiTF1.h"
 
-FitPurewaterLi9NcaptureDt::FitPurewaterLi9NcaptureDt():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+FitPurewaterLi9NcaptureDt::FitPurewaterLi9NcaptureDt():Tool(){}
 
 // from 2015 paper Table I
 constexpr double li9_lifetime_secs = 0.26;
@@ -39,11 +36,11 @@ bool FitPurewaterLi9NcaptureDt::Initialise(std::string configfile, DataModel &da
 	
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	m_variables.Get("outputFile",outputFile);          // where to save data. If empty, current TFile
 	m_variables.Get("li9_ncapture_dtmin",ncap_dtmin);
 	m_variables.Get("li9_ncapture_dtmax",ncap_dtmax);
@@ -62,8 +59,8 @@ bool FitPurewaterLi9NcaptureDt::Execute(){
 	
 	// the following cuts are based on muon-lowe pair variables, so loop over muon-lowe pairs
 	std::set<size_t> spall_mu_indices = myTreeSelections->GetPassingIndexes("dlt_mu_lowe>200cm");
-	Log(toolName+" Looping over "+toString(spall_mu_indices.size())
-				+" preceding muons to look for spallation events",v_debug,verbosity);
+	Log(m_unique_name+" Looping over "+toString(spall_mu_indices.size())
+				+" preceding muons to look for spallation events",v_debug,m_verbose);
 	for(size_t mu_i : spall_mu_indices){
 		// now check whether this passed the additional Li9 cuts
 		if(not myTreeSelections->GetPassesCut("ntag_FOM>0.995")) continue;
@@ -103,12 +100,12 @@ bool FitPurewaterLi9NcaptureDt::Finalise(){
 		fout->cd();
 	} else {
 		if(gDirectory->GetFile()==nullptr){
-			Log(toolName+" Error! No output file given and no file open!",v_error,verbosity);
+			Log(m_unique_name+" Error! No output file given and no file open!",v_error,m_verbose);
 			return true;
 		}
 	}
 	
-	Log(toolName+" Fitting Li9 Ntag candidate dt distribution",v_debug,verbosity);
+	Log(m_unique_name+" Fitting Li9 Ntag candidate dt distribution",v_debug,m_verbose);
 	PlotNcaptureDt();
 	
 	if(fout!=nullptr){
@@ -139,7 +136,7 @@ bool FitPurewaterLi9NcaptureDt::PlotNcaptureDt(){
 		// XXX FIXME REMOVE AFTER REPROCESSING IN ANALYSE XXX XXX XXX XXX XXX XXX 
 		double ncap_time_adjusted = aval < 50000 ? aval : aval - 65000;
 		ncap_time_adjusted /= 1E9;
-		if(ncpi<100) std::cout<<ncap_time_adjusted<<", "; ++ncpi;
+		if(ncpi<100){ std::cout<<ncap_time_adjusted<<", "; ++ncpi; }
 		li9_ncap_dt_hist.Fill(ncap_time_adjusted);  // FIXME weight by num_post_muons and num neutrons
 	}
 	std::cout<<"}"<<std::endl;
@@ -205,7 +202,7 @@ double FitPurewaterLi9NcaptureDt::BinnedNcapDtChi2Fit(TH1F* li9_ncap_dt_hist){
 	}
 	//float fitchi2 = fitresult->Chi2();                 // same as below, which
 	float fitchi2 = ncap_dt_func.GetChisquare();         // doesn't need fitresultptr
-	Log(toolName+" li9 lowe->ncap dt fit chi2 was "+toString(fitchi2),v_message,verbosity);
+	Log(m_unique_name+" li9 lowe->ncap dt fit chi2 was "+toString(fitchi2),v_message,m_verbose);
 	
 	// draw result
 	li9_ncap_dt_hist->Draw();
@@ -311,7 +308,7 @@ bool FitPurewaterLi9NcaptureDt::UnbinnedNcapDtLogLikeFit(TH1F* li9_ncap_dt_hist,
 	// Minimizer type (Minuit, Fumili, GSLMultiMin...)
 	// Minimizer algorithm (Migrad, Simplex, Scan...)
 	// Strategy - Minuit default 1 is to only compute full Hessian matrix after minimization(?)
-	// Print level (verbosity 0...)
+	// Print level (m_verbose 0...)
 	// Tolerance to control iterations
 	// Max function calls
 	// Max iterations (not used by Minuit)

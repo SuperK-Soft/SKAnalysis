@@ -8,7 +8,9 @@ class NCaptInfo_BDT : public NCaptInfo {
 	public:
 	NCaptInfo_BDT() : NCaptInfo(){};
 	private:
+	bool InitCandidateReader();
 	bool GetCandidates(std::vector<NCaptCandidate>& candidates);
+	MTreeReader* myTreeReader=nullptr;
 };
 
 #endif

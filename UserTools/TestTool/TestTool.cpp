@@ -26,7 +26,7 @@ bool TestTool::Initialise(std::string configfile, DataModel &data){
   m_data= &data;
   m_log= m_data->Log;
 
-  if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
+  if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
   
   std::cout<<"making root stuff"<<std::endl;
   f = new TFile("trashme.root","recreate");
@@ -241,8 +241,8 @@ void TestTool::MakeBranches(TTree* tree, BStore* store) {
         // we will error. I suppose what the user may *like* would be to have us
         // dereference and store the elements, but that's going a step too far.
         if(thetype.find('*')!=std::string::npos){
-            Log(toolName+" Error! Can't make a TBranch for BStore entry "+key
-                +" of type "+thetype+" which contains pointers.",v_error,verbosity);
+            Log(m_unique_name+" Error! Can't make a TBranch for BStore entry "+key
+                +" of type "+thetype+" which contains pointers.",v_error,m_verbose);
             continue;
         }
         std::cout<<"no pointers left, basic_type is: "<<basic_type<<std::endl;
@@ -428,9 +428,9 @@ bool TestTool::RegisterType(std::string thetype){
     // For classes of which ROOT is aware we can determine this from the TClass:
     TClass* tc = TClass::GetClass(thetype.c_str());
     if(tc==nullptr){
-        Log(toolName+" Error! Could not build TClass from "+thetype
+        Log(m_unique_name+" Error! Could not build TClass from "+thetype
             +"! Have you built a ROOT dictionary for it? (See Makefile)",
-            v_error,verbosity);
+            v_error,m_verbose);
         return false;
     }
     const char* declared_in = tc->GetDeclFileName();
@@ -438,10 +438,10 @@ bool TestTool::RegisterType(std::string thetype){
         // this could be e.g. because either it's unknown to ROOT
         // or because it's a combination of classes,
         // e.g. std::vector<TString>
-        Log(toolName+" Error! Could not determine header "+thetype
+        Log(m_unique_name+" Error! Could not determine header "+thetype
             +" resides in! Have you built a ROOT dictionary for it?"
             +" (See Makefile)",
-            v_error,verbosity);
+            v_error,m_verbose);
         return false;
     }
     std::string decl_file = declared_in;
@@ -467,6 +467,7 @@ bool TestTool::RegisterType(std::string thetype){
         // This is handled in the Makefile by linking the same libraries
         // defining user classes to both main and libBStore_RootDict.so
     } // else it's from stl, we can skip the #includes
+    return true;
 }
 
 bool TestTool::FillBranches(TTree* tree, Store* store){
@@ -505,6 +506,7 @@ bool TestTool::FillBranches(TTree* tree, Store* store){
     }
     tree->SetEntries(num_entries);
     tree->ResetBranchAddresses();
+    return true;
 }
 
 bool TestTool::FillBranches(TTree* tree, BStore* store){
@@ -626,7 +628,7 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
                     // failed to find it. Double check the file exists.
                     get_ok = system("ls -1 BStore_Linkdef.hh > /dev/null");
                     if(get_ok!=0){
-                        Log(toolName+" Error! Failed to find BStore_Linkdef.hh!",v_error,verbosity);
+                        Log(m_unique_name+" Error! Failed to find BStore_Linkdef.hh!",v_error,m_verbose);
                         return false;
                     } else {
                         std::cout<<"linkdef exists, adding new line(s)"<<std::endl;
@@ -665,8 +667,8 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
                         get_ok |= system("make lib/libBStore_RootDict.so");
                         std::cout<<"after building lib"<<std::endl;
                         if(get_ok!=0){
-                            Log(toolName+ " failed to update BStore dictionary to support new type "
-                                + thetype + "! Please rebuild manually",v_error,verbosity);
+                            Log(m_unique_name+ " failed to update BStore dictionary to support new type "
+                                + thetype + "! Please rebuild manually",v_error,m_verbose);
                             return false;
                         }
                         // if we had a TInterpreter, we need to delete it and make a new one
@@ -694,8 +696,8 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
             TString cmd = TString::Format("BStore* bs = (BStore*)0x%x; ", store);
             meInterpreter->ProcessLine(cmd.Data(),&error);
             if(error!=0){
-                Log(toolName+" Error! Failed to instantiate BStore pointer in FillBranches!"
-                    + " TInterpreter error was "+TInterpreterErrors.at(error),v_error,verbosity);
+                Log(m_unique_name+" Error! Failed to instantiate BStore pointer in FillBranches!"
+                    + " TInterpreter error was "+TInterpreterErrors.at(error),v_error,m_verbose);
                 return false;
             }
             // instantiate a pointer to an instance of the desired object type.
@@ -705,16 +707,16 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
             std::cout<<"declaring temporary: "<<cmd.Data()<<std::endl;
             meInterpreter->ProcessLine(cmd.Data(), &error);
             if(error!=0){
-                Log(toolName+" Error! Failed to instantiate pointer to type " + thetype
+                Log(m_unique_name+" Error! Failed to instantiate pointer to type " + thetype
                     +" in TInterpreter! Have you made a ROOT dictionary for your class"
-                    +" and placed a rootmap file on $LD_LIBRARY_PATH?",v_error,verbosity);
+                    +" and placed a rootmap file on $LD_LIBRARY_PATH?",v_error,m_verbose);
                 return false;
             }
             std::cout<<"Invoking BStore::Get"<<std::endl;
             cmd = "bs->Get(\""+key+"\", "+key+");";
             meInterpreter->ProcessLine(cmd.Data(), &error);
             if(error!=0){
-                Log(toolName+" Error! Failed to invoke BStore::Get for type "+thetype,v_error,verbosity);
+                Log(m_unique_name+" Error! Failed to invoke BStore::Get for type "+thetype,v_error,m_verbose);
             }
             std::cout<<"Get returned"<<std::endl;
             cmd = "printf(\"temporary now points to %p\\n\","+key+");";
@@ -724,15 +726,15 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
             cmd = TString::Format("TTree* t = (TTree*)0x%x;", tree);
             meInterpreter->ProcessLine(cmd.Data(), &error);
             if(error!=0){
-                Log(toolName+" FillTree failed to set a tree pointer?",v_error,verbosity);
+                Log(m_unique_name+" FillTree failed to set a tree pointer?",v_error,m_verbose);
                 return false;
             }
             // set the branch address and fill the TBranch
             cmd = "TBranch* b = t->GetBranch(\""+key+"\");";
             meInterpreter->ProcessLine(cmd.Data(), &error);
             if(error!=0){
-                Log(toolName+" FillTree failed to get branch "+key
-                    +", did you call MakeBranches first?",v_error,verbosity);
+                Log(m_unique_name+" FillTree failed to get branch "+key
+                    +", did you call MakeBranches first?",v_error,m_verbose);
                 return false;
             }  // FIXME that's a point, make sure new Store objects are not introduced??
             meInterpreter->ProcessLine("printf(\"b is at %p\\n\",b);");
@@ -740,8 +742,8 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
             std::cout<<"executing: '"<<cmd.Data()<<"'"<<std::endl;
             meInterpreter->ProcessLine(cmd.Data(), &error);
             if(error!=0){
-                Log(toolName+" Error! Failed to set address of branch "+key
-                    + " to pointer to type " + thetype,v_error,verbosity);
+                Log(m_unique_name+" Error! Failed to set address of branch "+key
+                    + " to pointer to type " + thetype,v_error,m_verbose);
                 return false;
             }
             tree->GetBranch(key.c_str())->Fill();
@@ -752,4 +754,5 @@ bool TestTool::FillBranches(TTree* tree, BStore* store){
     }
     tree->SetEntries(num_entries);
     tree->ResetBranchAddresses();
+    return true;
 }

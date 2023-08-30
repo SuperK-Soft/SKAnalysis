@@ -1,16 +1,17 @@
 #include "MParticle.h"
 #include "MVertex.h"
 #include "DataModel.h"
+#include "Constants.h"
 
 #include <cstdlib> // abs
-
-MParticle::MParticle(){
-	m_data = DataModel::GetInstance();
-}
 
 namespace {
 	// use TObject::fBits bit 15 to flag that the value has been set.
 	const uint32_t initbit{15};
+}
+
+MParticle::MParticle(){
+	m_data = DataModel::GetInstance();
 }
 
 void MParticle::SetParentIndex(int idx){
@@ -35,19 +36,9 @@ void MParticle::SetStartMom(double* nums){
 	start_mom.SetBit(initbit);
 }
 
-void MParticle::SetEndMom(double* nums){
-	end_mom = TVector3{nums};
-	end_mom.SetBit(initbit);
-}
-
 void MParticle::SetStartMom(float* nums){
 	start_mom = TVector3{nums};
 	start_mom.SetBit(initbit);
-}
-
-void MParticle::SetEndMom(float* nums){
-	end_mom = TVector3{nums};
-	end_mom.SetBit(initbit);
 }
 
 void MParticle::SetStartMom(const TVector3& nums){
@@ -55,14 +46,24 @@ void MParticle::SetStartMom(const TVector3& nums){
 	start_mom.SetBit(initbit);
 }
 
-void MParticle::SetEndMom(const TVector3& nums){
+void MParticle::SetStartMom(double x, double y, double z){
+	start_mom = TVector3{x, y, z};
+	start_mom.SetBit(initbit);
+}
+
+void MParticle::SetEndMom(double* nums){
 	end_mom = TVector3{nums};
 	end_mom.SetBit(initbit);
 }
 
-void MParticle::SetStartMom(double x, double y, double z){
-	start_mom = TVector3{x, y, z};
-	start_mom.SetBit(initbit);
+void MParticle::SetEndMom(float* nums){
+	end_mom = TVector3{nums};
+	end_mom.SetBit(initbit);
+}
+
+void MParticle::SetEndMom(const TVector3& nums){
+	end_mom = TVector3{nums};
+	end_mom.SetBit(initbit);
 }
 
 void MParticle::SetEndMom(double x, double y, double z){
@@ -85,7 +86,7 @@ TVector3* MParticle::GetStartPos(){
 		return &m_data->eventVertices.at(start_vtx_idx).pos;
 	}
 	// else no associated vertex
-	return nullptr; //TVector3{999,999,999};
+	return nullptr;
 }
 
 double* MParticle::GetStartTime(){
@@ -93,7 +94,7 @@ double* MParticle::GetStartTime(){
 		return &m_data->eventVertices.at(start_vtx_idx).time;
 	}
 	// else no associated vertex
-	return nullptr; //-999;
+	return nullptr;
 }
 
 TVector3* MParticle::GetStartMom(){
@@ -104,12 +105,24 @@ TVector3* MParticle::GetStartMom(){
 	return nullptr;
 }
 
+double* MParticle::GetStartE(){
+	if(start_mom.TestBit(initbit)){
+		double mass = PdgToMass(pdg);
+		if(mass<0) return nullptr; // e.g. unrecognised pdg
+		startE = sqrt(start_mom.Mag2() + pow(mass,2.)) - mass;
+		//startE = start_mom.Mag2() / (2.*mass);
+		return &startE;
+	}
+	// else no associated vertex
+	return nullptr;
+}
+
 std::vector<int>* MParticle::GetStartProcesses(){
 	if(start_vtx_idx>=0 && start_vtx_idx<m_data->eventVertices.size()){
 		return &m_data->eventVertices.at(start_vtx_idx).processes;
 	}
 	// else no associated vertex
-	return nullptr; //std::vector<int>{};
+	return nullptr;
 }
 
 MVertex* MParticle::GetEndVertex(){
@@ -125,7 +138,7 @@ TVector3* MParticle::GetEndPos(){
 		return &m_data->eventVertices.at(end_vtx_idx).pos;
 	}
 	// else no associated vertex
-	return nullptr; //TVector3{999,999,999};
+	return nullptr;
 }
 
 double* MParticle::GetEndTime(){
@@ -133,7 +146,7 @@ double* MParticle::GetEndTime(){
 		return &m_data->eventVertices.at(end_vtx_idx).time;
 	}
 	// else no associated vertex
-	return nullptr; //-999;
+	return nullptr;
 }
 
 TVector3* MParticle::GetEndMom(){
@@ -144,12 +157,24 @@ TVector3* MParticle::GetEndMom(){
 	return nullptr;
 }
 
+double* MParticle::GetEndE(){
+	if(end_mom.TestBit(initbit)){
+		double mass = PdgToMass(pdg);
+		if(mass<0) return nullptr; // e.g. unrecognised pdg
+		endE = sqrt(end_mom.Mag2() + pow(mass,2.)) - mass;
+		//endE = start_mom.Mag2() / (2.*mass);
+		return &endE;
+	}
+	// else no associated vertex
+	return nullptr;
+}
+
 std::vector<int>* MParticle::GetEndProcesses(){
 	if(end_vtx_idx>=0 && end_vtx_idx<m_data->eventVertices.size()){
 		return &m_data->eventVertices.at(end_vtx_idx).processes;
 	}
 	// else no associated vertex
-	return nullptr; //std::vector<int>{};
+	return nullptr;
 }
 
 MParticle* MParticle::GetParent(){
@@ -162,7 +187,7 @@ MParticle* MParticle::GetParent(){
 }
 
 int MParticle::GetNearestParentIndex(){
-	return parent_idx;
+	return std::abs(parent_idx);
 }
 
 // ===================
@@ -171,7 +196,6 @@ int MParticle::GetNearestParentIndex(){
 std::string MParticle::PrintStartPos(){
 	std::string ret;
 	TVector3* sp = GetStartPos();
-	//if(start_vtx_idx!=TVector3{999,999,999}){
 	if(sp!=nullptr){
 		ret = "(" + toString(sp->X())+", "+toString(sp->Y())
 			             +", "+ toString(sp->Z())+")";
@@ -187,7 +211,18 @@ std::string MParticle::PrintStartTime(){
 	if(starttp){
 		ret=toString(*starttp);
 	} else {
-		ret+="?";
+		ret="?";
+	}
+	return ret;
+}
+
+std::string MParticle::PrintStartE(){
+	std::string ret;
+	double* startep = GetStartE();
+	if(startep){
+		ret=toString(*startep);
+	} else {
+		ret="?";
 	}
 	return ret;
 }
@@ -226,7 +261,6 @@ std::string MParticle::PrintStartProcesses(){
 std::string MParticle::PrintEndPos(){
 	std::string ret;
 	TVector3* ep = GetEndPos();
-	//if(end_vtx_idx!=TVector3{999,999,999}){
 	if(ep!=nullptr){
 		ret = "(" + toString(ep->X())+", "+toString(ep->Y())
 			             +", "+ toString(ep->Z())+")";
@@ -242,7 +276,18 @@ std::string MParticle::PrintEndTime(){
 	if(endtp){
 		ret=toString(*endtp);
 	} else {
-		ret+="?";
+		ret="?";
+	}
+	return ret;
+}
+
+std::string MParticle::PrintEndE(){
+	std::string ret;
+	double* endep = GetEndE();
+	if(endep){
+		ret=toString(*endep);
+	} else {
+		ret="?";
 	}
 	return ret;
 }
@@ -278,48 +323,71 @@ std::string MParticle::PrintEndProcesses(){
 	return proc_string;
 }
 
-void MParticle::Print(){
-	MParticle& parti = *this;
-	std::cout<<"\tPDG code: "<<parti.pdg<<"\n"
-	         <<"\tcreation vertex index: "<<parti.start_vtx_idx<<"\n"
-	         <<"\tcreation time [ns]: "<<parti.PrintStartTime()<<"\n"
-	         <<"\tcreation position [cm]: "<<parti.PrintStartPos()<<"\n"
-	         <<"\ttermination vertex index: "<<parti.end_vtx_idx<<"\n"
-	         <<"\ttermination time [ns]: "<<parti.PrintEndTime()<<"\n"
-	         <<"\ttermination pos [cm]: "<<parti.PrintEndPos()<<"\n"
-	         <<"\tinitial momentum [GeV/c]: "<<parti.PrintStartMom()<<"\n"
-	         <<"\tfinal momentum [GeV/c]: "<<parti.PrintEndMom()<<"\n"
-	         <<"\tparent particle index in this array: "<<parti.GetNearestParentIndex();
-	if(parti.GetParent()==nullptr){
+void MParticle::Print(bool verbose){
+	if(verbose){
+		std::cout<<"eventParticles index: ";
+		bool found=false;
+		for(int i=0; i<m_data->eventParticles.size(); ++i){
+			if(this==&m_data->eventParticles.at(i)){
+				std::cout<<i<<"\n";
+				found = true;
+				break;
+			}
+		}
+		if(!found) std::cout<<"?\n";
+	}
+	std::cout<<"\tPDG code: "<<pdg<<"\n"
+	         <<"\tcreation vertex index: "<<start_vtx_idx<<"\n"
+	         <<"\tcreation time [ns]: "<<PrintStartTime()<<"\n"
+	         <<"\tcreation position [cm]: "<<PrintStartPos()<<"\n"
+	         <<"\ttermination vertex index: "<<end_vtx_idx<<"\n"
+	         <<"\ttermination time [ns]: "<<PrintEndTime()<<"\n"
+	         <<"\ttermination pos [cm]: "<<PrintEndPos()<<"\n"
+	         <<"\tinitial momentum [MeV/c]: "<<PrintStartMom()<<"\n"
+	         <<"\tinitial energy [MeV]: "<<PrintStartE()<<"\n"
+	         <<"\tfinal momentum [MeV/c]: "<<PrintEndMom()<<"\n"
+	         <<"\tfinal energy [MeV]: "<<PrintEndE()<<"\n"
+	         <<"\tparent particle index in this array: "<<GetNearestParentIndex();
+	if(GetParent()==nullptr){
 		std::cout<<" (This was a primary particle)\n";
 	} else {
-		if(!parti.IsParentDirect()) std::cout<<" (This is an indirect parent)";
-		std::cout<<"\n\tcreated by an interaction of type(s) " << parti.PrintStartProcesses()
+		if(!IsParentDirect()) std::cout<<" (This is an indirect parent)";
+		std::cout<<"\n\tcreated by an interaction of type(s) " << PrintStartProcesses()
 		         <<" between an incident particle of type ";
-		if(parti.GetStartVertex()!=nullptr){
-			int incident_pdg_i = parti.GetStartVertex()->incident_particle_pdg;
+		if(GetStartVertex()!=nullptr){
+			int incident_pdg_i = GetStartVertex()->incident_particle_pdg;
 			std::string incident_pdg = (incident_pdg_i<0) ? "?" : toString(incident_pdg_i);
 			std::cout<<incident_pdg<<" and kinetic energy "
-			         <<parti.GetStartVertex()->incident_particle_mom.Mag()<<" GeV ";
+			         <<GetStartVertex()->incident_particle_mom.Mag()<<" MeV ";
 		} else {
-			std::cout<<"? and kinetic energy ? GeV ";
+			std::cout<<"? and kinetic energy ? MeV ";
 		}
 		std::cout<<"with a target particle of type ";
-		if(parti.GetStartVertex()!=nullptr){
-			int target_pdg_i = parti.GetStartVertex()->target_pdg;
+		if(GetStartVertex()!=nullptr){
+			int target_pdg_i = GetStartVertex()->target_pdg;
 			std::string target_pdg_s = (target_pdg_i<0) ? "?" : toString(target_pdg_i);
 			std::cout<<target_pdg_s;
 		} else {
 			std::cout<<"?";
 		}
 		std::cout<<" within a medium of type ";
-		if(parti.GetStartVertex()->extraInfo.Has("medium_id")){
+		if(GetStartVertex()->extraInfo.Has("medium_id")){
 			int medium_id=-1;
-			parti.GetStartVertex()->extraInfo.Get("medium_id",medium_id);
+			GetStartVertex()->extraInfo.Get("medium_id",medium_id);
 			std::cout<<((medium_id<0) ? "?" : toString(medium_id))<<"\n";
 		} else {
 			std::cout<<"?\n";
 		}
 	}
-	std::cout<<"\ttermination process code list: " << parti.PrintEndProcesses()<<"\n";
+	std::cout<<"\ttermination process code list: " << PrintEndProcesses()<<"\n";
+	if(verbose){
+		std::cout<<"Start MVertex: ";
+		MVertex* vtx = GetStartVertex();
+		if(vtx!=nullptr) vtx->Print(true);
+		else std::cout<<"NOT FOUND\n";
+		std::cout<<"End MVertex: ";
+		vtx = GetEndVertex();
+		if(vtx!=nullptr) vtx->Print(true);
+		else std::cout<<"NOT FOUND\n";
+	}
 }

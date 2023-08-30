@@ -11,30 +11,35 @@ class NCapture {
 	NCapture();
 	
 	bool SetNeutronIndex(int neutron_index); // use setter to validate index
+	bool SetIBDPositronIndex(int positron_index);
 	
 	//=========//
 	// MC info //
 	//=========//
 	
 	// following are calculated on demand from event particles vector
-	double* GetTime();
-	TVector3* GetPos();
+	double* GetTime();  // [ns]
+	TVector3* GetPos(); // [cm]
 	bool NGammas(int& ngammas);
 	bool NConversiones(int& nconve);
-	bool SumGammaE(double& sumgammae);
-	bool SumConversioneE(double& sumconvee);
-	bool NeutronTravelDist(double& ntraveldist);
-	bool NeutronTravelTime(double& ntravelt);
+	bool SumGammaE(double& sumgammae); // [MeV]
+	bool SumConversioneE(double& sumconvee);  // [MeV]
+	bool NeutronTravelDist(double& ntraveldist); // [cm]
+	bool NeutronTravelTime(double& ntravelt); // [ns]
 	bool GetDaughters(); // sets internal variable only
 	bool GetDaughters(std::vector<int>& daughters);
-	MParticle* GetTrueNeutron();
+	MParticle* GetNeutron();
 	MParticle* GetDaughterNuclide();
-	void Print();
+	MParticle* GetIBDPositron();
+	void Print(bool verbose=false);
 	
 	private:
+	bool got_capture_t=false;
+	double capture_time=999;
 	// index in event particles vector
-	int neutron_trackid=-1;
+	int neutron_idx=-1;
 	int daughter_nuclide_idx=-1;
+	int positron_idx=-1;
 	// indices in event particles vector
 	bool got_daughters = false;
 	bool got_daughter_nuclide = false;

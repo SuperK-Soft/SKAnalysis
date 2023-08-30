@@ -30,8 +30,8 @@ class MTreeReader {
 	friend class Notifier;
 	public:
 	
-	MTreeReader(std::string filename, std::string treename);
-	MTreeReader(){};
+	MTreeReader(std::string iname, std::string filename, std::string treename);
+	MTreeReader(std::string iname="myReader");
 	~MTreeReader();
 	int Load(std::string filename, std::string treename);
 	int LoadFile(std::string filename);
@@ -44,10 +44,8 @@ class MTreeReader {
 	template<typename T>
 	int GetBranchValue(std::string branchname, const T* &pointer_in){
 		if(branch_value_pointers.count(branchname)==0){
-			std::cerr<<"No such branch "<<branchname<<std::endl;
-			std::cerr<<"known branches: {";
-			for(auto&& abranch : branch_value_pointers) std::cout<<abranch.first<<", ";
-			std::cerr<<"\b\b}"<<std::endl;
+			std::cerr<<"No such branch '"<<branchname<<"'"<<std::endl;
+			std::cerr<<"known branches: "<<branchnamestring<<std::endl;
 			return 0;
 		}
 		pointer_in = reinterpret_cast<const T*>(branch_value_pointers.at(branchname));
@@ -69,7 +67,8 @@ class MTreeReader {
 	int GetBranchValue(std::string branchname, T& ref_in){
 		// check we know this branch
 		if(branch_value_pointers.count(branchname)==0){
-			std::cerr<<"No such branch "<<branchname<<std::endl;
+			std::cerr<<"No such branch '"<<branchname<<"'"<<std::endl;
+			std::cerr<<"known branches: "<<branchnamestring<<std::endl;
 			return 0;
 		}
 		// check if the branch is a primitive
@@ -115,7 +114,8 @@ class MTreeReader {
 	int GetArrayBranchValue(std::string branchname, T* arr_in, std::size_t NCOL, std::size_t NROW=1, std::size_t NAISLE=1){
 		// check we know this branch
 		if(branch_value_pointers.count(branchname)==0){
-			std::cerr<<"No such branch "<<branchname<<std::endl;
+			std::cerr<<"No such branch '"<<branchname<<"'"<<std::endl;
+			std::cerr<<"known branches: "<<branchnamestring<<std::endl;
 			return 0;
 		}
 		// check if the branch is an array - this template specialization is only for arrays
@@ -187,7 +187,8 @@ class MTreeReader {
 	int GetBranchValue(std::string branchname, basic_array<T>& ref_in){
 		// check we know this branch
 		if(branch_value_pointers.count(branchname)==0){
-			std::cerr<<"No such branch "<<branchname<<std::endl;
+			std::cerr<<"No such branch '"<<branchname<<"'"<<std::endl;
+			std::cerr<<"known branches: "<<branchnamestring<<std::endl;
 			return 0;
 		}
 		// check if the branch is an array - this template specialization is only for arrays
@@ -225,6 +226,8 @@ class MTreeReader {
 	void SetVerbosity(int verbin);
 	
 	// file/tree level getters
+	std::string GetName();
+	void SetName(std::string iname);
 	TFile* GetFile();
 	TTree* GetTree();
 	TTree* GetCurrentTree();
@@ -256,12 +259,13 @@ class MTreeReader {
 	void SetMCFlag(bool MCin);
 	bool GetMCFlag();
 	
-	private:
 	// functions
 	int ParseBranches();
 	int ParseBranchDims(std::string branchname);
 	int UpdateBranchPointer(std::string branchname);
 	int UpdateBranchPointers(bool all=false);
+	
+	private:
 	
 	// variables
 	std::map<std::string,TBranch*> branch_pointers;  // branch name to TBranch*
@@ -282,7 +286,8 @@ class MTreeReader {
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;
-	Notifier notifier;
+	std::string name="";
+	std::string branchnamestring="{}";
 	
 };
 

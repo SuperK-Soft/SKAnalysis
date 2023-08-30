@@ -10,13 +10,11 @@
 #include "Constants.h"
 #include "type_name_as_string.h"
 #include "MTreeSelection.h"
+#include "TreeManagerMod.h"
 #include "fortran_routines.h"
 #include "SK_helper_functions.h"
 
-TreeReader::TreeReader():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+TreeReader::TreeReader():Tool(){}
 
 const std::vector<std::string> default_branches{
 	"HEADER",
@@ -44,7 +42,8 @@ const std::vector<std::string> default_branches{
 	"MISMATCHEDHITS",
 	"GPSLIST",
 	"T2KGPSLIST",
-	"IDODXTLK"
+	"IDODXTLK",
+	"SN"
 };
 
 bool TreeReader::Initialise(std::string configfile, DataModel &data){
@@ -53,21 +52,20 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
   
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
 	LoadConfig(configfile);
-	toolName = toolName+" "+readerName;
-	m_data->tool_configs[toolName] = &m_variables;
-
-	myTreeReader.SetVerbosity(10);
+	m_unique_name = "TreeReader "+readerName;
+	m_data->tool_configs[m_unique_name] = &m_variables;
+	myTreeReader.SetName(readerName);
 	
 	// safety check that we were given an input file
 	if(inputFile=="" && FileListName==""){
 		// unless we are working in SKROOT write mode...
 		if(skrootMode!=SKROOTMODE::WRITE){
-			Log(toolName+" error! no InputFile or FileListName given!",v_error,verbosity);
+			Log(m_unique_name+" error! no InputFile or FileListName given!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
@@ -77,64 +75,74 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	} else {
 		get_ok = m_data->CStore.Get(FileListName, list_of_files);
 		if(!get_ok){
-			Log(toolName+" error! Could not find file list "+FileListName+" in CStore!"
-				+" Ensure LoadFileList tool is run before this tool!",v_error,verbosity);
+			Log(m_unique_name+" error! Could not find file list "+FileListName+" in CStore!"
+				+" Ensure LoadFileList tool is run before this tool!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
 	}
 	// detect zebra files based on extention of first file
-	std::string firstfile = list_of_files.front();
-	if(firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs"){
-		Log(toolName+" using zebra mode",v_debug,verbosity);
-		skrootMode=SKROOTMODE::ZEBRA;
+	if(skrootMode!=SKROOTMODE::WRITE){
+		std::string firstfile = list_of_files.front();
+		if(firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs"){
+			Log(m_unique_name+" using zebra mode",v_debug,m_verbose);
+			skrootMode=SKROOTMODE::ZEBRA;
+		}
 	}
 	
 	// safety check that the requested name to associate to this reader is free
 	get_ok = m_data->Trees.count(readerName);
 	if(get_ok){
-		Log(toolName+" error! TreeReader tool used to open file with name "+readerName
-			+" but this name is already taken! Each name must be unique!",v_error,verbosity);
+		Log(m_unique_name+" error! TreeReader tool used to open file with name "+readerName
+			+" but this name is already taken! Each name must be unique!",v_error,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 		return false;
 	}
 	
 	// safety check we have an output file too, if working in SKROOT write or copy mode
 	if((skrootMode==SKROOTMODE::WRITE || skrootMode==SKROOTMODE::COPY) && outputFile==""){
-		logmessage = toolName+" error! SKROOT mode is ";
+		logmessage = m_unique_name+" error! SKROOT mode is ";
 		logmessage += ((skrootMode==SKROOTMODE::WRITE) ? "write" : "copy");
 		logmessage += " but no outputFile specified!";
-		Log(logmessage,v_error,verbosity);
+		Log(logmessage,v_error,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 		return false;
 	}
 	
 	// safety check that if asked to read an SKROOT file, it has a TTree called 'data'
 	// if not, the TreeManager will segfault!
+	// while we have it, also make a note of the tree branches, as they're not standard
+	std::vector<std::string> present_branches;
 	if(skrootMode==SKROOTMODE::READ || skrootMode==SKROOTMODE::COPY){
 		// i guess we can only pracitcally check the first file
 		// i don't think it'll seg as long as at least one file has a 'data' tree
 		// XXX although, perhaps it would be better to check all of them?
-		TFile* ftest = TFile::Open(firstfile.c_str(),"READ");
-		if(ftest->Get("data")==nullptr){
-			Log(toolName+" ERROR! input file "+firstfile+" has no 'data' TTree!",v_error,verbosity);
+		TFile* f_temp = TFile::Open(list_of_files.front().c_str(),"READ");
+		TTree* t_temp= (TTree*)f_temp->Get(treeName.c_str());
+		if(t_temp==nullptr){
+			Log(m_unique_name+" ERROR! input file "+list_of_files.front()+" has no '"+treeName+"' TTree!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
+		present_branches.resize(t_temp->GetListOfBranches()->GetEntriesFast());
+		for(int i=0; i<present_branches.size(); ++i){
+			present_branches.at(i) = t_temp->GetListOfBranches()->At(i)->GetName();
+		}
+		f_temp->Close();
 	}
 	
 	// warning check: see if we're given an input when we're in WRITE mode
 	if(skrootMode==SKROOTMODE::WRITE && (inputFile!="" || FileListName!="")){
-		Log(toolName+" warning! InputFile or FileListName given, but mode is skroot::write! "
+		Log(m_unique_name+" warning! InputFile or FileListName given, but mode is skroot::write! "
 					+"Inputs will be ignored: use another reader instance to read input from another file",
-					v_error,verbosity);
+					v_error,m_verbose);
 	}
 	// warning check: see if we've been given an output when we're not in SKROOT::COPY or WRITE mode
 	if((skrootMode!=SKROOTMODE::WRITE && skrootMode!=SKROOTMODE::COPY) && outputFile!=""){
-		logmessage  = toolName+" warning! outputFile given, but SKROOT mode is ";
+		logmessage  = m_unique_name+" warning! outputFile given, but SKROOT mode is ";
 		logmessage += ((skrootMode==SKROOTMODE::NONE) ? "not enabled. " : "READ only. ");
 		logmessage += "outputFile will be ignored!";
-		Log(logmessage,v_warning,verbosity);
+		Log(logmessage,v_warning,m_verbose);
 	}
 	
 	// open the input TFile and TTree
@@ -151,14 +159,15 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// will fail if you try to subsequently open a new file with this LUN. Doh!
 		// TODO fix the SuperManager.
 		// For now we'll just keep our own list of LUNs in the DataModel
-		LUN = m_data->GetNextLUN(LUN, readerName);
+		LUN = m_data->GetNextLUN(readerName, LUN);
+		
+		// "initialize data structures".
+		// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
+		m_data->KZInit();
 		
 		// slight change in initialization depending on SK root vs zebra
 		if(not (skrootMode==SKROOTMODE::ZEBRA)){
-			Log(toolName+" doing SKROOT initialization",v_debug,verbosity);
-			// "initialize data structures".
-			// Allegedly a ZEBRA thing, but we seem to need this even for ROOT files??
-			m_data->KZInit();
+			Log(m_unique_name+": callling skroot_open_*",v_debug,m_verbose);
 			
 			// There are 3 modes to the TreeManager:
 			// skroot_open_read_ calls the TreeManager constructor with mode = 2;
@@ -192,6 +201,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			
 			// the following are not relevant for WRITE mode
 			if(skrootMode!=SKROOTMODE::WRITE){
+				Log(m_unique_name+": adding files to read...",v_debug,m_verbose);
 				// set the input file(s) to read.
 				// These need to be paths to files - glob patterns are not supported.
 				// Only the first will be used to retrieve the RareList, but multiple calls can
@@ -209,8 +219,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					printf("end of expansion\n");
 					// seem to be that this will expand an array, delimited by shell IFS, if necessary
 					if(p.we_wordc<1){
-						Log(toolName+" expansion of input file "+fname_in+" produced no output?!",
-							v_error,verbosity);
+						Log(m_unique_name+" expansion of input file "+fname_in+" produced no output?!",
+							v_error,m_verbose);
 						continue;
 					}
 					// might be useful but we probably only need the first entry
@@ -218,52 +228,109 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					printf("next SKROOT file:XXXX%sXXXXX\n",fname_in.c_str());
 					*/
 					// above doesn't seem to be necessary; ROOT does this automatically
-					Log(toolName+": next SKROOT file "+fname_in,v_debug,verbosity);
+					Log(m_unique_name+": next SKROOT file "+fname_in,v_debug,m_verbose);
 					skroot_set_input_file_(&LUN, fname_in.c_str(), fname_in.size());
 				}
 				
 				// disable unused input branches.
 				int io_dir = 0; // 0 for input branch, 1 for output branch
-				if(ActiveInputBranches.size() &&
-					std::find(ActiveInputBranches.begin(),
-					          ActiveInputBranches.end(),"*")==ActiveInputBranches.end()){
-					for(auto&& abranch : default_branches){
+				Log(m_unique_name+": disabling unused branches...",v_debug,m_verbose);
+				Log(m_unique_name+": we have "+toString(SkippedInputBranches.size())+" user skipped branches"
+				                  ", "+toString(ActiveInputBranches.size())+" user-selected active branches"
+				                  ", and "+toString(present_branches.size())+"/"+toString(default_branches.size())
+				                  +" standard branches present", v_debug,m_verbose);
+				
+				// ok first disable branches via a list of inactive branches specified by the user
+				for(auto&& abranch : SkippedInputBranches){
+					if(abranch=="HEADER") continue; // always required
+					Log(m_unique_name+": disabling user-skipped input branch "+abranch,v_debug,m_verbose);
+					skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+				}
+				
+				// alternatively allow users to specify just the branches they want to keep,
+				// and skip everything else.
+				if(ActiveInputBranches.size()){
+					for(auto&& abranch : present_branches){
 						if(std::find(ActiveInputBranches.begin(),ActiveInputBranches.end(),abranch) ==
 							ActiveInputBranches.end()){
 							if(abranch=="HEADER") continue; // always required
+							Log(m_unique_name+": disabling user-disallowed input branch "+abranch,v_debug,m_verbose);
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
 				}
+				
+				// lastly, the TreeManager attempts to read data from a standard set of branches,
+				// and segfaults if they don't exist... SO let's explicitly disable everything standard
+				// if it's not actually present
+				for(auto&& abranch : default_branches){
+					if(std::find(present_branches.begin(), present_branches.end(), abranch)==present_branches.end()){
+						Log(m_unique_name+": disabling absent input branch "+abranch,v_debug,m_verbose);
+						skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+					}
+				}
+				
+				Log(m_unique_name+": done disabling unused branches",v_debug,m_verbose);
 			}
 			// disable unwanted output branches. Only applicable to COPY mode
 			if(skrootMode==SKROOTMODE::COPY){
 				int io_dir = 1;
-				if(ActiveOutputBranches.size() &&
-					std::find(ActiveOutputBranches.begin(),
-					          ActiveOutputBranches.end(),"*")==ActiveOutputBranches.end()){
+				// first from list of disabled branches from user
+				for(auto&& abranch : SkippedOutputBranches){
+					if(abranch=="HEADER") continue; // always required
+					Log(m_unique_name+": disabling user-skipped output branch "+abranch,v_debug,m_verbose);
+					skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+				}
+				// alternatively from a list of enabled branches from user
+				if(ActiveOutputBranches.size()){
 					for(auto&& abranch : default_branches){
 						if(std::find(ActiveOutputBranches.begin(),ActiveOutputBranches.end(),abranch) ==
 							ActiveOutputBranches.end()){
 							if(abranch=="HEADER") continue; // always required
+							Log(m_unique_name+": disabling user-disallowed output branch "+abranch,v_debug,m_verbose);
 							skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 						}
 					}
 				}
+				/*
+				// and anything else which isn't present in the input file? XXX not sure this is needed
+				for(auto&& abranch : default_branches){
+					if(std::find(present_branches.begin(), present_branches.end(), abranch)==default_branches.end()){
+						Log(m_unique_name+": disabling output branch "+abranch+" as it is absent from input Tree",v_debug,m_verbose);
+						skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
+					}
+				}
+				*/
 			}
 			
 			// ok now we perform the actual file opening, TTree cloning, and branch address setting.
 			// except in the case of 'write', where all necessary steps are done on construction
 			if(skrootMode!=SKROOTMODE::WRITE){
-				skroot_init_(&LUN);
+				if(treeName=="data"){
+					// this mostly just invokes TreeManager::Initialise()
+					skroot_init_(&LUN);
+				} else {
+					// TreeManager::Initialise hard-codes the name of the tree to 'data'.
+					// but what if we don't want that? We can hack it just a little.
+					TreeManager* mgr = skroot_get_mgr(&LUN);
+					TreeManagerMod* mgrmod = (TreeManagerMod*)(mgr);
+					mgrmod->Initialize(treeName);
+					skheadf_.sk_file_format = 1;
+					skheadf_.root_id = LUN;
+				}
+			} else {
+				// if the user asked for a different tree name than 'data', apply that now...
+				TreeManager* mgr = skroot_get_mgr(&LUN);
+				TTree* otree = mgr->GetOTree();
+				otree->SetName(treeName.c_str());
 			}
 			
 		} else {
 			// else input files are ZEBRA files
-			Log(toolName+" doing zebra initialization",v_debug,verbosity);
+			Log(m_unique_name+" doing zebra initialization",v_debug,m_verbose);
 			skheadf_.sk_file_format = 0;    // set common block variable for ZBS format
 			
-			zbsinit_();
+			//zbsinit_();  THIS IS THE SAME ROUTINE AS KZINIT!!
 			
 			// Set rflist and open file
 			// '$SKOFL_ROOT/iolib/set_rflist.F' is used for setting the input file to open.
@@ -278,7 +345,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// Load the first file
 			get_ok = LoadNextZbsFile();
 			if(get_ok==0){
-				Log(toolName+" Error loading first ZBS file!",v_error,verbosity);
+				Log(m_unique_name+" Error loading first ZBS file!",v_error,m_verbose);
 				return false;
 			}
 		}
@@ -287,7 +354,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 //		exit(-1);
 		
 		// we can access the manager via:
-		//TreeManager* mgr = skroot_get_mgr_(&LUN);
+		//TreeManager* mgr = skroot_get_mgr(&LUN);
 		
 		// the primary reason to use the TreeManager is to populate the fortran common blocks
 		// required by many old SK algorithms. This is not done by the TreeManager itself,
@@ -295,14 +362,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// from the ROOT files via the skroot_get_* functions (e.g. via headsk.F),
 		// and so depend on there being an underlying TreeManager.
 		// There are a few extra steps we need to do to initialize up the fortran common blocks...
-		
-		// Warning!
-		// XXX i'm not sure what of the following (if any) should be called in 'write' mode XXX
-		// So... modify if needed. Please explain any changes in comments.
-		
-		// need to set skgeometry in skheadg common block
-		skheadg_.sk_geometry = sk_geometry;
-		geoset_();
 		
 		// skoptn 25 indicates that skread should mask bad channels.
 		// As a base there is a manually maintained list of bad channels, $SKOFL_ROOT/const/badch.dat
@@ -324,21 +383,28 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		if(use_runwise_bad_ch_masking) skroot_options.erase(skroot_options.find("26"),2);
 		bool isMC=false;
 		
-		// options for what to read etc.
-		skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
-		
-		// options for masking OD / dead / noisy channels
-		skbadopt_(&skroot_badopt);
+		if(skrootMode!=SKROOTMODE::WRITE){
+			// need to set skgeometry in skheadg common block
+			m_data->GeoSet(sk_geometry);
+			// note: it seems like we do need to call this before SKRAWREAD,
+			// but if the geometry is incorrect, SKRAWREAD will reload the correct geometry. Maybe.
+			
+			// options for what to read etc.
+			skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
+			
+			// options for masking OD / dead / noisy channels
+			skbadopt_(&skroot_badopt);
+		}
 		
 		// we can provide an MTreeReader except in SKROOT::WRITE mode or when reading zebra files
 		if(skrootMode!=SKROOTMODE::ZEBRA && skrootMode!=SKROOTMODE::WRITE){
 			// since an MTreeReader provides passive file access
 			// it doesn't interfere with the use of a TreeManager
-			Log(toolName+" creating MTreeReader in parallel to TreeManager",v_debug,verbosity);
+			Log(m_unique_name+" creating MTreeReader in parallel to TreeManager",v_debug,m_verbose);
 			TTree* intree = skroot_get_tree(&LUN);  // n.b. no trailing underscore for this one
 			get_ok = myTreeReader.Load(intree);
 			if(not get_ok){
-				Log(toolName+" failed to open reader on tree "+treeName,v_error,verbosity);
+				Log(m_unique_name+" failed to make MTreeReader",v_error,m_verbose);
 				return false;
 			}
 			
@@ -364,7 +430,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			  
 				get_ok = myTreeReader.GetEntry(tmp_entry);
 				if(get_ok<=0){
-					Log(toolName+" error! Hit end of tree while checking if MC!",v_error,verbosity);
+					Log(m_unique_name+" error! Hit end of tree while checking if MC!",v_error,m_verbose);
 					return false;
 				}
 				const Header* header = nullptr;
@@ -379,8 +445,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				}
 				++tmp_entry;
 			}
-			Log(toolName+" read "+toString(tmp_entry)+" entries before determining that isMC = "
-				+toString(isMC),v_debug,verbosity);
+			Log(m_unique_name+" read "+toString(tmp_entry+1)+" entries before determining that isMC = "
+			    +toString(isMC),v_debug,m_verbose);
 			
 			/*
 			// A much simpler option is to check for the 'MC' branch, but this could be:
@@ -393,13 +459,15 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// put this MC flag into the MTreeReader
 			myTreeReader.SetMCFlag(isMC);
 			m_data->vars.Set("inputIsMC",isMC);
-			m_variables.Set("is_mc",isMC);
 			
 			// if we're processing MC, we should probably only call `skread`. If we're processing
 			// data, we probably need to call `skrawread` as well. (see ReadEntry for more info).
+			// SKRAWREAD also requires the presence of a TQLIST branch.
 			// We'll use this as a default, but allow ourselves to be overridden by a user.
 			if(skreadUser==0){
-				skreadMode = (isMC) ? 0 : 2;  // 0=skread only, 1=skrawread only, 2=both
+				bool no_tqlist = (std::find(present_branches.begin(), present_branches.end(), "TQLIST")==present_branches.end());
+				 // skreadMode 0=skread only, 1=skrawread only, 2=both
+				skreadMode = (isMC || no_tqlist) ? 0 : 2;
 			} else {
 				skreadMode = skreadUser-1;
 			}
@@ -408,7 +476,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// fall back to using skread to scan for MC if we're not reading ROOT files
 			while(true){
 				skcread_(&LUN, &get_ok); // get_ok = 0 (physics entry), 1 (error), 2 (EOF), other (non-physics)
-				Log(toolName + " next isMC scan entry returned "+toString(get_ok),v_debug,verbosity);
+				Log(m_unique_name + " next isMC scan entry returned "+toString(get_ok),v_debug,m_verbose);
 				// doesn't seem to be sufficient to identify non-physics events?
 				// manually add in checks as per headsk.F for ROOT, these checks not done for ZBS though...?? XXX
 				bool chk = ((skhead_.nrunsk==0 && skhead_.mdrnsk!=0 && skhead_.mdrnsk!= 999999) ||
@@ -418,7 +486,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				if(get_ok==0 || get_ok==2) break;
 			}
 			if(get_ok==2){
-				Log(toolName+" hit end of file when doing MC detection!",v_error,verbosity);
+				Log(m_unique_name+" hit end of file when doing MC detection!",v_error,m_verbose);
 				return false;
 			}
 			// extract isMC
@@ -434,27 +502,27 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// if user's intended mode is to invoke both skread and skrawread,
 			// do the follow-up skrawread as well. Use negative LUN to prevent advance.
 			if(skreadMode>0){
-				Log(toolName+" finishing first load with skrawread",v_debug,verbosity);
+				Log(m_unique_name+" finishing first load with skrawread",v_debug,m_verbose);
 				int LUN2 = -LUN;
 				skcrawread_(&LUN2, &get_ok);
 			}
 		} // else SKROOT::Write mode, cannot check whether it's MC or not.
 		
 		// now we know if our file is MC or not, set the appropriate runwise bad channel masking if required
-		if(skroot_options.find("25")!=std::string::npos && use_runwise_bad_ch_masking){
+		if(skrootMode!=SKROOTMODE::WRITE && skroot_options.find("25")!=std::string::npos && use_runwise_bad_ch_masking){
 			if(not isMC){
 				skroot_options = skroot_options + " 26";
 				skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
 			} else {
 				if(skroot_badch_ref_run==-1){
-					Log(toolName+" Error! skbadoptn contains 25 (mask bad channels) but not 26 "
+					Log(m_unique_name+" Error! skbadoptn contains 25 (mask bad channels) but not 26 "
 						+"(look up bad channels based on run number). In this case one needs to provide "
 						+"a reference run to use for the bad channel list! Please specify a run to use in "
-						+"option skbadchrefrun in "+toolName+" config",v_error,verbosity);
+						+"option skbadchrefrun in "+m_unique_name+" config",v_error,m_verbose);
 					return false;
 				}
-				Log(toolName+" masking bad channels with reference run "
-					+toString(skroot_badch_ref_run),v_debug,verbosity);
+				Log(m_unique_name+" masking bad channels with reference run "
+					+toString(skroot_badch_ref_run),v_debug,m_verbose);
 				int refSubRunNo = 1;   // lowe school suggested "normally use subrun 1"
 				int istat = 0;
 				skbadch_(&skroot_badch_ref_run, &refSubRunNo, &istat);
@@ -469,34 +537,60 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				*        istat  ;+10 : normal end  additional read /skam/const/badch.dat
 				*/
 				if(istat<0){
-					Log(toolName+" Error applying skbadch with reference run "+
-					    toString(skroot_badch_ref_run),v_error,verbosity);
+					Log(m_unique_name+" Error applying skbadch with reference run "+
+					    toString(skroot_badch_ref_run),v_error,m_verbose);
 					return false;
 				}
 			}
 		}
 		
+		// initialize water transparency table
+		skrunday_();
+		skwt_gain_corr_();
+		if(reference_watert_run>0 && (skhead_.nrunsk==0 || skhead_.nrunsk == 999999)){
+			Log(m_unique_name+" using reference run "+toString(reference_watert_run)
+				+" for water transparency",v_warning,m_verbose);
+			// update water transparency
+			float watert;
+			int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
+			lfwater_(&days_to_run_start, &watert);
+			Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+			    +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+			// pass to downstream tools
+			m_data->vars.Set("watert",watert);
+			
+		}
+		
+		
+		// make a note of is_mc in m_variables so it gets saved in m_data->tool_configs
+		m_variables.Set("is_mc",isMC);
+		
 	} else {
 		// else not SK ROOT or zebra file; just a plain ROOT file.
 		
-		Log(toolName+" creating MTreeReader to read tree "+treeName,v_debug,verbosity);
+		Log(m_unique_name+" creating MTreeReader to read tree "+treeName,v_debug,m_verbose);
 		
 		get_ok = myTreeReader.Load(list_of_files, treeName);
 		if(not get_ok){
-			Log(toolName+" failed to open reader on tree "+treeName,v_error,verbosity);
+			Log(m_unique_name+" failed to open reader on tree "+treeName,v_error,m_verbose);
 			return false;
 		}
 		
 		// for efficiency of reading, only enable used branches
-		Log(toolName+" activating branches",v_debug,verbosity);
-		if(ActiveInputBranches.size() && 
-			std::find(ActiveInputBranches.begin(), ActiveInputBranches.end(), "*")==ActiveInputBranches.end()){
+		Log(m_unique_name+" activating branches",v_debug,m_verbose);
+		if(SkippedInputBranches.size()){
+			get_ok = myTreeReader.OnlyDisableBranches(SkippedInputBranches);
+			if(!get_ok){
+				Log(m_unique_name+" Did not recognise some branches in skipped branches list!",
+				    v_error,m_verbose);
+			}
+		}
+		if(ActiveInputBranches.size()){
 			// only disable unlisted branches if we have a non-empty list of active branches
-			// and the key "*" was not specified.
 			get_ok = myTreeReader.OnlyEnableBranches(ActiveInputBranches);
 			if(!get_ok){
-				Log(toolName+" Did not recognise some branches in active branches list!",
-				    v_error,verbosity);
+				Log(m_unique_name+" Did not recognise some branches in active branches list!",
+				    v_error,m_verbose);
 			}
 		}
 	}
@@ -510,6 +604,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	std::function<bool()> loadAFT = std::bind(std::mem_fn(&TreeReader::LoadAFT), std::ref(*this));
 	std::function<bool(int)> loadCommons = std::bind(std::mem_fn(&TreeReader::LoadCommons), std::ref(*this), std::placeholders::_1);
 	std::function<int(long)> getTreeEntry = std::bind(std::mem_fn(&TreeReader::ReadEntry), std::ref(*this), std::placeholders::_1, false);
+	// TODO we could remove the first argument now that the MTreeReader knows its name
 	m_data->RegisterReader(readerName, &myTreeReader, hasAFT, loadSHE, loadAFT, loadCommons, getTreeEntry);
 	
 	// get first entry to process
@@ -520,8 +615,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	if(selectionsFile!=""){
 		// sanity check if given one in write mode
 		if(skrootMode==SKROOTMODE::WRITE){
-			Log(toolName+" warning! selectionsFile given but we are in SKROOT WRITE mode!",
-				v_warning,verbosity);
+			Log(m_unique_name+" warning! selectionsFile given but we are in SKROOT WRITE mode!",
+				v_warning,m_verbose);
 		} else {
 			
 			// make the MTreeSelection to read the TEntryList file
@@ -529,20 +624,20 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			m_data->Selectors.emplace(readerName,myTreeSelections);
 			
 			if(cutName=="") cutName = myTreeSelections->GetTopCut();
-			Log(toolName+" reading only entries passing cut "+cutName
-				+" in selections file "+selectionsFile,v_debug,verbosity);
+			Log(m_unique_name+" reading only entries passing cut "+cutName
+				+" in selections file "+selectionsFile,v_debug,m_verbose);
 			
 			// scan to the first entry passing our specified cut
-			Log(toolName+" scanning to first passing entry",v_debug,verbosity);
+			Log(m_unique_name+" scanning to first passing entry",v_debug,m_verbose);
 			do {
 				entrynum = myTreeSelections->GetNextEntry(cutName);
 			} while(entrynum>0 && entrynum<firstEntry);
 			if(entrynum<0){
-				Log(toolName+" was given both a selections file and a firstEntry,"
-					+" but no passing entries were found after the specified starting entry!",v_error,verbosity);
+				Log(m_unique_name+" was given both a selections file and a firstEntry,"
+					+" but no passing entries were found after the specified starting entry!",v_error,m_verbose);
 				return false;
 			}
-			Log(toolName+" reading from entry "+toString(entrynum),v_debug,verbosity);
+			Log(m_unique_name+" reading from entry "+toString(entrynum),v_debug,m_verbose);
 		}
 	}
 	
@@ -554,7 +649,7 @@ bool TreeReader::Execute(){
 	// nothing to do in write mode
 	if(skrootMode==SKROOTMODE::WRITE) return true;
 	
-	Log(toolName+" getting entry "+toString(entrynum),v_debug,verbosity);
+	Log(m_unique_name+" getting entry "+toString(entrynum),v_debug,m_verbose);
 	
 	// optionally buffer N entries per Execute call
 	// clear the buffers before we start, unless we're buffering events between loops
@@ -575,19 +670,19 @@ bool TreeReader::Execute(){
 		do {
 			
 			// load next entry
-			Log(toolName+" Reading entry "+toString(entrynum),v_debug,verbosity);
+			Log(m_unique_name+" Reading entry "+toString(entrynum),v_debug,m_verbose);
 			get_ok = ReadEntry(entrynum, true);
-			Log(toolName+" ReadEntry returned "+toString(get_ok),v_debug,verbosity);
+			Log(m_unique_name+" ReadEntry returned "+toString(get_ok),v_debug,m_verbose);
 			
 			// if we're processing ZBS files and ran off the end of this file,
 			// load the next file if we have one and re-try the read.
 			if(get_ok==0 && skrootMode==SKROOTMODE::ZEBRA && list_of_files.size()>0){
-				Log(toolName+" hit end of this ZBS file, loading next one",v_debug,verbosity);
+				Log(m_unique_name+" hit end of this ZBS file, loading next one",v_debug,m_verbose);
 				skclosef_(&LUN);
 				get_ok = LoadNextZbsFile();
-				Log(toolName+" loaded next ZBS file, return was "+toString(get_ok),v_debug,verbosity);
+				Log(m_unique_name+" loaded next ZBS file, return was "+toString(get_ok),v_debug,m_verbose);
 				if(get_ok==0){
-					Log(toolName+" failure loading next ZBS file! Ending toolchain",v_error,verbosity);
+					Log(m_unique_name+" failure loading next ZBS file! Ending toolchain",v_error,m_verbose);
 				} else {
 					// loaded next file ok, repeat the read
 					get_ok = -999;
@@ -603,32 +698,29 @@ bool TreeReader::Execute(){
 				PrintTriggerBits();
 				
 				// apply our general check for required bits in the trigger mask
-				// for(int mask_i=0; mask_i<triggerMasks.size(); ++mask_i){
-				// 	int required_bit = triggerMasks.at(mask_i);
-				// 	if(trigger_bits.test(required_bit)==false){
-				// 		get_ok=-999; // skip this event
-				// 	}
-				// }
-
-				// apply our general check for required bits in the trigger mask
-				// for (int mask_i = 0;  mask_i < triggerMasks.size(); ++mask_i){
-				//   int required_bit = triggerMasks.at(mask_i);
-				//   if (trigger_bits.test(required_bit)){
-				//     get_ok = 1;
-				//   }
-				// }
-
-
-				if (!triggerMasks.empty()){
-				  const auto it = std::find_if(triggerMasks.begin(), triggerMasks.end(), [trigger_bits](int i){return trigger_bits.test(i);});
-				  if (it == triggerMasks.end()){get_ok = 999;}
+				// skip all events matching trigger types in skippedTriggers
+				for(int bit_i=0; bit_i<skippedTriggers.size(); ++bit_i){
+					int test_bit = skippedTriggers.at(bit_i);
+					if(trigger_bits.test(test_bit)){
+						get_ok=-999; // skip this event
+					}
 				}
-				  
+				// alternatively to specifying every type we don't want,
+				// we may choose to specify only the types we do want
+				bool skipit=(allowedTriggers.size()>0); // only apply if given
+				for(int bit_i=0; bit_i<allowedTriggers.size(); ++bit_i){
+					int test_bit = allowedTriggers.at(bit_i);
+					if(trigger_bits.test(test_bit)){
+						skipit=false;
+					}
+				}
+				if(skipit) get_ok=-999; // skip this event
+				
 				// if we're reading *only* SHE+AFT pairs, skip the entry if it's not SHE
 				if(get_ok>0 && onlyPairs && !trigger_bits.test(28)){
-				  Log(toolName+" Prompt entry is not SHE",v_debug,verbosity);
+					Log(m_unique_name+" Prompt entry is not SHE",v_debug,m_verbose);
 					// its not SHE. If we only want SHE+AFT pairs, skip this entry.
-					Log(toolName+" Re-starting read process",v_debug,verbosity);
+					Log(m_unique_name+" Re-starting read process",v_debug,m_verbose);
 					get_ok=-999;
 				}
 				
@@ -641,8 +733,8 @@ bool TreeReader::Execute(){
 					// returns: -999 if not AFT (or error reading AFT) and we're only processing pairs
 					// returns: <=0  if error during AFT read and we're not only processing pairs
 				} else if(get_ok>0 && loadSheAftPairs){
-					Log(toolName+" PairLoading mode on but prompt event is not SHE, skipping follow-up read",
-					    v_debug,verbosity);
+					Log(m_unique_name+" PairLoading mode on but prompt event is not SHE, skipping follow-up read",
+					    v_debug,m_verbose);
 				}
 				
 			}  // else not SKROOT mode or bad prompt read. Skip trigger checks.
@@ -659,8 +751,8 @@ bool TreeReader::Execute(){
 				// already loaded in the common block buffers.
 				// If we don't want to read this entry, then discard it from the buffer.
 				if(buffered_entry>0 && buffered_entry != entrynum){
-					Log(toolName+" Discarding buffered SHE from AFT search, since it is "
-					   +"not in our selection entry list",v_debug,verbosity);
+					Log(m_unique_name+" Discarding buffered SHE from AFT search, since it is "
+					   +"not in our selection entry list",v_debug,m_verbose);
 					PopCommons();
 				}
 				buffered_entry = -1;
@@ -677,7 +769,6 @@ bool TreeReader::Execute(){
 		if(get_ok==0) break;  // end of file
 	} // read and buffer loop
 	
-	Log(toolName+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,verbosity);
 	
 	// when processing SKROOT files we can't rely on LoadTree(next_entry)
 	// to indicate that there are more events to process - all remaining entries
@@ -686,6 +777,22 @@ bool TreeReader::Execute(){
 	if(get_ok==0){
 		m_data->vars.Set("Skip",true);
 		m_data->vars.Set("StopLoop",true);
+	} else {
+		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
+		
+		m_data->vars.Set("newRun",false);
+		m_data->vars.Set("newSubrun",false);
+		// check if we've changed run or subrun, and if so, update things like
+		// water transparency and bad channel masking
+		if(skhead_.nrunsk != last_nrunsk){
+			RunChange();
+			SubrunChange();
+			last_nrunsk=skhead_.nrunsk;
+			last_nsubsk=skhead_.nsubsk;
+		} else if(skhead_.nsubsk != last_nsubsk){
+			SubrunChange();
+			last_nsubsk=skhead_.nsubsk;
+		}
 	}
 	
 	++readEntries;      // keep track of the number of entries we've actually returned
@@ -693,7 +800,7 @@ bool TreeReader::Execute(){
 	
 	// check if we've hit the user-requested limit on number of entries to read
 	if((maxEntries>0)&&(readEntries>=maxEntries)){
-		Log(toolName+" hit max events, setting StopLoop",v_message,verbosity);
+		Log(m_unique_name+" hit max events, setting StopLoop",v_message,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	}
 	// use LoadTree to check if the next entry is valid without loading it
@@ -701,7 +808,7 @@ bool TreeReader::Execute(){
 	/*
 	else if(myTreeReader.GetTree()){  // only possible if we have a TreeReader
 		if(myTreeReader.GetTree()->LoadTree(entrynum)<0){
-			Log(toolName+" reached end of TTree, setting StopLoop",v_message,verbosity);
+			Log(m_unique_name+" reached end of TTree, setting StopLoop",v_message,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 		}
 	}
@@ -715,12 +822,85 @@ bool TreeReader::Execute(){
 	return true;
 }
 
+bool TreeReader::RunChange(){
+	m_data->vars.Set("newRun",true);
+	get_ok = true;
+	
+	// check if this run is bad
+	int isbad = lfbadrun_(&skhead_.nrunsk, &skhead_.nsubsk);
+	if(isbad){
+		Log(m_unique_name+" run "+toString(skhead_.nrunsk)+" flagged as a bad run by lfbadrun!",
+		    v_warning,m_verbose);
+		if(skipbadruns) SkipThisRun();
+	}
+	
+	// update water transparency
+	float watert;
+	int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
+	lfwater_(&days_to_run_start, &watert);
+	Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+	    +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+	// pass to downstream tools
+	m_data->vars.Set("watert",watert);
+	
+	return get_ok;
+}
+
+bool TreeReader::SubrunChange(){
+	m_data->vars.Set("newSubrun",true);
+	get_ok = true;
+	
+	// update bad channels
+	if(myTreeReader.GetMCFlag()){
+		// FIXME I believe this is only needed for MC...
+		// For data isn't bad channel masking automatically updated?
+		// But the run number is normally 0 for MC, so this will only work if the run number
+		// was overridden to mimic a specific run...? maybe that's the use-case here.
+		
+		// apparently a loglevel of 4 suppresses outputs...
+		combad_.log_level_skbadch = 0;
+		int ierr;
+		// read badch info & puts it into combad_ common block
+		skbadch_(&skhead_.nrunsk,&skhead_.nsubsk,&ierr);
+		if(ierr<0){
+			Log(m_unique_name+" Error calling skbadch_ in SubrunChange!",v_error,m_verbose);
+			get_ok = false;
+		} else {
+			Log(m_unique_name+" loaded bad channels for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+		}
+	}
+	
+	// update dark rate
+	if(myTreeReader.GetMCFlag()){
+		// FIXME presume this is as per above
+		// What is this doing/required by?
+		darklf_(&skhead_.nrunsk);
+	}
+	
+	return get_ok;
+}
+
+bool TreeReader::SkipThisRun(){
+	Log(m_unique_name+" SkipThisRun called, but this feature is not yet implemented!",v_error,m_verbose);
+	// uhhh maybe we should scan the HEADER branch until the run number changes again?
+	// Or can we somehow just jump straight to the next file (TTree) in the TChain?
+	return true;
+}
+
 bool TreeReader::Finalise(){
 	
 	if(myTreeSelections) delete myTreeSelections;
 	
+	// FIXME this shouldn't be needed? is AddTree messing it up?
+	// do we also need to do this in copy mode now? if we're adding a tree?
+	if(skrootMode==SKROOTMODE::WRITE){
+		std::cout<<m_unique_name<<" calling Write() on output file"<<std::endl;
+		TreeManager* mgr = skroot_get_mgr(&LUN);
+		mgr->write();
+	}
 	if(skrootMode!=SKROOTMODE::NONE){
-		CloseLUN();                 // deletes tree, file, TreeManager.
+		//CloseLUN();                 // deletes tree, file, TreeManager.
+		// FIXME hacked to disable for now; see AddTree::Finalise for why
 		myTreeReader.SetClosed();   // tell the MTreeReader the file is closed.
 	}
 	// otherwise the MTreeReader destructor will close the file.
@@ -743,9 +923,9 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 	
 	// skip the very first read in zebra mode as we already loaded it when checking if MC in Initialize
 	if(skrootMode==SKROOTMODE::ZEBRA && entry_number==firstEntry){
-		Log(toolName+" skipping very first read as we got it from Initialize",v_debug,verbosity);
+		Log(m_unique_name+" skipping very first read as we got it from Initialize",v_debug,m_verbose);
 	} else if(skrootMode!=SKROOTMODE::NONE){
-		Log(toolName+" ReadEntry using SK fortran routines to load data into common blocks",v_debug,verbosity);
+		Log(m_unique_name+" ReadEntry using SK fortran routines to load data into common blocks",v_debug,m_verbose);
 		// Populating fortran common blocks with SKROOT entry data requires using
 		// SKRAWREAD and/or SKREAD.
 		// These functions call various skroot_get_* functions to retrieve branch data.
@@ -753,7 +933,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 		// * SKRAWREAD only works on data, not MC
 		// * They both only call SOME branch getters
 		
-		// supposedly skrawread only reads the head, tq and pedestal branches < check this
+		// supposedly skrawread only reads the head, tq and pedestal branches < check this.
 		// Supposedly skrawread loads some "constant tables" ...
 		// These seem to be needed to call e.g. bonsai on data; if only skread
 		// is called bonsai complains `neighbsk: error - ISEQ is <0 or > MAXPM! 0`
@@ -804,7 +984,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 		}
 		
 		if(loadSheAftPairs && skrootMode==SKROOTMODE::ZEBRA && use_buffered && skhead_vec.size()>0){
-			Log(toolName+" buffered ZEBRA entry, using in place of read",v_debug,verbosity);
+			Log(m_unique_name+" buffered ZEBRA entry, using in place of read",v_debug,m_verbose);
 			// if we have a buffered entry in hand, but it is not marked as an AFT trigger
 			// for the current readout, then the buffered entry is an unprocessed event.
 			// bypass the read and just load in the buffered data into the common blocks.
@@ -812,16 +992,16 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 			// then pop off the buffered data
 			PopCommons();
 		} else {
-			Log(toolName+" reading next entry from file",v_debug,verbosity);
+			Log(m_unique_name+" reading next entry from file",v_debug,m_verbose);
 			// use skread / skrawread to get the next TTree entry and populate Fortran common blocks
 			// skreadMode: 0=skread only, 1=skrawread only, 2=both
 			if(bytesread>0 && skreadMode>0){
-				Log(toolName+" calling SKRAWREAD",v_debug,verbosity);
+				Log(m_unique_name+" calling SKRAWREAD",v_debug,m_verbose);
 				skcrawread_(&LUN, &get_ok); // N.B. positive LUN (see above)
 				// for ZBS this doesn't seem to flag non-physics events as per for SKROOT...?
 				// manually add in checks as per headsk.F for ROOT ... FIXME ? is this appropriate?
 				if(get_ok==1){
-					Log(toolName+" read error "+toString(get_ok)+" calling skcrawread ",v_error,verbosity);
+					Log(m_unique_name+" read error "+toString(get_ok)+" calling skcrawread ",v_error,m_verbose);
 					// lf_allfit actually continues the read loop if this is encountered,
 					// so perhaps this is a recoverable error, or just an error relating to this entry?
 					// FIXME if so it may be better to continue to next entry instead of bailing
@@ -834,7 +1014,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 				} else if(get_ok!=0) {
 					// pedestal or status entry, no detector data, not an actual event
 					// 3 = pedestal entry, 4 = runinfo entry.
-					//Log(toolName+" skrawread pedestal or status event, skipping",v_debug,verbosity);
+					//Log(m_unique_name+" skrawread pedestal or status event, skipping",v_debug,m_verbose);
 					// this happens a lot...
 					if(skip_ped_evts) bytesread = -999;
 				} else if(skrootMode==SKROOTMODE::ZEBRA){
@@ -853,7 +1033,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 				}
 			}
 			if(bytesread>0 && skreadMode!=1){  // skip skread if skrawread had an error
-				Log(toolName+" calling SKREAD",v_debug,verbosity);
+				Log(m_unique_name+" calling SKREAD",v_debug,m_verbose);
 				int LUN2 = LUN;
 				if(skreadMode==2) LUN2 = -LUN;  // if we already called skrawread, use a negative LUN
 				skcread_(&LUN2, &get_ok);
@@ -861,7 +1041,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 				// manually add in checks as per headsk.F for ROOT ... XXX ? is this appropriate?
 				if(get_ok==1){
 					// error reading entry
-					Log(toolName+" read error "+toString(get_ok)+" calling skcread ",v_error,verbosity);
+					Log(m_unique_name+" read error "+toString(get_ok)+" calling skcread ",v_error,m_verbose);
 					bytesread = -1;
 				} else if(get_ok==2){
 					// end of file
@@ -881,33 +1061,33 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 			// As mentioned above, neither of these load all TTree branches.
 			// To do that we need to call skroot_get_entry.
 			if(bytesread>0 && skrootMode!=SKROOTMODE::ZEBRA){
-				Log(toolName+" calling skroot_get_entry",v_debug,verbosity);
+				Log(m_unique_name+" calling skroot_get_entry",v_debug,m_verbose);
 				skroot_get_entry_(&LUN);
 			}
 		}
 		
 	}
 	if(bytesread >0 && skrootMode!=SKROOTMODE::ZEBRA) {
-		Log(toolName+" using MTreeReader to get next TTree entry",v_debug,verbosity);
+		Log(m_unique_name+" using MTreeReader to get next TTree entry",v_debug,m_verbose);
 		// if in SKROOT mode we've already read from disk, just want to update
 		// the internal MTreeReader variables, so skip the actual TTree::GetEntry call
 		bytesread = myTreeReader.GetEntry(entry_number, (skrootMode!=SKROOTMODE::NONE));
 	}
-	Log(toolName+" bytesread is "+toString(bytesread),v_debug,verbosity);
+	Log(m_unique_name+" bytesread is "+toString(bytesread),v_debug,m_verbose);
 	
 	// stop loop if we ran off the end of the tree
 	if(bytesread==0){
 		// not good because downstream tools will not have valid data!
 		// we should protect against this in Execute() though.
-		Log(toolName+" hit end of input file, stopping loop",v_warning,verbosity);
+		Log(m_unique_name+" hit end of input file, stopping loop",v_warning,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	} else if(bytesread==-999){
-		Log(toolName+" skrawread pedestal or status event",v_debug+10,verbosity);
+		Log(m_unique_name+" skrawread pedestal or status event",v_debug+10,m_verbose);
 	}
 	// stop loop if we had an error of some kind
 	else if(bytesread<0){
-		 if(bytesread==-10) Log(toolName+" AutoClear error loading next input entry!",v_error,verbosity);
-		 else Log(toolName+" IO error "+toString(bytesread)+" loading next input entry!",v_error,verbosity);
+		 if(bytesread==-10) Log(m_unique_name+" AutoClear error loading next input entry!",v_error,m_verbose);
+		 else Log(m_unique_name+" IO error "+toString(bytesread)+" loading next input entry!",v_error,m_verbose);
 		 m_data->vars.Set("StopLoop",1);
 	}
 	
@@ -916,7 +1096,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 
 int TreeReader::AFTRead(long entry_number){
 	
-	Log(toolName+" Prompt entry is SHE, checking next entry for AFT", v_debug,verbosity);
+	Log(m_unique_name+" Prompt entry is SHE, checking next entry for AFT", v_debug,m_verbose);
 	has_aft=false; // default assumption
 	
 	// do a pre-check to see if we need to read the next entry.
@@ -945,12 +1125,12 @@ int TreeReader::AFTRead(long entry_number){
 	}
 	
 	// if the pre-check indicated we need to do a follow up read, do that now.
-	Log(toolName+" Re-Invoking ReadEntry to check next entry",v_debug,verbosity);
+	Log(m_unique_name+" Re-Invoking ReadEntry to check next entry",v_debug,m_verbose);
 	
 	// i assume that if there's an AFT, it'll always be the next entry,
 	// i.e. there won't be things like status entries in between the SHE and AFT.
 	get_ok = ReadEntry(entrynum+1, false);
-	Log(toolName+" Follow-up read returned "+toString(get_ok),v_debug,verbosity);
+	Log(m_unique_name+" Follow-up read returned "+toString(get_ok),v_debug,m_verbose);
 	
 	PrintTriggerBits();
 	
@@ -976,7 +1156,7 @@ int TreeReader::AFTRead(long entry_number){
 		}
 		
 		if(get_ok==1){
-			Log(toolName+" Successfully found SHE+AFT pair",v_debug,verbosity);
+			Log(m_unique_name+" Successfully found SHE+AFT pair",v_debug,m_verbose);
 			has_aft=true;
 		} else if(get_ok == -100){
 			// not AFT, but we're noy only reading pairs
@@ -1000,7 +1180,7 @@ int TreeReader::CheckForAFTROOT(long entry_number){
 	
 	// this event is SHE, and we're looking for SHE+AFT pairs.
 	// Peek at the next TTree entry to see if it's an associated AFT.
-	Log(toolName+" prompt event is SHE, peeking at next entry for AFT check",v_debug,verbosity);
+	Log(m_unique_name+" prompt event is SHE, peeking at next entry for AFT check",v_debug,m_verbose);
 	
 	int retval=-1;
 	
@@ -1010,7 +1190,7 @@ int TreeReader::CheckForAFTROOT(long entry_number){
 		// try to get the next HEAD entry
 		get_ok = myTreeReader.GetTree()->GetBranch("HEADER")->GetEntry(entry_number+1);
 		if(get_ok==0){
-			Log(toolName+" Error peeking next HEAD branch to look for AFT!",v_error,verbosity);
+			Log(m_unique_name+" Error peeking next HEAD branch to look for AFT!",v_error,m_verbose);
 			return -1;  // error reading AFT
 		} else {
 			const Header* header=nullptr;
@@ -1018,20 +1198,20 @@ int TreeReader::CheckForAFTROOT(long entry_number){
 			next_trigger_bits = header->idtgsk;
 		}
 	} else {
-		Log(toolName+" can't check for AFT, no further entries in HEADER branch",
-			v_debug,verbosity);
+		Log(m_unique_name+" can't check for AFT, no further entries in HEADER branch",
+			v_debug,m_verbose);
 			return -100;  // no error reading but no AFT
 	}
 	
 	if(next_trigger_bits.test(29)){
-		Log(toolName+" next entry is AFT, requesting follow-up read",v_debug,verbosity);
+		Log(m_unique_name+" next entry is AFT, requesting follow-up read",v_debug,m_verbose);
 		// The next entry is indeed an AFT. We need to read it in properly now,
 		// so buffer the current SHE data...
 		PushCommons();
 		// ... and indicate that we want to re-run ReadEntry to get the AFT entry.
 		retval=-103;
 	} else {
-		Log(toolName+" next entry is not AFT, no AFT this time.",v_debug,verbosity);
+		Log(m_unique_name+" next entry is not AFT, no AFT this time.",v_debug,m_verbose);
 		if(!onlyPairs){
 			// if we're not explicitly requesting pairs we'll still process this SHE event
 			// rewind Header branch so that anyone using the MTreeReader gets the right data
@@ -1057,7 +1237,7 @@ int TreeReader::CheckForAFTZebra(long entry_number){
 
 int TreeReader::LoadAFTROOT(){
 	// we peeked, so we already know this is an AFT trigger.
-	Log(toolName+" Successfully found SHE+AFT pair",v_debug,verbosity);
+	Log(m_unique_name+" Successfully found SHE+AFT pair",v_debug,m_verbose);
 	has_aft=true;
 	
 	// We now we have an SHE in the buffer and an AFT currently loaded.
@@ -1071,14 +1251,14 @@ int TreeReader::LoadAFTZebra(){
 	// At this point we currently have an unprocessed SHE event in the common block buffers,
 	// and we've just read the next zebra file entry into the fortran common blocks.
 	// Let's now check if the next zebra file entry is an AFT associated to our buffered SHE.
-	Log(toolName+" we have the next entry in active commons "
-		+"and a prompt entry buffered. Checking trigger word",v_debug,verbosity);
+	Log(m_unique_name+" we have the next entry in active commons "
+		+"and a prompt entry buffered. Checking trigger word",v_debug,m_verbose);
 	
 	int bytesread=-1;
 	
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
 	if(trigger_bits.test(29)){
-		Log(toolName+" Successfully found an SHE+AFT pair",v_debug,verbosity);
+		Log(m_unique_name+" Successfully found an SHE+AFT pair",v_debug,m_verbose);
 		// this means we have an SHE in buffer and an AFT in the common blocks right now.
 		// swap the SHE event back into the common blocks and AFT into the buffer.
 		LoadCommons(0);
@@ -1086,12 +1266,12 @@ int TreeReader::LoadAFTZebra(){
 		bytesread = 1;
 		
 	} else {
-		Log(toolName+" Follow-up entry is not AFT",v_debug,verbosity);
+		Log(m_unique_name+" Follow-up entry is not AFT",v_debug,m_verbose);
 		
 		// we have two options for proceeding here.
 		// If the user ONLY wants SHE+AFT pairs...
 		if(onlyPairs){
-			Log(toolName+" Dropping old SHE since we only want pairs",v_debug,verbosity);
+			Log(m_unique_name+" Dropping old SHE since we only want pairs",v_debug,m_verbose);
 			// The currently buffered SHE did not have an associated AFT, so we have no use for it.
 			PopCommons();  // drop it from the buffer.
 			// we'll start this read all over, so put the new entry into the buffer
@@ -1099,8 +1279,8 @@ int TreeReader::LoadAFTZebra(){
 			PushCommons();
 			bytesread = -999;
 		} else {
-			Log(toolName+" Swapping back previous entry, keeping next entry for next Execute call",
-				v_debug,verbosity);
+			Log(m_unique_name+" Swapping back previous entry, keeping next entry for next Execute call",
+				v_debug,m_verbose);
 			// else the user wants an AFT if there is one, but will still accept SHE events
 			// without one. In that case, we still want to process our buffered entry,
 			// so load it back into the common blocks, and retain our next entry in the buffer.
@@ -1117,18 +1297,18 @@ int TreeReader::LoadAFTZebra(){
 void TreeReader::PrintTriggerBits(){
 	std::bitset<sizeof(int)*8> trigger_bits = skhead_.idtgsk;
 	
-	Log(toolName+" Trigger word for the active entry is: "
-		+trigger_bits.to_string(),v_debug,verbosity);
-	if(verbosity>(v_debug+1)){
+	Log(m_unique_name+" Trigger word for the active entry is: "
+		+trigger_bits.to_string(),v_debug,m_verbose);
+	if(m_verbose>(v_debug+1)){
 		for(int i=0; i<(sizeof(int)*8); ++i){
 			if(trigger_bits.test(i)) std::cout<<"bit "<<i<<" set"<<std::endl;
 		}
 	}
 	/*
 	std::bitset<sizeof(int)*8> event_bits = skhead_.ifevsk;
-	Log(toolName+" Event word for the active entry is: "+event_bits.to_string(),
-		v_debug,verbosity);
-	if(verbosity>(v_debug+1)){
+	Log(m_unique_name+" Event word for the active entry is: "+event_bits.to_string(),
+		v_debug,m_verbose);
+	if(m_verbose>(v_debug+1)){
 		for(int i=0; i<(sizeof(int)*8); ++i){
 			if(event_bits.test(i)) std::cout<<"bit "<<i<<" set"<<std::endl;
 		}
@@ -1205,24 +1385,27 @@ void TreeReader::PrintSubTriggers(){
 }
 
 int TreeReader::LoadConfig(std::string configfile){
-	Log(toolName+" reading configuration file "+configfile,v_debug,verbosity);
+	Log(m_unique_name+" reading configuration file "+configfile,v_debug,m_verbose);
 	// read the config file
 	std::ifstream fin (configfile.c_str());
 	std::string Line;
 	
 	if(not fin.is_open()){
-		Log(toolName+" failed to read configuration file "+configfile,v_error,verbosity);
+		Log(m_unique_name+" failed to read configuration file "+configfile,v_error,m_verbose);
 		return -1;
 	}
 	
-	bool settingInputBranchNames=false;
-	bool settingOutputBranchNames=false;
+	bool settingActiveInputBranches=false;
+	bool settingActiveOutputBranches=false;
+	bool settingSkippedInputBranches=false;
+	bool settingSkippedOutputBranches=false;
 	bool skFile=false;
-	std::string triggerMasksString="";
+	std::string allowedTriggersString="";
+	std::string skippedTriggersString="";
 	
 	// scan over lines in the config file
 	while (getline(fin, Line)){
-		Log(toolName+" parsing config line \""+Line+"\"",v_debug,verbosity);
+		Log(m_unique_name+" parsing config line \""+Line+"\"",v_debug,m_verbose);
 		// skip empty lines
 		if (Line.empty()) continue;
 		std::string LineCopy = Line; // make a copy so we can print it in case of parsing error
@@ -1241,32 +1424,59 @@ int TreeReader::LoadConfig(std::string configfile){
 		std::string thevalue = Line.substr(Line.find_first_of(" \t\n\015\014\013")+1,std::string::npos);
 		bool push_variable=true;  // whether to record this in m_variables (skip branch names and flags)
 		
-		// first check if we're entering or leaving the list of branches to activate
-		if (thekey=="StartInputBranchList"){
-			settingInputBranchNames = true;
+		// first check if we're entering or leaving the list of input or output branches to activate
+		if (thekey=="StartActiveInputBranches"){
+			settingActiveInputBranches = true;
 			push_variable=false;
 		}
-		else if(thekey=="EndInputBranchList"){
-			settingInputBranchNames = false;
+		else if(thekey=="EndActiveInputBranches"){
+			settingActiveInputBranches = false;
 			push_variable=false;
 		}
-		else if(settingInputBranchNames){
+		else if(settingActiveInputBranches){
 			ActiveInputBranches.push_back(Line);
 			push_variable=false;
 		}
-		else if (thekey=="StartOutputBranchList"){
-			settingOutputBranchNames = true;
+		else if (thekey=="StartActiveOutputBranches"){
+			settingActiveOutputBranches = true;
 			push_variable=false;
 		}
-		else if(thekey=="EndOutputBranchList"){
-			settingOutputBranchNames = false;
+		else if(thekey=="EndActiveOutputBranches"){
+			settingActiveOutputBranches = false;
 			push_variable=false;
 		}
-		else if(settingOutputBranchNames){
+		else if(settingActiveOutputBranches){
 			ActiveOutputBranches.push_back(Line);
 			push_variable=false;
 		}
-		else if(thekey=="verbosity") verbosity = stoi(thevalue);
+		// or the list of input or output branches to skip
+		if (thekey=="StartSkippedInputBranches"){
+			settingSkippedInputBranches = true;
+			push_variable=false;
+		}
+		else if(thekey=="EndSkippedInputBranches"){
+			settingSkippedInputBranches = false;
+			push_variable=false;
+		}
+		else if(settingSkippedInputBranches){
+			SkippedInputBranches.push_back(Line);
+			push_variable=false;
+		}
+		else if (thekey=="StartSkippedOutputBranches"){
+			settingSkippedOutputBranches = true;
+			push_variable=false;
+		}
+		else if(thekey=="EndSkippedOutputBranches"){
+			settingSkippedOutputBranches = false;
+			push_variable=false;
+		}
+		else if(settingSkippedOutputBranches){
+			SkippedOutputBranches.push_back(Line);
+			push_variable=false;
+		}
+		
+		// other variables
+		else if(thekey=="verbosity") m_verbose = stoi(thevalue);
 		else if(thekey=="inputFile") inputFile = thevalue;
 		else if(thekey=="outputFile") outputFile = thevalue; // when using SKROOT copy mode
 		else if(thekey=="FileListName") FileListName = thevalue;
@@ -1288,10 +1498,13 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="readSheAftTogether") loadSheAftPairs = stoi(thevalue);
 		else if(thekey=="onlySheAftPairs") onlyPairs = stoi(thevalue);
 		else if(thekey=="entriesPerExecute") entriesPerExecute = stoi(thevalue);
-		else if(thekey=="triggerMasks") triggerMasksString = thevalue;
+		else if(thekey=="allowedTriggers") allowedTriggersString = thevalue;
+		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
+		else if(thekey=="skipBadRuns") skipbadruns = stoi(thevalue);
+		else if(thekey=="referenceWaterRun") reference_watert_run = stoi(thevalue);
 		else {
-			Log(toolName+" error parsing config file line: \""+LineCopy
-				+"\" - unrecognised variable \""+thekey+"\"",v_error,verbosity);
+			Log(m_unique_name+" error parsing config file line: \""+LineCopy
+				+"\" - unrecognised variable \""+thekey+"\"",v_error,m_verbose);
 		}
 		if(push_variable){ m_variables.Set(thekey,thevalue); }
 	}
@@ -1304,22 +1517,32 @@ int TreeReader::LoadConfig(std::string configfile){
 			// are two array entries, which is no different than with loadSheAftPairs=false
 			// Only way to do this would be to implement some prescription for combining SHE+AFT,
 			// e.g. by simply merging T and Q arrays..? but...that needs more thought, at least.
-			Log(toolName+" Error! readSheAftTogether and entriesPerExecute>1 cannot "
-				+"both be used at the same time. Setting entriesPerExecute=1.",v_warning,verbosity);
+			Log(m_unique_name+" Error! readSheAftTogether and entriesPerExecute>1 cannot "
+				+"both be used at the same time. Setting entriesPerExecute=1.",v_warning,m_verbose);
 			entriesPerExecute=1;
 		} else if(onlyPairs){
 			skip_ped_evts = true;
 		}
 	}
 	
-	// parse the triggerMasksString for trigger masks
+	// parse the allowedTriggersString for allowed triggers
 	while(true){
 		try{
 			size_t nextchar=0;
-			int next_bit = stoi(triggerMasksString,&nextchar);
-			triggerMasks.push_back(next_bit);
-			if(nextchar==triggerMasksString.length()) break;
-			triggerMasksString = triggerMasksString.substr(nextchar+1,std::string::npos);
+			int next_bit = stoi(allowedTriggersString,&nextchar);
+			allowedTriggers.push_back(next_bit);
+			if(nextchar==allowedTriggersString.length()) break;
+			allowedTriggersString = allowedTriggersString.substr(nextchar+1,std::string::npos);
+		} catch (...) { break; }
+	}
+	// same for skippedTriggerString
+	while(true){
+		try{
+			size_t nextchar=0;
+			int next_bit = stoi(skippedTriggersString,&nextchar);
+			skippedTriggers.push_back(next_bit);
+			if(nextchar==skippedTriggersString.length()) break;
+			skippedTriggersString = skippedTriggersString.substr(nextchar+1,std::string::npos);
 		} catch (...) { break; }
 	}
 	
@@ -1350,10 +1573,10 @@ bool TreeReader::LoadNextZbsFile(){
 	list_of_files.pop_back();
 	// resolve any environmental variables and symlinks
 	std::string cmd = std::string("readlink -f ")+next_file;
-	Log(toolName+" getting return from command '"+cmd+"'",v_debug+1,verbosity);
+	Log(m_unique_name+" getting return from command '"+cmd+"'",v_debug+1,m_verbose);
 	//next_file = getOutputFromFunctionCall(system, cmd.c_str());  // was crashing???
 	next_file = getOutputFromFunctionCall(safeSystemCall, cmd);
-	Log(toolName+": next ZBS file "+next_file,v_debug,verbosity);
+	Log(m_unique_name+": next ZBS file "+next_file,v_debug,m_verbose);
 	
 	// ok now actually open the ZBS file.
 	/*
@@ -1373,10 +1596,10 @@ bool TreeReader::LoadNextZbsFile(){
 	skopenf_( &LUN, &ipt, "Z", &get_ok, &ihndl );
 	
 	if(get_ok!=0){
-		Log(toolName+" Error loading next ZBS file '"+next_file,v_error,verbosity);
+		Log(m_unique_name+" Error loading next ZBS file '"+next_file,v_error,m_verbose);
 		return false;
 	} else {
-		Log(toolName+" next ZBS file '"+next_file+"' has been loaded",v_debug,verbosity);
+		Log(m_unique_name+" next ZBS file '"+next_file+"' has been loaded",v_debug,m_verbose);
 	}
 	return true;
 	
@@ -1570,8 +1793,8 @@ int TreeReader::FlushCommons(){
 bool TreeReader::LoadCommons(int buffer_i){
 	// check we have such a buffered entry
 	if(buffer_i>=skhead_vec.size()){
-		Log(toolName+" Error! Asked to load common block buffer entry "+toString(buffer_i)
-			+" out of range 0->"+skhead_vec.size()+"!",v_error,verbosity);
+		Log(m_unique_name+" Error! Asked to load common block buffer entry "+toString(buffer_i)
+			+" out of range 0->"+skhead_vec.size()+"!",v_error,m_verbose);
 		return false;
 	}
 	
@@ -1623,8 +1846,8 @@ bool TreeReader::HasAFT(){
 }
 
 bool TreeReader::LoadAFT(){
-	Log(toolName+" LoadAFT called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
-	    v_debug,verbosity);
+	Log(m_unique_name+" LoadAFT called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,m_verbose);
 	if(has_aft && !aft_loaded){
 		aft_loaded = LoadCommons(0);
 		return aft_loaded;
@@ -1633,8 +1856,8 @@ bool TreeReader::LoadAFT(){
 }
 
 bool TreeReader::LoadSHE(){
-	Log(toolName+" LoadSHE called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
-	    v_debug,verbosity);
+	Log(m_unique_name+" LoadSHE called: has_aft="+toString(has_aft)+", aft_loaded="+toString(aft_loaded),
+	    v_debug,m_verbose);
 	if(has_aft && aft_loaded){
 		aft_loaded = !LoadCommons(0);
 		return aft_loaded;

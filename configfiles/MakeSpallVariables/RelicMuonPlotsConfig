@@ -1,0 +1,4 @@
+verbosity 2
+outputFile ~/disk02/murelicplots.root
+relicReaderName relicReader
+muReaderName muReader

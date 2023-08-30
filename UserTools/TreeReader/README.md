@@ -41,6 +41,8 @@ skreadMode 0                                   # which set of `skread` or `skraw
 skipPedestals 1                                # whether to skip pedestal and status entries (1)
 readSheAftTogether 1                           # whether to read AFT data for associated SHE events together (0)
 onlySheAftPairs 1                              # whether to only return SHE+AFT pairs (0)
+skippedTriggers 1,2,3                          # skip entries in which any of the trigger bits in this list are set (none)
+allowedTriggers 18,19                          # return only entries with one of the trigger bits in this list set (none)
 ```
 
 When processing SK ROOT files the following additional options are also available:
@@ -60,23 +62,25 @@ Notes:
 * if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see $SKOFL_ROOT/src/skrd/skoptn.F for all options)
 * LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.
 * skipPedestals will load the next entry for which `skread` or `skrawread` did not return 3 or 4 (not pedestal or runinfo entry).
-* When reading ROOT files, only enable branches you intend to use. Specify a list of input branches as follows:
+* Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use:
 ```
-StartInputBranchList
+StartSkippedInputBranches
 branchA
 branchB
-branchC
-EndInputBranchList
+EndSkippedInputBranches
 ```
-* this will disable all branches other than `branchA`, `branchB` and `branchC`.
-* for skroot files in `copy` mode, an output file will be created and entries may be copied from input to output file. Unused input branches should be disabled as above, but branches that are needed for processing but not desired in the output can be removed from the copy operation by listing only the desired output branches as follows:
+* Alternatively to disable all branches other than those specified, use:
 ```
-StartOutputBranchList
+StartActiveInputBranches
 branchA
 branchB
-EndOutputBranchList
+EndActiveInputBranches
 ```
-* in this case branches `branchA`,`branchB` and `branchC` will be read in and accessible, but the output file will only contain branches `branchA` and `branchB`.
+* this will disable all branches other than `branchA` and `branchB`.
+* for skroot files in `copy` mode, an output file will be created where entries can be copied straight from input to output.
+* Branches not desired in the output can be omitted from the copy by listing them in a similar fashion as above, using either
+* `Start/EndSkippedOutputBranches` or `Start/EndActiveOutputBranches`. Branches disabled in the output but not the input
+* will be read in and accessible, but the output file will not contain them.
 * outputFile is only applicable in skroot copy or write mode.
 * In write mode you will need to call `skroot_set_***` and `skroot_fill_tree_` functions as required. If you need to read inputs from another file, you will need to use another TreeReader instance.
 * N.B. The minimum set of active input branches for calling lf_allfit seems to be:
@@ -110,3 +114,17 @@ skoptn values:
 15 : Timing correction (TMQ) by Ikeda-san
 14 : Do not remove q<0 hits for OD (SK IV only)
 ```
+
+skbadopt bits: (from skbadcC.h)
+```
+no bits (skbadopt 0): mask all kinds of bad channels (used for high energy events, e.g. muon reconstruction)
+bit 0: mask badch.dat
+bit 1: mask dead ID PMTs (criterion 1)
+bit 2: mask dead ID PMTs (criterion 2)
+bit 3: mask ID noisy PMTs (should NOT be enabled for lowe event subtigger search or lowe reconstruction)
+bit 4: mask OD PMTs
+bit 5: mask ID HK PMTs
+uppermost bit (skbadopt -1): mask only badch.00* and inner HK PMTs
+```
+usual lowe option is 23: 10111; mask everything except noisy ID PMTs
+(says this masks OD PMTs, but from what? they're still read into the appropriate common blocks...)

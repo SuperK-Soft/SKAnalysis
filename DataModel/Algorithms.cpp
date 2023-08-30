@@ -8,7 +8,9 @@
 #include <sys/wait.h>  // for wait()
 #include <errno.h>     // for WEXITSTATUS etc
 #include <stdlib.h>    // for fork()?
-//#include <memory>
+#include <locale>      // std::isspace
+#include <memory>
+#include <string.h>
 //#include <exception>
 //#include <cstring>  // strncpy
 #include <fstream>
@@ -21,6 +23,10 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 #include "TObjectTable.h"
+#include "TLegend.h"
+#include "TH1.h"
+#include "TPie.h"
+#include "TROOT.h"
 
 std::string toString(const TVector3& vec){
 	std::string s = "("+toString(vec.X())+", "+toString(vec.Y())+", "+toString(vec.Z())+")";
@@ -80,6 +86,8 @@ std::string GetStdoutFromCommand(std::string cmd, int bufsize){
 		pclose(stream);
 	}
 	delete[] buffer;
+	// pop off trailing newline
+	if(std::isspace(data.back())) data.pop_back();
 	return data;
 }
 
@@ -234,4 +242,87 @@ bool IsStlContainer(std::string type_as_string){
 	size_t base_pos = type_as_string.find('<');
 	if(base_pos==std::string::npos) return false;
 	return (container_types.count(type_as_string.substr(0,base_pos)));
+}
+
+
+std::unique_ptr<TPie> GeneratePieFromHisto(std::string histoname, int verbose){
+	TH1F* histo = (TH1F*)gROOT->FindObject(histoname.c_str());
+	if(histo==nullptr){
+		std::cerr<<"GeneratePieFromHisto could not find histo "<<histoname<<std::endl;
+		return nullptr;
+	}
+	return GeneratePieFromHisto(histo, verbose);
+}
+
+std::unique_ptr<TPie> GeneratePieFromHisto(TH1F* histo, int verbose){
+	// I may not have realised TPie::TPie(const TH1* h) exists ....?
+	std::string histoname = std::string(histo->GetName());
+	if(verbose) std::cout<<"creating pie chart from histo "<<histoname<<", which has "
+						 <<histo->GetNbinsX()<<" bins with contents: "<<std::endl;
+	std::vector< std::pair<std::string,float> > histbins;
+	for(int bini=0; bini<histo->GetNbinsX(); bini++){
+		TString binlabel = histo->GetXaxis()->GetBinLabel(bini+1);
+		float binconts = histo->GetBinContent(bini+1);
+		if(binconts<0.01) binconts = 0.0f;  // round floats. useful if the histo has been scaled.
+		if(verbose && binconts!=0.0f) std::cout<<binlabel.Data()<<" : "<<binconts<<std::endl;
+		if(binconts<0) std::cerr<<"error converting "<<histoname<<" to pie chart: bin "<<binlabel.Data()
+			<<" has "<<binconts<<" entries!"<<std::endl;
+		if(binconts!=0) histbins.emplace_back(binlabel.Data(),binconts);
+	}
+	
+	auto thepie = std::unique_ptr<TPie>(new TPie(TString::Format("%sPie",histoname.c_str()), TString::Format("%s",histoname.c_str()), histbins.size()));
+	
+	for(size_t bini=0; bini<histbins.size(); bini++){
+		std::pair<std::string,float> abin = histbins.at(bini);
+		std::string thebinlabel = abin.first;
+		float thebincontents = abin.second;
+		if(thebincontents<0) std::cerr<<"error converting "<<histoname<<" to pie chart: bin "<<thebinlabel
+			<<" has "<<thebincontents<<" entries!"<<std::endl;
+		thepie->SetEntryVal(bini,thebincontents);  // NO +1 - TPie's have no underflow bin!
+		thepie->SetEntryLabel(bini,thebinlabel.c_str());
+	}
+	return thepie;
+}
+
+int SystemCall(std::string cmd, std::string& retstring){
+	// execute command, capture return status and any output
+	
+	int retstatus;  // exit code of command
+	retstring="";
+	
+	// gotcha: our particular command redirects stdout,
+	// so if we append 2>&1 we get stderr into our output file too!
+	// fortunately we can put redirects whereever we like,
+	// so insert it before anything else
+	cmd.insert(0,"2>&1; ");
+	cmd.append(";");
+	
+	// fork, execute cmd with '/bin/sh -c' and open a read pipe connected to outout (r)
+	FILE * stream = popen(cmd.c_str(), "r");
+	// check the fork succeeded and we got a pipe to read from
+	if(stream){
+		// read any return
+		unsigned int bufsize=255;
+		char buffer[bufsize]; // temporary buffer for reading return
+		while(!feof(stream)){
+			// if we're very paranoid we can check for read error with (ferror(stream)!=0)
+			if (fgets(buffer, bufsize, stream) != NULL) retstring.append(buffer);
+		}
+		// pop off trailing newline
+		if(std::isspace(retstring.back())) retstring.pop_back();
+		// close the pipe, and capture command return value
+		int stat = pclose(stream);
+		retstatus = (WIFEXITED(stat)) ? WEXITSTATUS(stat) : WTERMSIG(stat);
+	} else {
+		retstring = "SystemCall popen returned nullptr for command '"+cmd
+		          +"'', error is: "+strerror(errno);
+		return -1;
+	}
+	if(retstatus!=0){
+		retstring="SystemCall with command "+cmd+" failed with error code "
+		         +std::to_string(retstatus)+", stderr returned '"+retstring+"'";
+	}
+	
+	return retstatus;
+	
 }

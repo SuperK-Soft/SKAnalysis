@@ -1,0 +1,2 @@
+verbosity 1
+hitLimit 500  # reject event if 'newMuon' flag is negative and nqisk > hitLimit

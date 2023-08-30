@@ -3,10 +3,3 @@ myTreeReader TreeReader configfiles/TreeReaderDemo/TreeReaderConfig
 #myTreeReaderDemo TreeReaderDemo configfiles/TreeReaderDemo/TreeReaderDemoConfig
 #myMCParticlesDemo ReadMCParticles configfiles/TreeReaderDemo/ReadMCParticlesConfig
 #myevDisp evDisp configfiles/TreeReaderDemo/evDispConfig
-
-#myTrueNCaptures TrueNCaptures configfiles/TreeReaderDemo/TrueNCapturesConfig
-#bdtReader TreeReader configfiles/TreeReaderDemo/TreeReaderConfigBDT
-#myBDTCandidates NCaptInfo_BDT configfiles/TreeReaderDemo/NCaptInfo_BDTConfig
-
-#ntagReader TreeReader configfiles/TreeReaderDemo/TreeReaderConfigNTag
-#myNTagCandidates NCaptInfo_NTag configfiles/TreeReaderDemo/NCaptInfo_NTagConfig

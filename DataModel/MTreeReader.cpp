@@ -32,8 +32,19 @@ bool Notifier::Notify(){
 
 // TODO constructor/loader for tchains or tree pointers
 
-MTreeReader::MTreeReader(std::string fpath, std::string treename){
+MTreeReader::MTreeReader(std::string iname, std::string fpath, std::string treename){
+	name = iname;
 	Load(fpath, treename);
+}
+
+MTreeReader::MTreeReader(std::string iname) : name(iname){};
+
+std::string MTreeReader::GetName(){
+	return name;
+}
+
+void MTreeReader::SetName(std::string iname){
+	name=iname;
 }
 
 int MTreeReader::Load(std::string filename, std::string treename){
@@ -266,6 +277,15 @@ int MTreeReader::ParseBranches(){
 	for(auto&& abranch : branch_isarray){
 		if(abranch.second) ParseBranchDims(abranch.first);
 	}
+	
+	// build a string list of branch names
+	branchnamestring="";
+	for(auto&& abranch : branch_titles){
+		if(!branchnamestring.empty()) branchnamestring += ", ";
+		branchnamestring += abranch.first;
+	}
+	branchnamestring = "{" + branchnamestring + "}";
+	
 	return 1;
 }
 

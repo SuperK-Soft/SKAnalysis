@@ -3,6 +3,8 @@
 
 #include "EventTrueCaptures.h"
 
+EventTrueCaptures::~EventTrueCaptures() = default;
+
 void EventTrueCaptures::Sort()
 {
     std::sort(element.begin(), element.end(), 

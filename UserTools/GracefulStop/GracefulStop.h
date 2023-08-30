@@ -35,14 +35,6 @@ class GracefulStop: public Tool {
 	static bool gotStopSignal;
 	static bool gotInterruptSignal;
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage;
-	int get_ok;
 };
 
 #endif

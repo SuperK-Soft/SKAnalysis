@@ -30,8 +30,10 @@ class MParticle {
 	// start or end momentum set (as not all sources record them)
 	// require the use of setters, and provide getters
 	private:
-	TVector3 start_mom{0,0,0};
-	TVector3 end_mom{0,0,0};
+	TVector3 start_mom{0,0,0};  // [MeV/c]
+	TVector3 end_mom{0,0,0};    // [MeV/c]
+	double startE;              // [MeV]
+	double endE;                // [MeV]
 	public:
 	void SetStartMom(double* nums);
 	void SetEndMom(double* nums);
@@ -45,11 +47,13 @@ class MParticle {
 	double* GetStartTime();
 	TVector3* GetStartPos();
 	TVector3* GetStartMom();
+	double* GetStartE();
 	double* GetEndTime();
 	TVector3* GetEndPos();
 	TVector3* GetEndMom();
-	std::vector<int>* GetStartProcesses();       // XXX is int ok?
-	std::vector<int>* GetEndProcesses();         // XXX is int ok?
+	double* GetEndE();
+	std::vector<int>* GetStartProcesses();
+	std::vector<int>* GetEndProcesses();
 	bool IsParentDirect();
 	
 	MVertex* GetStartVertex();
@@ -60,12 +64,14 @@ class MParticle {
 	std::string PrintStartPos();
 	std::string PrintStartTime();
 	std::string PrintStartMom();
+	std::string PrintStartE();
 	std::string PrintStartProcesses();
 	std::string PrintEndPos();
 	std::string PrintEndTime();
 	std::string PrintEndMom();
+	std::string PrintEndE();
 	std::string PrintEndProcesses();
-	void Print();
+	void Print(bool verbose=false);
 	
 	DataModel* m_data=nullptr;
 	

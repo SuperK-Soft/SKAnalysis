@@ -1,0 +1,22 @@
+verbosity 1
+#inputFile /home/mattnich/disk3stor/mc/atmos/atmos_recon.mcfit.root
+#inputFile ~/skdetsim/skdetsimgd/skdetsim_ibd_zbstest.root
+#inputFile ~/testfix.root
+#inputFile ~/skdetsim/skdetsimgd/vect.r77957_out.root
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root
+inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
+treeName data
+readerName demoReader
+skFile 1                      # fill fortran common blocks
+maxEntries -1                 # max num input entries to process
+
+
+#StartInputBranchList
+################
+#HEADER
+##LOWE
+#MC
+#SECONDARY
+##TQREAL
+##############
+#EndInputBranchList

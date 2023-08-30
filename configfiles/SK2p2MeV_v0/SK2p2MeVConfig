@@ -7,6 +7,5 @@ derived_classname mc
 #outFile SK2p2MeV_testout.root
 #outFile SK2p2MeV_atmnu_2500_04.root
 #outFile SK2p2MeV_SKG4_ngun.root
-#outFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_SK2p2.root
-outFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_SK2p2.root
-SK_GEOMETRY 6
+outFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_SK2p2.root
+#outFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_SK2p2.root

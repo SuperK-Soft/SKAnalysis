@@ -5,18 +5,30 @@
 #include <set>
 #include <string>
 #include <map>
+#include <unordered_map>
+#include <unordered_map>
 #include "TInterpreter.h" // TInterpreter::EErrorCode
 #include "TDatabasePDG.h"
 //#include <regex>    // std::regex doesn't work for older g++ versions
+
+#include "fortran_routines.h"
 
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
 extern std::map<TInterpreter::EErrorCode, std::string> TInterpreterErrors;
 
+enum class TriggerType;
+
 // functions
 std::string G3_process_code_to_string(int process_code);
+std::string G4_process_code_to_string(int process_code);
 std::string numnu_code_to_string(int numnu_code);
 std::string neut_mode_to_string(int neut_code);
+std::string RunModeToName(int mdrnsk);
+std::string EventFlagToString(int ifevsk, int sk_geometry=-1);
+std::string GetEventFlagNames(int32_t flagid);
+std::unordered_map<std::string,int> GetHitFlagNames(int32_t ihtiflz, std::string* list=nullptr);
+std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& adc_counts, int32_t& flags, std::string* list=nullptr);
 std::string PdgToString(int code);
 int StringToPdg(std::string name);
 int PdgToG3ParticleCode(int code);
@@ -24,9 +36,56 @@ int G3ParticleCodeToPdg(int code);
 int StringToG3ParticleCode(std::string name);
 std::string G3ParticleCodeToString(int code);
 double PdgToMass(int code);
-std::string TriggerIDToTrigger(int code);
+std::string TriggerIDToName(int code);
+std::string GetTriggerNames(int32_t trigid);
+int TriggerNameToID(std::string trigname);
+const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
+
+enum class TriggerType{
+	LE=0,
+	HE=1,
+	SLE=2,
+	OD_or_Fission=3,
+	Periodic=4,
+	AFT_or_Cal=5,
+	Veto_Start=6,
+	Veto_Stop=7,
+	unknown_8=8,
+	unknown_9=9,
+	unknown_10=10,
+	Random_Wide=11,
+	ID_Laser=12,
+	LED=13,
+	Ni=14,
+	OD_Laser=15,
+	LE_hitsum=16,
+	HE_hitsum=17,
+	SLE_hitsum=18,
+	OD_hitsum=19,
+	unknown_20=20,
+	unknown_21=21,
+	SN_Burst=22,
+	mue_Decay=23,
+	LINAC=24,
+	LINAC_RF=25,
+	unknown_26=26,
+	Periodic_simple=27,
+	SHE=28,
+	AFT=29,
+	Pedestal=30,
+	T2K=31
+};
+
+enum class muboy_classes{
+	misfit=0,            // too few valid hits (<10) after cuts
+	single_thru_going=1, // good confidence in single throughgoing
+	single_stopping=2,   // 
+	multiple_mu_1=3,     // Scott says: "80% of multiple muons are this type..."
+	multiple_mu_2=4,     // "...and 20% are of this type". What is the difference??
+	corner_clipper=5     // 
+};
 
 namespace constants{
 	
@@ -35,7 +94,6 @@ namespace constants{
 	constexpr int BSTORE_ASCII_FORMAT = 1;
 	constexpr int BSTORE_MULTIEVENT_FORMAT = 2;
 	
-	static const TDatabasePDG* particleDb = TDatabasePDG::Instance();
 	// https://root.cern.ch/root/html532/src/TDatabasePDG.cxx.html
 	// https://root.cern/doc/v608/classTDatabasePDG.html
 	
@@ -81,6 +139,80 @@ namespace constants{
 		{107, "Cerenkov Refraction"},
 		{108, "Synchrotron Generation"},
 		{109, "PAI or ASHO model used for energy loss fuctuations"}
+	};
+	
+	// from skheadC.h
+	static const std::map<int,std::string> mdrnsk_to_runtype{
+		{0,"Monte Carlo"},
+		{1,"Normal Data"},
+		{2,"Laser Calibration"},
+		{3,"Pedestal"},
+		{4,"Xenon Lamp"},
+		{5,"Nickel Calibration"},
+		{6,"Random Trigger"},
+		{7,"Linac Calibration"}
+	};
+	
+	static const std::map<int,std::string> G4_process_code_to_string{
+		{1,"CoulombScat"},
+		{2,"Ionisation"},
+		{3,"Brems"},
+		{4,"PairProdCharged"},
+		{5,"Annih"},
+		{6,"AnnihToMuMu"},
+		{7,"AnnihToHad"},
+		{8,"NuclearStopp"},
+		{9,"ElectronSuper"},
+		{10,"Msc"},
+		{11,"Rayleigh"},
+		{12,"PhotoElectric"},
+		{13,"Compton"},
+		{14,"Conv"},
+		{15,"ConvToMuMu"},
+		{16,"GammaSuper"},
+		{21,"Cerenkov"},
+		{22,"Scintillation"},
+		{23,"SynchRad"},
+		{24,"TransRad"},
+		{31,"OpAbsorb"},
+		{32,"OpBoundary"},
+		{33,"OpRayleigh"},
+		{34,"OpWLS"},
+		{35,"OpMieHG"},
+		{51,"DNAElastic"},
+		{52,"DNAExcit"},
+		{53,"DNAIonisation"},
+		{54,"DNAVibExcit"},
+		{55,"DNAAttachment"},
+		{56,"DNAChargeDec"},
+		{57,"DNAChargeInc"},
+		{58,"DNAElectronSolvatation"},
+		{59,"DNAMolecularDecay"},
+		{60,"ITTransportation"},
+		{61,"DNABrownianTransportation"},
+		{62,"DNADoubleIonisation"},
+		{63,"DNADoubleCapture"},
+		{64,"DNAIonisingTransfer"},
+		{91,"Transportation"},
+		{92,"CoupleTrans"},
+		{111,"HadElastic"},
+		{121,"HadInElastic"},
+		{131,"HadCapture"},
+		{132,"MuAtomicCapture"},
+		{141,"HadFission"},
+		{151,"HadAtRest"},
+		{161,"HadCEX"},
+		{201,"Decay"},
+		{202,"DecayWSpin"},
+		{203,"DecayPiSpin"},
+		{210,"DecayRadio"},
+		{211,"DecayUnKnown"},
+		{221,"DecayMuAtom"},
+		{231,"DecayExt"},
+		{401,"StepLimiter"},
+		{402,"UsrSepcCuts"},
+		{403,"NeutronKiller"},
+		{491,"ParallelWorld"}
 	};
 	
 	// from skdetsim source file 'gt2pd.h'
@@ -353,6 +485,26 @@ namespace constants{
 		{52, "NC elastic"}
 	};
 	
+	static const std::map<muboy_classes,std::string> muboy_class_to_name{
+		{muboy_classes::misfit,"misfit"},
+		{muboy_classes::single_thru_going,"single_thru_going"},
+		{muboy_classes::single_stopping,"single_stopping"},
+		{muboy_classes::multiple_mu_1,"multiple_mu_1"},
+		{muboy_classes::multiple_mu_2,"multiple_mu_2"},
+		{muboy_classes::corner_clipper,"corner_clipper"}
+	};
+	
+	static const std::map<std::string,muboy_classes> muboy_name_to_class{
+		{"misfit",muboy_classes::misfit},
+		{"single_thru_going",muboy_classes::single_thru_going},
+		{"single_stopping",muboy_classes::single_stopping},
+		{"multiple_mu_1",muboy_classes::multiple_mu_1},
+		{"multiple_mu_2",muboy_classes::multiple_mu_2},
+		{"corner_clipper",muboy_classes::corner_clipper}
+	};
+	
+	static const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();
+	/* populating this is now done in pdg_to_name_nuclei.cc, as its real big
 	static const std::map<int,std::string> pdg_to_string{
 		// FIXME use TParticlePDG for greater coverage, but need to add nuclei
 		{2212,"Proton"},
@@ -395,11 +547,7 @@ namespace constants{
 		{15,"Tau-"},
 		{100,"OpticalPhoton"},
 		// nuclei
-		{1000010020,"Deuterium"},
-		{1000010030,"Tritium"},
-		{1000020040,"Alpha"},
-		{1000020030,"He3"},
-		{1000080160,"O16"},
+		{1000641530,"Gd153"},
 		{1000641550,"Gd155"},     // ground state
 		{1000641550,"Gd155*"},    // excited 121.050 state
 		{1000641560,"Gd156"},     // ground state
@@ -407,6 +555,7 @@ namespace constants{
 		{1000641570,"Gd157"},     // ground state
 		{1000641571,"Gd157*"},    // excited 426.600 state
 		{1000641580,"Gd158"},     // ground state
+		{1000080170,"O17"},
 		// support skdetsim "custom" pdg codes
 		{100045,"Deuterium"},
 		{100046,"Tritium"},
@@ -415,6 +564,7 @@ namespace constants{
 		{100049,"He3"},
 		{100069,"O16"}
 	};
+	*/
 	
 	static const std::map<std::string,int> string_to_pdg{
 		// FIXME use TParticlePDG for greater coverage, but need to add nuclei
@@ -476,58 +626,236 @@ namespace constants{
 	// could we use this to connect daughter nuclei to their parent?
 	// we will probably need to build this decay list ourselves though.
 	
-	enum muboy_classes{ misfit=0, single_thru_going=1, single_stopping=2, multiple_mu=3, also_multiple_mu=4, corner_clipper=5};
-	const std::map<muboy_classes,std::string> muboy_class_to_name{
-		{muboy_classes::misfit,"misfit"},
-		{muboy_classes::single_thru_going,"single_thru_going"},
-		{muboy_classes::single_stopping,"single_stopping"},
-		{muboy_classes::multiple_mu,"multiple_mu"},
-		{muboy_classes::also_multiple_mu,"also_multiple_mu"}
-	};
-	const std::map<std::string,muboy_classes> muboy_name_to_class{
-		{"misfit",muboy_classes::misfit},
-		{"single_thru_going",muboy_classes::single_thru_going},
-		{"single_stopping",muboy_classes::single_stopping},
-		{"multiple_mu",muboy_classes::multiple_mu},
-		{"also_multiple_mu",muboy_classes::also_multiple_mu}
-	};
-	
 	static const std::map<int, std::string> Trigger_ID_To_Trigger{
-		// from skhead.h
-		// "BLANK #" entries are empty ID numbers in skhead.h
-		{0, "LE (sftw. trig.)"},
-		{1, "HE (sftw. trig.)"},
-		{2, "SLE (sftw. trig.)"},
-		{3, "OD (sftw. trig.)"},
-		{4, "Periodic (SKI-III)"},
-		{5, "After/CAL (SKI-III)"},
-		{6, "VETO START"},
-		{7, "VETO STOP"},
-		{8, "BLANK 8"},
-		{9, "BLANK 9"},
-		{10, "BLANK 10"},
-		{11, "Random Wide Trigger"},
-		{12, "Laser (ID, Usho Laser)"},
+		// from skheadC.h
+		// "# (Unknown)" entries are empty ID numbers in skheadC.h
+		{-1, "?"},
+		{0, "LE"},
+		{1, "HE"},
+		{2, "SLE"},
+		{3, "OD_or_Fission"},  // in normal run/SK-IV+: OD trigger. in SKI-III Nickel run: fission trigger
+		{4, "Periodic"},       // one of {nothing (null) trigger, TQ map laser, water atten. laser, Xenon ball}
+		{5, "AFT_or_Cal"},     // in normal run: AFT trigger, in calib run, one of: {laser, Xenon, Nickel, Linac}
+		{6, "Veto_Start"},
+		{7, "Veto_Stop"},
+		{8, "unknown_8"},   //  (cable 15005)
+		{9, "unknown_9"},   //  (cable 15006)
+		{10, "unknown_10"}, //  (cable 15007)
+		{11, "Random_Wide"},
+		{12, "ID_Laser"},   // (Usho Laser)
 		{13, "LED"},
 		{14, "Ni"},
-		{15, "Laser (OD, AutoTQlaser)"},
-		{16, "LE (hitsum)"},
-		{17, "HE (histum)"},
-		{18, "SLE (hitsum)"},
-		{19, "OD (hitsum)"},
-		{20, "BLANK 20"},
-		{21, "BLANK 21"},
-		{22, "SN Burst"},
-		{23, "mu->e Decay"},
+		{15, "OD_Laser"},   // (AutoTQlaser)
+		{16, "LE_hitsum"},
+		{17, "HE_hitsum"},
+		{18, "SLE_hitsum"},
+		{19, "OD_hitsum"},
+		{20, "unknown_20"},
+		{21, "unknown_21"},
+		{22, "SN_Burst"},
+		{23, "mue_Decay"},
 		{24, "LINAC"},
-		{25, "LINAC Microwave"},
-		{26, "BLANK 26"},
-		{27, "Periodic (simple)"},
-		{28, "SHE"},
-		{29, "AFT"},
-		{30, "Pedestal"},
-		{31, "T2K"}
+		{25, "LINAC_RF"},  // (LINAC Microwave)
+		{26, "unknown_26"}, // (cable 15023)
+		{27, "Periodic_simple"},
+		{28, "SHE"},      // (SW)
+		{29, "AFT"},      // (SW)
+		{30, "Pedestal"}, // (SW)
+		{31, "T2K"}       // (SW)
 	};
+	
+	static const std::map<std::string, int> Trigger_To_Trigger_ID{
+		{"?", -1},
+		{"LE", 0},
+		{"HE", 1},
+		{"SLE", 2},
+		{"OD_or_Fission", 3},
+		{"Periodic", 4},
+		{"AFT_or_Cal", 5},
+		{"Veto_Start", 6},
+		{"Veto_Stop", 7},
+		{"unknown_8", 8},   // (cable # 15005)
+		{"unknown_9", 9},   // (cable # 15006)
+		{"unknown_10", 10}, // (cable # 15007)
+		{"Random_Wide", 11},
+		{"ID_Laser", 12},   //  (Usho Laser)
+		{"LED", 13},
+		{"Ni", 14},
+		{"OD_Laser", 15}, // (AutoTQlaser)
+		{"LE_hitsum", 16},
+		{"HE_hitsum", 17},
+		{"SLE_hitsum", 18},
+		{"OD_hitsum", 19},
+		{"unknown_20", 20},
+		{"unknown_21", 21},
+		{"SN_Burst", 22},
+		{"mue_Decay", 23},
+		{"LINAC", 24},
+		{"LINAC_RF", 25},   // (LINAC Microwave)
+		{"unknown_26", 26}, // (cable # 15023)
+		{"Periodic_simple", 27},
+		{"SHE", 28}, // (SW)
+		{"AFT", 29}, // (SW)
+		{"Pedestal", 30}, // (SW)
+		{"T2K", 31} // (SW)
+	};
+	
+	static const std::map<int, std::string> flag_to_string_SKI_III{
+		{0,"ATM"},
+		{1,"TRG"},
+		{2,"SMP REGISTER"},
+		{3,"SCALER"},
+		{4,"PEDESTAL START"},
+		{5,"PEDESTAL DATA(ATM)"},
+		{6,"PEDESTAL HISTOGRAM"},
+		{7,"PEDESTAL END"},
+		{8,"END OF RUN"},
+		{9,"PEDESTAL(ON)"},
+		{10,"10 (unknown)"},
+		{11,"GPS DATA"},
+		{12,"CAMAC ADC"},
+		{13,"ANTI DATA"},
+		{14,"INNER SLOW DATA"},
+		{15,"RUN INFORMATION"},
+		{16,"ERROR (TKO-PS)"},
+		{17,"ERROR (HV-PS)"},
+		{18,"ERROR (TEMPERARTURE)"},
+		{19,"19 (unknown)"},
+		{20,"UNCOMPLETED ATM DATA"},
+		{21,"INVALID ATM DATA"},
+		{22,"22 (unknown)"},
+		{23,"23 (unknown)"},
+		{24,"ERROR (DATA)"},
+		{25,"UNREASONABLE DATA"},
+		{26,"LED BURST ON"},
+		{27,"27 (unknown)"},
+		{28,"INNER DETECTOR OFF"},
+		{29,"ANTI  DETECTOR OFF"},
+		{30,"30 (unknown)"},
+		{31,"TRG IS AVAILABLE"}
+	};
+	
+	static const std::map<int, std::string> flag_to_string_SKIV{
+		{0,"QBEE TQ"},
+		{1,"HARD TRG"},
+		{2,"QBEE STAT"},
+		{3,"DB_STAT_BLOCK"},
+		{4,"CORRUPTED_CHECKSUM"},
+		{5,"MISSING SPACER"},
+		{6,"PED_HIST_BLOCK"},
+		{7,"7 (unknown)"},
+		{8,"8 (unknown)"},
+		{9,"PEDESTAL ON"},
+		{10,"RAW_AMT_BLOCK"},
+		{11,"GPS DATA"},
+		{12,"PEDESTAL_CHECK"},
+		{13,"SEND_BLOCK"},
+		{14,"INNER SLOW DATA"},
+		{15,"RUN INFORMATION"},
+		{16,"PREV T0 BLOCK"},
+		{17,"17 (unknown)"},
+		{18,"FE_TRL_BLOCK"},
+		{19,"SPACER_BLOCK"},
+		{20,"INCOMPLETE TQ"},
+		{21,"CORRUPT TQ BLOCK"},
+		{22,"TRG MISMATCH TQ"},
+		{23,"QBEE ERROR"},
+		{24,"SORT_BLOCK"},
+		{25,"CORRUPTED_BLOCK"},
+		{26,"LED BURST ON"},
+		{27,"EVNT TRAILER"},
+		{28,"INNER DETECTOR OFF"},
+		{29,"ANTI  DETECTOR OFF"},
+		{30,"T2K GPS"},
+		{31,"(EVNT HDR)&(SOFTWARE TRG)"}
+	};
+	
+	static const std::map<std::string, int> string_to_flag_SKI_III{
+		{"ATM", 0},
+		{"TRG", 1},
+		{"SMP_REGISTER", 2},
+		{"SCALER", 3},
+		{"PEDESTAL_START", 4},
+		{"PEDESTAL_DATA(ATM)", 5},
+		{"PEDESTAL_HISTOGRAM", 6},
+		{"PEDESTAL_END", 7},
+		{"END_OF_RUN", 8},
+		{"PEDESTAL_ON", 9},
+		{"unknown_10", 10},
+		{"GPS_DATA", 11},
+		{"CAMAC_ADC", 12},
+		{"ANTI_DATA", 13},
+		{"INNER_SLOW_DATA", 14},
+		{"RUN_INFORMATION", 15},
+		{"ERROR_TKO-PS", 16},
+		{"ERROR_HV-PS", 17},
+		{"ERROR_TEMPERATURE", 18},
+		{"unknown_19", 19},
+		{"UNCOMPLETED_ATM_DATA", 20},
+		{"INVALID_ATM_DATA", 21},
+		{"unknown_22", 22},
+		{"unknown_23", 23},
+		{"ERROR_DATA", 24},
+		{"UNREASONABLE_DATA", 25},
+		{"LED_BURST_ON", 26},
+		{"unknown_27", 27},
+		{"INNER_DETECTOR_OFF", 28},
+		{"ANTI_DETECTOR_OFF", 29},
+		{"unknown_30", 30},
+		{"TRG_IS_AVAILABLE", 31}
+	};
+	
+	static const std::map<std::string, int> string_to_flag_SKIV{
+		{"QBEE_TQ", 0},
+		{"HARD_TRG", 1},
+		{"QBEE_STAT", 2},
+		{"DB_STAT_BLOCK", 3},
+		{"CORRUPTED_CHECKSUM", 4},
+		{"MISSING_SPACER", 5},
+		{"PED_HIST_BLOCK", 6},
+		{"unknown_7", 7},
+		{"unknown_8", 8},
+		{"PEDESTAL_ON", 9},
+		{"RAW_AMT_BLOCK", 10},
+		{"GPS_DATA", 11},
+		{"PEDESTAL_CHECK", 12},
+		{"SEND_BLOCK", 13},
+		{"INNER_SLOW_DATA", 14},
+		{"RUN_INFORMATION", 15},
+		{"PREV_T0_BLOCK", 16},
+		{"unknown_17", 17},
+		{"FE_TRL_BLOCK", 18},
+		{"SPACER_BLOCK", 19},
+		{"INCOMPLETE_TQ", 20},
+		{"CORRUPT_TQ_BLOCK", 21},
+		{"TRG_MISMATCH_TQ", 22},
+		{"QBEE_ERROR", 23},
+		{"SORT_BLOCK", 24},
+		{"CORRUPTED_BLOCK", 25},
+		{"LED_BURST_ON", 26},
+		{"EVNT_TRAILER", 27},
+		{"INNER_DETECTOR_OFF", 28},
+		{"ANTI_DETECTOR_OFF", 29},
+		{"T2K_GPS", 30},
+		{"EVNT_HDR_&_SOFTWARE_TRG", 31}
+	};
+	
+	// geometry information from geotnkC.h: #define'd constants
+	// ah... but we can't #include geotnkC.h because it conflicts with SK2p2MeV.h.... -__-
+	// someone reused the #define'd macro names as variables
+	// (e.g. `const Float_t RINTK`, when geotnkC.h does `#define RINTK`)
+	/*
+	double SK_TANK_DIAMETER = DITKTK;
+	double SK_TANK_HEIGHT = HITKTK;  // height of water volume
+	double SK_ID_DIAMETER = DIINTK;
+	double SK_ID_HEIGHT = HIINTK;
+	double SK_OD_THICKNESS_BOTTOM = TBATTK;
+	double SK_OD_THICKNESS_BARREL = TWATTK;
+	double SK_OD_THICKNESS_TOP = TTATTK;
+	*/
+	
+	// TODO: mapping of calibration / veto PMT numbers in skvetoC.h
+	
 	
 	// maps of regular expression error codes to descriptive strings
 	// -------------------------------------------------------------

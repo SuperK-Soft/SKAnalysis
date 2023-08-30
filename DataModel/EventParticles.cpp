@@ -3,6 +3,8 @@
 #include "Calculator.h"
 #include "EventParticles.h"
 
+EventParticles::~EventParticles() = default;
+
 void EventParticles::DumpAllElements()
 {
     std::cout << "\n\033[4m No. Particle Time (us) Momentum (MeV/c) \033[0m" << std::endl;

@@ -38,7 +38,6 @@ class LoadBetaSpectraFluka: public Tool {
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string inputFile;
 	std::string histosFile="beta_spectra.root";
 	std::string mapsFile="beta_spectra.bs";
@@ -47,18 +46,9 @@ class LoadBetaSpectraFluka: public Tool {
 	double bonsai_goodness_cut=0.4;
 	double bonsai_maxE_cut=1000;
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
-	
 	// variables to read in
 	// ====================
-	MTreeReader myTreeReader; // the TTree reader
+	MTreeReader myTreeReader{"betaReader"}; // the TTree reader
 	// input branch variables
 //	int muonID;
 //	int event_num;

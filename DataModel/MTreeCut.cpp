@@ -13,14 +13,24 @@
 ////// debug
 //#include "Algorithms.h"         // for getOutputFromFunctionCall
 
-MTreeCut::MTreeCut(TFile* outfilein, std::string cutname) : cut_name(cutname), outfile(outfilein) {
+#include "MTreeReader.h"
+
+MTreeCut::MTreeCut(TFile* outfilein, std::string cutname, std::string description, double low, double high)
+   : cut_name(cutname), cut_description(description), outfile(outfilein) {
 	mode="write";
+	if(low!=DOUBLE_MIN || high!=DOUBLE_MAX){
+		low_thresh = low;
+		high_thresh = high;
+		got_low_thresh=true;
+		got_high_thresh=true;
+	} else {
+		got_bool_req=true;
+	}
 }
 
-MTreeCut::MTreeCut(std::string cutname, TEntryList* inelist, TTree* intree){
+MTreeCut::MTreeCut(std::string cutname, TEntryList* inelist, TTree* intree) : additional_indices(intree), ttree_entries(inelist) {
 	mode="read";
-	SetEntryList(inelist);
-	SetTree(intree);
+	total_entries = ttree_entries->GetN();
 	GetMetaInfo();
 	SetBranchAddresses();
 	GetNextEntry(); // load first entry
@@ -49,19 +59,6 @@ bool MTreeCut::Serialise(BinaryStream &bs){
 bool MTreeCut::Print(){ return true; } // dummy, required for SerialisableObjects
 std::string MTreeCut::GetVersion(){ return "0.0"; }
 
-void MTreeCut::SetEntryList(TEntryList* inelist){
-	ttree_entries = inelist;
-	total_entries = ttree_entries->GetN();
-}
-
-void MTreeCut::SetTree(TTree* intree){
-	additional_indices = intree;
-}
-
-void MTreeCut::SetSaveFile(TFile* outfilein){
-	outfile = outfilein;
-}
-
 void MTreeCut::SetBranchAddresses(){
 	if(type>0){
 		additional_indices->SetBranchAddress("TreeEntry",&current_entry);
@@ -79,11 +76,13 @@ MTreeCut::~MTreeCut(){
 	if(mode=="write"){
 		if(additional_indices){ delete additional_indices; }
 		if(ttree_entries){ delete ttree_entries; }
+		if(values_branch) values_branch->ResetAddress();
+		if(pass_branch) pass_branch->ResetAddress();
 	}
 }
 
 // for type 0
-void MTreeCut::Initialize(int type_in){
+void MTreeCut::Initialize(int type_in, MTreeReader* readerIn, TTree* distro_tree){
 	auto currdir = gDirectory;
 	outfile->cd();
 	
@@ -104,11 +103,14 @@ void MTreeCut::Initialize(int type_in){
 	TParameter<Int_t>* thecuttype = new TParameter<Int_t>("cut_type",type);
 	additional_indices->GetUserInfo()->Add(thecuttype);
 	
+	theReader = readerIn;
+	if(distro_tree) MakeDistroBranches(distro_tree);
+	
 	currdir->cd();
 }
 
 //for type 1
-void MTreeCut::Initialize(int type_in, std::string indexcutbranch, std::vector<std::string> linkedbranches){
+void MTreeCut::Initialize(int type_in, std::string indexcutbranch, std::vector<std::string> linkedbranches, MTreeReader* readerIn, TTree* distro_tree){
 	auto currdir = gDirectory;
 	outfile->cd();
 	
@@ -158,11 +160,14 @@ void MTreeCut::Initialize(int type_in, std::string indexcutbranch, std::vector<s
 	}
 	additional_indices->GetUserInfo()->Add(linkedbrancharr);
 	
+	theReader = readerIn;
+	if(distro_tree) MakeDistroBranches(distro_tree);
+	
 	currdir->cd();
 }
 
 // for type 2
-void MTreeCut::Initialize(int type_in, std::vector<std::string> indexcutbranches, std::vector<std::vector<std::string>> linkedbranches){
+void MTreeCut::Initialize(int type_in, std::vector<std::string> indexcutbranches, std::vector<std::vector<std::string>> linkedbranches, MTreeReader* readerIn, TTree* distro_tree){
 	auto currdir = gDirectory;
 	outfile->cd();
 	
@@ -211,33 +216,87 @@ void MTreeCut::Initialize(int type_in, std::vector<std::string> indexcutbranches
 	}
 	additional_indices->GetUserInfo()->Add(linkarra);
 	
+	theReader = readerIn;
+	if(distro_tree) MakeDistroBranches(distro_tree);
+	
 	currdir->cd();
 	
 }
 
+bool MTreeCut::MakeDistroBranches(TTree* distro_tree){
+	values_branch=distro_tree->Branch(cut_name.c_str(), &branch_val);
+	pass_branch=distro_tree->Branch((cut_name+"_pass").c_str(), &pass_val);
+	save_distros = (values_branch!=nullptr && pass_branch!=nullptr);
+	if(!save_distros){
+		std::cerr<<"MTreeCut::MakeDistroBranches failed to make branches: "<<values_branch<<", "<<pass_branch<<std::endl;
+	}
+	return save_distros;
+}
+
+bool MTreeCut::Apply(double value){
+	pass_val = true;
+	if(got_low_thresh  && value < low_thresh)   pass_val=false;
+	if(got_high_thresh && value > high_thresh)  pass_val=false;
+	if(got_bool_req    && value == 0.0)       pass_val=false;
+	if(save_distros){
+		branch_val = value;
+		values_branch->Fill();
+		pass_branch->Fill();
+	}
+	return Enter();
+}
+
+bool MTreeCut::Apply(double value, size_t index){
+	pass_val = true;
+	if(got_low_thresh  && value < low_thresh)   pass_val=false;
+	if(got_high_thresh && value > high_thresh)  pass_val=false;
+	if(got_bool_req    && value == 0.0)       pass_val=false;
+	if(save_distros){
+		branch_val = value;
+		values_branch->Fill();
+		pass_branch->Fill();
+	}
+	return Enter(index);
+}
+
+bool MTreeCut::Apply(double value, std::vector<size_t> indices){
+	pass_val = true;
+	if(got_low_thresh  && value < low_thresh)   pass_val=false;
+	if(got_high_thresh && value > high_thresh)  pass_val=false;
+	if(got_bool_req    && value == 0.0)       pass_val=false;
+	if(save_distros){
+		branch_val = value;
+		values_branch->Fill();
+		pass_branch->Fill();
+	}
+	return Enter(indices);
+}
+
 // type 0
-bool MTreeCut::Enter(Long64_t entry_number, TTree* treeptr){
+bool MTreeCut::Enter(){
 	if(type!=0){
 		std::cerr<<"MTreeCut::Enter() called with no additional indices on MTreeCut "<<cut_name
 		         <<" but its type is "<<type<<"!"<<std::endl;
 		return false;
 	}
-	return ttree_entries->Enter(entry_number, treeptr);
+	return ttree_entries->Enter(theReader->GetEntryNumber(), theReader->GetCurrentTree());
 }
 
 // type 1
-bool MTreeCut::Enter(Long64_t entry_number, size_t index, TTree* treeptr){
+bool MTreeCut::Enter(size_t index){
 	if(type!=1){
 		std::cerr<<"MTreeCut::Enter() called with a single index on MTreeCut "<<cut_name
 		         <<" but its type is "<<type<<"!"<<std::endl;
+		return false;
 	}
-	// add the entry_number to the TEntryList, if it isn't already
-	bool newtreeentry = ttree_entries->Enter(entry_number, treeptr);
-	// starting a new TTree entry, write out all passing indices for the last entry
+	Long64_t entry_number = theReader->GetEntryNumber();
+	// if starting a new TTree entry, write out all passing indices for the last entry
 	if((current_entry!=entry_number)&&(indexes_this_entry.size()!=0)){
-		auto ret = additional_indices->Fill();
+		additional_indices->Fill();
 		indexes_this_entry.clear();
 	}
+	// add the entry_number to the TEntryList, if it isn't already
+	bool newtreeentry = ttree_entries->Enter(entry_number, theReader->GetCurrentTree());
 	// sanity check
 	if((current_entry!=entry_number)&&(newtreeentry==false)){
 		std::cerr<<"Out of order call to MTreeCut::Enter! All passing sub-indices for a given "
@@ -256,18 +315,20 @@ bool MTreeCut::Enter(Long64_t entry_number, size_t index, TTree* treeptr){
 }
 
 // type 2
-bool MTreeCut::Enter(Long64_t entry_number, std::vector<size_t>& indices, TTree* treeptr){
+bool MTreeCut::Enter(std::vector<size_t>& indices){
 	if(type!=2){
 		std::cerr<<"MTreeCut::Enter() called with a vector of indices on MTreeCut "<<cut_name
 		         <<" but its type is "<<type<<"!"<<std::endl;
+		return false;
 	}
-	// starting a new TTree entry, write out all passing indices for the last entry
+	Long64_t entry_number = theReader->GetEntryNumber();
+	// if starting a new TTree entry, write out all passing indices for the last entry
 	if((current_entry!=entry_number)&&(indices_this_entry.size()!=0)){
 		additional_indices->Fill();
 		indices_this_entry.clear();
 	}
 	// add the entry_number to the TEntryList, if it isn't already
-	bool newtreeentry = ttree_entries->Enter(entry_number, treeptr);
+	bool newtreeentry = ttree_entries->Enter(entry_number, theReader->GetCurrentTree());
 	// sanity check
 	if((current_entry!=entry_number)&&(newtreeentry==false)){
 		std::cerr<<"Out of order call to MTreeCut::Enter! All passing sub-indices for a given "

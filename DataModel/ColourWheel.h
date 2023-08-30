@@ -33,7 +33,7 @@ class ColourWheel{
 	void Reset(){ colourindex=1; }
 	EColor GetNextColour(){
 		colourindex++;
-		if(colourindex>=colours.size()) colourindex=0;
+		if(colourindex>=int(colours.size())) colourindex=0;
 		currentcolour = colours.at(colourindex);
 		return currentcolour;
 	};
@@ -46,7 +46,7 @@ class ColourWheel{
 	EColor GetCurrentColour(){ return currentcolour; }
 	int GetCurrentIndex(){ return colourindex; }
 	bool SetCurrentColour(int index){
-		if(index>0 && (index+1)<colours.size()){
+		if(index>0 && (index+1)<int(colours.size())){
 			colourindex=index;
 			currentcolour=colours.at(index);
 			return true;

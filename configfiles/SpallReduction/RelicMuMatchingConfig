@@ -1,0 +1,6 @@
+verbosity 2
+rfmReaderName spallReader
+muWriterName muWriter
+relicWriterName relicWriter
+muSelectorName muCuts
+relicSelectorName relicCuts

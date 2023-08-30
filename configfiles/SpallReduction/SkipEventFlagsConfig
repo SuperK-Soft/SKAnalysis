@@ -1,0 +1,5 @@
+# skip events by event flags (ifevsk)
+verbosity 2
+skippedFlags LED_BURST_ON
+#allowedFlags  also allowed, bit numbers or names
+selectorName all

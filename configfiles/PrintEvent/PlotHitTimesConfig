@@ -1,0 +1,3 @@
+verbosity 10
+treeReaderName demoReader
+outputfile subtrigger_hits.root

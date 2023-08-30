@@ -7,7 +7,6 @@
 
 #include "Tool.h"
 #include "MTreeReader.h"
-#include "SkrootHeaders.h" // MCInfo, Header etc.
 
 /**
 * \class MyToolRoot
@@ -29,32 +28,14 @@ class MyToolRoot: public Tool {
 	private:
 	// functions
 	// =========
-	int ReadEntry(long entry_number);
-	int GetBranches();
-	bool Analyse();
-	int DisableUnusedBranches();
+	int GetBranchValues();
 	
 	// tool variables
 	// ==============
-	std::string toolName;
-	std::string inputFile;
-	std::string treeName;
-	std::string outputFile;
-	int maxEvents;
-	int entrynum=0;
-	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 	
 	// variables to read in
 	// ====================
-	MTreeReader myTreeReader; // the TTree reader
+	MTreeReader* myTreeReader=nullptr; // the TTree reader
 	
 	// variables to write out
 	// ======================

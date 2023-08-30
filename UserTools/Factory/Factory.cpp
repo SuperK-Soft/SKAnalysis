@@ -22,7 +22,7 @@ if (tool=="TruthNeutronCaptures_v2") ret=new TruthNeutronCaptures_v2;
 if (tool=="TruthNeutronCaptures_v3") ret=new TruthNeutronCaptures_v3;
 if (tool=="LoadFileList") ret=new LoadFileList;
 if (tool=="RootReadTest") ret=new RootReadTest;
-if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
+if (tool=="MakeNCaptTree") ret=new MakeNCaptTree;
 if (tool=="GracefulStop") ret=new GracefulStop;
 if (tool=="LoadBetaSpectraFluka") ret=new LoadBetaSpectraFluka;
 if (tool=="PlotMuonDtDlt") ret=new PlotMuonDtDlt;
@@ -31,9 +31,9 @@ if (tool=="FitPurewaterLi9NcaptureDt") ret=new FitPurewaterLi9NcaptureDt;
 if (tool=="FitSpallationDt") ret=new FitSpallationDt;
 if (tool=="PurewaterSpallAbundanceCuts") ret=new PurewaterSpallAbundanceCuts;
 if (tool=="TreeReader") ret=new TreeReader;
-if (tool=="lf_allfit") ret=new lf_allfit;
+if (tool=="lfallfit_simple") ret=new lfallfit_simple;
 if (tool=="TreeReaderDemo") ret=new TreeReaderDemo;
-if (tool=="lf_allfit_new") ret=new lf_allfit_new;
+if (tool=="lfallfit") ret=new lfallfit;
 if (tool=="evDisp") ret=new evDisp;
 if (tool=="CompareRootFiles") ret=new CompareRootFiles;
 if (tool=="vectgen") ret=new vectgen;
@@ -44,13 +44,34 @@ if (tool=="NCaptInfo_NTag") ret=new NCaptInfo_NTag;
 if (tool=="NCaptInfo_BDT") ret=new NCaptInfo_BDT;
 if (tool=="TrueNCaptures") ret=new TrueNCaptures;
 if (tool=="ReadMCParticles") ret=new ReadMCParticles;
-
+if (tool=="PlotNeutronCaptures") ret=new PlotNeutronCaptures;
+if (tool=="PrintEvent") ret=new PrintEvent;
+if (tool=="PlotHitTimes") ret=new PlotHitTimes;
+if (tool=="VertexFitter") ret=new VertexFitter;
+if (tool=="CombinedFitter") ret=new CombinedFitter;
+if (tool=="MuonSearch") ret=new MuonSearch;
+if (tool=="IDHitsCut") ret=new IDHitsCut;
+if (tool=="ODCut") ret=new ODCut;
+if (tool=="RunwiseEnergyCut") ret=new RunwiseEnergyCut;
+if (tool=="WallCut") ret=new WallCut;
+if (tool=="RelicCandidates") ret=new RelicCandidates;
+if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
+if (tool=="WriteSpallCand") ret=new WriteSpallCand;
+if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
 if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
 if (tool=="LookForSHEAFT") ret=new LookForSHEAFT;
 if (tool=="call_muechk") ret=new call_muechk;
 
 if (tool=="mufit_sk4") ret=new mufit_sk4;
-  if (tool=="lowfit") ret=new lowfit;
+if (tool=="lowfit") ret=new lowfit;
+if (tool=="SkipTriggers") ret=new SkipTriggers;
+if (tool=="BuildHist") ret=new BuildHist;
+if (tool=="CutRecorder") ret=new CutRecorder;
+if (tool=="SkipEventFlags") ret=new SkipEventFlags;
+if (tool=="AddTree") ret=new AddTree;
+if (tool=="WriteSkEvent") ret=new WriteSkEvent;
+if (tool=="RelicMuonPlots") ret=new RelicMuonPlots;
+>>>>>>> sksoft/main
 return ret;
 }
 

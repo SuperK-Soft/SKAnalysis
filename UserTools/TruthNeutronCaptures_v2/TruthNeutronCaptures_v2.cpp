@@ -2,6 +2,7 @@
 #include "TruthNeutronCaptures_v2.h"
 #include "Algorithms.h"
 #include "Constants.h"
+#include "MTreeReader.h"
 #include "type_name_as_string.h"
 
 #include <algorithm> // std::find
@@ -12,10 +13,7 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
-TruthNeutronCaptures_v2::TruthNeutronCaptures_v2():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+TruthNeutronCaptures_v2::TruthNeutronCaptures_v2():Tool(){}
 
 bool TruthNeutronCaptures_v2::Initialise(std::string configfile, DataModel &data){
 	
@@ -23,33 +21,23 @@ bool TruthNeutronCaptures_v2::Initialise(std::string configfile, DataModel &data
 	//m_variables.Print();
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
-	m_variables.Get("inputFile",inputFile);            // a single specific input file
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
+	m_variables.Get("treeReaderName",treeReaderName);  // input TTree Reader
 	m_variables.Get("outputFile",outputFile);          // output file to write
 	m_variables.Get("maxEvents",MAX_EVENTS);           // terminate after processing at most this many events
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY); // how many events to TTree::Fill between TTree::Writes
 	
-	// get the list of input files from the CStore
-	// -------------------------------------------
-	// filled if using LoadFileList tool
-	// TODO yet to implement support for this in MTreeReader
-	if(inputFile==""){
-		get_ok = m_data->CStore.Get("InputFileList", input_file_names);
-		if(not get_ok){
-			Log(toolName+" Error: No inputFile given and no InputFileList in CStore!",v_error,verbosity);
-			return false;
-		}
+	// Get the TreeReader
+	// ------------------
+	if(m_data->Trees.count(treeReaderName)==0){
+		Log(m_unique_name+": Failed to find TreeReader "+treeReaderName+" in DataModel!",0,0);
+		return false;
 	}
-	
-	// open the input TFile and TTree
-	// ------------------------------
-	get_ok = myTreeReader.Load(inputFile, "data"); // SKROOT TTree is named descriptively 'data'
-	DisableUnusedBranches();
-	if(get_ok) ReadEntry(0);
+	myTreeReader = m_data->Trees.at(treeReaderName);
 	
 	// note a couple of file-wise constants
 	out_skdetsim_version = mc_info->ivmcp;    // version of monte carlo program (SK_GEOMETRY+1000)
@@ -66,21 +54,23 @@ bool TruthNeutronCaptures_v2::Initialise(std::string configfile, DataModel &data
 
 bool TruthNeutronCaptures_v2::Execute(){
 	
-	Log(toolName+" processing entry "+toString(entry_number),v_debug,verbosity);
+	Log(m_unique_name+" processing entry "+toString(entry_number),v_debug,m_verbose);
+	get_ok = GetBranchValues();
+	if(!get_ok) return false;
 	
 	// clear output vectors so we don't carry anything over
-	Log(toolName+" clearing output vectors",v_debug,verbosity);
+	Log(m_unique_name+" clearing output vectors",v_debug,m_verbose);
 	ClearOutputTreeBranches();
 	
 	// Set output variables
-	Log(toolName+" setting output variables",v_debug,verbosity);
+	Log(m_unique_name+" setting output variables",v_debug,m_verbose);
 	CalculateVariables();
 	
 	// print the current event
-	if(verbosity>1) PrintBranches();
+	if(m_verbose>1) PrintBranches();
 	
 	// Fill the output tree
-	Log(toolName+" filling output TTree entry",v_debug,verbosity);
+	Log(m_unique_name+" filling output TTree entry",v_debug,m_verbose);
 	outtree->Fill();
 	
 	// update the output file so we don't lose everything if we crash
@@ -88,27 +78,6 @@ bool TruthNeutronCaptures_v2::Execute(){
 	
 	// stop at user-defined limit to the number of events to process
 	++entry_number;
-	if((MAX_EVENTS>0)&&(entry_number>=MAX_EVENTS)){
-		Log(toolName+" reached MAX_EVENTS, setting StopLoop",v_error,verbosity);
-		m_data->vars.Set("StopLoop",1);
-	} else {
-		// Pre-Load next input entry so we can stop the toolchain
-		// if we're about to run off the end of the tree or encounter a read error
-		Log(toolName+" reading entry "+toString(entry_number),v_debug,verbosity);
-		get_ok = ReadEntry(entry_number);
-		if(get_ok<1&&get_ok>-3){
-			m_data->vars.Set("StopLoop",1);
-			Log(toolName+" Hit end of input file, stopping loop",v_warning,verbosity);
-		}
-		else if(get_ok==-10){
-			Log(toolName+" Error during AutoClear while loading next input ntuple entry!",v_error,verbosity);
-			return false;
-		}
-		else if(get_ok<0){
-			Log(toolName+" IO error loading next input ntuple entry!",v_error,verbosity);
-			return false;
-		}
-	}
 	
 	// handy constants
 	neutron_mass = PdgToMass(StringToPdg("Neutron"));
@@ -123,7 +92,7 @@ bool TruthNeutronCaptures_v2::Finalise(){
 	// -----------------------------------------------
 	get_ok = WriteTree();
 	if(not get_ok){
-		Log(toolName+" Error writing output TTree!",v_error,verbosity);
+		Log(m_unique_name+" Error writing output TTree!",v_error,m_verbose);
 	}
 	
 	// Close and delete the file handle
@@ -135,24 +104,24 @@ bool TruthNeutronCaptures_v2::Finalise(){
 
 int TruthNeutronCaptures_v2::CalculateVariables(){
 	
-	out_filename = myTreeReader.GetTree()->GetCurrentFile()->GetName();
+	out_filename = myTreeReader->GetTree()->GetCurrentFile()->GetName();
 	out_run_number = mc_info->mcrun;
 	out_entry_number = entry_number;    // TTree entry number to be able to identify the source event
 	
 	std::map<int,int> neutrons_map;
 	
-	Log(toolName+" looping over "+toString(sec_info->track_pdg_code.size())
-	            +" particles in event "+toString(entry_number),v_debug,verbosity);
+	Log(m_unique_name+" looping over "+toString(sec_info->track_pdg_code.size())
+	            +" particles in event "+toString(entry_number),v_debug,m_verbose);
 	for(unsigned int particle_i=0; particle_i<sec_info->track_pdg_code.size(); ++particle_i){
 		// get indices for vertex info
 		int creation_vtx_index = sec_info->track_creation_vtx.at(particle_i);
 		int termination_vtx_index = sec_info->track_termination_vtx.at(particle_i);
-		Log(toolName+" particle "+toString(particle_i)+" creation vtx index "+toString(creation_vtx_index)
-				 +", termination_vtx_index "+toString(termination_vtx_index),v_debug,verbosity);
+		Log(m_unique_name+" particle "+toString(particle_i)+" creation vtx index "+toString(creation_vtx_index)
+				 +", termination_vtx_index "+toString(termination_vtx_index),v_debug,m_verbose);
 		
 		// store primary particles
 		if(sec_info->track_parent.at(particle_i)<0){
-			Log(toolName+" storing primary",v_debug,verbosity);
+			Log(m_unique_name+" storing primary",v_debug,m_verbose);
 			out_primary_pdg.push_back(sec_info->track_pdg_code.at(particle_i));
 			// store initial momentum
 			out_primary_start_mom.emplace_back(sec_info->track_ini_momentum.at(particle_i)[0],
@@ -186,7 +155,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 		
 		// store neutrons and parent nuclides
 		if(sec_info->track_pdg_code.at(particle_i)==2112){
-			Log(toolName+" storing neutron",v_debug,verbosity);
+			Log(m_unique_name+" storing neutron",v_debug,m_verbose);
 			// TODO could store initial momentum, now that we have it
 			// but do we need it? re-think output file given info
 			// we now have available...
@@ -247,8 +216,8 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 	out_gamma_time.resize(out_neutron_start_pos.size());
 	out_electron_energy.resize(out_neutron_start_pos.size());
 	out_electron_time.resize(out_neutron_start_pos.size());
-	Log(toolName+" pre-allocating "+toString(out_neutron_start_pos.size())
-	            +" products vectors for neutron captures",v_debug,verbosity);
+	Log(m_unique_name+" pre-allocating "+toString(out_neutron_start_pos.size())
+	            +" products vectors for neutron captures",v_debug,m_verbose);
 	
 	// scan again, this time filling gamma and daughter nuclide information
 	// the order of recording may be such that this re-scan isn't necessary
@@ -277,7 +246,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 			
 			// save gammas
 			if(sec_info->track_pdg_code.at(particle_i)==22){
-				Log(toolName+" storing decay gamma",v_debug,verbosity);
+				Log(m_unique_name+" storing decay gamma",v_debug,m_verbose);
 				// add this gamma to the appropriate position
 //				out_gamma_time.at(parent_neutron_index).push_back(sec_info->vertex_time.at(creation_vtx_index)
 //				                                                 +sec_info->track_creation_toffset.at(particle_i));
@@ -298,13 +267,13 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 					// although their sum consistently adds up to 2.2MeV
 					Log("WARNING! event "+toString(entry_number)+" had "
 							 +toString(out_neutron_ndaughters.at(parent_neutron_index))
-							 +" daughters from neutron capture!",v_message,verbosity);
+							 +" daughters from neutron capture!",v_message,m_verbose);
 					//assert(false);
 				}
 			}
 			// save conversion electrons: these will also contribute to total deexcitation energy
 			else if(sec_info->track_pdg_code.at(particle_i)==11){
-				Log(toolName+" storing electron",v_debug,verbosity);
+				Log(m_unique_name+" storing electron",v_debug,m_verbose);
 				// add this gamma to the appropriate position
 //				out_electron_time.at(parent_neutron_index).push_back(sec_info->vertex_time.at(creation_vtx_index)
 //				                                                 +sec_info->track_creation_toffset.at(particle_i));
@@ -319,18 +288,18 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 				if(out_neutron_ndaughters.at(parent_neutron_index)>1){
 					Log("WARNING! event "+toString(entry_number)+" had "
 							 +toString(out_neutron_ndaughters.at(parent_neutron_index))
-							 +" daughters from neutron capture!",v_message,verbosity);
+							 +" daughters from neutron capture!",v_message,m_verbose);
 					//assert(false);
 				}
 			}
 			// save daughter nuclide
 			else {
-				Log(toolName+" storing daughter nuclide",v_debug,verbosity);
+				Log(m_unique_name+" storing daughter nuclide",v_debug,m_verbose);
 				// sanity check that there really is only one daughter nuclide
 				if(out_nuclide_daughter_pdg.at(parent_neutron_index)!=0){
-					Log(toolName+" ERROR: more than one daughter nuclide for neutron "+toString(parent_neutron_index)
+					Log(m_unique_name+" ERROR: more than one daughter nuclide for neutron "+toString(parent_neutron_index)
 						+"; current is "+toString(out_nuclide_daughter_pdg.at(parent_neutron_index))+", new is "
-						+toString(sec_info->track_pdg_code.at(particle_i)),v_error,verbosity);
+						+toString(sec_info->track_pdg_code.at(particle_i)),v_error,m_verbose);
 				}
 				out_nuclide_daughter_pdg.at(parent_neutron_index) = sec_info->track_pdg_code.at(particle_i);
 			}
@@ -340,61 +309,13 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 	return 1;
 }
 
-int TruthNeutronCaptures_v2::ReadEntry(long entry_number){
-	int bytesread = myTreeReader.GetEntry(entry_number);
-	if(bytesread<=0) return bytesread;
-	
+int TruthNeutronCaptures_v2::GetBranchValues(){
 	int success = 
-	(myTreeReader.GetBranchValue("HEADER",run_header)) &&
-	(myTreeReader.GetBranchValue("MC",mc_info)) &&
-	(myTreeReader.GetBranchValue("SECONDARY",sec_info));
-	
-	
-	// XXX for efficiency, add all used branches to DisableUnusedBranches XXX
+	(myTreeReader->GetBranchValue("HEADER",run_header)) &&
+	(myTreeReader->GetBranchValue("MC",mc_info)) &&
+	(myTreeReader->GetBranchValue("SECONDARY",sec_info));
 	
 	return success;
-}
-
-int TruthNeutronCaptures_v2::DisableUnusedBranches(){
-	std::vector<std::string> used_branches{
-		// branchname     || classname
-		// ---------------------------
-		"HEADER",         // Header
-//		"TQREAL",         // TQReal
-//		"TQAREAL",        // TQReal
-//		"LOWE",           // LoweInfo
-//		"ATMPD",          // AtmpdInfo
-//		"UPMU",           // UpmuInfo
-//		"MU",             // MuInfo
-//		"SLE",            // SLEInfo
-//		"SWTRGLIST",      // SoftTrgList
-//		"IDODXTLK",       // IDOD_Xtlk
-		"MC",             // MCInfo
-		"SECONDARY"       // SecondaryInfo
-		// ---------------------------
-		// the following branches are added during analysis
-//		"TQLIST",         // TClonesArray
-//		"ODTQLIST",       // TClonesArray
-//		"HWTRGLIST",      // TClonesArray
-//		"PEDESTALS",      // Pedestal
-//		"EVENTHEADER",    // EventHeader
-//		"EVENTTRAILER",   // EventTrailer
-//		"SOFTWARETRG",    // SoftwareTrigger
-//		"QBEESTATUS",     // QBeeStatus
-//		"DBSTATUS",       // QBeeStatus
-//		"SPACERS",        // Spacer
-//		"PREVT0",         // PrevT0
-//		"MISMATCHEDHITS", // MismatchedHit
-//		"GPSLIST",        // TClonesArray
-//		"T2KGPSLIST"      // TClonesArray
-		// N.B. RunInfo (RINFO) from 'RareList' is extracted
-		// from TTree UserInfo during TreeManager::Initialize;
-		// probably easiest to use TreeManager for this.
-		// N.B. SlowControl (SLWCTRL) TreeManager Getter
-		// returns a nullptr so is not included here.
-	};
-	
-	return myTreeReader.OnlyEnableBranches(used_branches);
 }
 
 int TruthNeutronCaptures_v2::CreateOutputFile(std::string filename){
@@ -575,15 +496,15 @@ void TruthNeutronCaptures_v2::PrintBranches(){
 }
 
 int TruthNeutronCaptures_v2::WriteTree(){
-	Log(toolName+" writing TTree",v_debug,verbosity);
+	Log(m_unique_name+" writing TTree",v_debug,m_verbose);
 	outfile->cd();
 	// TObject::Write returns the total number of bytes written to the file.
 	// It returns 0 if the object cannot be written.
 	int bytes = outtree->Write("",TObject::kOverwrite);
 	if(bytes<=0){
-		Log(toolName+" Error writing TTree!",v_error,verbosity);
-	} else if(verbosity>2){
-		Log(toolName+ " Wrote "+toString(get_ok)+" bytes",v_debug,verbosity);
+		Log(m_unique_name+" Error writing TTree!",v_error,m_verbose);
+	} else if(m_verbose>2){
+		Log(m_unique_name+ " Wrote "+toString(get_ok)+" bytes",v_debug,m_verbose);
 	}
 	return bytes;
 };
@@ -596,7 +517,7 @@ void TruthNeutronCaptures_v2::CloseFile(){
 	// 2. they will not show up in TTree::Print(), so you need to know they're there...!
 	// Would it be better to store the redundant information? Is there a better way?
 	outtree->SetAlias("neutron_travel_dist","sqrt(pow(neutron_start_pos.X()-neutron_end_pos.X(),2)+pow(neutron_start_pos.Y()-neutron_end_pos.Y(),2)+pow(neutron_start_pos.Z()-neutron_end_pos.Z(),2))");
-	outtree->SetAlias("neutron_travel_time","neutron_end_pos.T()-neutron_start_pos.T()");
+	outtree->SetAlias("neutron_travel_time","(neutron_end_pos.T()-neutron_start_pos.T())/1000."); // [us]
 	outtree->SetAlias("neutron_n_daughters","Length$(gamma_energy[])");
 	outtree->SetAlias("neutron_tot_gammaE","Sum$(gamma_energy[])");
 	outfile->Write("*",TObject::kOverwrite);

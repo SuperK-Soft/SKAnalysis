@@ -7,6 +7,7 @@ class TrueCapture
 {
     public:
         TrueCapture();
+        virtual ~TrueCapture();
         void Append(const Particle& particle);
 
         inline float Time() const { return t; }

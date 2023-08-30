@@ -12,6 +12,7 @@ class Cluster
 {
     public:
         Cluster():element(), nElements(0) {}
+        virtual ~Cluster(){};
 
         virtual inline void Append(const T& elm) { element.push_back(elm); nElements++; }
         virtual inline void Append(Cluster<T>& cluster)

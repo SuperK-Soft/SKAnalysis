@@ -3,15 +3,15 @@
 
 #include "Tool.h"
 
-enum TriggerType
-{
-    tELSE,
-    tSHE,
-    tAFT
-};
-
 class ReadHits : public Tool
 {
+    enum TrigType
+    {
+        tELSE,
+        tSHE,
+        tAFT
+    };
+    
     public:
         ReadHits(): prevEvTrigType(tELSE), currentEvTrigType(tELSE), isPrevEvProcessed(true)
         { name = "ReadHits"; }
@@ -23,8 +23,8 @@ class ReadHits : public Tool
     private:
         std::string name;
         void SetTriggerType();
-        TriggerType prevEvTrigType;
-        TriggerType currentEvTrigType;
+        TrigType prevEvTrigType;
+        TrigType currentEvTrigType;
         bool isPrevEvProcessed;
 
 };

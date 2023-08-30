@@ -46,17 +46,20 @@ class TreeReader: public Tool {
 	void PrintTriggerBits();
 	int LoadConfig(std::string configfile);
 	void CloseLUN();
+	// triggered on detection of a change in run/subrun numbers
+	bool RunChange();
+	bool SubrunChange();
+	bool SkipThisRun(); // skip the current run (called if bad)
 	
 	void PrintSubTriggers();
 	
 	// tool variables
 	// ==============
-	std::string toolName;
 	std::string inputFile="";
-	std::string FileListName="InputFileList";
+	std::string FileListName="";
 	std::string selectionsFile="";
 	std::string cutName="";
-	std::string treeName;
+	std::string treeName="data";
 	std::string readerName;
 	int maxEntries=-1;
 	int firstEntry=0;
@@ -65,7 +68,7 @@ class TreeReader: public Tool {
 	SKROOTMODE skrootMode=SKROOTMODE::READ;  // default to read
 	int skreadMode=0;                 // 0=skread only, 1=skrawread only, 2=both
 	int skreadUser=0;                 // 0=auto, 1=skread only, 2=skrawread only, 3=both
-	int LUN=10;                       // Assumed 10 by some SK routines, only change if you know what you're doing!
+	int LUN=0;                        // Assumed 10 by some SK routines, only change if you know what you're doing!
 	std::string skroot_options="31";  // 31 = read HEADER (required).
 	int skroot_badopt=23;             // 23 = LOWE default (mask bad chs, dead chs, noisy ID chs and OD chs)
 	int skroot_badch_ref_run=0;       // reference run for bad channel list for e.g. MC.
@@ -75,7 +78,10 @@ class TreeReader: public Tool {
 	bool loadSheAftPairs=false;       // should we load and buffer the AFT for an SHE event, if there is one?
 	bool onlyPairs=false;             // should we only return pairs of SHE+AFT events
 	int entriesPerExecute=1;          // alternatively, read and buffer N entries per Execute call
-	std::vector<int> triggerMasks;    // trigger bits required to return an entry
+	std::vector<int> allowedTriggers; // one of these trigger bits must be set to return an entry
+	std::vector<int> skippedTriggers; // if any of these bits are set the entry will be skipped
+	bool skipbadruns=false;           // should we try to skip any runs identified as bad by lfbadrun?
+	int reference_watert_run=-1;      // run to use for water transparency (for use with MC)
 	
 	std::vector<std::string> list_of_files;
 	
@@ -84,21 +90,14 @@ class TreeReader: public Tool {
 	long buffered_entry = -1;
 	long file_cursor=0;
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
-	
 	// variables to read in
 	// ====================
 	MTreeReader myTreeReader;                  // the TTree reader
 	MTreeSelection* myTreeSelections=nullptr;  // a set of entries one or more cuts
 	std::vector<std::string> ActiveInputBranches;
 	std::vector<std::string> ActiveOutputBranches;
+	std::vector<std::string> SkippedInputBranches;
+	std::vector<std::string> SkippedOutputBranches;
 	
 	// functions involved in buffering common blocks
 	// to load SHE+AFT pairs together
@@ -107,6 +106,10 @@ class TreeReader: public Tool {
 	int FlushCommons();
 	bool LoadCommons(int buffer_i);
 	bool LoadNextZbsFile();
+	
+	// keep track of run and subrun so we can notify on changes
+	int last_nrunsk=0;
+	int last_nsubsk=0;
 	
 	// common blocks to buffer
 	// =======================

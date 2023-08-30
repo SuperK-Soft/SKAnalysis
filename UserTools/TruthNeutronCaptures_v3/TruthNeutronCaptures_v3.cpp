@@ -12,10 +12,7 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
-TruthNeutronCaptures_v3::TruthNeutronCaptures_v3():Tool(){
-	// get the name of the tool from its class name
-	toolName=type_name<decltype(this)>(); toolName.pop_back();
-}
+TruthNeutronCaptures_v3::TruthNeutronCaptures_v3():Tool(){}
 
 bool TruthNeutronCaptures_v3::Initialise(std::string configfile, DataModel &data){
 	
@@ -23,11 +20,11 @@ bool TruthNeutronCaptures_v3::Initialise(std::string configfile, DataModel &data
 	//m_variables.Print();
 	m_data= &data;
 	
-	Log(toolName+": Initializing",v_debug,verbosity);
+	Log(m_unique_name+": Initializing",v_debug,m_verbose);
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",verbosity);            // how verbose to be
+	m_variables.Get("verbosity",m_verbose);            // how verbose to be
 	m_variables.Get("outputFile",outputFile);          // output file to write
 	m_variables.Get("maxEvents",MAX_EVENTS);           // terminate after processing at most this many events
 	m_variables.Get("writeFrequency",WRITE_FREQUENCY); // how many events to TTree::Fill between TTree::Writes
@@ -55,29 +52,29 @@ bool TruthNeutronCaptures_v3::Execute(){
 	// to prevent the tool crashing out, so that we always pre-load the next entry.
 	// otherwise we'll just try to re-process it next Execute() and crash again!
 	try {
-		Log(toolName+" processing entry "+toString(entry_number),v_debug,verbosity);
+		Log(m_unique_name+" processing entry "+toString(entry_number),v_debug,m_verbose);
 		
 		// clear output vectors so we don't carry anything over
-		Log(toolName+" clearing output vectors",v_debug,verbosity);
+		Log(m_unique_name+" clearing output vectors",v_debug,m_verbose);
 		ClearOutputTreeBranches();
 		
 		// Copy over directly transferred variables
-		Log(toolName+" copying output variables",v_debug,verbosity);
+		Log(m_unique_name+" copying output variables",v_debug,m_verbose);
 		CopyVariables();
 		
 		// Calculate derived variables
-		Log(toolName+" calculating output variables",v_debug,verbosity);
+		Log(m_unique_name+" calculating output variables",v_debug,m_verbose);
 		CalculateVariables();
 		
 		// print the current event
-		if(verbosity>1) PrintBranches();
+		if(m_verbose>1) PrintBranches();
 		
 	} catch (...){
-		Log(toolName+" ERROR PROCESSING ENTRY "+toString(entry_number),v_error,verbosity);
+		Log(m_unique_name+" ERROR PROCESSING ENTRY "+toString(entry_number),v_error,m_verbose);
 	}
 	
 	// Fill the output tree
-	Log(toolName+" filling output TTree entry",v_debug,verbosity);
+	Log(m_unique_name+" filling output TTree entry",v_debug,m_verbose);
 	outtree->Fill();
 	
 	// update the output file so we don't lose everything if we crash
@@ -86,7 +83,7 @@ bool TruthNeutronCaptures_v3::Execute(){
 	// stop at user-defined limit to the number of events to process
 	++entry_number;
 	if((MAX_EVENTS>0)&&(entry_number>=MAX_EVENTS)){
-		Log(toolName+" reached MAX_EVENTS, setting StopLoop",v_error,verbosity);
+		Log(m_unique_name+" reached MAX_EVENTS, setting StopLoop",v_error,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	} else {
 		// Pre-Load next input entry so we can stop the toolchain
@@ -94,14 +91,14 @@ bool TruthNeutronCaptures_v3::Execute(){
 		get_ok = ReadEntryNtuple(entry_number);
 		if(get_ok<1&&get_ok>-3){
 			m_data->vars.Set("StopLoop",1);
-			Log(toolName+" Hit end of input file, stopping loop",v_warning,verbosity);
+			Log(m_unique_name+" Hit end of input file, stopping loop",v_warning,m_verbose);
 		}
 		else if(get_ok==-10){
-			Log(toolName+" Error during AutoClear while loading next input ntuple entry!",v_error,verbosity);
+			Log(m_unique_name+" Error during AutoClear while loading next input ntuple entry!",v_error,m_verbose);
 			return false;
 		}
 		else if(get_ok<0){
-			Log(toolName+" IO error loading next input ntuple entry!",v_error,verbosity);
+			Log(m_unique_name+" IO error loading next input ntuple entry!",v_error,m_verbose);
 			return false;
 		}
 	}
@@ -116,7 +113,7 @@ bool TruthNeutronCaptures_v3::Finalise(){
 	// -----------------------------------------------
 	get_ok = WriteTree();
 	if(not get_ok){
-		Log(toolName+" Error writing output TTree!",v_error,verbosity);
+		Log(m_unique_name+" Error writing output TTree!",v_error,m_verbose);
 	}
 	
 	// Close and delete the file handle
@@ -182,13 +179,13 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 	// SCAN FOR PRIMARY NEUTRONS
 	// ==========================
 	// loop over the primary particles first, because for IBD events we have a primary neutron
-	Log(toolName+" event had "+toString(n_outgoing_primaries)+" primary particles",v_debug,verbosity);
+	Log(m_unique_name+" event had "+toString(n_outgoing_primaries)+" primary particles",v_debug,m_verbose);
 	for(int primary_i=0; primary_i<n_outgoing_primaries; ++primary_i){
-		Log(toolName+" primary "+toString(primary_i)+" had PDG code "+toString((int)primary_PDG_code.at(primary_i))
-				+" ("+PdgToString(primary_PDG_code.at(primary_i))+")",v_debug,verbosity);
+		Log(m_unique_name+" primary "+toString(primary_i)+" had PDG code "+toString((int)primary_PDG_code.at(primary_i))
+				+" ("+PdgToString(primary_PDG_code.at(primary_i))+")",v_debug,m_verbose);
 		if(primary_PDG_code.at(primary_i)==neutron_pdg){
 			// we found a neutron!
-			Log(toolName+" NEUTRON!", v_debug,verbosity);
+			Log(m_unique_name+" NEUTRON!", v_debug,m_verbose);
 			primary_n_ind_to_loc.emplace(primary_i,out_neutron_start_energy.size());
 			// note neutron info
 			out_neutron_start_pos.push_back(primary_vertex_tvector);
@@ -219,18 +216,18 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			out_nuclide_parent_pdg.push_back(-1);
 		}
 	}
-	Log(toolName+" found "+toString(out_neutron_start_energy.size())+" primary neutrons", v_debug,verbosity);
+	Log(m_unique_name+" found "+toString(out_neutron_start_energy.size())+" primary neutrons", v_debug,m_verbose);
 	
 	// ===========================
 	// SCAN FOR SECONDARY NEUTRONS
 	// ===========================
-	Log(toolName+" event had "+toString(n_secondaries_2)+" secondary particles",v_debug,verbosity);
+	Log(m_unique_name+" event had "+toString(n_secondaries_2)+" secondary particles",v_debug,m_verbose);
 	for(int secondary_i=0; secondary_i<n_secondaries_2; ++secondary_i){
-		Log(toolName+" secondary "+toString(secondary_i)+" had pdg "+toString(secondary_PDG_code_2.at(secondary_i))
-				+" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))+")",v_debug,verbosity);
+		Log(m_unique_name+" secondary "+toString(secondary_i)+" had pdg "+toString(secondary_PDG_code_2.at(secondary_i))
+				+" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))+")",v_debug,m_verbose);
 		if(secondary_PDG_code_2.at(secondary_i)==neutron_pdg){
 			// we found a neutron!
-			Log(toolName+" NEUTRON! at "+toString(secondary_i), v_debug,verbosity);
+			Log(m_unique_name+" NEUTRON! at "+toString(secondary_i), v_debug,m_verbose);
 			secondary_n_ind_to_loc.emplace(secondary_i,out_neutron_start_energy.size());
 			// note neutron info
 			TLorentzVector startpos(secondary_start_vertex_2.at(secondary_i).at(0),
@@ -300,7 +297,7 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 		}
 
 	}
-	Log(toolName+" found "+toString(out_neutron_start_energy.size())+" primary+secondary neutrons", v_debug,verbosity);
+	Log(m_unique_name+" found "+toString(out_neutron_start_energy.size())+" primary+secondary neutrons", v_debug,m_verbose);
 	
 	DumpMCInfo();
 	
@@ -315,11 +312,11 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 		// Scan for Gammas
 		// ---------------
 		if(secondary_PDG_code_2.at(secondary_i)==gamma_pdg){
-			Log(toolName+" GAMMA!", v_debug,verbosity);
+			Log(m_unique_name+" GAMMA!", v_debug,m_verbose);
 			n_gammas++;
 			// we found a gamma! See if it came from neutron capture (G3 process 18)
 			bool from_ncapture = (secondary_gen_process.at(secondary_i)==18);
-			Log(toolName+" from ncapture="+toString(from_ncapture),v_debug,verbosity);
+			Log(m_unique_name+" from ncapture="+toString(from_ncapture),v_debug,m_verbose);
 			//if(not from_ncapture) continue;  // if not, not interested, skip it
 			// for now, as a sanity check, checks if its parent was an identified neutron first
 			// parent may either be a primary particle or secondary particle
@@ -328,8 +325,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// secondary parent indexes should be fixed when PR is merged
 			int primary_parent_index = parent_trackid.at(secondary_i); // not yet implemented
 			int secondary_parent_index = parent_index.at(secondary_i);
-			Log(toolName+" primary parent index "+toString(primary_parent_index)
-						+" secondary parent index "+toString(secondary_parent_index),v_debug,verbosity);
+			Log(m_unique_name+" primary parent index "+toString(primary_parent_index)
+						+" secondary parent index "+toString(secondary_parent_index),v_debug,m_verbose);
 			// first check if it has a valid SECONDARY parent
 			if(std::abs(secondary_parent_index)>0){
 				if(secondary_parent_index>0){
@@ -340,8 +337,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					// else its parent was a secondary, but not one we know
 					else if(from_ncapture){
 						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
+						Log(m_unique_name+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT INDEX "
+								+toString(secondary_parent_index),v_warning,m_verbose);
 						continue;
 					}
 				} else {
@@ -353,8 +350,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					// else its parent was a primary, but not one we know
 					else if(from_ncapture){
 						// if it came from ncapture of a primary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
+						Log(m_unique_name+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT INDEX "
+								+toString(secondary_parent_index),v_warning,m_verbose);
 						continue;
 					}
 				}
@@ -370,22 +367,22 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 				// else its parent was a primary, but not one we know
 				else if(from_ncapture){
 					// if it came from ncapture of a primary neutron, why don't we know about that neutron?
-					Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT INDEX "
-							 +toString(primary_parent_index),v_warning,verbosity);
+					Log(m_unique_name+" WARNING, GAMMA FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT INDEX "
+							 +toString(primary_parent_index),v_warning,m_verbose);
 					continue;
 				}
 			}
 			if((neutron_parent_loc<0)&&(from_ncapture)){
 				// if we got here, it suggests this gamma is from ncapture
 				// but had neither a valid primary or secondary parent index
-				Log(toolName+" WARNING, GAMMA FROM NCAPTURE WITH NO PRIMARY OR SECONDARY PARENT INDEX ",
-						v_warning,verbosity);
+				Log(m_unique_name+" WARNING, GAMMA FROM NCAPTURE WITH NO PRIMARY OR SECONDARY PARENT INDEX ",
+						v_warning,m_verbose);
 				continue;
 			}
 			if((neutron_parent_loc>=0)&&(not from_ncapture)){
 				// gamma with a parent matched to one of our known neutrons, but not from ncapture?
 				// maybe from fast neutron scattering? Leave these for later
-				Log(toolName+" WARNING, GAMMA WITH NEUTRON PARENT BUT NOT FROM NCAPTURE",v_warning,verbosity);
+				Log(m_unique_name+" WARNING, GAMMA WITH NEUTRON PARENT BUT NOT FROM NCAPTURE",v_warning,m_verbose);
 				continue;
 			}
 			// one final check extracts the ones we're after
@@ -455,7 +452,7 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 		// -----------------------------
 		else if(secondary_gen_process.at(secondary_i)==18 && 
 			    secondary_PDG_code_2.at(secondary_i)==11){
-			Log(toolName+" Conversion Electron!", v_debug,verbosity);
+			Log(m_unique_name+" Conversion Electron!", v_debug,m_verbose);
 			n_electrons++;
 			// for now, as a sanity check, checks if its parent was an identified neutron first
 			// parent may either be a primary particle or secondary particle
@@ -464,8 +461,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			// secondary parent indexes should be fixed when SKG4 PR is merged
 			int primary_parent_index = parent_trackid.at(secondary_i); // not yet implemented
 			int secondary_parent_index = parent_index.at(secondary_i);
-			Log(toolName+" primary parent index "+toString(primary_parent_index)
-						+" secondary parent index "+toString(secondary_parent_index),v_debug,verbosity);
+			Log(m_unique_name+" primary parent index "+toString(primary_parent_index)
+						+" secondary parent index "+toString(secondary_parent_index),v_debug,m_verbose);
 			// first check if it has a valid SECONDARY parent
 			if(std::abs(secondary_parent_index)>0){
 				if(secondary_parent_index>0){
@@ -476,8 +473,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					// else its parent was a secondary, but not one we know
 					else {
 						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT"
-								+toString(secondary_parent_index),v_warning,verbosity);
+						Log(m_unique_name+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT"
+								+toString(secondary_parent_index),v_warning,m_verbose);
 						continue;
 					}
 				} else {
@@ -489,8 +486,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					// else its parent was a secondary, but not one we know
 					else {
 						// if it came from ncapture of a secondary neutron, why don't we know about that neutron?
-						Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT"
-								+toString(secondary_parent_index),v_warning,verbosity);
+						Log(m_unique_name+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT"
+								+toString(secondary_parent_index),v_warning,m_verbose);
 						continue;
 					}
 				}
@@ -506,16 +503,16 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 				// else its parent was a primary, but not one we know
 				else {
 					// if it came from ncapture of a primary neutron, why don't we know about that neutron?
-					Log(toolName+"WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT"
-							 +toString(primary_parent_index),v_warning,verbosity);
+					Log(m_unique_name+"WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT"
+							 +toString(primary_parent_index),v_warning,m_verbose);
 					continue;
 				}
 			}
 			if(neutron_parent_loc<0){
 				// if we got here, it suggests this gamma is from ncapture
 				// but had neither a valid primary or secondary parent index
-				Log(toolName+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH NO PRIMARY OR SECONDARY PARENT",
-						v_warning,verbosity);
+				Log(m_unique_name+" WARNING, CONVERSION ELECTRON FROM NCAPTURE WITH NO PRIMARY OR SECONDARY PARENT",
+						v_warning,m_verbose);
 				continue;
 			}
 			// one final check extracts the ones we're after
@@ -597,9 +594,9 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 						neutron_parent_loc = secondary_n_ind_to_loc.at(secondary_parent_index-1);
 					} else {
 						// came from capture of a neutron we don't know?
-						Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+						Log(m_unique_name+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
 							+" FROM NCAPTURE WITH UNKNOWN SECONDARY PARENT (NEUTRON) INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
+								+toString(secondary_parent_index),v_warning,m_verbose);
 						continue;
 					}
 				} else {
@@ -609,9 +606,9 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 						neutron_parent_loc = primary_n_ind_to_loc.at(secondary_parent_index-1);
 					} else {
 						// came from capture of a neutron we don't know?
-						Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+						Log(m_unique_name+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
 							+" FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT (NEUTRON) INDEX "
-								+toString(secondary_parent_index),v_warning,verbosity);
+								+toString(secondary_parent_index),v_warning,m_verbose);
 						continue;
 					}
 				}
@@ -620,26 +617,26 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 					neutron_parent_loc = primary_n_ind_to_loc.at(primary_parent_index-1);
 				} else {
 					// came from capture of a neutron we don't know?
-					Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+					Log(m_unique_name+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
 						+" FROM NCAPTURE WITH UNKNOWN PRIMARY PARENT (NEUTRON) INDEX "
-							+toString(primary_parent_index),v_warning,verbosity);
+							+toString(primary_parent_index),v_warning,m_verbose);
 					continue;
 				}
 			}
 			if(neutron_parent_loc<0){
-				Log(toolName+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
-						+" FROM NCAPTURE WITH NO PARENT (NEUTRON) INDEX ",v_warning,verbosity);
+				Log(m_unique_name+" WARNING, "+PdgToString(secondary_PDG_code_2.at(secondary_i))
+						+" FROM NCAPTURE WITH NO PARENT (NEUTRON) INDEX ",v_warning,m_verbose);
 				continue;
 			} else {
 				// nuclide from ncapture with known neutron parent! hurray!
 				// Convert from secondary index (i.e. position in array of all secondaries)
 				// into neutron index (i.e. position in our array of neutrons)
 				if(out_nuclide_daughter_pdg.at(neutron_parent_loc)>0){
-					Log(toolName+" ERROR, FOUND SECOND DAUGHTER NUCLIDE FROM NEUTRON CAPTURE."
+					Log(m_unique_name+" ERROR, FOUND SECOND DAUGHTER NUCLIDE FROM NEUTRON CAPTURE."
 						+" FIRST DAUGHTER PDG: "+toString(out_nuclide_daughter_pdg.at(neutron_parent_loc))
 						+" ("+PdgToString(out_nuclide_daughter_pdg.at(neutron_parent_loc))+") "
 						+" SECOND DAUGHTER PDG: "+toString(secondary_PDG_code_2.at(secondary_i))
-						+" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))+")",v_error,verbosity);
+						+" ("+PdgToString(secondary_PDG_code_2.at(secondary_i))+")",v_error,m_verbose);
 					assert(false);
 					continue;
 				}
@@ -647,8 +644,8 @@ int TruthNeutronCaptures_v3::CalculateVariables(){
 			}
 		} // end if from ncapture
 	} // end scan for gammas/daughter nuclides
-	Log(toolName+" found "+toString(n_gammas)+" gammas and "+toString(n_electrons)
-				+" conversion electrons", v_debug,verbosity);
+	Log(m_unique_name+" found "+toString(n_gammas)+" gammas and "+toString(n_electrons)
+				+" conversion electrons", v_debug,m_verbose);
 	
 	// record all primaries...? do we need this info?
 	for(int primary_i=0; primary_i<n_outgoing_primaries; ++primary_i){
@@ -929,15 +926,15 @@ void TruthNeutronCaptures_v3::PrintBranches(){
 }
 
 int TruthNeutronCaptures_v3::WriteTree(){
-	Log(toolName+" writing TTree",v_debug,verbosity);
+	Log(m_unique_name+" writing TTree",v_debug,m_verbose);
 	outfile->cd();
 	// TObject::Write returns the total number of bytes written to the file.
 	// It returns 0 if the object cannot be written.
 	int bytes = outtree->Write("",TObject::kOverwrite);
 	if(bytes<=0){
-		Log(toolName+" Error writing TTree!",v_error,verbosity);
-	} else if(verbosity>2){
-		Log(toolName+ " Wrote "+toString(get_ok)+" bytes",v_debug,verbosity);
+		Log(m_unique_name+" Error writing TTree!",v_error,m_verbose);
+	} else if(m_verbose>2){
+		Log(m_unique_name+ " Wrote "+toString(get_ok)+" bytes",v_debug,m_verbose);
 	}
 	return bytes;
 };
@@ -950,7 +947,7 @@ void TruthNeutronCaptures_v3::CloseFile(){
 	// 2. they will not show up in TTree::Print(), so you need to know they're there...!
 	// Would it be better to store the redundant information? Is there a better way?
 	outtree->SetAlias("neutron_travel_dist","sqrt(pow(neutron_start_pos.X()-neutron_end_pos.X(),2)+pow(neutron_start_pos.Y()-neutron_end_pos.Y(),2)+pow(neutron_start_pos.Z()-neutron_end_pos.Z(),2))");
-	outtree->SetAlias("neutron_travel_time","neutron_end_pos.T()-neutron_start_pos.T()");
+	outtree->SetAlias("neutron_travel_time","(neutron_end_pos.T()-neutron_start_pos.T())/1000."); // [us]
 	outtree->SetAlias("neutron_n_daughters","Length$(gamma_energy[])");
 	outtree->SetAlias("neutron_tot_gammaE","Sum$(gamma_energy[])");
 	outfile->Write("*",TObject::kOverwrite);

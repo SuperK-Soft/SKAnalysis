@@ -37,7 +37,7 @@ class RootReadTest: public Tool {
 	int CheckEntryNtuple();
 	int CheckEntrySKROOT();
 	
-	MTreeReader myTreeReader;
+	MTreeReader myTreeReader{"testReader"};
 	std::string inputFile;
 	std::string treeName;
 	std::string testFileType;

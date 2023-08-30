@@ -56,6 +56,7 @@ class ntag_BDT : public Tool {
 	Int_t GetNlowIndex(Float_t rsqred, Float_t z, const Int_t init);
 	
 	MTreeReader* myTreeReader = nullptr;
+	MTreeReader outTreeReader{"ntag_BDT_TreeReader"};
 	TFile* outfile = nullptr;
 	TTree* treeout = nullptr;
 	int WRITE_FREQUENCY = 500;
@@ -103,21 +104,15 @@ class ntag_BDT : public Tool {
 	basic_array<float*> vz;
 	// vector for branches 'Nlow1','Nlow2','Nlow3'... unknown number of such branches
 	std::vector<basic_array<int*>> Nlow;
+	// check for optional branches once and then propagate only if they exist
+	bool got_type;
+	bool got_smeared_vtx;
 	
 	// output variables - arrays of size defined by branch 'np'
 	int MAX_EVENTS=500;
 	float* neutron5 = nullptr;
 	int* nlow = nullptr;
 	
-	// verbosity levels: if 'verbosity' < this level, the message type will be logged.
-	std::string toolName;
-	int verbosity=1;
-	int v_error=0;
-	int v_warning=1;
-	int v_message=2;
-	int v_debug=3;
-	std::string logmessage="";
-	int get_ok=0;
 };
 
 

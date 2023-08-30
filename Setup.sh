@@ -4,7 +4,7 @@
 
 Dependencies=`pwd`/Dependencies
 
-export LD_LIBRARY_PATH=`pwd`/lib:${Dependencies}/TMVA/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=`pwd`/lib:${Dependencies}/TMVA/lib:${Dependencies}/Kirk:$LD_LIBRARY_PATH
 
 for folder in `ls -d ${PWD}/UserTools/*/ `
 do

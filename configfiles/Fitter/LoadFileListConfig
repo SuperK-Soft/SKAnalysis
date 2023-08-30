@@ -1,0 +1,7 @@
+verbosity 1
+FileListName MyFileList                                     # required argument
+#inputFile   noise.root 									# first precedence
+fileList configfiles/Fitter/list_of_files.txt               # second precedence
+#filePattern noise/*.root                                   # third precedence
+#inputDirectory $HOME/standalones/lowfit_standalone         # required for filePattern
+useRegex 0  # 1=regex, 0=glob                               # default = glob

@@ -1,3 +1,5 @@
+#ifndef FORTRAN_ROUTINES_H
+#define FORTRAN_ROUTINES_H
 // (c-versions of) headers that define fortran common blocks
 // these are offficial in $SKOFL_ROOT/inc/
 #include "skheadC.h"
@@ -6,6 +8,7 @@
 #include "skbadcC.h"
 #include "geopmtC.h"
 #include "skruninfC.h"  // commented out in original lowfit_sk4
+//#include "geotnkC.h"  // this conflicts with SK2p2MeV.h because someone reused the #define'd macro names as variables (e.g. `const Float_t RINTK`, when geotnkC.h does `#define RINTK`)
 
 // these are from $SKOFL_ROOT/inc/lowe and have no official C version
 // the following two were done via automatic conversion done with fh2h
@@ -49,6 +52,28 @@ extern "C" void muechk_(float*, int*);
 extern "C" void lfmufit_sk4_();
 extern "C" void fix_maxqisk_();
 
+// additional functions from lfallfit
+extern "C" void skatmmap2_(int*,int*,int*,int*,int*,int*);
+extern "C" void lfneihit_(int*,int*,int*);
+extern "C" void lfqhit_(int*,float*); 
+extern "C" void lfflasher_(int*,float*,int*);
+extern "C" float wallsk_(float*);
+extern "C" void lfdir2_(float*,float*,float*);
+extern "C" void lfneweff_sk3_final_(float*, float*, Float_t*);
+extern "C" void lfneweff_sk4_final_qe43_(float*,float*,float*,float*,int*,int*);
+extern "C" void lfeffwt_sk3_(float*, float*,float*);
+extern "C" float enelf_sk4_(float*,int*);
+extern "C" void lfdir4_(float*,float*,float*,float*);
+extern "C" void lfdirks_(float*,float*,float*);
+extern "C" float patliklf_sk4_(float*,float*,float*,int*);
+extern "C" float effwallf_(int*,float*,float*,float*);
+extern "C" void slsundir3_(int*,int*,float*,float*,float*,float*);
+extern "C" void lfnhit_tisk_(int*,float*,int*,int*,int*);
+extern "C" void lfnhit2_(int*,float*,int*,int*,int*);
+extern "C" void lfnhit_(int*,float*,int*,int*);
+extern "C" float lfcal_r02_(int*,int*,float*);
+extern "C" void lfariadne_(float*,int*,float*,float*,float*,float*,int*,float*);
+
 // from $ATMPD_ROOT/src/programs/TreeBuilder/examples/fort_fopen.F
 extern "C" void fort_fopen_(int*, const char*, char*, int* ,int);
 
@@ -58,8 +83,15 @@ extern "C" void runinfsk_();
 //
 extern "C" void softtrg_set_cond_(int*, int*, int*, int*, int*);
 extern "C" void get_sub_triggers_(int*, int*, int*, int*);
+extern "C" void get_sub_triggers_add_(int*, int*, int*, int*, int*);
+extern "C" void get_sub_triggers2_(int*, int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
 extern "C" void set_timing_gate_nsec_(float*);
+extern "C" int make_swtrg_list(int*,int*);
+extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);
+// for these two, see $SKOFL_ROOT/src/softtrg/softtrg_ofldata.c
+extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*); // probably call this
+extern "C" int softtrg_inittrgtbl(int , int, int, int);    // which internally calls this
 
 // the following are provided by libwtlib_5.1.a
 extern "C" void skrunday_();
@@ -71,17 +103,35 @@ extern "C" void lfwater_(int*, float*);
 // the following are provided by libbonsai_3.3.a
 extern "C" void cfbsinit_(int*, float*);
 extern "C" void cfbsexit_();
+extern "C" int bonsaifit_(float*,float*,float*,int*,int*,int*,float*,float*);
 
 // the following are provided by libsklowe_7.0.a
 extern "C" void lfclear_all_();
-extern "C" void lfallfit_sk4_final_qe43_(float*, int*, int*, int*, int*);
-extern "C" void lfallfit_sk4_data_(float*, int*, int*);
-extern "C" void lfallfit_sk4_gain_corr_(float*, int*, int*, int*, int*);
-extern "C" void lfallfit_sk4_mc_(float*, int*, int*);
+extern "C" void lfallfit_sk1_data_(float* watert, int*nhitcut, int*lfflag);
+//extern "C" void lfallfit_sk1_mc_(float* watert, int*nhitcut, int*lfflag);    // does not exist
+extern "C" void lfallfit_sk2_data_(float* watert, int*nhitcut, int*lfflag);
+//extern "C" void lfallfit_sk2_mc_(float* watert, int*nhitcut, int*lfflag);    // does not exist
+// extern "C" void lfallfit_sk3_data_(float* watert, int*nhitcut, int*lfflag); // does not exist
+// extern "C" void lfallfit_sk3_mc_(float* watert, int*nhitcut, int*lfflag); // does not exist
+extern "C" void lfallfit_sk4_data_(float* watert, int*nhitcut, int*lfflag);
+extern "C" void lfallfit_sk4_mc_(float* watert, int*nhitcut, int*lfflag);
+extern "C" void lfallfit_sk5_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk5_data_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk6_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk6_data_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+// for some reason SK-IV has a bunch of extra versions...
+extern "C" void lfallfit_sk4_final_qe41_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_final_qe41_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_final_qe43_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_final_qe43_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_gain_corr_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+extern "C" void lfallfit_sk4_gain_corr_mc_(float* watert, int* nhitcut, int* flag_skip, int* flag_log, int* lfflag);
+
 // skroot_lowe_ common block
 
 extern "C" void rluxgo_(int*, int*, int*, int*);
 extern "C" float rlu_();  // src/monlib/rlu.F
+extern "C" void ran_verbosity_(int*);
 
 extern "C" void slmcmklow_(int*, int*, int*, int*, float*);  // $SKOFL_ROOT/lowe/sollib/slmcmklow.F
 extern "C" void slredtimev_(int*, int*, int*, int*, int*, float*, float*, int*); // $SKOFL_ROOT/lowe/sollib/slredtimev.f
@@ -93,6 +143,20 @@ extern "C" void darklf_(int*);  // $SKOFL_ROOT/lowe/sklowe/darklf.F
 // after that there were many undefined references, e.g. `sortzv_`, `hf1_`, `hf2_`...
 // after some trial and error these are resolved, but i lost track of which provided what.
 // cernlibs in particular resolved a lot of repeated undefined issues, they may be the main culprit.
+
+// muon reconstruction
+extern "C" void fix_maxqisk_();
+extern "C" void lfmufit_sk4_();
+extern "C" void newmufit_(float (*)[3], float (*)[3], float*);
+// this function (from atmpd) is apparently bad? replace it with kirk's one
+//extern "C" void makededx_(float (*)[4], float (*)[3], int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, float (*)[200]);
+extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, int*, float (*)[200], int (*)[334380], int*);
+extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
+extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
+extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
+
+// vectgen
+extern "C" void spectrum_(int*,int*,int*,float*,int*,float*,float*,int*);
 
 // SK I/O
 extern "C" {
@@ -159,4 +223,17 @@ extern "C" {
     void sppang_(int&, float&, float&);
     void spfinalsep_();
 //	float pttruewaterlen_(float&);
+
+// from Kirk
+extern "C" void getdl_(float* mudir, float* x, float* y, float* z, float* muentry, float* lt, float* proj);
+// note: this conflicts with the standard atmpd makededx: we either need to modify kirk's
+// source code to give it a new name, or we can only link against one of them.
+// it seems like the previous relic analysers used only kirk and scott's ones, so do the same....
+extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float(*dedx)[200]);
+// special version from relic_sk4_ana/lomufit/mufit/src/makdedx.F that takes water transparency.
+// kirk's original version does not! oh, so many choices
+//extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float* watert, float(*dedx)[200]);
+
 }
+
+#endif

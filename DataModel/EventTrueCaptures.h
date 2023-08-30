@@ -9,6 +9,7 @@
 class EventTrueCaptures : public Cluster<TrueCapture>
 {
     public:
+        virtual ~EventTrueCaptures();
         void Sort();
         void DumpAllElements();
         
