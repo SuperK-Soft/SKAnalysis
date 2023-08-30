@@ -45,6 +45,9 @@ extern "C" void skcrawread_(int*, int*);
 extern "C" void skcread_(int*, int*);
 extern "C" void skroot_set_tree_(int*);
 extern "C" void skroot_get_entry_(int*);
+extern "C" void muechk_(float*, int*);
+extern "C" void lfmufit_sk4_();
+extern "C" void fix_maxqisk_();
 
 // from $ATMPD_ROOT/src/programs/TreeBuilder/examples/fort_fopen.F
 extern "C" void fort_fopen_(int*, const char*, char*, int* ,int);

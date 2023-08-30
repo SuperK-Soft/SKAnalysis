@@ -1,0 +1,38 @@
+verbosity 10
+readerName reader
+
+#inputFile /home/mattnich/disk3stor/prepared_data/lowe/rfm_run086613.001133_lowe.root
+inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
+#inputFile /disk02/lowe8/sk6/sle/lomugd.085065.root
+#this should be a lowmu_gd file eventually
+
+treeName data                                    # the name of the tree within the file
+#maxEntries 1000000                                     # max num input entries to process
+maxEntries -1
+skFile 1                                          # do not call SKREAD/SKRAWREAD - no need.
+
+skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)
+skbadopt 23 
+
+skrootMode 0
+outputFile muon_recon_test.root
+
+SK_GEOMETRY 6
+
+StartInputBranchList
+###############
+EVENTHEADER
+TQLIST
+ODTQLIST
+GPSLIST
+PREVT0
+HEADER
+TQREAL
+TQAREAL
+LOWE
+MU
+SLE
+IDODXTLK
+
+#############
+EndInputBranchList
