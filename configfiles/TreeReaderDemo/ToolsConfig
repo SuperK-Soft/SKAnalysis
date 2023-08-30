@@ -1,7 +1,7 @@
 myGracefulStop GracefulStop configfiles/TreeReaderDemo/GracefulStopConfig
 myTreeReader TreeReader configfiles/TreeReaderDemo/TreeReaderConfig
 #myTreeReaderDemo TreeReaderDemo configfiles/TreeReaderDemo/TreeReaderDemoConfig
-myMCParticlesDemo ReadMCParticles configfiles/TreeReaderDemo/ReadMCParticlesConfig
+#myMCParticlesDemo ReadMCParticles configfiles/TreeReaderDemo/ReadMCParticlesConfig
 #myevDisp evDisp configfiles/TreeReaderDemo/evDispConfig
 
 #myTrueNCaptures TrueNCaptures configfiles/TreeReaderDemo/TrueNCapturesConfig

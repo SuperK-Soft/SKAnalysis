@@ -45,7 +45,12 @@ if (tool=="NCaptInfo_BDT") ret=new NCaptInfo_BDT;
 if (tool=="TrueNCaptures") ret=new TrueNCaptures;
 if (tool=="ReadMCParticles") ret=new ReadMCParticles;
 
-  if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
+if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
+if (tool=="LookForSHEAFT") ret=new LookForSHEAFT;
+if (tool=="call_muechk") ret=new call_muechk;
+
+if (tool=="mufit_sk4") ret=new mufit_sk4;
+  if (tool=="lowfit") ret=new lowfit;
 return ret;
 }
 

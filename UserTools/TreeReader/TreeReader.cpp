@@ -48,7 +48,9 @@ const std::vector<std::string> default_branches{
 };
 
 bool TreeReader::Initialise(std::string configfile, DataModel &data){
-	
+
+  
+  
 	m_data= &data;
 	
 	Log(toolName+": Initializing",v_debug,verbosity);
@@ -58,6 +60,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	LoadConfig(configfile);
 	toolName = toolName+" "+readerName;
 	m_data->tool_configs[toolName] = &m_variables;
+
+	myTreeReader.SetVerbosity(10);
 	
 	// safety check that we were given an input file
 	if(inputFile=="" && FileListName==""){
@@ -357,6 +361,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// from the top of headsk.F and avoid using skcread.
 			int tmp_entry=0;
 			while(true){
+			  
 				get_ok = myTreeReader.GetEntry(tmp_entry);
 				if(get_ok<=0){
 					Log(toolName+" error! Hit end of tree while checking if MC!",v_error,verbosity);
@@ -598,16 +603,30 @@ bool TreeReader::Execute(){
 				PrintTriggerBits();
 				
 				// apply our general check for required bits in the trigger mask
-				for(int mask_i=0; mask_i<triggerMasks.size(); ++mask_i){
-					int required_bit = triggerMasks.at(mask_i);
-					if(trigger_bits.test(required_bit)==false){
-						get_ok=-999; // skip this event
-					}
+				// for(int mask_i=0; mask_i<triggerMasks.size(); ++mask_i){
+				// 	int required_bit = triggerMasks.at(mask_i);
+				// 	if(trigger_bits.test(required_bit)==false){
+				// 		get_ok=-999; // skip this event
+				// 	}
+				// }
+
+				// apply our general check for required bits in the trigger mask
+				// for (int mask_i = 0;  mask_i < triggerMasks.size(); ++mask_i){
+				//   int required_bit = triggerMasks.at(mask_i);
+				//   if (trigger_bits.test(required_bit)){
+				//     get_ok = 1;
+				//   }
+				// }
+
+
+				if (!triggerMasks.empty()){
+				  const auto it = std::find_if(triggerMasks.begin(), triggerMasks.end(), [trigger_bits](int i){return trigger_bits.test(i);});
+				  if (it == triggerMasks.end()){get_ok = 999;}
 				}
-				
+				  
 				// if we're reading *only* SHE+AFT pairs, skip the entry if it's not SHE
 				if(get_ok>0 && onlyPairs && !trigger_bits.test(28)){
-					Log(toolName+" Prompt entry is not SHE",v_debug,verbosity);
+				  Log(toolName+" Prompt entry is not SHE",v_debug,verbosity);
 					// its not SHE. If we only want SHE+AFT pairs, skip this entry.
 					Log(toolName+" Re-starting read process",v_debug,verbosity);
 					get_ok=-999;
@@ -691,7 +710,8 @@ bool TreeReader::Execute(){
 	e.g. myTreeReader->GetTree()->GetCurrentFile() may report the next file, when
 	in fact the current in-memory event data relates to the last entry from the previous file.
 	*/
-	
+	// std::cout << "myTreeReader.GetTree()->Show():\n\n";
+	// myTreeReader.GetTree()->Show();
 	return true;
 }
 

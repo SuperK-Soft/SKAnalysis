@@ -40,3 +40,7 @@
 #include "TrueNCaptures.h"
 #include "ReadMCParticles.h"
 #include "DefineSignalRegions.h"
+#include "LookForSHEAFT.h"
+#include "call_muechk.h"
+#include "mufit_sk4.h"
+#include "lowfit.h"
