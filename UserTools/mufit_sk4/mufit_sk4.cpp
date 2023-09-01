@@ -48,7 +48,7 @@ bool mufit_sk4::Execute(){
   // }
 
   std::cout << "calling lfclear_all_()\n";
-  charge_plot.Fill(skq_.qismsk);
+  charge_plot.Fill(skq_.nqisk);
 
   lfclear_all_();
 

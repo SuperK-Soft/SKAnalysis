@@ -286,6 +286,9 @@ class MTreeReader {
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;
+
+	Notifier notifier;
+
 	std::string name="";
 	std::string branchnamestring="{}";
 	

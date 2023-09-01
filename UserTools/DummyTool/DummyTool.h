@@ -30,6 +30,8 @@ class DummyTool: public Tool {
 
   int m_verbose;
 
+  // void foo() const;
+  
 };
 
 

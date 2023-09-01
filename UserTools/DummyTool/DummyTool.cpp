@@ -31,3 +31,8 @@ bool DummyTool::Finalise(){
 
   return true;
 }
+
+// void DummyTool::foo() const {
+//   int bar;
+//   m_variables.Get("bar", bar);
+// }
