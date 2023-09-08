@@ -23,7 +23,7 @@ bool mufit_sk4::Initialise(std::string configfile, DataModel &data){
 
   GetReader();
 
-  charge_plot = TH1D("r1", "r1", 100, 0, 2000);
+  // charge_plot = TH1D("r1", "r1", 100, 0, 2000);
   
   return true;
 }
@@ -34,13 +34,13 @@ bool mufit_sk4::Execute(){
     std::cout << "nread: " << nread << ", nrunsk: " << skhead_.nrunsk << ", nevsk: " << skhead_.nevsk << ", nmuon: " << nmuon << "\n";
     //}
 
-  // //ignore LED burst events
-  // std::bitset<sizeof(int)*8> bits = skhead_.nevsk;
-  // if (bits.test(26)){
-  //   m_data->vars.Set("Skip", true);
-  //   return true;
-  // }
-
+  //ignore LED burst events
+  std::bitset<sizeof(int)*8> bits = skhead_.nevsk;
+  if (bits.test(26)){
+    //    m_data->vars.Set("Skip", true);
+    return true;
+  }
+  
   //ignore incomplete events
   // if ( (bits & std::bitset(pow(2,20)) ) != 0){
   //   m_data->vars.Set("Skip", true);
@@ -48,7 +48,7 @@ bool mufit_sk4::Execute(){
   // }
 
   std::cout << "calling lfclear_all_()\n";
-  charge_plot.Fill(skq_.nqisk);
+  // charge_plot.Fill(skq_.nqisk);
 
   lfclear_all_();
 
@@ -56,8 +56,8 @@ bool mufit_sk4::Execute(){
   
   //skip muon events - judged by total number of PMT hits
   if(skq_.nqisk < 1000){
-    m_data->vars.Set("Skip", true);
-    std::cout << "skipping event\n";
+    //    m_data->vars.Set("Skip", true);
+    //std::cout << "skipping event\n";
     return true;
   } 
 
@@ -88,7 +88,7 @@ bool mufit_sk4::Execute(){
 
 bool mufit_sk4::Finalise(){
 
-  charge_plot.SaveAs("charge_plot.root");
+  // charge_plot.SaveAs("charge_plot.root");
   
   return true;
 }

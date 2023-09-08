@@ -65,3 +65,6 @@
 #include "AddTree.h"
 #include "WriteSkEvent.h"
 #include "RelicMuonPlots.h"
+#include "SLESearch.h"
+#include "SubToolChain.h"
+#include "LoadSubTriggers.h"

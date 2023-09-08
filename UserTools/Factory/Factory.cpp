@@ -71,6 +71,9 @@ if (tool=="SkipEventFlags") ret=new SkipEventFlags;
 if (tool=="AddTree") ret=new AddTree;
 if (tool=="WriteSkEvent") ret=new WriteSkEvent;
 if (tool=="RelicMuonPlots") ret=new RelicMuonPlots;
+if (tool=="SLESearch") ret=new SLESearch;
+if (tool=="SubToolChain") ret=new SubToolChain;
+if (tool=="LoadSubTriggers") ret=new LoadSubTriggers;
 return ret;
 }
 
