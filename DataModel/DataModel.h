@@ -170,12 +170,6 @@ class DataModel {
   //cached lowe common blocks, for use during matching
   std::map<long, skroot_lowe_common> loweCommonBufferMap;
 
-  // for SLE Search Tool
-  // ----------------------
-
-  std::vector<int> SLE_times = {};
-  
-  // -----------------------
   
  private:
 

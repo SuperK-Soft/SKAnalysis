@@ -69,7 +69,7 @@ bool SLESearch::Execute(){
     SLE_times.push_back(swtrgtbl_.swtrgt0ctr[trig_idx]);
   }
 
-  m_data->SLE_times = SLE_times;
+  m_data->CStore.Set("SLE_times", SLE_times);
   
   return true;
 }

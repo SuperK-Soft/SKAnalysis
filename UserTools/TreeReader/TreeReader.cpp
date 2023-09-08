@@ -47,9 +47,7 @@ const std::vector<std::string> default_branches{
 };
 
 bool TreeReader::Initialise(std::string configfile, DataModel &data){
-
-  
-  
+	
 	m_data= &data;
 	
 	Log(m_unique_name+": Initializing",v_debug,m_verbose);
@@ -427,7 +425,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// from the top of headsk.F and avoid using skcread.
 			int tmp_entry=0;
 			while(true){
-			  
 				get_ok = myTreeReader.GetEntry(tmp_entry);
 				if(get_ok<=0){
 					Log(m_unique_name+" error! Hit end of tree while checking if MC!",v_error,m_verbose);
@@ -817,8 +814,7 @@ bool TreeReader::Execute(){
 	e.g. myTreeReader->GetTree()->GetCurrentFile() may report the next file, when
 	in fact the current in-memory event data relates to the last entry from the previous file.
 	*/
-	// std::cout << "myTreeReader.GetTree()->Show():\n\n";
-	// myTreeReader.GetTree()->Show();
+	
 	return true;
 }
 

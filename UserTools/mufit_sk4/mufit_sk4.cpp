@@ -34,12 +34,12 @@ bool mufit_sk4::Execute(){
     std::cout << "nread: " << nread << ", nrunsk: " << skhead_.nrunsk << ", nevsk: " << skhead_.nevsk << ", nmuon: " << nmuon << "\n";
     //}
 
-  //ignore LED burst events
-  std::bitset<sizeof(int)*8> bits = skhead_.nevsk;
-  if (bits.test(26)){
-    //    m_data->vars.Set("Skip", true);
-    return true;
-  }
+  // //ignore LED burst events
+  // std::bitset<sizeof(int)*8> bits = skhead_.nevsk;
+  // if (bits.test(26)){
+  //   //    m_data->vars.Set("Skip", true);
+  //   return true;
+  // }
   
   //ignore incomplete events
   // if ( (bits & std::bitset(pow(2,20)) ) != 0){

@@ -1,7 +1,8 @@
 #include "call_muechk.h"
 
 #include "MTreeReader.h"
-#include "apmueC.h" // for APMUE common block
+
+#include "fortran_routines.h"
 
 call_muechk::call_muechk():Tool(){}
 
@@ -15,15 +16,12 @@ bool call_muechk::Initialise(std::string configfile, DataModel &data){
 
   if(!m_variables.Get("verbose",m_verbose)) m_verbose=1;
 
-  tree_reader_ptr = m_data->Trees.at("reader");
-  if (tree_reader_ptr == nullptr){
+  if (m_data->Trees.count("reader")!=1){
     throw std::runtime_error("couldn't get treereader");
   }
 
-  //int geom = 6; geoset_(&geom); //hack for now
-  
-  //  apnmue_hist = TH1D("apnmue_hist", "a
-  
+  tree_reader_ptr = m_data->Trees.at("reader");
+ 
   return true;
 }
 

@@ -123,7 +123,8 @@ void ReadHits::SetTriggerType()
     // Else
     else
         currentEvTrigType = tELSE;
-    
-    m_data->eventVariables.Set("trigger_type", (int)(currentEvTrigType));
+
+    int trig_type = static_cast<int>(currentEvTrigType);
+    m_data->eventVariables.Set("trigger_type", trig_type);
     Log(Form("Previous trigger type: %d Current trigger type: %d", prevEvTrigType, currentEvTrigType));
 }
