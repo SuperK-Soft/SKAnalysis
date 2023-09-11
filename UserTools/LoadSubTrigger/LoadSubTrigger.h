@@ -17,6 +17,9 @@ class LoadSubTrigger: public Tool {
 
  private:
 
+  int TreeReaderLUN;
+  int neglun;
+  
   int trigger_idx = 0;
   int GetReaderLUN();
   

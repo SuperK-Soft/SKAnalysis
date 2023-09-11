@@ -14,6 +14,10 @@ bool LoadSubTrigger::Initialise(std::string configfile, DataModel &data){
 
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 
+  // get a negated version of the logic unit number for the relevant file / TreeReader
+  TreeReaderLUN = GetReaderLUN();
+  neglun = -std::abs(TreeReaderLUN);
+
   return true;
 }
 
@@ -25,10 +29,6 @@ bool LoadSubTrigger::Execute(){
   int this_subtrigger_ticks = SLE_times.at(trigger_idx);
   
   set_timing_gate_(&this_subtrigger_ticks);
-
-  // get a negated version of the logic unit number for the relevant file / TreeReader
-  int TreeReaderLUN = GetReaderLUN();
-  int neglun = -std::abs(TreeReaderLUN);
 
   // call `skcread` to re-load common blocks for this subtrigger
   int get_ok = 0;
@@ -42,7 +42,8 @@ bool LoadSubTrigger::Execute(){
     return false;
   }
 
-  ++trigger_idx;
+  // increment the trigger idx unless we've loaded all subtriggers, in which case set to zero, ready for the next event.
+  trigger_idx < SLE_times.size() - 1 ? ++trigger_idx : trigger_idx = 0;
   
   return true;
 }
