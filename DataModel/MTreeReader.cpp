@@ -21,6 +21,15 @@
 
 #include "Algorithms.h"  // CheckPath
 
+bool Notifier::Notify(){
+	if(verbosity) std::cout<<"Notifier signalled new TTree!"<<std::endl;
+	//treeReader->GetTree()->Show();
+	treeReader->GetTree()->GetTree()->GetEntry(0);
+	//treeReader->GetTree()->Show();
+	//return treeReader->UpdateBranchPointers(true);  // not sufficient!
+	return treeReader->ParseBranches();
+}
+
 // TODO constructor/loader for tchains or tree pointers
 
 MTreeReader::MTreeReader(std::string iname, std::string fpath, std::string treename){
@@ -49,6 +58,9 @@ int MTreeReader::Load(std::string filename, std::string treename){
 		if(not ok) return ok;
 		LoadTree(treename);
 		if(not ok) return ok;
+		// preload first entry to get branches
+		if(verbosity) std::cout<<"getting entry 0"<<std::endl;
+		thetree->GetEntry(0);
 		ok = ParseBranches();
 		return ok;
 	} else if(pathexists && pathtype=="d"){
@@ -117,9 +129,16 @@ int MTreeReader::Load(std::vector<std::string> filelist, std::string treename){
 
 int MTreeReader::Load(TTree* thetreein){
 	thetree = thetreein;
+	
+	// preload first entry to get branches
+	if(verbosity) std::cout<<"getting entry 0"<<std::endl;
+	thetree->GetEntry(0);
+	
 	int ok = ParseBranches();
 	// do this after ParseBranches as TChains may return nullptr if no file has been loaded yet
 	thefile = thetree->GetCurrentFile();
+	notifier.SetReader(this);
+	thetree->SetNotify(&notifier);
 	return ok;
 }
 
@@ -155,9 +174,16 @@ int MTreeReader::LoadTree(std::string treename){
 
 int MTreeReader::ParseBranches(){
 	
-	// preload first entry to get branches
-	if(verbosity) std::cout<<"getting entry 0"<<std::endl;
-	thetree->GetEntry(0);
+	branch_pointers.clear();
+        branch_istobject.clear();
+        leaf_pointers.clear();
+        branch_titles.clear();
+        branch_value_pointers.clear();
+        branch_types.clear();
+        branch_isobject.clear();
+        branch_isarray.clear();
+        branch_dimensions.clear();
+        branch_dims_cache.clear();
 	
 	if(verbosity) std::cout<<"getting leaves"<<std::endl;
 	//for(int i=0; i<thetree->GetListOfLeaves()->GetEntriesFast(); ++i){
@@ -278,14 +304,14 @@ int MTreeReader::UpdateBranchPointer(std::string branchname){
 	return 1;
 }
 
-int MTreeReader::UpdateBranchPointers(){
+int MTreeReader::UpdateBranchPointers(bool all){
 	// assume we only need to re-check dynamic arrays? Objects won't move, right?
 	// dynamically sized arrays may do, if more space is required...
 	for(auto&& abranch : branch_isarray){
-		if(abranch.second){
+		if(all || abranch.second){
 			// fixed sized arrays won't need to be reallocated
 			// so only update pointers if we don't have a cached (constant) size
-			if(branch_dims_cache.count(abranch.first)==0){
+			if(all || branch_dims_cache.count(abranch.first)==0){
 				int ok = UpdateBranchPointer(abranch.first);
 				if(not ok) return ok;
 			}
@@ -525,6 +551,7 @@ void MTreeReader::SetClosed(){
 // misc operations
 void MTreeReader::SetVerbosity(int verbin){
 	verbosity=verbin;
+	notifier.SetVerbosity(verbin);
 }
 
 void MTreeReader::SetAutoClear(bool autoclearin){

@@ -31,6 +31,7 @@
 #include "softtrg_listC.h"
 #include "vcvrtxC.h"
 #include "vcworkC.h"
+#include "apmueC.h"
 
 // header for skroot_* functions. These are actually C functions.
 #include "fortran_interface.h"
@@ -151,6 +152,9 @@ extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146
 extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
 extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
 extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
+
+//decay electron scaling
+extern "C" void muechk_(float*,  int*);
 
 // vectgen
 extern "C" void spectrum_(int*,int*,int*,float*,int*,float*,float*,int*);

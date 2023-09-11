@@ -169,8 +169,9 @@ std::cout<<"primary vertex at "<<vp.X()<<", "<<vp.Y()<<", "<<vp.Z()<<std::endl;
     Log("True capture information:");
     m_data->eventTrueCaptures.Sort();
     m_data->eventTrueCaptures.DumpAllElements();
-    
-    m_data->eventVariables.Set("true_neutron_count", m_data->eventTrueCaptures.GetSize());
+
+    size_t n_captures = m_data->eventTrueCaptures.GetSize();
+    m_data->eventVariables.Set("true_neutron_count", n_captures);
 
     return true;
 }

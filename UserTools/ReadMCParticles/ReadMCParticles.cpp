@@ -368,14 +368,17 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		// Instead this variable got repurposed to hold a volume id, which can be mapped to
 		// something like 'Inner Water volume' instead.
 		// See gumed.h for numbers and sggeom_sk1.F for the corresponding names.
-		avertex.extraInfo.Set("volume_id",sec_info->vertex_target_pdg_code.at(i));
+		int volume_id = sec_info->vertex_target_pdg_code.at(i);
+		avertex.extraInfo.Set("volume_id",volume_id);
 		
 		// we also have medium id. this can map to e.g. 'WATER' or 'ACRYLIC'
 		// (i'm not sure where the corresponding mapping can be found, exactly...)
-		avertex.extraInfo.Set("medium_id",sec_info->vertex_medium_id.at(i));
+		int medium_id = sec_info->vertex_medium_id.at(i);
+		avertex.extraInfo.Set("medium_id",medium_id);
 		// the kcase code is apparently another number describing the interaction process,
 		// but again i cannot find a map of codes to their meaning in the G3 manual.
-		avertex.extraInfo.Set("kcase_code",sec_info->vertex_kcase_code.at(i));
+		int kcase_code = sec_info->vertex_kcase_code.at(i);
+		avertex.extraInfo.Set("kcase_code",kcase_code);
 		
 		m_data->eventVertices.push_back(avertex);
 	}
@@ -398,7 +401,8 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		// after their corresponding isotope was created (i.e. some time after the corresponding
 		// parent particle interaction). The following offset accounts for any delay between
 		// parent interaction and this daughter particle's emission.
-		aparticle.extraInfo.Set("time_offset",sec_info->track_creation_toffset.at(i));
+		double time_offset = sec_info->track_creation_toffset.at(i);
+		aparticle.extraInfo.Set("time_offset",time_offset);
 		
 		m_data->eventParticles.push_back(aparticle);
 		
@@ -572,8 +576,10 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		//aparticle.end_mom = TVector3{}; // not available
 		
 		// additional information
-		aparticle.extraInfo.Set("ceren_flag",primary_ceren_flag.at(i));
-		aparticle.extraInfo.Set("end_flag",primary_end_flag.at(i));
+		int ceren_flag = primary_ceren_flag.at(i);
+		aparticle.extraInfo.Set("ceren_flag",ceren_flag);
+		bool end_flag = primary_end_flag.at(i);
+		aparticle.extraInfo.Set("end_flag",end_flag);
 		
 		// consistency checks
 		Log(m_unique_name+" primary particle "+toString(i)+" (pdg "+toString(aparticle.pdg)+")"
@@ -790,11 +796,16 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		
 		// extra info
 		//std::cout<<"extra info"<<std::endl;
-		aparticle.extraInfo.Set("nchilds",secondary_n_childs.at(i));
-		aparticle.extraInfo.Set("ichildidx",secondary_first_daughter_index.at(i)-1+n_outgoing_primaries); // correct fortran indexing and for preceding primary particles
-		aparticle.extraInfo.Set("parent_primary_pdg",secondary_parent_primary_pdg.at(i));
-		aparticle.extraInfo.Set("parent_primary_idx",secondary_parent_primary_idx.at(i)-1); // correct fortran indexing
-		aparticle.extraInfo.Set("iflgscnd",secondary_flag.at(i));
+		int nchilds = secondary_n_childs.at(i);
+		aparticle.extraInfo.Set("nchilds", nchilds);
+		int ichild_idx = secondary_first_daughter_index.at(i)-1+n_outgoing_primaries;
+		aparticle.extraInfo.Set("ichildidx",ichild_idx); // correct fortran indexing and for preceding primary particles
+		int parent_primary_pdg = secondary_parent_primary_pdg.at(i);
+		aparticle.extraInfo.Set("parent_primary_pdg", parent_primary_pdg);
+		int parent_primary_idx = secondary_parent_primary_idx.at(i)-1;
+		aparticle.extraInfo.Set("parent_primary_idx",parent_primary_idx); // correct fortran indexing
+	        int iflgscnd = secondary_flag.at(i);
+		aparticle.extraInfo.Set("iflgscnd",iflgscnd);
 		
 		// and of course we have 3 other numbers for the parent index.
 		// not even gonna store these... don't think they're useful??

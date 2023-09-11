@@ -58,7 +58,10 @@ if (tool=="RelicCandidates") ret=new RelicCandidates;
 if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
 if (tool=="WriteSpallCand") ret=new WriteSpallCand;
 if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
+if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
+if (tool=="muechk") ret=new muechk;
 
+if (tool=="mufit_sk4") ret=new mufit_sk4;
 if (tool=="SkipTriggers") ret=new SkipTriggers;
 if (tool=="BuildHist") ret=new BuildHist;
 if (tool=="CutRecorder") ret=new CutRecorder;
@@ -66,6 +69,9 @@ if (tool=="SkipEventFlags") ret=new SkipEventFlags;
 if (tool=="AddTree") ret=new AddTree;
 if (tool=="WriteSkEvent") ret=new WriteSkEvent;
 if (tool=="RelicMuonPlots") ret=new RelicMuonPlots;
+if (tool=="SLESearch") ret=new SLESearch;
+if (tool=="SubToolChain") ret=new SubToolChain;
+if (tool=="LoadSubTrigger") ret=new LoadSubTrigger;
 return ret;
 }
 

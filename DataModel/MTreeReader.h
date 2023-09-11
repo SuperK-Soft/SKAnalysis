@@ -8,13 +8,26 @@
 
 #include "basic_array.h"
 
+#include "TObject.h"
+
 class TFile;
 class TChain;
 class TTree;
 class TBranch;
 class TLeaf;
+class MTreeReader;
+
+class Notifier : public TObject {
+	public:
+	bool Notify();
+	MTreeReader* treeReader=nullptr;
+	int verbosity;
+	void SetReader(MTreeReader* in){ treeReader=in; }
+	void SetVerbosity(int verbin){ verbosity=verbin; }
+};
 
 class MTreeReader {
+	friend class Notifier;
 	public:
 	
 	MTreeReader(std::string iname, std::string filename, std::string treename);
@@ -250,7 +263,7 @@ class MTreeReader {
 	int ParseBranches();
 	int ParseBranchDims(std::string branchname);
 	int UpdateBranchPointer(std::string branchname);
-	int UpdateBranchPointers();
+	int UpdateBranchPointers(bool all=false);
 	
 	private:
 	
@@ -273,6 +286,9 @@ class MTreeReader {
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;
+
+	Notifier notifier;
+
 	std::string name="";
 	std::string branchnamestring="{}";
 	

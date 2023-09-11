@@ -1,0 +1,4 @@
+myTreeReader TreeReader configfiles/muon_reconstruction/TreeReader_config
+my_mufit_sk4 mufit_sk4 configfiles/muon_reconstruction/mufit_sk4_config
+my_SLESearch SLESearch NULL
+#my_SubToolChain SubToolChain NULL

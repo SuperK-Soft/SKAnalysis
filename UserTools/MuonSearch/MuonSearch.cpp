@@ -135,7 +135,8 @@ bool MuonSearch::Execute(){
 		if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, m_unique_name);
 	} else {
 		m_data->vars.Set("newMuon", false);
-		m_data->CStore.Set("muonTimes", std::vector<int>{});
+		std::vector<int> empty_times = {};
+		m_data->CStore.Set("muonTimes", empty_times);
 	}
 	
 	return true;
