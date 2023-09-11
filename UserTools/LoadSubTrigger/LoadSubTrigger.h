@@ -1,22 +1,24 @@
-#ifndef LoadSubTriggers_H
-#define LoadSubTriggers_H
+#ifndef LoadSubTrigger_H
+#define LoadSubTrigger_H
 
 #include <string>
 #include <iostream>
 
 #include "Tool.h"
 
-class LoadSubTriggers: public Tool {
+class LoadSubTrigger: public Tool {
 
  public:
 
-  LoadSubTriggers();
+  LoadSubTrigger();
   bool Initialise(std::string configfile,DataModel &data);
   bool Execute();
   bool Finalise();
 
  private:
 
+  int trigger_idx = 0;
+  
 };
 
 

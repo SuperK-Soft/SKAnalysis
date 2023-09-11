@@ -65,4 +65,4 @@
 #include "RelicMuonPlots.h"
 #include "SLESearch.h"
 #include "SubToolChain.h"
-#include "LoadSubTriggers.h"
+#include "LoadSubTrigger.h"

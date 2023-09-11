@@ -1,10 +1,10 @@
-#include "LoadSubTriggers.h"
+#include "LoadSubTrigger.h"
 
 #include "fortran_routines.h"
 
-LoadSubTriggers::LoadSubTriggers():Tool(){}
+LoadSubTrigger::LoadSubTrigger():Tool(){}
 
-bool LoadSubTriggers::Initialise(std::string configfile, DataModel &data){
+bool LoadSubTrigger::Initialise(std::string configfile, DataModel &data){
 
   if(configfile!="")  m_variables.Initialise(configfile);
   //m_variables.Print();
@@ -18,10 +18,8 @@ bool LoadSubTriggers::Initialise(std::string configfile, DataModel &data){
 }
 
 
-bool LoadSubTriggers::Execute(){
-
-  int trigger_idx = 0; //this needs to iterate
-
+bool LoadSubTrigger::Execute(){
+   
   std::vector<int> SLE_times = {};
   m_data->CStore.Get("SLE_times", SLE_times);
   int this_subtrigger_ticks = SLE_times.at(trigger_idx);
@@ -43,13 +41,14 @@ bool LoadSubTriggers::Execute(){
 	      << " when reloading SLE subtrigger!\n";
     return false;
   }
-  
+
+  ++trigger_idx;
   
   return true;
 }
 
 
-bool LoadSubTriggers::Finalise(){
+bool LoadSubTrigger::Finalise(){
 
   return true;
 }

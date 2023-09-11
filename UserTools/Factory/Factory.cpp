@@ -71,7 +71,7 @@ if (tool=="WriteSkEvent") ret=new WriteSkEvent;
 if (tool=="RelicMuonPlots") ret=new RelicMuonPlots;
 if (tool=="SLESearch") ret=new SLESearch;
 if (tool=="SubToolChain") ret=new SubToolChain;
-if (tool=="LoadSubTriggers") ret=new LoadSubTriggers;
+if (tool=="LoadSubTrigger") ret=new LoadSubTrigger;
 return ret;
 }
 
