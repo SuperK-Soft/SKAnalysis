@@ -34,6 +34,9 @@ bool LoadSubTrigger::Execute(){
   int get_ok = 0;
   skcread_(&neglun, &get_ok);
 
+  // increment the trigger idx unless we've loaded all subtriggers, in which case set to zero, ready for the next event.
+  trigger_idx < SLE_times.size() - 1 ? ++trigger_idx : trigger_idx = 0;
+
   // check for errors
   // get_ok = 0 (physics entry), 1 (error), 2 (EOF), other (non-physics)
   if(get_ok!=0){
@@ -41,9 +44,6 @@ bool LoadSubTrigger::Execute(){
 	+ " when reloading SLE subtrigger!\n", 0, 0);
     return false;
   }
-
-  // increment the trigger idx unless we've loaded all subtriggers, in which case set to zero, ready for the next event.
-  trigger_idx < SLE_times.size() - 1 ? ++trigger_idx : trigger_idx = 0;
   
   return true;
 }
