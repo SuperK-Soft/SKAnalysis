@@ -1,2 +1,2 @@
-lowe_treereader TreeReader configfiles/Dummy/temp_readerconfig
-my_call_muechk call_muechk NULL
+test1 DummyTool configfiles/Dummy/DummyToolConfig
+test2 DummyTool configfiles/Dummy/DummyToolConfig
