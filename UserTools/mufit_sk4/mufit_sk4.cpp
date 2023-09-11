@@ -23,16 +23,19 @@ bool mufit_sk4::Initialise(std::string configfile, DataModel &data){
 
   GetReader();
 
-  // charge_plot = TH1D("r1", "r1", 100, 0, 2000);
+  charge_plot = TH1D("r1", "r1", 100, 0, 2000);
   
   return true;
 }
 
 bool mufit_sk4::Execute(){
   
-  //  if (tree_reader_ptr->GetEntryNumber() % 1000 == 0){
-    std::cout << "nread: " << nread << ", nrunsk: " << skhead_.nrunsk << ", nevsk: " << skhead_.nevsk << ", nmuon: " << nmuon << "\n";
-    //}
+  if (tree_reader_ptr->GetEntryNumber() % 500 == 0){
+    Log("mufit_sk4: nread: " + std::to_string(nread)+
+	", nrunsk: "+std::to_string(skhead_.nrunsk)+
+	", nevsk: "+std::to_string(skhead_.nevsk)+
+	", nmuon: "+std::to_string(nmuon), 0, 0);
+  }
 
   // //ignore LED burst events
   // std::bitset<sizeof(int)*8> bits = skhead_.nevsk;
@@ -47,8 +50,8 @@ bool mufit_sk4::Execute(){
   //   return true;    
   // }
 
-  std::cout << "calling lfclear_all_()\n";
-  // charge_plot.Fill(skq_.nqisk);
+  Log("mufit_sk4: calling lfclear_all_()\n",0,0);
+  charge_plot.Fill(skq_.nqisk);
 
   lfclear_all_();
 
@@ -88,7 +91,7 @@ bool mufit_sk4::Execute(){
 
 bool mufit_sk4::Finalise(){
 
-  // charge_plot.SaveAs("charge_plot.root");
+  charge_plot.SaveAs("charge_plot.root");
   
   return true;
 }
