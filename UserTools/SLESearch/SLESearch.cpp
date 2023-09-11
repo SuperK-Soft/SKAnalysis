@@ -2,6 +2,7 @@
 
 #include "fortran_routines.h"
 #include "softtrg_tbl.h"
+#include "Constants.h"
 
 #include <bitset>
 
@@ -23,31 +24,29 @@ bool SLESearch::Initialise(std::string configfile, DataModel &data){
 
 bool SLESearch::Execute(){
 
-  const int SHE_idx = 28, OD_idx = 3, AFT_idx = 29;
   std::bitset<32> trigger_id{skhead_.idtgsk};
   
   if (!previous_entry_was_muon){
-    std::cout << "last entry was not muon\n";
-    previous_entry_was_muon = (trigger_id.test(SHE_idx) &&
-			       trigger_id.test(OD_idx) &&
-			       !trigger_id.test(AFT_idx));
-  }
-    
-  previous_entry_was_muon = (trigger_id.test(SHE_idx) &&
-			     trigger_id.test(OD_idx) &&
-			     !trigger_id.test(AFT_idx));
-
-  if (!trigger_id.test(AFT_idx)){
-    return true; 
+    Log("SLESearch::Execute: Last entry was not muon\n", 0, 0);
+    previous_entry_was_muon = (trigger_id.test(static_cast<int>(TriggerType::SHE)) &&
+			       trigger_id.test(static_cast<int>(TriggerType::OD_or_Fission)) &&
+			       !trigger_id.test(static_cast<int>(TriggerType::AFT)));
   }
   
-  std::cout << "running software trigger for SLE triggers\n";
+  previous_entry_was_muon = (trigger_id.test(static_cast<int>(TriggerType::SHE)) &&
+			     trigger_id.test(static_cast<int>(TriggerType::OD_or_Fission)) &&
+			     !trigger_id.test(static_cast<int>(TriggerType::AFT)));
+  
+  if (!trigger_id.test(static_cast<int>(TriggerType::AFT))){
+    return true; 
+  }
+
+  Log("SLESearch::Execute: Running software trigger to look for SLE", 0, 0);
   int idetector[32], ithr[32], it0_offset[32] ,ipret0[32], ipostt0[32];
   softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
 
-  const int SLE_idx = 2;
   for (int bit_idx = 0; bit_idx < 32; ++bit_idx){
-    if (bit_idx != SLE_idx){
+    if (bit_idx != static_cast<int>(TriggerType::SLE)){
       ithr[bit_idx] = 100000;
       it0_offset[bit_idx] = 0;
       ipret0[bit_idx] = 0;
@@ -62,7 +61,7 @@ bool SLESearch::Execute(){
   int zero = 0;
   int ntrg = softtrg_inittrgtbl_(&skhead_.nrunsk, &zero, &one, &max_qb);
 
-  std::cout << "SLESearch found " << std::to_string(ntrg) << " SLE triggers\n";
+  Log("SLESearch::Execute: Found " + std::to_string(ntrg) + " SLE triggers\n", 0, 0);
   
   std::vector<int> SLE_times;
   for (int trig_idx = 0; trig_idx < ntrg; ++trig_idx){
@@ -70,6 +69,9 @@ bool SLESearch::Execute(){
   }
 
   m_data->CStore.Set("SLE_times", SLE_times);
+
+  int N_SLE = SLE_times.size();
+  m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
   
   return true;
 }
