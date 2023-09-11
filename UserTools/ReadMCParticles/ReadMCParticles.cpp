@@ -576,7 +576,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		//aparticle.end_mom = TVector3{}; // not available
 		
 		// additional information
-		bool ceren_flag = primary_ceren_flag.at(i);
+		int ceren_flag = primary_ceren_flag.at(i);
 		aparticle.extraInfo.Set("ceren_flag",ceren_flag);
 		bool end_flag = primary_end_flag.at(i);
 		aparticle.extraInfo.Set("end_flag",end_flag);
@@ -804,7 +804,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		aparticle.extraInfo.Set("parent_primary_pdg", parent_primary_pdg);
 		int parent_primary_idx = secondary_parent_primary_idx.at(i)-1;
 		aparticle.extraInfo.Set("parent_primary_idx",parent_primary_idx); // correct fortran indexing
-		bool iflgscnd = secondary_flag.at(i);
+	        int iflgscnd = secondary_flag.at(i);
 		aparticle.extraInfo.Set("iflgscnd",iflgscnd);
 		
 		// and of course we have 3 other numbers for the parent index.
