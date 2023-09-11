@@ -40,7 +40,7 @@
 #include "TrueNCaptures.h"
 #include "ReadMCParticles.h"
 #include "DefineSignalRegions.h"
-#include "call_muechk.h"
+#include "muechk.h"
 #include "mufit_sk4.h"
 #include "PlotNeutronCaptures.h"
 #include "PrintEvent.h"

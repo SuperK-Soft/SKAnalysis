@@ -1,12 +1,12 @@
-#include "call_muechk.h"
+#include "muechk.h"
 
 #include "MTreeReader.h"
 
 #include "fortran_routines.h"
 
-call_muechk::call_muechk():Tool(){}
+muechk::muechk():Tool(){}
 
-bool call_muechk::Initialise(std::string configfile, DataModel &data){
+bool muechk::Initialise(std::string configfile, DataModel &data){
 
   if(configfile!="")  m_variables.Initialise(configfile);
   //m_variables.Print();
@@ -25,7 +25,7 @@ bool call_muechk::Initialise(std::string configfile, DataModel &data){
   return true;
 }
 
-bool call_muechk::Execute(){
+bool muechk::Execute(){
 
   LoweInfo* lowe_ptr = nullptr;
   bool ok = tree_reader_ptr->Get("LOWE", lowe_ptr);
@@ -64,7 +64,7 @@ bool call_muechk::Execute(){
   return true;
 }
 
-bool call_muechk::Finalise(){
+bool muechk::Finalise(){
 
   return true;
 }

@@ -59,7 +59,7 @@ if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
 if (tool=="WriteSpallCand") ret=new WriteSpallCand;
 if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
 if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
-if (tool=="call_muechk") ret=new call_muechk;
+if (tool=="muechk") ret=new muechk;
 
 if (tool=="mufit_sk4") ret=new mufit_sk4;
 if (tool=="SkipTriggers") ret=new SkipTriggers;
