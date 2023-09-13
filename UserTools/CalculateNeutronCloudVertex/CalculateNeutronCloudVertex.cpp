@@ -39,7 +39,10 @@ bool CalculateNeutronCloudVertex::Execute(){
     }
   }
 
+
   m_data->CStore.Set("neutron_cloud_vertex", neutron_cloud_vertex);
+  int mult = neutrons.size();
+  m_data->CStore.Set("neutron_cloud_multiplicity", mult);
   
   return true;
 }
