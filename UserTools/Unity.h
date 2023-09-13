@@ -66,3 +66,7 @@
 #include "SLESearch.h"
 #include "SubToolChain.h"
 #include "LoadSubTrigger.h"
+#include "PostReconstructionNeutronCloudSelection.h"
+#include "PreReconstructionNeutronCloudSelection.h"
+#include "CalculateNeutronCloudVertex.h"
+#include "NeutCloudCorrelationCuts.h"
