@@ -74,6 +74,7 @@ if (tool=="SubToolChain") ret=new SubToolChain;
 if (tool=="LoadSubTrigger") ret=new LoadSubTrigger;
 if (tool=="PreReconstructionNeutronCloudSelection") ret=new PreReconstructionNeutronCloudSelection;
 if (tool=="PostReconstructionNeutronCloudSelection") ret=new PostReconstructionNeutronCloudSelection;
+if (tool=="CalculateNeutronCloudVertex") ret=new CalculateNeutronCloudVertex;
 return ret;
 }
 
