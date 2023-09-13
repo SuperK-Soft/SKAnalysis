@@ -9,13 +9,7 @@
 
 #include "TH1D.h"
 
-struct NeutronInfo {
-  double bs_goodness;
-  double bs_dirks;
-  double bsn50;
-  std::array<float, 3> bs_vertex = {};
-  std::array<float, 3> bs_dir {};
-};
+#include "NeutronInfo.h"
 
 class PostReconstructionNeutronCloudSelection: public Tool {
 
