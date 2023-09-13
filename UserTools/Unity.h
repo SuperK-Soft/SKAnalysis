@@ -68,3 +68,4 @@
 #include "LoadSubTrigger.h"
 #include "PostReconstructionNeutronCloudSelection.h"
 #include "PreReconstructionNeutronCloudSelection.h"
+#include "CalculateNeutronCloudVertex.h"
