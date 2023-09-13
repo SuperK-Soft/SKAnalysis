@@ -1,5 +1,7 @@
 #include "PostReconstructionNeutronCloudSelection.h"
 
+#include "NeutronInfo.h"
+
 #include "TFile.h"
 
 PostReconstructionNeutronCloudSelection::PostReconstructionNeutronCloudSelection():Tool(){}
