@@ -72,8 +72,8 @@ if (tool=="RelicMuonPlots") ret=new RelicMuonPlots;
 if (tool=="SLESearch") ret=new SLESearch;
 if (tool=="SubToolChain") ret=new SubToolChain;
 if (tool=="LoadSubTrigger") ret=new LoadSubTrigger;
-if (tool=="NeutronCloudSelection") ret=new NeutronCloudSelection;
 if (tool=="PreReconstructionNeutronCloudSelection") ret=new PreReconstructionNeutronCloudSelection;
+if (tool=="PostReconstructionNeutronCloudSelection") ret=new PostReconstructionNeutronCloudSelection;
 return ret;
 }
 
