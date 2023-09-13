@@ -30,7 +30,7 @@ bool CalculateNeutronCloudVertex::Execute(){
     return true;
   }
 
-  std::array<double, 3> neutron_cloud_vertex = {}; 
+  std::vector<double> neutron_cloud_vertex = {}; 
   
   for (const auto& neutron : neutrons){
     double weighting = GetWeighting(neutron);
@@ -38,7 +38,6 @@ bool CalculateNeutronCloudVertex::Execute(){
       neutron_cloud_vertex.at(dim) = neutron.bs_vertex.at(dim) * weighting / neutrons.size(); //this is mean position, but we could do median etc...
     }
   }
-
 
   m_data->CStore.Set("neutron_cloud_vertex", neutron_cloud_vertex);
   int mult = neutrons.size();
