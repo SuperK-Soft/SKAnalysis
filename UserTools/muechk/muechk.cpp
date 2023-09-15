@@ -40,25 +40,7 @@ bool muechk::Execute(){
   
   muechk_(lowe_ptr->bsvertex, &dummy_silent); //common APMUE now filled
 
-  // char nmuestr[80];
-  // char tmpstr[20];
-  // int maxi = 0;
-  // int i = 0;
   int nmue = apmue_.apnmue;
-  // sprintf(nmuestr,"==== nmue = %d ",nmue);
-  // if (nmue > 0) {
-  //   sprintf(tmpstr,"  t(us) = ");
-  //   strcat(nmuestr,tmpstr);
-  //   if (nmue > 10)
-  //     maxi = 10;
-  //   else
-  //     maxi = nmue;
-  //   for (i=0; i < maxi; i++) {
-  //     sprintf(tmpstr,"%5.2f ",apmue_.apmuetime[i]);
-  //      strcat(nmuestr,tmpstr);
-  //   }
-  // }
-  // printf("%s\n",nmuestr);
 
   Log("muechk::Execute: nmue = "+std::to_string(nmue),0,0);
   for (int i = 0; i < nmue; ++i){
@@ -66,6 +48,8 @@ bool muechk::Execute(){
       Log("muechk::Execute: found a decay electron with time: "+std::to_string(apmue_.apmuetime[i]),0, 0);
     }
   }
+
+  m_data->CStore.Set("nmue", nmue);
   
   return true;
 }
