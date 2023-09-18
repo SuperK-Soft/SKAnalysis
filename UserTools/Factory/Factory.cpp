@@ -76,6 +76,7 @@ if (tool=="PreReconstructionNeutronCloudSelection") ret=new PreReconstructionNeu
 if (tool=="PostReconstructionNeutronCloudSelection") ret=new PostReconstructionNeutronCloudSelection;
 if (tool=="CalculateNeutronCloudVertex") ret=new CalculateNeutronCloudVertex;
 if (tool=="NeutCloudCorrelationCuts") ret=new NeutCloudCorrelationCuts;
+if (tool=="CalculatePreactivityObservables") ret=new CalculatePreactivityObservables;
 return ret;
 }
 
