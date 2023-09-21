@@ -44,12 +44,18 @@ bool CalculatePreactivityObservables::Execute(){
   
   ConnectionTable* connection_table = m_data->GetConnectionTable();
 
+  double lowest_in_gate_time = 9999;
+  
   std::vector<double> tof_sub_times = {};
   for (int pmt_idx = 0; pmt_idx < sktqz_.nqiskz; ++pmt_idx){
     const int cable_number = sktqz_.icabiz[pmt_idx];
     float* pmt_loc = nullptr;
     connection_table->GetTubePosition(cable_number, pmt_loc);
-    tof_sub_times.emplace_back(sktqz_.tiskz[pmt_idx] - tof(skroot_lowe_.bsvertex, pmt_loc));
+    const double new_time = sktqz_.tiskz[pmt_idx] - tof(skroot_lowe_.bsvertex, pmt_loc);
+    if (((sktqz_.ihtiflz[pmt_idx] & 0x01)==1) && (new_time < lowest_in_gate_time)){
+      lowest_in_gate_time = new_time;
+    }
+    tof_sub_times.push_back(new_time);
   }
   std::sort(tof_sub_times.begin(), tof_sub_times.end());
  
@@ -58,24 +64,24 @@ bool CalculatePreactivityObservables::Execute(){
   
   int max_pre = 0;
   int max_pregate = 0;
-    
-  for (int i = 0; i < sktqz_.nqiskz; ++i){
-    if (sktqz_.tiskz[i] < 15){ //tof
-      float* pmt_loc = nullptr;
-      window.emplace_back(sktqz_.tiskz[i] - tof(skroot_lowe_.bsvertex, pmt_loc));
+
+  for (int i = 0; i < tof_sub_times.size(); ++i){
+    if (tof_sub_times.at(i) - tof_sub_times.front() < 15){
+      window.push_back(tof_sub_times.at(i));
     } else {
       last_hit_idx = i - 1;
       break;
     }
   }
-
-  while (((skheadqb_.it0sk - window.back()) < 12 && (last_hit_idx != tof_sub_times.size()))){
   
+  while ((window.back() < -12) && (last_hit_idx != tof_sub_times.size())){
+
+    
     if (window.size() > max_pre){
       max_pre = window.size();
     }
 
-    if ((window.size() > max_pregate) && ((window.front() - skheadqb_.it0sk < 1300))){
+    if ((window.size() > max_pregate) && ((window.front() >= lowest_in_gate_time))){
       max_pregate = window.size();
     }
 
@@ -91,9 +97,7 @@ bool CalculatePreactivityObservables::Execute(){
 	break;
       }
     }
-
     ++last_hit_idx;
-    
   }
 
   m_data->CStore.Set("max_pre", max_pre);
