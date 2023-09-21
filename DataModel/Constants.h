@@ -13,6 +13,8 @@
 
 #include "fortran_routines.h"
 
+static double SOL_IN_CM_PER_NS_IN_WATER = 22.484996; //speed of light in cm/ns
+
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
 extern std::map<TInterpreter::EErrorCode, std::string> TInterpreterErrors;
@@ -839,7 +841,8 @@ namespace constants{
 		{"T2K_GPS", 30},
 		{"EVNT_HDR_&_SOFTWARE_TRG", 31}
 	};
-	
+
+  
 	// geometry information from geotnkC.h: #define'd constants
 	// ah... but we can't #include geotnkC.h because it conflicts with SK2p2MeV.h.... -__-
 	// someone reused the #define'd macro names as variables

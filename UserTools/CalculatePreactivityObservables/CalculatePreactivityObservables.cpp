@@ -4,6 +4,7 @@
 
 #include "TableReader.h"
 #include "TableEntry.h"
+#include "Constants.h"
 
 CalculatePreactivityObservables::CalculatePreactivityObservables():Tool(){}
 
@@ -39,7 +40,7 @@ bool CalculatePreactivityObservables::Execute(){
     for (int i = 0; i < 3; ++i){
       dist += pow(x[i] - y[i], 2);
     }
-    return (dist / 0.0333564); // speed of light in cm/ns
+    return (dist / SOL_IN_CM_PER_NS_IN_WATER); // speed of light in cm/ns
   };  
   
   ConnectionTable* connection_table = m_data->GetConnectionTable();
@@ -75,7 +76,7 @@ bool CalculatePreactivityObservables::Execute(){
     }
   }
   
-  while ((window.back() < -12) && (last_hit_idx != tof_sub_times.size())){
+  while ((window.back() < -12) && (last_hit_idx != tof_sub_times.size() - 1)){
 
     
     if (window.size() > max_pre){
