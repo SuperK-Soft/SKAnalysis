@@ -39,7 +39,7 @@ bool CalculatePreactivityObservables::Execute(){
     for (int i = 0; i < 3; ++i){
       dist += pow(x[i] - y[i], 2);
     }
-    return dist / (3 * pow(10, 8));
+    return (dist / 0.0333564); // speed of light in cm/ns
   };  
   
   ConnectionTable* connection_table = m_data->GetConnectionTable();
@@ -49,9 +49,9 @@ bool CalculatePreactivityObservables::Execute(){
   std::vector<double> tof_sub_times = {};
   for (int pmt_idx = 0; pmt_idx < sktqz_.nqiskz; ++pmt_idx){
     const int cable_number = sktqz_.icabiz[pmt_idx];
-    float* pmt_loc = nullptr;
+    float pmt_loc[3] = {};
     connection_table->GetTubePosition(cable_number, pmt_loc);
-    const double new_time = sktqz_.tiskz[pmt_idx] - tof(skroot_lowe_.bsvertex, pmt_loc);
+    const double new_time = sktqz_.tiskz[pmt_idx] - skroot_lowe_.bsvertex[3] - tof(skroot_lowe_.bsvertex, pmt_loc);
     if (((sktqz_.ihtiflz[pmt_idx] & 0x01)==1) && (new_time < lowest_in_gate_time)){
       lowest_in_gate_time = new_time;
     }
@@ -59,7 +59,8 @@ bool CalculatePreactivityObservables::Execute(){
   }
   std::sort(tof_sub_times.begin(), tof_sub_times.end());
  
-  std::vector<double> window = {};
+  //std::vector<double> window = {};
+  std::deque<double> window = {};
   int last_hit_idx = 0;
   
   int max_pre = 0;
@@ -91,9 +92,8 @@ bool CalculatePreactivityObservables::Execute(){
     const double current_first_hit = window.front();
   
     for (auto hit_it = window.begin(); hit_it != window.end(); ++hit_it){
-      if (*hit_it - current_first_hit < dt_to_next_hit){
-	hit_it = window.erase(hit_it);
-      } else {
+      if (*hit_it - current_first_hit > dt_to_next_hit){
+	window.erase(window.begin(), hit_it - 1);
 	break;
       }
     }
