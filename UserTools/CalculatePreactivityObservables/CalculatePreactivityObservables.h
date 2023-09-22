@@ -6,6 +6,12 @@
 
 #include "Tool.h"
 
+struct Hit {
+  double time = 0;
+  double goodness = 0;
+  Hit(const double& t, const double& g) : time{t}, goodness{g} {}
+};
+
 class CalculatePreactivityObservables: public Tool {
 
  public:
