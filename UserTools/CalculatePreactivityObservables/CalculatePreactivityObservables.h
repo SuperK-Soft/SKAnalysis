@@ -23,6 +23,13 @@ class CalculatePreactivityObservables: public Tool {
 
  private:
 
+  double dark_threshold = 4;
+  double fraction = 0.4;
+  ConnectionTable* connection_table = nullptr;
+
+  double TimeOfFlight(const float*, const float*) const;
+  bool CalculateGoodness(const double&, const double&) const;
+  
 };
 
 
