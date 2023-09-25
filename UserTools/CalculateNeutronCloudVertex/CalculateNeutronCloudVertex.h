@@ -7,6 +7,9 @@
 #include "Tool.h"
 
 #include "NeutronInfo.h"
+#include "MTreeReader.h"
+
+#include "TH1D.h"
 
 class CalculateNeutronCloudVertex: public Tool {
 
@@ -19,7 +22,12 @@ class CalculateNeutronCloudVertex: public Tool {
 
  private:
 
-  double GetWeighting(const NeutronInfo) const;
+  TH1D mult_plot;
+  
+  int mult = 0;
+  MTreeReader* LOWE_tree_reader = nullptr;
+
+  void GetTreeReader();
   
 };
 
