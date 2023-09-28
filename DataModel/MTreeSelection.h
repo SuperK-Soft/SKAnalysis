@@ -83,6 +83,8 @@ class MTreeSelection : public SerialisableObject {
 	bool GetPassesCut(std::string cutname, std::vector<size_t> indices);
 	std::set<size_t> GetPassingIndexes(std::string cutname);
 	std::set<std::vector<size_t>> GetPassingIndices(std::string cutname);
+	Long64_t GetEntries(std::string cutname);
+	bool SetEntries(Long64_t nentries);
 	MTreeReader* GetTreeReader();
 	std::string GetTopCut();
 	

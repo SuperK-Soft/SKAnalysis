@@ -39,10 +39,10 @@ bool ODCut::Initialise(std::string configfile, DataModel &data){
 
 bool ODCut::Execute(){
 	
-	//check if the muon flag has been set, and if so bypass this cut
-	bool newMuon = false;
-	m_data->vars.Get("newMuon", newMuon);
-	if(newMuon) return true;
+	// check if this is a relic candidate (low-e event), and if not bypass this cut
+	EventType eventType;
+	m_data->vars.Get("eventType", eventType);
+	if(eventType!=EventType::LowE) return true;
 	
 	// otherwise check if the OD software trigger bit has been set, and if so throw the event out
 	std::bitset<32> triggerID{skhead_.idtgsk};

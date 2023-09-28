@@ -32,22 +32,21 @@ bool WallCut::Initialise(std::string configfile, DataModel &data){
 
 bool WallCut::Execute(){
 	
-	bool muon = false;
-	m_data->vars.Get("newMuon", muon);
-	if(muon) return true;
+	EventType eventType;
+	m_data->vars.Get("eventType", eventType);
+	if(eventType!=EventType::LowE) return true;
 	
 	float wallDistance = 0;
 	
 	// distance to closest wall
 	//wallDistance = skroot_lowe_.linfo[9];    // clwallsk
 	wallDistance = skroot_lowe_.linfo[10];     // bswallsk
+	// or if it hasn't been calculated yet
+	//wallDistance = bswallsk = wallsk_(&skroot_lowe_.bsvertex[0]);
 	
 	// back-projected distance to wall
 	//wallDistance = skroot_lowe_.linfo[6];     // bseffwal
 	//wallDistance = skroot_lowe_.linfo[5];     // cleffwal
-	
-	// or to calculate distance to closest wall
-	//wallDistance = bswallsk = wallsk_(&skroot_lowe_.bsvertex[0]);
 	
 	// deprecated manual version
 	//wallDistance = DistanceToWall();

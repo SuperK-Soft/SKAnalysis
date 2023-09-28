@@ -36,9 +36,9 @@ bool RunwiseEnergyCut::Initialise(std::string configfile, DataModel &data){
 
 bool RunwiseEnergyCut::Execute(){
 	
-	bool muon = false;
-	m_data->vars.Get("newMuon", muon);
-	if(muon){
+	EventType eventType;
+	m_data->vars.Get("eventType", eventType);
+	if(eventType!=EventType::LowE){
 		return true;
 	}
 	

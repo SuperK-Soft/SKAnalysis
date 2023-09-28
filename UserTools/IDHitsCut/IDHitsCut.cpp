@@ -30,10 +30,9 @@ bool IDHitsCut::Execute(){
 	
 	if(totalHits<1) Log(m_unique_name+": Warning! skq_ common block is empty!",v_error,m_verbose);
 	
-	bool muon = false;
-	m_data->vars.Get("newMuon", muon);
-	
-	if(muon) return true;
+	EventType eventType;
+	m_data->vars.Get("eventType", eventType);
+	if(eventType!=EventType::LowE) return true;
 	
 	if(totalHits > hitLimit){
 		m_data->vars.Set("Skip", true);

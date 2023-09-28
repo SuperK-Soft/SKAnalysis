@@ -26,6 +26,7 @@ class MTreeCut : public SerialisableObject {
 	MTreeCut(TFile* outfilein, std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
 	MTreeCut(std::string cutname, TEntryList* inelist, TTree* intree);
 	~MTreeCut();
+	
 	std::string mode="";  // can be "read" or "write". Determines whether destructor performs cleanup.
 	std::string cut_name;
 	std::string cut_description;   // TODO store the cut values etc in here! if mu_time<250, store the value 250!
@@ -72,6 +73,18 @@ class MTreeCut : public SerialisableObject {
 	Long64_t current_entry=-1;
 	Long64_t tlist_entry=-1;
 	Long64_t total_entries=-1;
+	bool got_low_thresh=false;
+	double low_thresh=DOUBLE_MIN;
+	bool got_high_thresh=false;
+	double high_thresh=DOUBLE_MAX;
+	bool got_bool_req=false;
+	
+	// if saving distributions
+	bool save_distros=false;
+	double branch_val;
+	bool pass_val;
+	TBranch* values_branch=nullptr;
+	TBranch* pass_branch=nullptr;
 	
 	public:
 	void Initialize(int type_in, MTreeReader* readerIn, TTree* distro_tree=nullptr);
@@ -91,6 +104,7 @@ class MTreeCut : public SerialisableObject {
 	bool Apply(double value, size_t index);
 	bool Apply(double value, std::vector<size_t> indices);
 	
+	Long64_t GetEntries();
 	bool Flush();
 	void Write();
 	Long64_t GetCurrentEntry();
@@ -103,18 +117,6 @@ class MTreeCut : public SerialisableObject {
 	bool Serialise(BinaryStream &bs);
 	bool Print();
 	std::string GetVersion();
-	bool got_low_thresh=false;
-	double low_thresh=DOUBLE_MIN;
-	bool got_high_thresh=false;
-	double high_thresh=DOUBLE_MAX;
-	bool got_bool_req=false;
-	
-	// if saving distributions
-	bool save_distros=false;
-	double branch_val;
-	bool pass_val;
-	TBranch* values_branch=nullptr;
-	TBranch* pass_branch=nullptr;
 	
 };
 

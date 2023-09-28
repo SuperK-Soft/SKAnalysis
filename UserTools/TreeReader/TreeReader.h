@@ -25,6 +25,7 @@ class TreeReader: public Tool {
 	
 	public:
 	TreeReader();         ///< Simple constructor
+	~TreeReader();
 	bool Initialise(std::string configfile,DataModel &data); ///< Initialise function for setting up Tool resources. @param configfile The path and name of the dynamic configuration file to read in. @param data A reference to the transient data class used to pass information between Tools.
 	bool Execute();   ///< Execute function used to perform Tool purpose.
 	bool Finalise();  ///< Finalise funciton used to clean up resources.
@@ -50,6 +51,7 @@ class TreeReader: public Tool {
 	bool RunChange();
 	bool SubrunChange();
 	bool SkipThisRun(); // skip the current run (called if bad)
+	bool Write(); // update output files if in write/copy mode
 	
 	void PrintSubTriggers();
 	
@@ -82,6 +84,7 @@ class TreeReader: public Tool {
 	std::vector<int> skippedTriggers; // if any of these bits are set the entry will be skipped
 	bool skipbadruns=false;           // should we try to skip any runs identified as bad by lfbadrun?
 	int reference_watert_run=-1;      // run to use for water transparency (for use with MC)
+	int mTreeReaderVerbosity=0;
 	
 	std::vector<std::string> list_of_files;
 	

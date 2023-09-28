@@ -33,6 +33,7 @@ bool CutRecorder::Initialise(std::string configfile, DataModel &data){
 bool CutRecorder::Execute(){
 	
 	myTreeSelections.AddPassingEvent("all");
+	++nentries;
 	
 	return true;
 }
@@ -41,10 +42,13 @@ bool CutRecorder::Execute(){
 bool CutRecorder::Finalise(){
 	
 	Log(m_unique_name+" event counts trace: ", v_warning, m_verbose);
+	//myTreeSelections.SetEntries(nentries);
 	myTreeSelections.PrintCuts();
 	
+	return true;
+}
+
+CutRecorder::~CutRecorder(){
 	// write out the event numbers that passed each cut
 	myTreeSelections.Write();
-	
-	return true;
 }

@@ -246,17 +246,19 @@ bool MTreeSelection::Write(){
 	if(not initialized){
 		// add the meta information recording cuts in this MTreeSelection,
 		// their order and how many events passed each cut
+		/*
 		TObjArray cut_order_obj;
-		TObjArray cut_tracker_obj;
 		cut_order_obj.SetOwner(true);
-		cut_tracker_obj.SetOwner(true);
 		cut_order_obj.SetName("cut_order");
+		*/
+		TObjArray cut_tracker_obj;
+		cut_tracker_obj.SetOwner(true);
 		cut_tracker_obj.SetName("cut_tracker");
 		for(auto&& acutname : cut_order){
-			cut_order_obj.Add((TObject*)(new TObjString(acutname.c_str())));
+			//cut_order_obj.Add((TObject*)(new TObjString(acutname.c_str())));
 			cut_tracker_obj.Add((TObject*)(new TParameter<Long64_t>(acutname.c_str(), cut_tracker.at(acutname.c_str()))));
 		}
-		cut_order_obj.Write("cut_order", TObject::kSingleKey);      // need to add TObject::kSingleKey to prevent
+		//cut_order_obj.Write("cut_order", TObject::kSingleKey);      // need to add TObject::kSingleKey to prevent
 		cut_tracker_obj.Write("cut_tracker", TObject::kSingleKey);  // each element being written separately!
 		initialized=true;
 	} else {
@@ -275,6 +277,15 @@ bool MTreeSelection::Write(){
 	
 	// write distributions if we're keeping them
 	if(distros_tree){
+		// update number of entries in the tree
+		Long64_t nentries=0;
+		for(int i=0; i<distros_tree->GetListOfBranches()->GetEntriesFast(); ++i){
+			TBranch* br=(TBranch*)distros_tree->GetListOfBranches()->At(i);
+			int thisentries = br->GetEntries();
+			if(thisentries>nentries) nentries=thisentries;
+		}
+		distros_tree->SetEntries(nentries);
+		
 		distros_file->cd();
 		distros_tree->Write("",TObject::kOverwrite&&TObject::kSingleKey);
 	}
@@ -363,8 +374,10 @@ bool MTreeSelection::LoadCutFile(std::string cutfilename){
 	
 	// The file contains two TObjArrays recording the cuts in this MTreeSelection,
 	// their order of application and how many events passed each cut
+	
 	// a TObjArray with key "cut_order" stores TObjStrings with the cut names in order of application
-	TObjArray* cut_order_obj=nullptr;
+	//TObjArray* cut_order_obj=nullptr;
+	
 	// a TObjArray with key "cut_tracker" stores TParameter<Long64_t> with name=<cut_name>, value=# passing events
 	TObjArray* cut_tracker_obj=nullptr;
 	
@@ -384,10 +397,10 @@ bool MTreeSelection::LoadCutFile(std::string cutfilename){
 			continue;
 		}
 		std::string keyname=key->GetName();
-		if(keyname=="cut_order"){
-			cut_order_obj = (TObjArray*)key->ReadObj();
-			continue;
-		}
+		//if(keyname=="cut_order"){
+		//	cut_order_obj = (TObjArray*)key->ReadObj();
+		//	continue;
+		//}
 		if(keyname=="cut_tracker"){
 			cut_tracker_obj = (TObjArray*)key->ReadObj();
 			continue;
@@ -419,6 +432,7 @@ bool MTreeSelection::LoadCutFile(std::string cutfilename){
 	} // end loop over keys in file
 	
 	// ok, now need to parse the retrieved objects
+	/*
 	if(cut_order_obj==nullptr){
 		std::cerr<<"Did not find cut_order in input file! Is this a valid MTreeSelection output?"<<std::endl;
 		return false;
@@ -428,14 +442,17 @@ bool MTreeSelection::LoadCutFile(std::string cutfilename){
 			cut_order.push_back(current_cut->GetName());
 		}
 	}
+	*/
 	if(cut_tracker_obj==nullptr){
 		std::cerr<<"Did not find cut_order in input file! Is this a valid MTreeSelection output?"<<std::endl;
 		return false;
 	} else {
 		for(int cut_i=0; cut_i<cut_tracker_obj->GetEntries(); ++cut_i){
 			TParameter<Long64_t>* current_cut = (TParameter<Long64_t>*)cut_tracker_obj->At(cut_i);
+			cut_order.push_back(current_cut->GetName());
 			cut_tracker.emplace(current_cut->GetName(), current_cut->GetVal());
 			// TODO sanity check - check that the name is aligned with cut_order (making it redundant)?
+			// update: it does seem to be redundant; removed
 		}
 	}
 	
@@ -639,4 +656,11 @@ std::string MTreeSelection::BranchAddressToName(intptr_t branchptr){
 	} else {
 		return branch_addresses.at(branchptr);
 	}
+}
+
+Long64_t MTreeSelection::GetEntries(std::string cutname){
+	if(cutfile==nullptr){
+		return cut_tracker.at(cutname);
+	}
+	return cut_pass_entries.at(cutname)->GetEntries();
 }

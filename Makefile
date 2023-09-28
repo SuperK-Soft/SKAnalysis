@@ -5,7 +5,7 @@ PWD=`pwd`
 Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds  # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fmax-errors=1 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds  # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -266,11 +266,11 @@ remove:
 
 DataModel/%.o: DataModel/%.cpp lib/libLogging.so lib/libStore.so include/dummy
 	@echo -e "\e[38;5;214m\n*************** Making c++ object " $@ "****************\e[0m"
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
+	g++ $(CXXFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
 
 DataModel/%.o: DataModel/%.F lib/libLogging.so lib/libStore.so include/dummy
 	@echo -e "\e[38;5;214m\n*************** Making fortran object " $@ "****************\e[0m"
-	-gfortran $(FCFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
+	gfortran $(FCFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
 
 include/dummy: DataModel/*.h
 	 cp $(shell dirname $<)/*.h include

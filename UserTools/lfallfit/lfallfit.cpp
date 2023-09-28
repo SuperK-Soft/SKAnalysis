@@ -28,6 +28,7 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("verbosity",m_verbose);
 	m_variables.Get("readerName",readerName);
 	m_variables.Get("StepsToPerform",flag_skip);
+	m_variables.Get("checkEventType",checkEventType);
 	
 	// check the upstream TreeReader name
 	if(m_data->Trees.count(readerName)==0){
@@ -54,6 +55,15 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 
 
 bool lfallfit::Execute(){
+	
+	// if applicable, check for a lowe event flag
+	if(checkEventType){
+		EventType eventType;
+		get_ok = m_data->vars.Get("eventType",eventType);
+		if(!get_ok || eventType!=EventType::LowE){
+			return true;
+		}
+	}
 	
 	if((nread%10000)==0){
 		Log(m_unique_name+" read loop "+toString(nread)+", current run "
@@ -88,6 +98,7 @@ bool lfallfit::Execute(){
 	int lfflag;
 	int flag_log;
 	
+	if(m_verbose>=v_debug) std::cout<<m_unique_name+" Running lfallfit..."<<std::flush;
 	if(MC){
 		switch (skheadg_.sk_geometry) {
 			case 1:  //lfallfit_sk1_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
@@ -111,6 +122,11 @@ bool lfallfit::Execute(){
 			case 6: {
 				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
+			}
+			case 7: {
+				// FIXME doesn't yet exist; for now use SK-6
+				// not sure if this will work: it doesn't for data....
+				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 			}
 			default: {
 				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
@@ -148,6 +164,13 @@ bool lfallfit::Execute(){
 				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
+			/*
+			case 7: {
+				// FIXME doesn't yet exist; for now use SK-6
+				// actually can't do this, it crashes with "trabs_sk6: absfitfac is negative!"
+				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+			}
+			*/
 			default: {
 				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
 				    +" data!",v_error,m_verbose);
@@ -155,6 +178,7 @@ bool lfallfit::Execute(){
 			}
 		}
 	}
+	if(m_verbose>=v_debug) std::cout<<m_unique_name+" done"<<std::endl;
 	
 	if(lfflag==-1){
 		Log(m_unique_name+" Warning! lfallfit failed with status -1: 'too many hits for lowe'!\n"

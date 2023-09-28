@@ -33,14 +33,15 @@ class RelicMuonMatching: public Tool {
 	int relicWriterLUN;
 	
 	bool RemoveFromDeque(std::vector<int>& particlesToRemove, std::deque<ParticleCand>& particleDeque);
-	bool RelicMuonMatch(bool muonFlag, int64_t currentTime, int subtrg_num=0, int32_t it0xsk=0);
+	bool RelicMuonMatch(bool loweEventFlag, int64_t currentTime, int subtrg_num=0, int32_t it0xsk=0);
 	
 	bool WriteRelicInfo();
 	bool WriteMuonInfo();
 	
-	bool muonFlag;
+	EventType eventType;
 	int currentSubRun;
 	int lastRun = 0;
+	int last_nevsk=0;
 	double match_window = 60; // [seconds]
 	int64_t match_window_ticks;
 	
@@ -57,6 +58,11 @@ class RelicMuonMatching: public Tool {
 	std::string muSelectorName;
 	std::string relicSelectorName;
 	std::string rfmReaderName;
+	
+	// track how many muon/relic pairs we check
+	uint64_t tdiffcount=0;
+	// and how many pass our +-60s tdiff cut.
+	uint64_t passing_tdiffcount=0;
 	
 	// defunct....
 	//unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);

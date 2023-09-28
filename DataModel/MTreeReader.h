@@ -38,7 +38,7 @@ class MTreeReader {
 	int LoadTree(std::string treename);
 	int Load(TTree* thetreein);
 	int Load(std::vector<std::string> filelist, std::string treename);
-	void SetClosed();
+	void SetOwnsFile(bool ownsfile);
 	
 	// get a pointer to an object
 	template<typename T>
@@ -281,14 +281,13 @@ class MTreeReader {
 	
 	TFile* thefile=nullptr;
 	TTree* thetree=nullptr;          // generic, if working with a tchain we cast it to a TTree
+	bool iownthisfile=true;          // whether we own the file and should close and delete it in destructor
 	bool autoclear=false;            // call 'Clear' method on all object branches before GetEntry
 	int verbosity=1;                 // TODO add to constructor
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;
-
 	Notifier notifier;
-
 	std::string name="";
 	std::string branchnamestring="{}";
 	

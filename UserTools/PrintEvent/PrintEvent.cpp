@@ -1279,7 +1279,7 @@ bool PrintEvent::PrintLowEInfo(){
 		Float_t  lwatert;      // water transparency value (at reconstruction?)
 		Int_t    lninfo;       // # of extra low-e inforamation
 		Int_t    linfo[255];   // extra low-e information (see skroot_lowe.h)
-		// some of interest:
+		// some of interest: (seems like up to 144 are allocated?)
 		linfo[9,10] dwall for clusfit, bonsai
 		linfo[5,6] effwall for clusfit, bonsai
 		linfo[7,8] effective # hits for clusfit, bonsai ("at given water transparency"?)

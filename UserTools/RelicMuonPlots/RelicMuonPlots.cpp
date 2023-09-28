@@ -183,12 +183,24 @@ bool RelicMuonPlots::MakePairVariables(){
 	getdl_(*mudir, &vertex_relic[0], &vertex_relic[1], &vertex_relic[2], *muentry, &dlt, &appr);
 	std::cout<<"transverse distance: "<<dlt<<", with foot point at "<<appr<<" cm along muon track"<<std::endl;
 	// FIXME getting 0 from this
+	// XXX warning: see Shinoki-san's talk from lowe meeting ~06/05/21:
+	// lt distriubtion for multiple muons with low goodness (<~0.4) is quite large,
+	// but cutting on muboy goodness can bias muon energy and neutron multiplicity (by affecting search window)
+	// he evaluates systematics of this cut; we should look into this.
+	// see his slides also for example distributions
 	
 	// calculate longitudinal distance from point of peak energy deposition
 	dll = max_edep_pos - appr;
 	std::cout<<"longitudinal distance: "<<dll<<std::endl;
 	// FIXME getting 0 from this
 	
+	// charge per cm of a minimum-ionizing-particle (MIP)
+	float peprcm = 26.78;
+	// 1.992 Mev cm^2/g dE/dx min   (from: Muon Stopping Power and Range Tables, D.E.Groom et al, LBNL-44742,
+	// Atomic Data and Nuclear Data Tables, Vol. 76, No. 2, July 2001 - ~/Downloads/adndt.pdf)
+	// at 13.5C density of water 0.999315 g/cm^3
+	// (from: https://www.internetchemistry.com/chemical-data/water-density-table.php )
+	// so 1.992*0.999315 = 1.99063548 MeV/cm (makes sense with commonly known value of muon loss ~2MeV/cm)
 	
 	return true;
 }

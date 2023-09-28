@@ -36,6 +36,11 @@ MTreeCut::MTreeCut(std::string cutname, TEntryList* inelist, TTree* intree) : ad
 	GetNextEntry(); // load first entry
 }
 
+Long64_t MTreeCut::GetEntries(){
+	//return ttree_entries->GetN();
+	return total_entries;
+}
+
 bool MTreeCut::Serialise(BinaryStream &bs){
 	if(!(bs & mode)) return false;
 	if(!(bs & cut_name)) return false;
@@ -74,10 +79,10 @@ void MTreeCut::SetBranchAddresses(){
 
 MTreeCut::~MTreeCut(){
 	if(mode=="write"){
-		if(additional_indices){ delete additional_indices; }
-		if(ttree_entries){ delete ttree_entries; }
-		if(values_branch) values_branch->ResetAddress();
-		if(pass_branch) pass_branch->ResetAddress();
+		if(additional_indices){ delete additional_indices; additional_indices=nullptr; }
+		if(ttree_entries){ delete ttree_entries; ttree_entries = nullptr; }
+		if(values_branch){ values_branch->ResetAddress(); values_branch=nullptr; }
+		if(pass_branch){ pass_branch->ResetAddress(); pass_branch=nullptr; }
 	}
 }
 
@@ -243,6 +248,7 @@ bool MTreeCut::Apply(double value){
 		values_branch->Fill();
 		pass_branch->Fill();
 	}
+	if(!pass_val) return false;
 	return Enter();
 }
 
@@ -256,6 +262,7 @@ bool MTreeCut::Apply(double value, size_t index){
 		values_branch->Fill();
 		pass_branch->Fill();
 	}
+	if(!pass_val) return false;
 	return Enter(index);
 }
 
@@ -269,6 +276,7 @@ bool MTreeCut::Apply(double value, std::vector<size_t> indices){
 		values_branch->Fill();
 		pass_branch->Fill();
 	}
+	if(!pass_val) return false;
 	return Enter(indices);
 }
 
@@ -279,7 +287,13 @@ bool MTreeCut::Enter(){
 		         <<" but its type is "<<type<<"!"<<std::endl;
 		return false;
 	}
-	return ttree_entries->Enter(theReader->GetEntryNumber(), theReader->GetCurrentTree());
+	Long64_t entry_num = theReader->GetEntryNumber();
+	TTree* t = theReader->GetTree();
+	if(!t){ std::cerr<<"MTreeCut::Enter "<<cut_name<<" TREE IS NULL!"<<std::endl; return false; }
+	bool newentry = ttree_entries->Enter(entry_num, t);
+	//return ttree_entries->Enter(theReader->GetEntryNumber(), theReader->GetTree());
+	if(newentry) ++total_entries;
+	return newentry;
 }
 
 // type 1
@@ -296,7 +310,7 @@ bool MTreeCut::Enter(size_t index){
 		indexes_this_entry.clear();
 	}
 	// add the entry_number to the TEntryList, if it isn't already
-	bool newtreeentry = ttree_entries->Enter(entry_number, theReader->GetCurrentTree());
+	bool newtreeentry = ttree_entries->Enter(entry_number, theReader->GetTree());
 	// sanity check
 	if((current_entry!=entry_number)&&(newtreeentry==false)){
 		std::cerr<<"Out of order call to MTreeCut::Enter! All passing sub-indices for a given "
@@ -328,7 +342,7 @@ bool MTreeCut::Enter(std::vector<size_t>& indices){
 		indices_this_entry.clear();
 	}
 	// add the entry_number to the TEntryList, if it isn't already
-	bool newtreeentry = ttree_entries->Enter(entry_number, theReader->GetCurrentTree());
+	bool newtreeentry = ttree_entries->Enter(entry_number, theReader->GetTree());
 	// sanity check
 	if((current_entry!=entry_number)&&(newtreeentry==false)){
 		std::cerr<<"Out of order call to MTreeCut::Enter! All passing sub-indices for a given "

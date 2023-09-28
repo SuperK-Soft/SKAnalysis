@@ -3,7 +3,11 @@
 //#include "DummyTool.h"
 
 int main(int argc, char* argv[]){
-
+  // speed up printing
+  std::ios_base::sync_with_stdio(false); // or std::cout.sync_with_stdio(false);
+  std::cin.tie(NULL);
+  
+  
   std::string config_file;
   if (argc==1)config_file="configfiles/Dummy/ToolChainConfig";
   else config_file=argv[1];

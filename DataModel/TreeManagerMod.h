@@ -4,7 +4,7 @@
 
 class TreeManagerMod : public TreeManager {
 	public:
-	void Initialize(std::string treename);
+	void Initialize(std::string treename="data");
 };
 
 #endif

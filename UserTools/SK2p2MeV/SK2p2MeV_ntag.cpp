@@ -76,6 +76,8 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 	// to access this tree as if it were being read by a TreeReader Tool
 	outTreeReader.Load(theOTree);
 	m_data->RegisterReader("sk2p2_OutTree", &outTreeReader);
+	// tell our TreeReader that it doesn't own the file/tree and shouldn't close them in destructor
+	outTreeReader.SetOwnsFile(false);
 	
 	// set base class options
 	// TODO explain these in the README for this tool
@@ -139,9 +141,6 @@ bool SK2p2MeV_ntag::Finalise(){
 	delete fout;
 	theOTree = 0;
 	fout = 0;
-	
-	// tell our TreeReader that it doesn't own the file/tree and shouldn't close them in destructor
-	outTreeReader.SetClosed();
 	
 	return true;
 }

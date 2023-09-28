@@ -8,6 +8,7 @@
 
 RelicMuonMatching::RelicMuonMatching():Tool(){}
 
+extern "C" void tdiff_muon_(int* nevhwsk_tar, int* it0xsk_tar, int* mode, double* timediff);
 
 bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	if(configfile!="")  m_variables.Initialise(configfile);
@@ -65,12 +66,14 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 	// see if recording this as a cut, and if so make it
 	get_ok = m_variables.Get("muSelectorName",muSelectorName);
 	if(get_ok){
-		m_data->AddCut(muSelectorName, m_unique_name, "require at least one relic candidate within +-60s");
+		m_data->AddCut(muSelectorName, "relic_mu_tdiff", "time to closest relic",-60,60);
+		m_data->AddCut(muSelectorName, m_unique_name, "require at least one relic candidate within +-60s",1,1000);
 	}
 	// repeat for relics (n.b. just records the number of matched muons, no actual cut placed)
 	get_ok = m_variables.Get("relicSelectorName",relicSelectorName);
 	if(get_ok){
-		m_data->AddCut(relicSelectorName, m_unique_name, "record number of muons within +-60s");
+		m_data->AddCut(relicSelectorName, "relic_mu_tdiff", "time to closest relic",-60,60);
+		m_data->AddCut(relicSelectorName, m_unique_name, "record number of muons within +-60s",1,1000);
 	}
 	
 	// thought this might suppress ranlux printouts, but it seems not...?
@@ -89,8 +92,58 @@ bool RelicMuonMatching::Execute(){
 		std::cout << "Subrun number:            " << skhead_.nsubsk << std::endl;
 	}
 	
-	// if the toolchain made it here, the current rfm file entry is either a muon or relic candidate!
-	get_ok = m_data->vars.Get("newMuon", muonFlag);  // is it a muon?
+	// if the toolchain made it here, the current rfm file entry is either a muon, a relic candidate,
+	// or an AFT following one of the above.
+	EventType lastEventType = eventType;
+	m_data->vars.Get("eventType", eventType);
+	
+	/*
+	logmessage<<m_unique_name<<" Matching event "<<skhead_.nevsk<<" as "<<eventType;
+	if(skhead_.nevsk==(last_nevsk+1)){
+		logmessage<<", lastEventType was "<<lastEventType<<std::endl;
+	} else {
+		logmessage<<", last event was unrelated"<<std::endl;
+	}
+	Log(logmessage.str(),v_debug,m_verbose);
+	last_nevsk = skhead_.nevsk;
+	*/
+	
+	if(eventType==EventType::AFT){
+		// we'll want to save the AFT associated with any written out particles
+		// but the AFT event should follow the corresponding prompt event in the output TTree,
+		// and since we don't write out muons/relics until we've found all their matches,
+		// we will also need to postpone saving the AFT
+		// So for now just note that the previous event had an AFT
+		// But, note the preceding event may not have passed cuts!
+		std::deque<ParticleCand>* thedeque=nullptr;
+		if(lastEventType==EventType::Muon){
+			Log(m_unique_name+" found AFT after muon",v_debug,m_verbose);
+			thedeque = &m_data->muonCandDeque;
+		} else {
+			Log(m_unique_name+" found AFT after relic",v_debug,m_verbose);
+			thedeque = &m_data->relicCandDeque;
+			// the next entry in the output relic tree will be an AFT, so advance our relic entry counter
+			++nextrelicentry;
+			Log(m_unique_name+" Advancing relic entry to account for AFT after relic",v_debug,m_verbose);
+		}
+		if(thedeque->size() && thedeque->back().EventNumber==(skhead_.nevsk-1)){
+			thedeque->back().hasAFT = true;
+			Log(m_unique_name+" Setting AFT flag for "+(lastEventType==EventType::Muon ? "Muon " : "relic ")
+			         +toString(thedeque->back().EventNumber),v_debug,m_verbose);
+			if(lastEventType==EventType::Muon && thedeque->back().matchedParticleEvNum.size()>0){
+				Log(m_unique_name+" Advancing muon entry to account for AFT after muon",v_debug,m_verbose);
+				++nextmuentry;
+			}
+		}
+		// and that's all we need to do for now
+		return true;
+	}
+	
+	if(eventType!=EventType::Muon && eventType!=EventType::LowE){
+		Log(m_unique_name+" Error!!! Event is neither Mu nor LowE! Should not be here!",v_error,m_verbose);
+		m_data->vars.Set("StopLoop",1);
+		return false;
+	}
 	
 	// FIXME tdiff_muon masks the middle 17 bits. What in the damn hell is going on. Is that a bug?
 	
@@ -100,9 +153,16 @@ bool RelicMuonMatching::Execute(){
 	// this resets when a new run is manually started (automaton run changes do not reset it).
 	// (we currently handle rollover manually, but don't do anything to handle matching
 	//  across a manual run change that would have reset the 47-bit clock)
-	int64_t currentTime = (skheadqb_.nevhwsk << 15) + (skheadqb_.it0sk & int32_t(std::pow(2,15)));
+	//int64_t currentTime = (skheadqb_.nevhwsk << 15) + (skheadqb_.it0sk & int32_t(std::pow(2,15)));
 	
-	if(muonFlag){
+	// i have no idea why, but let's match what happens in tdiff_muon:
+	// mask the lower 17 bits of counter_32, then shift 15 bits up, and add to it0sk
+	int64_t currentTime = ((skheadqb_.nevhwsk & 0x1FFFF) << 15) + skheadqb_.it0sk;
+	
+	if(eventType==EventType::LowE){
+		// match this relic candidate to any held muon candidates
+		RelicMuonMatch(true, currentTime, 0, 0);
+	} else {
 		// since we searched for muons using a manual subtrigger trigger scan, we may have
 		// more than one muon in this event, each with different times.
 		// to do things properly, we need to loop over all these muons and account for thir t0_sub offsets.
@@ -112,18 +172,20 @@ bool RelicMuonMatching::Execute(){
 		
 		std::vector<int> muonTimes;
 		m_data->CStore.Get("muonTimes", muonTimes);
+		//std::cout<<"this muon event had "<<muonTimes.size()<<" muon times"<<std::endl;
 		for(int i=0; i<muonTimes.size(); ++i){
 			// muonTimes are 'swtrgt0ctr' value, which is t0_sub from get_sub_triggers.
 			// this is a counts offset from it0sk, so:
 			currentTime += muonTimes.at(i);
-			RelicMuonMatch(muonFlag, currentTime, i, muonTimes.at(i));
+			//std::cout<<"\tmuon time: "<<currentTime<<std::endl;
+			RelicMuonMatch(false, currentTime, i, muonTimes.at(i));
 		}
 		
-	} else {
-		RelicMuonMatch(muonFlag, currentTime, 0, 0);
 	}
 	
 	// prune any match candidates that have dropped off our window of interest
+	Log(m_unique_name+" Relics to prune: "+toString(relicsToRemove.size())+
+	                  ", muons to prune: "+toString(muonsToRemove.size()),v_debug,m_verbose);
 	if(muonsToRemove.size() > 0){
 		RemoveFromDeque(muonsToRemove, m_data->muonCandDeque);
 	}
@@ -131,11 +193,15 @@ bool RelicMuonMatching::Execute(){
 		RemoveFromDeque(relicsToRemove, m_data->relicCandDeque);
 	}
 	
+	Log(m_unique_name+" Relics to Write out: "+toString(m_data->writeOutRelics.size())+
+	                  ", muons to write out: "+toString(m_data->muonsToRec.size()),v_debug,m_verbose);
+	
 	// write finished candidates to file
 	if(m_data->writeOutRelics.size()){
 		WriteRelicInfo();
 	}
 	if(m_data->muonsToRec.size()){
+		Log(m_unique_name+" We've got "+toString(m_data->muonsToRec.size()) +" muons to write!",v_debug,m_verbose);
 		WriteMuonInfo();
 	}
 	
@@ -144,6 +210,39 @@ bool RelicMuonMatching::Execute(){
 
 
 bool RelicMuonMatching::Finalise(){
+	
+	// write out any remaining relics still being matched
+	for(int i = 0; i < m_data->relicCandDeque.size(); i++){
+		ParticleCand& targetCand = m_data->relicCandDeque.at(i);
+		m_data->writeOutRelics.push_back(targetCand);
+		if(!relicSelectorName.empty()){
+			m_data->ApplyCut(relicSelectorName, m_unique_name,
+			                 targetCand.matchedParticleEvNum.size());
+		}
+	}
+	m_data->relicCandDeque.clear();
+	
+	// write out any remaining muons with a match
+	for(int i = 0; i < m_data->muonCandDeque.size(); i++){
+		ParticleCand& targetCand = m_data->muonCandDeque.at(i);
+		if(targetCand.matchedParticleEvNum.size()) m_data->muonsToRec.push_back(targetCand);
+		if(!muSelectorName.empty()){
+			m_data->ApplyCut(muSelectorName, m_unique_name,
+			                 targetCand.matchedParticleEvNum.size());
+		}
+	}
+	m_data->muonCandDeque.clear();
+	
+	// write candidates to file
+	if(m_data->writeOutRelics.size()) WriteRelicInfo();
+	if(m_data->muonsToRec.size()) WriteMuonInfo();
+	
+	
+	if(!muSelectorName.empty() && !relicSelectorName.empty()){
+		std::cout<<"compared "<<tdiffcount<<" muon-relic pairs and found "<<passing_tdiffcount<<" that were within 60s of each other"<<std::endl;
+		std::cout<<"c.f. "<<m_data->Selectors.at(muSelectorName)->GetEntries("relic_mu_tdiff")<<" recorded muons and "
+		         <<m_data->Selectors.at(relicSelectorName)->GetEntries("relic_mu_tdiff")<<" recorded relics"<<std::endl;
+	}
 	
 	return true;
 }
@@ -161,41 +260,45 @@ bool RelicMuonMatching::RemoveFromDeque(std::vector<int>& particlesToRemove, std
 	return true;
 }
 
-bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, int64_t currentTime, int subtrg_num, int it0xsk){
+bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTime, int subtrg_num, int it0xsk){
 	
 	// make a new ParticleCand to encapsulate the minimal info about this muon/relic candidate.
 	ParticleCand currentParticle;
 	currentParticle.EventNumber = skhead_.nevsk;
 	currentParticle.SubTriggerNumber = subtrg_num;
 	currentParticle.EventTime = currentTime;
+	currentParticle.nevhwsk = skheadqb_.nevhwsk;
 	currentParticle.it0xsk = it0xsk;
 	currentParticle.InEntryNumber = rfmReader->GetEntryNumber();
 	currentParticle.LowECommon = skroot_lowe_;
+	currentParticle.hasAFT = false;
 	
 	// get the deque of in-memory targets to match this new event against
 	// if this event is a muon then the targets are relic candidates, and vice versa
 	std::deque<ParticleCand>* currentDeque = nullptr;
 	std::deque<ParticleCand>* targetDeque = nullptr;
-	if(muonFlag){
-		currentParticle.PID = 2;
-		currentDeque = &m_data->muonCandDeque;
-		targetDeque = &m_data->relicCandDeque;
-		// we'll assign its output tree entry number if/when it gets matched to a relic
-	} else {
+	if(loweEventFlag){
 		currentParticle.PID = 1;
 		currentDeque = &m_data->relicCandDeque;
 		targetDeque = &m_data->muonCandDeque;
 		// we save every relic, so can already assign its output ttree entry number
 		currentParticle.OutEntryNumber = nextrelicentry;
 		++nextrelicentry;
+	} else {
+		currentParticle.PID = 2;
+		currentDeque = &m_data->muonCandDeque;
+		targetDeque = &m_data->relicCandDeque;
+		// we'll assign its output tree entry number if/when it gets matched to a relic
 	}
 	
 	// scan over targets, oldest to newest
 	bool firstmatch=true;
 	for(int i = 0; i < targetDeque->size(); i++){
 		ParticleCand& targetCand = targetDeque->at(i);
+		
 		//calculate time difference between this event and the target
 		int64_t timeDiff = (currentTime - targetCand.EventTime);
+		
 		// to account for 48-bit clock rollover we can compare event numbers
 		if(currentParticle.EventNumber > targetCand.EventNumber){
 			// tdiff ought to be positive; correct for rollover if not
@@ -203,35 +306,55 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, int64_t currentTime, int s
 		} else {
 			if(timeDiff>0) timeDiff -= int64_t(std::pow(2,47));
 		}
+		
+		// compare to tdiff_muon result
+		double tdiffmu;
+		int pre_or_post = 0; //(targetCand.EventNumber > currentParticle.EventNumber);
+		tdiff_muon_(&targetCand.nevhwsk, &targetCand.it0xsk, &pre_or_post, &tdiffmu);
+		//std::cout<<"\ttdiff_muon: "<<tdiffmu<<", timeDiff: "<<(double(timeDiff/COUNT_PER_NSEC)/1.E9)<<std::endl;
+		
+		// ah sod it
+		timeDiff = tdiffmu*COUNT_PER_NSEC;
+		
+		// make a note of the time diff. The selector is just a recorder, so this won't
+		// affect any actual selections, but we can use it to get the distribution of time diffs
+		++tdiffcount;
+		if(!relicSelectorName.empty() && !muSelectorName.empty()){
+			m_data->ApplyCut((loweEventFlag ? relicSelectorName : muSelectorName), "relic_mu_tdiff", timeDiff);
+		}
+		
 		//If the time difference between the two events is less than 60 seconds then "match" the particles.
 		//N.B. since events are time ordered, timediff is always positive
-		if(timeDiff < match_window_ticks ){
+		if(timeDiff < match_window_ticks){
+			++passing_tdiffcount;
 			
-			std::cout<<"matching "<<((muonFlag) ? "muon" : "relic") << " event "
+			/*
+			std::cout<<"matching "<<((loweEventFlag) ? "relic" : "muon") << " event "
 			         <<currentParticle.InEntryNumber<<" at "<<currentTime<<" to target event "
 			         <<targetCand.InEntryNumber<<" at "<<targetCand.EventTime<<"; tdiff "
 			         <<timeDiff<<"\n"
 			         <<"\tnext muon entry: "<<nextmuentry<<"\n"
 			         <<"\tnext relic entry: "<<nextrelicentry<<std::endl;
+			*/
 			
 			// if this is the first match of this particle, set its event number in the output file
 			// and increment the counter for the next event which will be written out
 			if(firstmatch){
-				std::cout<<"first match for current "<<((muonFlag) ? "muon" : "relic") <<std::endl;
-				if(muonFlag){
+				Log(m_unique_name+" First match for current "+((loweEventFlag) ? "relic" : "muon"),v_debug,m_verbose);
+				if(!loweEventFlag){
 					currentParticle.OutEntryNumber = nextmuentry;
 					++nextmuentry;
 				}
 				firstmatch=false;
 			}
 			if(targetCand.matchedParticleEvNum.size()==0){
-				std::cout<<"first match for target "<<((muonFlag) ? "relic" : "muon") <<std::endl;
-				if(muonFlag){
-					targetCand.OutEntryNumber = nextrelicentry;
-					++nextrelicentry;
-				} else {
+				Log(m_unique_name+" First match for target "+((loweEventFlag) ? "muon" : "relic"),v_debug,m_verbose);
+				// if this is the first match for a muon, we now know we'll be writing it out
+				// so can set its output entry number and increment that for the next.
+				if(loweEventFlag){
 					targetCand.OutEntryNumber = nextmuentry;
 					++nextmuentry;
+					if(targetCand.hasAFT) ++nextmuentry;
 				}
 			}
 			
@@ -247,31 +370,36 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, int64_t currentTime, int s
 			
 		//otherwise the current event came more than 60 seconds after the target event.
 		} else {
-			std::cout<<((muonFlag) ? "muon" : "relic")<<" event "<<currentParticle.InEntryNumber
-			         <<" is >60s after target event "<<targetCand.InEntryNumber<<std::endl;
+			Log(m_unique_name+((loweEventFlag) ? "relic" : "muon")+" entry "
+			    +toString(currentParticle.InEntryNumber)+" is >60s after target entry "
+			    +toString(targetCand.InEntryNumber),v_debug,m_verbose);
 			//any subsequent events will also be >60s after this target event;
 			//which is to say we'll find no more matches for this target.
-			if(muonFlag){
-				// add it to the set of relic candidates ready to write out
-				m_data->writeOutRelics.push_back(targetCand);
-				// remove it from the set of relic candidates being matched
-				relicsToRemove.push_back(targetCand.EventNumber);
-				// make a note of this relic and its number of matches
-				if(!relicSelectorName.empty()){
-					m_data->ApplyCut(relicSelectorName, m_unique_name,
-					                 targetCand.matchedParticleEvNum.size());
-				}
-			} else {
-				//we'll find a lot of muons, but we're only interested in ones matched to relic candidates.
+			if(loweEventFlag){
+				Log(m_unique_name+" Muon "+toString(targetCand.InEntryNumber)+" matched to "
+				    +toString(targetCand.matchedParticleEvNum.size())+" relics",v_debug,m_verbose);
+				// we'll find a lot of muons, but we're only interested in ones matched to relic candidates.
 				// only add it to the set of muons to record if it was matched to at least one relic.
 				if(targetCand.matchedParticleEvNum.size()){
 					m_data->muonsToRec.push_back(targetCand);
 				}
 				// remove it from the set of muons being matched
 				muonsToRemove.push_back(targetCand.EventNumber);
-				// make a note of this muon and its number of matches
 				if(!muSelectorName.empty()){
+					// make a note of this muon and its number of matches
 					m_data->ApplyCut(muSelectorName, m_unique_name,
+					                 targetCand.matchedParticleEvNum.size());
+				}
+			} else {
+				Log(m_unique_name+" Relic "+toString(targetCand.InEntryNumber)+" matched to "
+				    +toString(targetCand.matchedParticleEvNum.size())+" muons",v_debug,m_verbose);
+				// add it to the set of relic candidates ready to write out
+				m_data->writeOutRelics.push_back(targetCand);
+				// remove it from the set of relic candidates being matched
+				relicsToRemove.push_back(targetCand.EventNumber);
+				if(!relicSelectorName.empty()){
+					// make a note of this relic and its number of matches
+					m_data->ApplyCut(relicSelectorName, m_unique_name,
 					                 targetCand.matchedParticleEvNum.size());
 				}
 			}
@@ -287,17 +415,36 @@ bool RelicMuonMatching::RelicMuonMatch(bool muonFlag, int64_t currentTime, int s
 	//We can safely prune any muons more than 60s older than the current event that have no matches.
 	//only bother with this scan if we have >150 muons (~60s) of muons
 	// FIXME re-enable, and only do for muons?
-	//if(currentDeque->size() > 150){
-		for(int i = 0; i < currentDeque->size() - 1; i++){
-			int64_t timeDiff = (currentTime - currentDeque->at(i).EventTime);
-			if(currentParticle.EventNumber > currentDeque->at(i).EventNumber){
-				if(timeDiff<0) timeDiff += int64_t(std::pow(2,47));
-			} else {
-				if(timeDiff>0) timeDiff -= int64_t(std::pow(2,47));
-			}
-			if(timeDiff > match_window_ticks && ! currentDeque->at(i).matchedParticleEvNum.size()){
-				std::vector<int>* removedeq= (muonFlag) ? &muonsToRemove : &relicsToRemove;
-				removedeq->push_back(currentDeque->at(i).EventNumber);
+	//if(!loweEventFlag && currentDeque->size() > 150){
+		for(int i = 0; i < currentDeque->size() - 2; i++){
+			ParticleCand& targetCand = currentDeque->at(i);
+			
+			//int64_t timeDiff = (currentTime - targetCand.EventTime);
+			//if(timeDiff<0) timeDiff += int64_t(std::pow(2,47));  // fix rollover
+			
+			double tdiffmu;
+			int pre_or_post = 0;
+			tdiff_muon_(&targetCand.nevhwsk, &targetCand.it0xsk, &pre_or_post, &tdiffmu);
+			int64_t timeDiff = tdiffmu*COUNT_PER_NSEC;
+			
+			// if this particle is more than 60s after our current one, we'll have found all its matches
+			// so we can prune it now.
+			if(timeDiff > match_window_ticks){
+				if(loweEventFlag){
+					m_data->writeOutRelics.push_back(targetCand);
+					relicsToRemove.push_back(targetCand.EventNumber);
+					if(!relicSelectorName.empty()){
+						m_data->ApplyCut(relicSelectorName, m_unique_name,
+						                 targetCand.matchedParticleEvNum.size());
+					}
+				} else {
+					if(targetCand.matchedParticleEvNum.size()) m_data->muonsToRec.push_back(targetCand);
+					muonsToRemove.push_back(targetCand.EventNumber);
+					if(!muSelectorName.empty()){
+						m_data->ApplyCut(muSelectorName, m_unique_name,
+						                 targetCand.matchedParticleEvNum.size());
+					}
+				}
 			} else {
 				break;
 			}
@@ -316,7 +463,8 @@ bool RelicMuonMatching::WriteRelicInfo(){
 	
 	for(int writeEvent = 0; writeEvent < writeOutRelics.size(); writeEvent++){
 		
-		std::cout<<"writing out next relic; entry "<<writeOutRelics[writeEvent].OutEntryNumber<<std::endl;
+		Log(m_unique_name+" Writing out next relic; entry "+
+		    toString(writeOutRelics[writeEvent].OutEntryNumber),v_debug,m_verbose);
 		
 		// reload the TTree entry for this lowe event
 		// (TODO not ideal as we're not reading linearly; can we buffer the required info?)
@@ -332,7 +480,6 @@ bool RelicMuonMatching::WriteRelicInfo(){
 		skroot_set_tree_(&relicWriterLUN);
 		
 		// if we ran lfallfit before caching the relic, also put that into the output TTree
-		// FIXME i believe we do not do this now, leaving lowe reconstruction for later
 		skroot_lowe_ = writeOutRelics[writeEvent].LowECommon;
 		skroot_set_lowe_(&relicWriterLUN,
 		                 skroot_lowe_.bsvertex,
@@ -386,10 +533,18 @@ bool RelicMuonMatching::WriteRelicInfo(){
 		
 		//invoke TTree::Fill
 		skroot_fill_tree_(&relicWriterLUN);
+		
+		// if the relic had an AFT trigger, write that out now
+		if(writeOutRelics[writeEvent].hasAFT){
+			Log(m_unique_name+" Appending AFT to relic tree",v_debug,m_verbose);
+			m_data->getTreeEntry(rfmReaderName, writeOutRelics[writeEvent].InEntryNumber+1);
+			skroot_set_tree_(&relicWriterLUN);
+			skroot_fill_tree_(&relicWriterLUN);
+		}
+		
 	}
 	
 	// reload last treeReader entry
-	// FIXME maybe we don't need to do this if this is the end of the ToolChain?
 	if(originalEntry != rfmReader->GetEntryNumber()){
 		m_data->getTreeEntry(rfmReaderName, originalEntry);
 	}
@@ -408,7 +563,8 @@ bool RelicMuonMatching::WriteMuonInfo(){
 	
 	for(int i = 0; i < muonsToRec.size(); i++){
 		
-		std::cout<<"writing out next muon; entry "<<muonsToRec[i].OutEntryNumber<<std::endl;
+		Log(m_unique_name+" Writing out next muon; entry "+
+		    toString(muonsToRec[i].OutEntryNumber),v_debug,m_verbose);
 		
 		// (re-)load the muon entry to save
 		if(muonsToRec[i].InEntryNumber != currentEntry){
@@ -439,8 +595,8 @@ bool RelicMuonMatching::WriteMuonInfo(){
 		/* muon reconstruction now moved to later stage */
 		
 		// for muons, only keep hits around 1.3us trigger
-		delete_outside_hits_();
-		// FIXME um.... will this remove hits from any further muon subtriggers in this readout?
+		//delete_outside_hits_();
+		// XXX FIXME XXX will this remove hits from any further muon subtriggers in this readout?
 		
 		// set header and tq info (epsecially updated hits)
 		skroot_set_tree_(&muWriterLUN);
@@ -452,8 +608,23 @@ bool RelicMuonMatching::WriteMuonInfo(){
 		
 		// invoke TTree::Fill
 		skroot_fill_tree_(&muWriterLUN);
+		
+		// sanity check
+		TreeManager* mgr = skroot_get_mgr(&muWriterLUN);
+		TTree* mutree = mgr->GetOTree();
+		//std::cout<<"Muon tree now has "<<mutree->GetEntries()<<" entries"<<std::endl;
+		
+		// if the muon had an AFT trigger, write that out now
+		if(muonsToRec[i].hasAFT){
+			Log(m_unique_name+" Appending AFT to muon tree",v_debug,m_verbose);
+			m_data->getTreeEntry(rfmReaderName, muonsToRec[i].InEntryNumber+1);
+			skroot_set_tree_(&muWriterLUN);
+			skroot_fill_tree_(&muWriterLUN);
+			//std::cout<<"Added AFT: Muon tree now has "<<mutree->GetEntries()<<" entries"<<std::endl;
+		} else {
+			//std::cout<<"Muon "<<muonsToRec[i].EventNumber<<" has no AFT?!"<<std::endl;
+		}
 	}
-	
 	
 	//return the previous entry so that no issues are caused with other tools
 	if(currentEntry != rfmReader->GetEntryNumber()){

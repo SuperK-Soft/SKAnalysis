@@ -6,6 +6,7 @@
 struct ParticleCand {
 	int EventNumber;
 	int SubTriggerNumber;
+	int nevhwsk;
 	int it0xsk;
 	int64_t EventTime;
 	int InEntryNumber;  // entry number in input file TTree
@@ -15,6 +16,7 @@ struct ParticleCand {
 	std::vector<float> matchedParticleTimeDiff;
 	std::vector<float> matchedParticleBSEnergy;
 	skroot_lowe_common LowECommon;
+	bool hasAFT;
 };
 
 #endif

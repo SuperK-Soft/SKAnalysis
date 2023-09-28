@@ -54,13 +54,11 @@ if (tool=="IDHitsCut") ret=new IDHitsCut;
 if (tool=="ODCut") ret=new ODCut;
 if (tool=="RunwiseEnergyCut") ret=new RunwiseEnergyCut;
 if (tool=="WallCut") ret=new WallCut;
-if (tool=="RelicCandidates") ret=new RelicCandidates;
 if (tool=="RelicMuonMatching") ret=new RelicMuonMatching;
 if (tool=="WriteSpallCand") ret=new WriteSpallCand;
 if (tool=="ReconstructMatchedMuons") ret=new ReconstructMatchedMuons;
 if (tool=="DefineSignalRegions") ret=new DefineSignalRegions;
 if (tool=="muechk") ret=new muechk;
-
 if (tool=="mufit_sk4") ret=new mufit_sk4;
 if (tool=="SkipTriggers") ret=new SkipTriggers;
 if (tool=="BuildHist") ret=new BuildHist;
@@ -78,6 +76,10 @@ if (tool=="CalculateNeutronCloudVertex") ret=new CalculateNeutronCloudVertex;
 if (tool=="NeutCloudCorrelationCuts") ret=new NeutCloudCorrelationCuts;
 if (tool=="CalculatePreactivityObservables") ret=new CalculatePreactivityObservables;
 if (tool=="DecayElectronCuts") ret=new DecayElectronCuts;
+if (tool=="DataQualityCuts") ret=new DataQualityCuts;
+if (tool=="PostLoweReconstructionCuts") ret=new PostLoweReconstructionCuts;
+if (tool=="PreLoweReconstructionCuts") ret=new PreLoweReconstructionCuts;
+if (tool=="FlagAFTs") ret=new FlagAFTs;
 return ret;
 }
 

@@ -10,7 +10,7 @@
 /**
  * \class IDHitsCut
  *
- * Skips the remainder of the toolchain if the 'newMuon' flag is not present, and nqisk is above a given limit.
+ * Skips the remainder of the toolchain if the EventType is LowE, and nqisk is above a given limit.
 *
 * $Author: B.Richards $
 * $Date: 2019/05/28 10:44:00 $

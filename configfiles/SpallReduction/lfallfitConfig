@@ -1,2 +1,4 @@
 verbosity 1
 readerName spallReader
+StepsToPerform 0 # everything
+checkEventType 1
