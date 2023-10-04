@@ -18,7 +18,8 @@ class DecayElectronCuts: public Tool {
   bool Finalise();
 
  private:
-
+  
+  TH1D pre_q50n50_ratio_cut;
   TH1D pre_nmue_cut;
   TH1D pre_maxpre_cut;
   TH1D pre_maxpregate_cut;

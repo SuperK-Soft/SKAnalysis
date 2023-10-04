@@ -16,9 +16,10 @@ bool DecayElectronCuts::Initialise(std::string configfile, DataModel &data){
 
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 
-  pre_nmue_cut = TH1D("pre_nmue_cut", "pre_nmue_cut;nmue", 10, 0, 10);
-  pre_maxpre_cut = TH1D("pre_maxpre_cut", "pre_maxpre_cut;maxpre", 20, 0, 20);
-  pre_maxpregate_cut = TH1D("pre_maxpregate_cut", "pre_maxpregate_cut;maxpregate", 20, 0, 20);
+  pre_q50n50_ratio_cut = TH1D("pre_q50n50_ratio_cut", "pre_q50n50_ratio_cut;q50/n50", 100, 0, 0);
+  pre_nmue_cut = TH1D("pre_nmue_cut", "pre_nmue_cut;nmue", 10, 0, 0);
+  pre_maxpre_cut = TH1D("pre_maxpre_cut", "pre_maxpre_cut;maxpre", 20, 0, 0);
+  pre_maxpregate_cut = TH1D("pre_maxpregate_cut", "pre_maxpregate_cut;maxpregate", 20, 0, 0);
   
   return true;
 }
@@ -26,6 +27,10 @@ bool DecayElectronCuts::Initialise(std::string configfile, DataModel &data){
 
 bool DecayElectronCuts::Execute(){
 
+  double q50n50_ratio = 0;
+  m_data->CStore.Get("q50n50_ratio", q50n50_ratio);
+  pre_q50n50_ratio_cut.Fill(q50n50_ratio);
+  
   int nmue = 0;
   m_data->CStore.Get("nmue", nmue);
   pre_nmue_cut.Fill(nmue);
@@ -48,13 +53,16 @@ bool DecayElectronCuts::Execute(){
     return true;
   }
   
-  if(max_pregate >= 5){
+  if (max_pregate >= 5){
     SkipEntry();
     return true;
   }
-  
-  
+ 
 
+  if (q50n50_ratio > 2){
+    SkipEntry();
+    return true;
+  }
   
   return true;
 }
@@ -74,6 +82,7 @@ bool DecayElectronCuts::Finalise(){
   pre_nmue_cut.Write();
   pre_maxpre_cut.Write();
   pre_maxpregate_cut.Write();
+  pre_q50n50_ratio_cut.Write();
   
   return true;
 }
