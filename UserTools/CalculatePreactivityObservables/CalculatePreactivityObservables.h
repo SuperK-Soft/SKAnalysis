@@ -9,7 +9,8 @@
 struct Hit {
   double time = 0;
   double goodness = 0;
-  Hit(const double& t, const double& g) : time{t}, goodness{g} {}
+  double charge = 0;
+  Hit(const double& t, const double& g, const double& q) : time{t}, goodness{g}, charge{q} {}
 };
 
 class CalculatePreactivityObservables: public Tool {
