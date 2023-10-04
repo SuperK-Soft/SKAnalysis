@@ -1,12 +1,12 @@
-#include "DecayElectronCuts.h"
+#include "PositronIdentificationCuts.h"
 
 #include "TFile.h"
 #include "TH1D.h"
 
-DecayElectronCuts::DecayElectronCuts():Tool(){}
+PositronIdentificationCuts::PositronIdentificationCuts():Tool(){}
 
 
-bool DecayElectronCuts::Initialise(std::string configfile, DataModel &data){
+bool PositronIdentificationCuts::Initialise(std::string configfile, DataModel &data){
 
   if(configfile!="")  m_variables.Initialise(configfile);
   //m_variables.Print();
@@ -25,7 +25,7 @@ bool DecayElectronCuts::Initialise(std::string configfile, DataModel &data){
 }
 
 
-bool DecayElectronCuts::Execute(){
+bool PositronIdentificationCuts::Execute(){
 
   double q50n50_ratio = 0;
   m_data->CStore.Get("q50n50_ratio", q50n50_ratio);
@@ -68,7 +68,7 @@ bool DecayElectronCuts::Execute(){
 }
 
 
-bool DecayElectronCuts::Finalise(){
+bool PositronIdentificationCuts::Finalise(){
 
   std::string outfile_name = "";
   bool ok = m_variables.Get("outfile_name", outfile_name);
@@ -76,7 +76,7 @@ bool DecayElectronCuts::Finalise(){
 
   TFile* outfile = TFile::Open(outfile_name.c_str(), "UPDATE");
   if (outfile == nullptr){
-    throw std::runtime_error("DecayElectronCuts::Finalise - Couldn't open output file");
+    throw std::runtime_error("PositronIdentificationCuts::Finalise - Couldn't open output file");
   }
 
   pre_nmue_cut.Write();
@@ -87,7 +87,7 @@ bool DecayElectronCuts::Finalise(){
   return true;
 }
 
-void DecayElectronCuts::SkipEntry(){
+void PositronIdentificationCuts::SkipEntry(){
   bool skip = true;
   m_data->CStore.Set("Skip", skip);
   return;

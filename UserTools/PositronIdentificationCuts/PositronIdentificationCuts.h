@@ -1,5 +1,5 @@
-#ifndef DecayElectronCuts_H
-#define DecayElectronCuts_H
+#ifndef PositronIdentificationCuts_H
+#define PositronIdentificationCuts_H
 
 #include <string>
 #include <iostream>
@@ -8,11 +8,11 @@
 
 #include "TH1D.h"
 
-class DecayElectronCuts: public Tool {
+class PositronIdentificationCuts: public Tool {
 
  public:
 
-  DecayElectronCuts();
+  PositronIdentificationCuts();
   bool Initialise(std::string configfile,DataModel &data);
   bool Execute();
   bool Finalise();

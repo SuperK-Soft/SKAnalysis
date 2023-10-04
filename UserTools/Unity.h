@@ -71,4 +71,4 @@
 #include "CalculateNeutronCloudVertex.h"
 #include "NeutCloudCorrelationCuts.h"
 #include "CalculatePreactivityObservables.h"
-#include "DecayElectronCuts.h"
+#include "PositronIdentificationCuts.h"
