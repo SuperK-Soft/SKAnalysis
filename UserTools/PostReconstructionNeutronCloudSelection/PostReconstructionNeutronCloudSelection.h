@@ -32,6 +32,9 @@ public:
   TH1D post_bsn50_cut;
   TH1D post_ldt_cut;
 
+  MTreeReader* tree_reader_ptr = nullptr;
+  void GetReader();
+  
   std::vector<NeutronInfo> neutrons = {}; //make struct
   
   float CalculateLongitudinalDistance(float*, float*, float*) const;

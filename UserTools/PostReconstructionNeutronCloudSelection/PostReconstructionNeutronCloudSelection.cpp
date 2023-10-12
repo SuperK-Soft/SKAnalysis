@@ -62,7 +62,11 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
   }
   post_bsn50_cut.Fill(skroot_lowe_.bsn50);
 
-  const float ldt  = CalculateLongitudinalDistance(skroot_mu_.muentpoint, skroot_mu_.mudir, skroot_lowe_.bsvertex);
+  MuInfo* my_muinfo = nullptr;
+  tree_reader_ptr->GetBranch("MU", my_muinfo);
+  const int muboy_idx = my_muinfo->muinfo[7]
+  
+  const float ldt  = CalculateLongitudinalDistance(skroot_mu_.muentpoint, skroot_mu_.muboy_dir[muboy_idx], skroot_lowe_.bsvertex);
   pre_ldt_cut.Fill(ldt);
   if (ldt  > 500){
     return true;
@@ -121,4 +125,16 @@ float PostReconstructionNeutronCloudSelection::CalculateLongitudinalDistance(flo
 		   ( muon_entry_point[(i+1)%3] - bs_vertex[(i+1)%3] ) * muon_direction[i], 2);
   }
   return sqrt(result);
+}
+
+void PostReconstructionNeutronCloudSelection::GetReader(){
+  m_variables.Get("tree_reader_str", tree_reader_str);
+  if (tree_reader_str.empty() || m_data->Trees.count(tree_reader_str) == 0){
+    throw std::invalid_argument("no valid treereader specified!");
+  }
+  tree_reader_ptr = m_data->Trees.at(tree_reader_str);
+  if (tree_reader_ptr == nullptr){
+    throw std::runtime_error("couldn't get treereader");
+  }
+  return;
 }
