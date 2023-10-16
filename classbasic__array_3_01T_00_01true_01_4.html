@@ -78,6 +78,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a77786d85548f072fcde8a2741b5701fb"><td class="memItemLeft" align="right" valign="top"><a id="a77786d85548f072fcde8a2741b5701fb"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>basic_array</b> (intptr_t addr_in, std::vector&lt; size_t &gt; sizes)</td></tr>
 <tr class="separator:a77786d85548f072fcde8a2741b5701fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56ccb3f1b82649edc8d1b53a124e1a4c"><td class="memTemplParams" colspan="2"><a id="a56ccb3f1b82649edc8d1b53a124e1a4c"></a>
+template&lt;typename X , size_t N, size_t M&gt; </td></tr>
+<tr class="memitem:a56ccb3f1b82649edc8d1b53a124e1a4c"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>basic_array</b> (X(&amp;ref_in)[N][M])</td></tr>
+<tr class="separator:a56ccb3f1b82649edc8d1b53a124e1a4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b50a1d634295b8629878fd4f625c189"><td class="memTemplParams" colspan="2"><a id="a2b50a1d634295b8629878fd4f625c189"></a>
 template&lt;class X &gt; </td></tr>
 <tr class="memitem:a2b50a1d634295b8629878fd4f625c189"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><b>basic_array</b> (X ref_in, typename std::enable_if&lt; std::is_same&lt; typename std::remove_extent&lt; typename std::remove_pointer&lt; X &gt;::type &gt;::type, T &gt;::value, bool &gt;::type potato=true)</td></tr>
@@ -88,6 +92,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Init</b> (intptr_t ad
 <tr class="memitem:a48435ba6ee93e7ddcb1b01fb073c01b0"><td class="memItemLeft" align="right" valign="top"><a id="a48435ba6ee93e7ddcb1b01fb073c01b0"></a>
 <a class="el" href="classbasic__array.html">V</a>&#160;</td><td class="memItemRight" valign="bottom"><b>operator[]</b> (int i) const</td></tr>
 <tr class="separator:a48435ba6ee93e7ddcb1b01fb073c01b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c74864a11e0a9e2d46e8bf90f713ab3"><td class="memItemLeft" align="right" valign="top"><a id="a8c74864a11e0a9e2d46e8bf90f713ab3"></a>
+const <a class="el" href="classbasic__array.html">basic_array</a>&lt; T &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classbasic__array.html">basic_array</a>&lt; T, true &gt; &amp;in) const</td></tr>
+<tr class="separator:a8c74864a11e0a9e2d46e8bf90f713ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3081a6434efbfdb1093c80c0d69d1b8"><td class="memItemLeft" align="right" valign="top"><a id="ac3081a6434efbfdb1093c80c0d69d1b8"></a>
 const <a class="el" href="classbasic__array.html">V</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>at</b> (int i) const</td></tr>
 <tr class="separator:ac3081a6434efbfdb1093c80c0d69d1b8"><td class="memSeparator" colspan="2">&#160;</td></tr>

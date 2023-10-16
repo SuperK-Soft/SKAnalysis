@@ -24,14 +24,14 @@ void {\bfseries Make\+Output\+File} (std\+::string fname, std\+::string distrofn
 \mbox{\Hypertarget{classMTreeSelection_a9f7b51e770380d1d59a3c7d6eff1f858}\label{classMTreeSelection_a9f7b51e770380d1d59a3c7d6eff1f858}} 
 bool {\bfseries Note\+Cut} (std\+::string cutname, std\+::string description, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_a777bd9cf13ad18bb9e2cdce689a0d0d2}\label{classMTreeSelection_a777bd9cf13ad18bb9e2cdce689a0d0d2}} 
-bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
+\mbox{\Hypertarget{classMTreeSelection_aa123427a4a864de878c9c95b454d6941}\label{classMTreeSelection_aa123427a4a864de878c9c95b454d6941}} 
+bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, bool savedist, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_a9d4136137b679c1b11a8fd7eabb3e112}\label{classMTreeSelection_a9d4136137b679c1b11a8fd7eabb3e112}} 
-bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, std\+::string branchname, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
+\mbox{\Hypertarget{classMTreeSelection_a829c9e6b210c3312adaf408e7fa1efa9}\label{classMTreeSelection_a829c9e6b210c3312adaf408e7fa1efa9}} 
+bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, bool savedist, std\+::string branchname, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
 \item 
-\mbox{\Hypertarget{classMTreeSelection_aed95c145b13b13c6b9abd77f60003956}\label{classMTreeSelection_aed95c145b13b13c6b9abd77f60003956}} 
-bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, std\+::vector$<$ std\+::string $>$ branchnames, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
+\mbox{\Hypertarget{classMTreeSelection_a73c21d080a162d7600d3f20da487569e}\label{classMTreeSelection_a73c21d080a162d7600d3f20da487569e}} 
+bool {\bfseries Add\+Cut} (std\+::string cutname, std\+::string description, bool savedist, std\+::vector$<$ std\+::string $>$ branchnames, double low=DOUBLE\+\_\+\+MIN, double high=DOUBLE\+\_\+\+MAX)
 \item 
 \mbox{\Hypertarget{classMTreeSelection_aca748ac8d0b55a98a92d9b0d660eb56b}\label{classMTreeSelection_aca748ac8d0b55a98a92d9b0d660eb56b}} 
 bool {\bfseries Check\+Cut} (std\+::string cutname)
@@ -86,6 +86,12 @@ std\+::set$<$ size\+\_\+t $>$ {\bfseries Get\+Passing\+Indexes} (std\+::string c
 \item 
 \mbox{\Hypertarget{classMTreeSelection_ad314ab98e97a279d73ecae64c54b4c06}\label{classMTreeSelection_ad314ab98e97a279d73ecae64c54b4c06}} 
 std\+::set$<$ std\+::vector$<$ size\+\_\+t $>$ $>$ {\bfseries Get\+Passing\+Indices} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a97c05674c4b6412ad520d7ac04f45cd2}\label{classMTreeSelection_a97c05674c4b6412ad520d7ac04f45cd2}} 
+Long64\+\_\+t {\bfseries Get\+Entries} (std\+::string cutname)
+\item 
+\mbox{\Hypertarget{classMTreeSelection_a62a16998fbed3d1f60c3b521d2b7cf8c}\label{classMTreeSelection_a62a16998fbed3d1f60c3b521d2b7cf8c}} 
+bool {\bfseries Set\+Entries} (Long64\+\_\+t nentries)
 \item 
 \mbox{\Hypertarget{classMTreeSelection_afb5dd3d15dc9b9046700a697e4a21a70}\label{classMTreeSelection_afb5dd3d15dc9b9046700a697e4a21a70}} 
 \mbox{\hyperlink{classMTreeReader}{MTree\+Reader}} $\ast$ {\bfseries Get\+Tree\+Reader} ()

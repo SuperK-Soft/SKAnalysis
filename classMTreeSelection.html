@@ -93,15 +93,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>MakeOutputFile</b> (s
 <tr class="memitem:a9f7b51e770380d1d59a3c7d6eff1f858"><td class="memItemLeft" align="right" valign="top"><a id="a9f7b51e770380d1d59a3c7d6eff1f858"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>NoteCut</b> (std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
 <tr class="separator:a9f7b51e770380d1d59a3c7d6eff1f858"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a777bd9cf13ad18bb9e2cdce689a0d0d2"><td class="memItemLeft" align="right" valign="top"><a id="a777bd9cf13ad18bb9e2cdce689a0d0d2"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddCut</b> (std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
-<tr class="separator:a777bd9cf13ad18bb9e2cdce689a0d0d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d4136137b679c1b11a8fd7eabb3e112"><td class="memItemLeft" align="right" valign="top"><a id="a9d4136137b679c1b11a8fd7eabb3e112"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddCut</b> (std::string cutname, std::string description, std::string branchname, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
-<tr class="separator:a9d4136137b679c1b11a8fd7eabb3e112"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed95c145b13b13c6b9abd77f60003956"><td class="memItemLeft" align="right" valign="top"><a id="aed95c145b13b13c6b9abd77f60003956"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddCut</b> (std::string cutname, std::string description, std::vector&lt; std::string &gt; branchnames, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
-<tr class="separator:aed95c145b13b13c6b9abd77f60003956"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa123427a4a864de878c9c95b454d6941"><td class="memItemLeft" align="right" valign="top"><a id="aa123427a4a864de878c9c95b454d6941"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddCut</b> (std::string cutname, std::string description, bool savedist, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
+<tr class="separator:aa123427a4a864de878c9c95b454d6941"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a829c9e6b210c3312adaf408e7fa1efa9"><td class="memItemLeft" align="right" valign="top"><a id="a829c9e6b210c3312adaf408e7fa1efa9"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddCut</b> (std::string cutname, std::string description, bool savedist, std::string branchname, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
+<tr class="separator:a829c9e6b210c3312adaf408e7fa1efa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73c21d080a162d7600d3f20da487569e"><td class="memItemLeft" align="right" valign="top"><a id="a73c21d080a162d7600d3f20da487569e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>AddCut</b> (std::string cutname, std::string description, bool savedist, std::vector&lt; std::string &gt; branchnames, double low=DOUBLE_MIN, double high=DOUBLE_MAX)</td></tr>
+<tr class="separator:a73c21d080a162d7600d3f20da487569e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca748ac8d0b55a98a92d9b0d660eb56b"><td class="memItemLeft" align="right" valign="top"><a id="aca748ac8d0b55a98a92d9b0d660eb56b"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>CheckCut</b> (std::string cutname)</td></tr>
 <tr class="separator:aca748ac8d0b55a98a92d9b0d660eb56b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,6 +156,12 @@ std::set&lt; size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>G
 <tr class="memitem:ad314ab98e97a279d73ecae64c54b4c06"><td class="memItemLeft" align="right" valign="top"><a id="ad314ab98e97a279d73ecae64c54b4c06"></a>
 std::set&lt; std::vector&lt; size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>GetPassingIndices</b> (std::string cutname)</td></tr>
 <tr class="separator:ad314ab98e97a279d73ecae64c54b4c06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97c05674c4b6412ad520d7ac04f45cd2"><td class="memItemLeft" align="right" valign="top"><a id="a97c05674c4b6412ad520d7ac04f45cd2"></a>
+Long64_t&#160;</td><td class="memItemRight" valign="bottom"><b>GetEntries</b> (std::string cutname)</td></tr>
+<tr class="separator:a97c05674c4b6412ad520d7ac04f45cd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62a16998fbed3d1f60c3b521d2b7cf8c"><td class="memItemLeft" align="right" valign="top"><a id="a62a16998fbed3d1f60c3b521d2b7cf8c"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>SetEntries</b> (Long64_t nentries)</td></tr>
+<tr class="separator:a62a16998fbed3d1f60c3b521d2b7cf8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb5dd3d15dc9b9046700a697e4a21a70"><td class="memItemLeft" align="right" valign="top"><a id="afb5dd3d15dc9b9046700a697e4a21a70"></a>
 <a class="el" href="classMTreeReader.html">MTreeReader</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>GetTreeReader</b> ()</td></tr>
 <tr class="separator:afb5dd3d15dc9b9046700a697e4a21a70"><td class="memSeparator" colspan="2">&#160;</td></tr>

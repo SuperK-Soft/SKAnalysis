@@ -76,33 +76,54 @@ $(function() {
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160; </div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
-<div class="line"><a name="l00009"></a><span class="lineno"><a class="line" href="classReconstructMatchedMuons.html">    9</a></span>&#160;<span class="keyword">class </span><a class="code" href="classReconstructMatchedMuons.html">ReconstructMatchedMuons</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    </div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    </div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;MTreeReader.h&quot;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;ParticleCand.h&quot;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
+<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classReconstructMatchedMuons.html">   11</a></span>&#160;<span class="keyword">class </span><a class="code" href="classReconstructMatchedMuons.html">ReconstructMatchedMuons</a>: <span class="keyword">public</span> Tool {</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    </div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    </div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <a class="code" href="classReconstructMatchedMuons.html#a27b489fd74006b69b1dac8a9a58e09e8">ReconstructMatchedMuons</a>(); </div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classReconstructMatchedMuons.html#ac839b151bd2f1a4c2a23ec62bbe8d737">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classReconstructMatchedMuons.html#a14ca6cd7660563fcfca851a5d2db5abe">Execute</a>(); </div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classReconstructMatchedMuons.html#aff4c236fb164c26143331de9cf53b227">Finalise</a>(); </div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    </div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">int</span> lun=-1;        <span class="comment">// where to put output results (skroot_set_mu)</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">bool</span> noBFF=<span class="keyword">false</span>;  <span class="comment">// veto fallback to BFF</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    </div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <a class="code" href="classReconstructMatchedMuons.html#a27b489fd74006b69b1dac8a9a58e09e8">ReconstructMatchedMuons</a>(); </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classReconstructMatchedMuons.html#ac839b151bd2f1a4c2a23ec62bbe8d737">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classReconstructMatchedMuons.html#a14ca6cd7660563fcfca851a5d2db5abe">Execute</a>(); </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classReconstructMatchedMuons.html#aff4c236fb164c26143331de9cf53b227">Finalise</a>(); </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    </div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordtype">bool</span> ReconstructNextMuon();</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">bool</span> WriteEventsOut(std::vector&lt;ParticleCand&gt;&amp; eventsToWrite, <span class="keywordtype">int</span> outLUN, EventType eventType);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">bool</span> AddAftHits(<span class="keyword">const</span> rawtqinfo_common&amp; rawtqinfo_aft);</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    </div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;};</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* rfmReader = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    std::string rfmReaderName;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordtype">int</span> rfmReaderLUN=-1;        <span class="comment">// where to put output results (skroot_set_mu)</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keywordtype">int</span> relicWriterLUN=-1;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">int</span> muWriterLUN=-1;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">bool</span> noBFF=<span class="keyword">false</span>;  <span class="comment">// veto fallback to BFF</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    std::vector&lt;int&gt; MatchedEvNums;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    std::vector&lt;int&gt; MatchedEntryNums;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    std::vector&lt;float&gt; MatchedTimeDiff;   <span class="comment">// [ns]</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    std::vector&lt;float&gt; MatchedParticleE;  <span class="comment">// [MeV]</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    std::vector&lt;bool&gt; MatchedHasAFTs;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    uint64_t HwClockTicks;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">int</span> NumRollovers;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    </div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">int</span> current_badch_masking;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::vector&lt;skroot_mu_common&gt; reco_muons;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
-<div class="ttc" id="aclassReconstructMatchedMuons_html"><div class="ttname"><a href="classReconstructMatchedMuons.html">ReconstructMatchedMuons</a></div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.h:9</div></div>
-<div class="ttc" id="aclassReconstructMatchedMuons_html_a14ca6cd7660563fcfca851a5d2db5abe"><div class="ttname"><a href="classReconstructMatchedMuons.html#a14ca6cd7660563fcfca851a5d2db5abe">ReconstructMatchedMuons::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:34</div></div>
+<div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
+<div class="ttc" id="aclassReconstructMatchedMuons_html"><div class="ttname"><a href="classReconstructMatchedMuons.html">ReconstructMatchedMuons</a></div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.h:11</div></div>
+<div class="ttc" id="aclassReconstructMatchedMuons_html_a14ca6cd7660563fcfca851a5d2db5abe"><div class="ttname"><a href="classReconstructMatchedMuons.html#a14ca6cd7660563fcfca851a5d2db5abe">ReconstructMatchedMuons::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:86</div></div>
 <div class="ttc" id="aclassReconstructMatchedMuons_html_a27b489fd74006b69b1dac8a9a58e09e8"><div class="ttname"><a href="classReconstructMatchedMuons.html#a27b489fd74006b69b1dac8a9a58e09e8">ReconstructMatchedMuons::ReconstructMatchedMuons</a></div><div class="ttdeci">ReconstructMatchedMuons()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:8</div></div>
-<div class="ttc" id="aclassReconstructMatchedMuons_html_ac839b151bd2f1a4c2a23ec62bbe8d737"><div class="ttname"><a href="classReconstructMatchedMuons.html#ac839b151bd2f1a4c2a23ec62bbe8d737">ReconstructMatchedMuons::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:11</div></div>
-<div class="ttc" id="aclassReconstructMatchedMuons_html_aff4c236fb164c26143331de9cf53b227"><div class="ttname"><a href="classReconstructMatchedMuons.html#aff4c236fb164c26143331de9cf53b227">ReconstructMatchedMuons::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:281</div></div>
+<div class="ttc" id="aclassReconstructMatchedMuons_html_ac839b151bd2f1a4c2a23ec62bbe8d737"><div class="ttname"><a href="classReconstructMatchedMuons.html#ac839b151bd2f1a4c2a23ec62bbe8d737">ReconstructMatchedMuons::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:23</div></div>
+<div class="ttc" id="aclassReconstructMatchedMuons_html_aff4c236fb164c26143331de9cf53b227"><div class="ttname"><a href="classReconstructMatchedMuons.html#aff4c236fb164c26143331de9cf53b227">ReconstructMatchedMuons::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.cpp:102</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -184,7 +184,7 @@ $(function() {
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;  <span class="comment">// helper functions for working with MTreeSelections</span></div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;  <span class="comment">// (basically just needed for the case of adding cuts to multiple selectors at once)</span></div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;  <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keywordtype">bool</span> AddCut(std::string selector, std::string cut, std::string description, Args... rest);</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;  <span class="keywordtype">bool</span> AddCut(std::string selector, std::string cut, std::string description, <span class="keywordtype">bool</span> savedist, Args... rest);</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;  <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keywordtype">bool</span> ApplyCut(std::string selector, std::string cut, <span class="keywordtype">double</span> val, Args... rest);</div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;  <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
@@ -250,7 +250,7 @@ $(function() {
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160; </div>
 <div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
 <div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="keywordtype">bool</span> DataModel::AddCut(std::string selector, std::string cut, std::string description, Args... rest){</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="keywordtype">bool</span> DataModel::AddCut(std::string selector, std::string cut, std::string description, <span class="keywordtype">bool</span> savedist, Args... rest){</div>
 <div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    <span class="keywordflow">if</span>(selector!=<span class="stringliteral">&quot;all&quot;</span> &amp;&amp; <a class="code" href="classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d">Selectors</a>.count(selector)==0){</div>
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        std::cerr&lt;&lt;<span class="stringliteral">&quot;DataModel::AddCut Error! Unrecognised selector &quot;</span>&lt;&lt;selector</div>
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;                 &lt;&lt;<span class="stringliteral">&quot; for cut &quot;</span>&lt;&lt;cut&lt;&lt;std::endl;</div>
@@ -260,10 +260,10 @@ $(function() {
 <div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <span class="keywordflow">if</span>(selector==<span class="stringliteral">&quot;all&quot;</span>){</div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        <span class="comment">// add this event to all selectors</span></div>
 <div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span> sel = <a class="code" href="classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d">Selectors</a>.begin(); sel!=<a class="code" href="classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d">Selectors</a>.end(); ++sel){</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;            ret &amp;= sel-&gt;second-&gt;AddCut(cut, description, rest...);</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;            ret &amp;= sel-&gt;second-&gt;AddCut(cut, description, savedist, rest...);</div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;        }</div>
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        ret = <a class="code" href="classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d">Selectors</a>.at(selector)-&gt;AddCut(cut, description, rest...);</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        ret = <a class="code" href="classDataModel.html#a3bfe078835a99c6f8d6e71fad595104d">Selectors</a>.at(selector)-&gt;AddCut(cut, description, savedist, rest...);</div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    }</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <span class="keywordflow">return</span> ret;</div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;}</div>

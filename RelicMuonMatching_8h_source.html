@@ -79,65 +79,69 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;MTreeReader.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;skroot.h&quot;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;ParticleCand.h&quot;</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
-<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="classRelicMuonMatching.html">   16</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRelicMuonMatching.html">RelicMuonMatching</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    </div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &quot;HistogramBuilder.h&quot;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="classRelicMuonMatching.html">   17</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRelicMuonMatching.html">RelicMuonMatching</a>: <span class="keyword">public</span> Tool {</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    </div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    </div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <a class="code" href="classRelicMuonMatching.html#aa66f1ab81492ebb068c351fed75d42dd">RelicMuonMatching</a>(); </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRelicMuonMatching.html#a949d2923c061c595c04ecfd974fe19b7">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRelicMuonMatching.html#ab09421da3cd68717e7edd21446a42a6f">Execute</a>(); </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRelicMuonMatching.html#a9c67af4c636b744c9123afc69d34af05">Finalise</a>(); </div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    </div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    </div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    </div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <a class="code" href="classRelicMuonMatching.html#aa66f1ab81492ebb068c351fed75d42dd">RelicMuonMatching</a>(); </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRelicMuonMatching.html#a949d2923c061c595c04ecfd974fe19b7">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRelicMuonMatching.html#ab09421da3cd68717e7edd21446a42a6f">Execute</a>(); </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRelicMuonMatching.html#a9c67af4c636b744c9123afc69d34af05">Finalise</a>(); </div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* rfmReader = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordtype">int</span> rfmReaderLUN;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">int</span> muWriterLUN;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">int</span> relicWriterLUN;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">bool</span> RemoveFromDeque(std::vector&lt;int&gt;&amp; particlesToRemove, std::deque&lt;ParticleCand&gt;&amp; particleDeque);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">bool</span> RelicMuonMatch(<span class="keywordtype">bool</span> muonFlag, int64_t currentTime, <span class="keywordtype">int</span> subtrg_num=0, int32_t it0xsk=0);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    </div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">bool</span> WriteRelicInfo();</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">bool</span> WriteMuonInfo();</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    </div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">bool</span> muonFlag;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">int</span> currentSubRun;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">int</span> lastRun = 0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">double</span> match_window = 60; <span class="comment">// [seconds]</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    int64_t match_window_ticks;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    std::vector&lt;int&gt; relicsToRemove;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    std::vector&lt;int&gt; muonsToRemove;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    std::vector&lt;int&gt; MatchedEvNums;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    std::vector&lt;float&gt; MatchedTimeDiff;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    std::vector&lt;float&gt; MatchedParticleE;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    std::string muSelectorName;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    std::string relicSelectorName;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* rfmReader = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keywordtype">bool</span> RemoveFromDeque(std::vector&lt;int&gt;&amp; particlesToRemove, std::deque&lt;ParticleCand&gt;&amp; particleDeque);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">bool</span> RelicMuonMatch(<span class="keywordtype">bool</span> loweEventFlag, int64_t currentTicks, <span class="keywordtype">int</span> subtrg_num=0, int32_t it0xsk=0);</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    </div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    EventType eventType;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">int</span> currentSubRun;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">int</span> lastRun = 0;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">int</span> last_nevsk=0;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> num_rollovers=0;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordtype">double</span> match_window = 60; <span class="comment">// [seconds]</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    int64_t match_window_ticks;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    </div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    std::vector&lt;int&gt; relicsToRemove;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::vector&lt;int&gt; muonsToRemove;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    </div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    int32_t lastnevhwsk, lastit0sk, last_rollover_nevsk;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    int64_t lasteventticks, lastmuticks, lastrelicticks;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">int</span> nextmuentry=0;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">int</span> nextrelicentry=0;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">int</span> nextmuentry=0;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordtype">int</span> nextrelicentry=0;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    std::string muSelectorName;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    std::string relicSelectorName;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    std::string rfmReaderName;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    uint64_t muoncount=0;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    uint64_t reliccount=0;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// track how many muon/relic pairs we check</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    uint64_t tdiffcount=0;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="comment">// and how many pass our +-60s tdiff cut.</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    uint64_t passing_tdiffcount=0;</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="comment">// defunct....</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="comment">//unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;};</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <a class="code" href="classHistogramBuilder.html">HistogramBuilder</a> hb;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    std::string distros_file;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// defunct....</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="comment">//unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;};</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
+<div class="ttc" id="aclassHistogramBuilder_html"><div class="ttname"><a href="classHistogramBuilder.html">HistogramBuilder</a></div><div class="ttdef"><b>Definition:</b> HistogramBuilder.h:14</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
-<div class="ttc" id="aclassRelicMuonMatching_html"><div class="ttname"><a href="classRelicMuonMatching.html">RelicMuonMatching</a></div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.h:16</div></div>
-<div class="ttc" id="aclassRelicMuonMatching_html_a949d2923c061c595c04ecfd974fe19b7"><div class="ttname"><a href="classRelicMuonMatching.html#a949d2923c061c595c04ecfd974fe19b7">RelicMuonMatching::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:12</div></div>
-<div class="ttc" id="aclassRelicMuonMatching_html_a9c67af4c636b744c9123afc69d34af05"><div class="ttname"><a href="classRelicMuonMatching.html#a9c67af4c636b744c9123afc69d34af05">RelicMuonMatching::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:146</div></div>
-<div class="ttc" id="aclassRelicMuonMatching_html_aa66f1ab81492ebb068c351fed75d42dd"><div class="ttname"><a href="classRelicMuonMatching.html#aa66f1ab81492ebb068c351fed75d42dd">RelicMuonMatching::RelicMuonMatching</a></div><div class="ttdeci">RelicMuonMatching()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:9</div></div>
-<div class="ttc" id="aclassRelicMuonMatching_html_ab09421da3cd68717e7edd21446a42a6f"><div class="ttname"><a href="classRelicMuonMatching.html#ab09421da3cd68717e7edd21446a42a6f">RelicMuonMatching::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:85</div></div>
+<div class="ttc" id="aclassRelicMuonMatching_html"><div class="ttname"><a href="classRelicMuonMatching.html">RelicMuonMatching</a></div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.h:17</div></div>
+<div class="ttc" id="aclassRelicMuonMatching_html_a949d2923c061c595c04ecfd974fe19b7"><div class="ttname"><a href="classRelicMuonMatching.html#a949d2923c061c595c04ecfd974fe19b7">RelicMuonMatching::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:16</div></div>
+<div class="ttc" id="aclassRelicMuonMatching_html_a9c67af4c636b744c9123afc69d34af05"><div class="ttname"><a href="classRelicMuonMatching.html#a9c67af4c636b744c9123afc69d34af05">RelicMuonMatching::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:292</div></div>
+<div class="ttc" id="aclassRelicMuonMatching_html_aa66f1ab81492ebb068c351fed75d42dd"><div class="ttname"><a href="classRelicMuonMatching.html#aa66f1ab81492ebb068c351fed75d42dd">RelicMuonMatching::RelicMuonMatching</a></div><div class="ttdeci">RelicMuonMatching()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:11</div></div>
+<div class="ttc" id="aclassRelicMuonMatching_html_ab09421da3cd68717e7edd21446a42a6f"><div class="ttname"><a href="classRelicMuonMatching.html#ab09421da3cd68717e7edd21446a42a6f">RelicMuonMatching::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> RelicMuonMatching.cpp:67</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

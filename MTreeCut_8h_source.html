@@ -97,101 +97,103 @@ $(function() {
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <a class="code" href="classMTreeCut.html">MTreeCut</a>(TFile* outfilein, std::string cutname, std::string description, <span class="keywordtype">double</span> low=DOUBLE_MIN, <span class="keywordtype">double</span> high=DOUBLE_MAX);</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <a class="code" href="classMTreeCut.html">MTreeCut</a>(std::string cutname, TEntryList* inelist, TTree* intree);</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    ~<a class="code" href="classMTreeCut.html">MTreeCut</a>();</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    std::string mode=<span class="stringliteral">&quot;&quot;</span>;  <span class="comment">// can be &quot;read&quot; or &quot;write&quot;. Determines whether destructor performs cleanup.</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    std::string cut_name;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    std::string cut_description;   <span class="comment">// TODO store the cut values etc in here! if mu_time&lt;250, store the value 250!</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    TFile* outfile=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    TEntryList* ttree_entries=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    TTree* additional_indices=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">int</span> type=-1;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="comment">// -1; uninitialized,</span></div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="comment">//  0: simple, an &quot;event&quot; is a TTree entry</span></div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="comment">//  1: an &quot;event&quot; is a single element of an array branch in TTree entry</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="comment">//  2: an &quot;event&quot; is a combination of &gt;1 elements in multiple *independent* array branches in a TTree entry</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="comment">// </span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// e.g., if a TTree has branches:</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="comment">// &quot;num_prompt_events&quot; (int)</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="comment">// &quot;prompt_t&quot; (float[num_prompt_events])</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="comment">// &quot;prompt_e&quot; (float[num_prompt_events])</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="comment">// &quot;num_delayed_events&quot; (int)</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="comment">// &quot;delayed_t&quot; (float[num_delayed_events])</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="comment">// &quot;delayed_e&quot; (float[num_delayed_events])</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="comment">// </span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="comment">// then a cut &quot;num_delayed_events&gt;0&quot; would be type 0</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">//      a cut &quot;prompt_e &gt; 8.0&quot; would be type 1 (an &quot;event&quot; represents a single entry in the &#39;prompt&#39; branch arrays that passes this cut)</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="comment">//      a cut &quot;prompt_e &gt; 8.0 &amp;&amp; delayed_e &gt; 5.0&quot; would be a type 2 (an &quot;event&quot; represents the COMBINATION of a single entry in the &#39;prompt&#39; branch</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="comment">//                                                                    arrays TOGETHER WITH a single entry in the INDEPENDENT &#39;delayed&#39; branch arrays)</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="comment">// NOTE:  cut &quot;prompt_e &gt; 8.0 &amp;&amp; prompt_t &lt; 25e3&quot; would NOT be type 2, because these arrays are NOT independent:</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="comment">// i.e. the passing index in the prompt_e array is necessarily the same as the passing index in the prompt_t array,</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="comment">// as these arrays represent different properties of the same underlying object (they sharing indexing).</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// so this is just the &#39;&amp;&amp;&#39; of two type 1 cuts, which still represents a type 1 cut.</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="comment">// for type 1</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    std::string additional_branchname;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    std::vector&lt;std::string&gt; linked_branch_list;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    std::set&lt;size_t&gt; indexes_this_entry;               </div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">   62</a></span>&#160;    std::set&lt;size_t&gt;* <a class="code" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">indexes_this_entry_p</a>=<span class="keyword">nullptr</span>;    <span class="comment">// required when reading, must stay in memory!</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// for type 2</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    std::vector&lt;std::string&gt; additional_branchnames;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    std::vector&lt;std::vector&lt;std::string&gt;&gt; linked_branch_lists;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; indices_this_entry;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt;* indices_this_entry_p=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* theReader=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    Long64_t current_entry=-1;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    Long64_t tlist_entry=-1;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    Long64_t total_entries=-1;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, <a class="code" href="classMTreeReader.html">MTreeReader</a>* readerIn, TTree* distro_tree=<span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::string indexcutbranch, std::vector&lt;std::string&gt; linkedbranches, <a class="code" href="classMTreeReader.html">MTreeReader</a>* readerIn, TTree* distro_tree=<span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::vector&lt;std::string&gt; indexcutbranches, std::vector&lt;std::vector&lt;std::string&gt;&gt; linkedbranches, <a class="code" href="classMTreeReader.html">MTreeReader</a>* readerIn, TTree* distro_tree=<span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">bool</span> MakeDistroBranches(TTree* distros_tree);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keywordtype">void</span> SetBranchAddresses();</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">bool</span> GetMetaInfo();</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordtype">void</span> SetDescription(std::string desc);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">bool</span> Enter();</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordtype">bool</span> Enter(<span class="keywordtype">size_t</span> index);</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keywordtype">bool</span> Enter(std::vector&lt;size_t&gt;&amp; indices);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    std::string mode=<span class="stringliteral">&quot;&quot;</span>;  <span class="comment">// can be &quot;read&quot; or &quot;write&quot;. Determines whether destructor performs cleanup.</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    std::string cut_name;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    std::string cut_description;   <span class="comment">// TODO store the cut values etc in here! if mu_time&lt;250, store the value 250!</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    TFile* outfile=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    TEntryList* ttree_entries=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    TTree* additional_indices=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">int</span> type=-1;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="comment">// -1; uninitialized,</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="comment">//  0: simple, an &quot;event&quot; is a TTree entry</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="comment">//  1: an &quot;event&quot; is a single element of an array branch in TTree entry</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="comment">//  2: an &quot;event&quot; is a combination of &gt;1 elements in multiple *independent* array branches in a TTree entry</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// </span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="comment">// e.g., if a TTree has branches:</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="comment">// &quot;num_prompt_events&quot; (int)</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="comment">// &quot;prompt_t&quot; (float[num_prompt_events])</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="comment">// &quot;prompt_e&quot; (float[num_prompt_events])</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="comment">// &quot;num_delayed_events&quot; (int)</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="comment">// &quot;delayed_t&quot; (float[num_delayed_events])</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="comment">// &quot;delayed_e&quot; (float[num_delayed_events])</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="comment">// </span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="comment">// then a cut &quot;num_delayed_events&gt;0&quot; would be type 0</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="comment">//      a cut &quot;prompt_e &gt; 8.0&quot; would be type 1 (an &quot;event&quot; represents a single entry in the &#39;prompt&#39; branch arrays that passes this cut)</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="comment">//      a cut &quot;prompt_e &gt; 8.0 &amp;&amp; delayed_e &gt; 5.0&quot; would be a type 2 (an &quot;event&quot; represents the COMBINATION of a single entry in the &#39;prompt&#39; branch</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="comment">//                                                                    arrays TOGETHER WITH a single entry in the INDEPENDENT &#39;delayed&#39; branch arrays)</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="comment">// NOTE:  cut &quot;prompt_e &gt; 8.0 &amp;&amp; prompt_t &lt; 25e3&quot; would NOT be type 2, because these arrays are NOT independent:</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="comment">// i.e. the passing index in the prompt_e array is necessarily the same as the passing index in the prompt_t array,</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="comment">// as these arrays represent different properties of the same underlying object (they sharing indexing).</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="comment">// so this is just the &#39;&amp;&amp;&#39; of two type 1 cuts, which still represents a type 1 cut.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="comment">// for type 1</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    std::string additional_branchname;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    std::vector&lt;std::string&gt; linked_branch_list;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    std::set&lt;size_t&gt; indexes_this_entry;               </div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">   63</a></span>&#160;    std::set&lt;size_t&gt;* <a class="code" href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">indexes_this_entry_p</a>=<span class="keyword">nullptr</span>;    <span class="comment">// required when reading, must stay in memory!</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="comment">// for type 2</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    std::vector&lt;std::string&gt; additional_branchnames;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    std::vector&lt;std::vector&lt;std::string&gt;&gt; linked_branch_lists;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; indices_this_entry;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt;* indices_this_entry_p=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* theReader=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    Long64_t current_entry=-1;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    Long64_t tlist_entry=-1;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    Long64_t total_entries=-1;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">bool</span> got_low_thresh=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">double</span> low_thresh=DOUBLE_MIN;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">bool</span> got_high_thresh=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">double</span> high_thresh=DOUBLE_MAX;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">bool</span> got_bool_req=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="comment">// if saving distributions</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    <span class="keywordtype">bool</span> save_distros=<span class="keyword">false</span>;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordtype">double</span> branch_val;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">bool</span> pass_val;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    TBranch* values_branch=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    TBranch* pass_branch=<span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="comment">// check if the value passes the required check and if so calls Enter</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">bool</span> Apply(<span class="keywordtype">double</span> value);</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">bool</span> Apply(<span class="keywordtype">double</span> value, <span class="keywordtype">size_t</span> index);</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">bool</span> Apply(<span class="keywordtype">double</span> value, std::vector&lt;size_t&gt; indices);</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">bool</span> Flush();</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">void</span> Write();</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    Long64_t GetCurrentEntry();</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    Long64_t GetNextEntry();</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    std::set&lt;size_t&gt; GetPassingIndexes();</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; GetPassingIndices();</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    </div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="comment">// required for SerialisableObjects</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">bool</span> Serialise(BinaryStream &amp;bs);</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">bool</span> Print();</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    std::string GetVersion();</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">bool</span> got_low_thresh=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordtype">double</span> low_thresh=DOUBLE_MIN;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordtype">bool</span> got_high_thresh=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keywordtype">double</span> high_thresh=DOUBLE_MAX;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">bool</span> got_bool_req=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="comment">// if saving distributions</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">bool</span> save_distros=<span class="keyword">false</span>;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordtype">double</span> branch_val;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keywordtype">bool</span> pass_val;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    TBranch* values_branch=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    TBranch* pass_branch=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    </div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;};</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, <a class="code" href="classMTreeReader.html">MTreeReader</a>* readerIn, TTree* distro_tree=<span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::string indexcutbranch, std::vector&lt;std::string&gt; linkedbranches, <a class="code" href="classMTreeReader.html">MTreeReader</a>* readerIn, TTree* distro_tree=<span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">void</span> Initialize(<span class="keywordtype">int</span> type_in, std::vector&lt;std::string&gt; indexcutbranches, std::vector&lt;std::vector&lt;std::string&gt;&gt; linkedbranches, <a class="code" href="classMTreeReader.html">MTreeReader</a>* readerIn, TTree* distro_tree=<span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordtype">bool</span> MakeDistroBranches(TTree* distros_tree);</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> SetBranchAddresses();</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">bool</span> GetMetaInfo();</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">void</span> SetDescription(std::string desc);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">bool</span> Enter();</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">bool</span> Enter(<span class="keywordtype">size_t</span> index);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">bool</span> Enter(std::vector&lt;size_t&gt;&amp; indices);</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="comment">// check if the value passes the required check and if so calls Enter</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">bool</span> Apply(<span class="keywordtype">double</span> value);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">bool</span> Apply(<span class="keywordtype">double</span> value, <span class="keywordtype">size_t</span> index);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">bool</span> Apply(<span class="keywordtype">double</span> value, std::vector&lt;size_t&gt; indices);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    Long64_t GetEntries();</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordtype">bool</span> Flush();</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keywordtype">void</span> Write();</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    Long64_t GetCurrentEntry();</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    Long64_t GetNextEntry();</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    std::set&lt;size_t&gt; GetPassingIndexes();</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    std::set&lt;std::vector&lt;size_t&gt;&gt; GetPassingIndices();</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="comment">// required for SerialisableObjects</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordtype">bool</span> Serialise(BinaryStream &amp;bs);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keywordtype">bool</span> Print();</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    std::string GetVersion();</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    </div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;};</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassMTreeCut_html"><div class="ttname"><a href="classMTreeCut.html">MTreeCut</a></div><div class="ttdef"><b>Definition:</b> MTreeCut.h:22</div></div>
-<div class="ttc" id="aclassMTreeCut_html_a1962c19e22c32b2205996ff85005b7f6"><div class="ttname"><a href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">MTreeCut::indexes_this_entry_p</a></div><div class="ttdeci">std::set&lt; size_t &gt; * indexes_this_entry_p</div><div class="ttdoc">use a set to prevent duplicates.</div><div class="ttdef"><b>Definition:</b> MTreeCut.h:62</div></div>
+<div class="ttc" id="aclassMTreeCut_html_a1962c19e22c32b2205996ff85005b7f6"><div class="ttname"><a href="classMTreeCut.html#a1962c19e22c32b2205996ff85005b7f6">MTreeCut::indexes_this_entry_p</a></div><div class="ttdeci">std::set&lt; size_t &gt; * indexes_this_entry_p</div><div class="ttdoc">use a set to prevent duplicates.</div><div class="ttdef"><b>Definition:</b> MTreeCut.h:63</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

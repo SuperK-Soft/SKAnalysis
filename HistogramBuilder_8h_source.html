@@ -87,8 +87,8 @@ $(function() {
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <a class="code" href="classHistogramBuilder.html">HistogramBuilder</a>();</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    ~<a class="code" href="classHistogramBuilder.html">HistogramBuilder</a>();</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    TFile* MakeFile(std::string filename, <span class="keywordtype">bool</span> notree_in=<span class="keyword">false</span>);</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    TTree* MakeTree(std::string treename);</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    TFile* MakeFile(std::string filename, std::string treename=<span class="stringliteral">&quot;tree&quot;</span>, <span class="keywordtype">bool</span> notree_in=<span class="keyword">false</span>);</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    TTree* MakeTree(std::string treename=<span class="stringliteral">&quot;tree&quot;</span>);</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordtype">void</span> SaveHists(<span class="keywordtype">bool</span> dosavehists);</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">void</span> SetVerbosity(<span class="keywordtype">int</span> verb);</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    </div>
@@ -455,9 +455,9 @@ $(function() {
 <div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                     &lt;&lt;std::endl;</div>
 <div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        }</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;             <span class="keywordflow">if</span>(vals.size()==1) hist-&gt;Fill(vals[0]);</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==2) hist-&gt;Fill(vals[0],vals[1]);</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==3) hist-&gt;Fill(vals[0],vals[1],vals[2]);</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;             <span class="keywordflow">if</span>(vals.size()==1){ hist-&gt;Fill(vals[0]); }</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==2){ TH2* hist2 = (TH2*)(hist); hist2-&gt;Fill(vals[0],vals[1]); }</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==3){ TH3* hist3 = (TH3*)(hist); hist3-&gt;Fill(vals[0],vals[1],vals[2]); }</div>
 <div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;    }</div>
 <div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    </div>
 <div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>

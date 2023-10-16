@@ -79,26 +79,26 @@ $(function() {
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &quot;Tool.h&quot;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
-<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="classRunwiseEnergyCut.html">   20</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRunwiseEnergyCut.html">RunwiseEnergyCut</a>: <span class="keyword">public</span> Tool {</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <a class="code" href="classRunwiseEnergyCut.html#a1aedb45b147bd30292200e146083426e">RunwiseEnergyCut</a>(); </div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRunwiseEnergyCut.html#a38df459bc7bc1b800d5cbb48cfbfc731">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRunwiseEnergyCut.html#a7b02fa0417f89f78971371774856e489">Execute</a>(); </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRunwiseEnergyCut.html#a2e21afdd6971b7358e4ce33dc7e3527f">Finalise</a>(); </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordtype">bool</span> ParseOptions(std::string&amp; configfile);</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    std::string selectorName;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">int</span> Nskipped = 0;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    std::vector&lt;std::pair&lt;std::pair&lt;int,int&gt;,std::pair&lt;float,float&gt;&gt;&gt; cuts;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;};</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classRunwiseEnergyCut.html">   21</a></span>&#160;<span class="keyword">class </span><a class="code" href="classRunwiseEnergyCut.html">RunwiseEnergyCut</a>: <span class="keyword">public</span> Tool {</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    </div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <a class="code" href="classRunwiseEnergyCut.html#a1aedb45b147bd30292200e146083426e">RunwiseEnergyCut</a>(); </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRunwiseEnergyCut.html#a38df459bc7bc1b800d5cbb48cfbfc731">Initialise</a>(std::string configfile,<a class="code" href="classDataModel.html">DataModel</a> &amp;data); </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRunwiseEnergyCut.html#a7b02fa0417f89f78971371774856e489">Execute</a>(); </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRunwiseEnergyCut.html#a2e21afdd6971b7358e4ce33dc7e3527f">Finalise</a>(); </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordtype">bool</span> ParseOptions(std::string&amp; configfile);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    std::string selectorName;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">int</span> Nskipped = 0;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    std::vector&lt;std::pair&lt;std::pair&lt;int,int&gt;,std::pair&lt;float,float&gt;&gt;&gt; cuts;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;};</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
-<div class="ttc" id="aclassRunwiseEnergyCut_html"><div class="ttname"><a href="classRunwiseEnergyCut.html">RunwiseEnergyCut</a></div><div class="ttdef"><b>Definition:</b> RunwiseEnergyCut.h:20</div></div>
+<div class="ttc" id="aclassRunwiseEnergyCut_html"><div class="ttname"><a href="classRunwiseEnergyCut.html">RunwiseEnergyCut</a></div><div class="ttdef"><b>Definition:</b> RunwiseEnergyCut.h:21</div></div>
 <div class="ttc" id="aclassRunwiseEnergyCut_html_a1aedb45b147bd30292200e146083426e"><div class="ttname"><a href="classRunwiseEnergyCut.html#a1aedb45b147bd30292200e146083426e">RunwiseEnergyCut::RunwiseEnergyCut</a></div><div class="ttdeci">RunwiseEnergyCut()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> RunwiseEnergyCut.cpp:5</div></div>
 <div class="ttc" id="aclassRunwiseEnergyCut_html_a2e21afdd6971b7358e4ce33dc7e3527f"><div class="ttname"><a href="classRunwiseEnergyCut.html#a2e21afdd6971b7358e4ce33dc7e3527f">RunwiseEnergyCut::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> RunwiseEnergyCut.cpp:71</div></div>
 <div class="ttc" id="aclassRunwiseEnergyCut_html_a38df459bc7bc1b800d5cbb48cfbfc731"><div class="ttname"><a href="classRunwiseEnergyCut.html#a38df459bc7bc1b800d5cbb48cfbfc731">RunwiseEnergyCut::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> RunwiseEnergyCut.cpp:8</div></div>

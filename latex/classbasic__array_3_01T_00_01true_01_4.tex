@@ -9,6 +9,9 @@
 \mbox{\Hypertarget{classbasic__array_3_01T_00_01true_01_4_a77786d85548f072fcde8a2741b5701fb}\label{classbasic__array_3_01T_00_01true_01_4_a77786d85548f072fcde8a2741b5701fb}} 
 {\bfseries basic\+\_\+array} (intptr\+\_\+t addr\+\_\+in, std\+::vector$<$ size\+\_\+t $>$ sizes)
 \item 
+\mbox{\Hypertarget{classbasic__array_3_01T_00_01true_01_4_a56ccb3f1b82649edc8d1b53a124e1a4c}\label{classbasic__array_3_01T_00_01true_01_4_a56ccb3f1b82649edc8d1b53a124e1a4c}} 
+{\footnotesize template$<$typename X , size\+\_\+t N, size\+\_\+t M$>$ }\\{\bfseries basic\+\_\+array} (X(\&ref\+\_\+in)\mbox{[}N\mbox{]}\mbox{[}M\mbox{]})
+\item 
 \mbox{\Hypertarget{classbasic__array_3_01T_00_01true_01_4_a2b50a1d634295b8629878fd4f625c189}\label{classbasic__array_3_01T_00_01true_01_4_a2b50a1d634295b8629878fd4f625c189}} 
 {\footnotesize template$<$class X $>$ }\\{\bfseries basic\+\_\+array} (X ref\+\_\+in, typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+same$<$ typename std\+::remove\+\_\+extent$<$ typename std\+::remove\+\_\+pointer$<$ X $>$\+::type $>$\+::type, T $>$\+::value, bool $>$\+::type potato=true)
 \item 
@@ -17,6 +20,9 @@ bool {\bfseries Init} (intptr\+\_\+t addr\+\_\+in, std\+::vector$<$ size\+\_\+t 
 \item 
 \mbox{\Hypertarget{classbasic__array_3_01T_00_01true_01_4_a48435ba6ee93e7ddcb1b01fb073c01b0}\label{classbasic__array_3_01T_00_01true_01_4_a48435ba6ee93e7ddcb1b01fb073c01b0}} 
 \mbox{\hyperlink{classbasic__array}{V}} {\bfseries operator\mbox{[}$\,$\mbox{]}} (int i) const
+\item 
+\mbox{\Hypertarget{classbasic__array_3_01T_00_01true_01_4_a8c74864a11e0a9e2d46e8bf90f713ab3}\label{classbasic__array_3_01T_00_01true_01_4_a8c74864a11e0a9e2d46e8bf90f713ab3}} 
+const \mbox{\hyperlink{classbasic__array}{basic\+\_\+array}}$<$ T $>$ \& {\bfseries operator=} (const \mbox{\hyperlink{classbasic__array}{basic\+\_\+array}}$<$ T, true $>$ \&in) const
 \item 
 \mbox{\Hypertarget{classbasic__array_3_01T_00_01true_01_4_ac3081a6434efbfdb1093c80c0d69d1b8}\label{classbasic__array_3_01T_00_01true_01_4_ac3081a6434efbfdb1093c80c0d69d1b8}} 
 const \mbox{\hyperlink{classbasic__array}{V}} \& {\bfseries at} (int i) const

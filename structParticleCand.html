@@ -77,12 +77,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>EventNumber</b></td></
 <tr class="memitem:a58b5892102f6e399bdd56362d8702081"><td class="memItemLeft" align="right" valign="top"><a id="a58b5892102f6e399bdd56362d8702081"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>SubTriggerNumber</b></td></tr>
 <tr class="separator:a58b5892102f6e399bdd56362d8702081"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a396d6f7d6c14137441e10d9e4b763d2c"><td class="memItemLeft" align="right" valign="top"><a id="a396d6f7d6c14137441e10d9e4b763d2c"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>nevhwsk</b></td></tr>
+<tr class="separator:a396d6f7d6c14137441e10d9e4b763d2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e89bb446fb30b35e1a95917d51ea613"><td class="memItemLeft" align="right" valign="top"><a id="a4e89bb446fb30b35e1a95917d51ea613"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>it0xsk</b></td></tr>
 <tr class="separator:a4e89bb446fb30b35e1a95917d51ea613"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a218c5e23ae29e4b568bfa478345011ad"><td class="memItemLeft" align="right" valign="top"><a id="a218c5e23ae29e4b568bfa478345011ad"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>EventTime</b></td></tr>
-<tr class="separator:a218c5e23ae29e4b568bfa478345011ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa584a8deab5f47aa81ca2cf6c370e839"><td class="memItemLeft" align="right" valign="top"><a id="aa584a8deab5f47aa81ca2cf6c370e839"></a>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>EventTicks</b></td></tr>
+<tr class="separator:aa584a8deab5f47aa81ca2cf6c370e839"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94aa505002e4c1f84914b6db00bca52d"><td class="memItemLeft" align="right" valign="top"><a id="a94aa505002e4c1f84914b6db00bca52d"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>NumRollovers</b></td></tr>
+<tr class="separator:a94aa505002e4c1f84914b6db00bca52d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97891911a45969718bba3e0370284565"><td class="memItemLeft" align="right" valign="top"><a id="a97891911a45969718bba3e0370284565"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>InEntryNumber</b></td></tr>
 <tr class="separator:a97891911a45969718bba3e0370284565"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -95,6 +101,12 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>PID</b> = 0</td></tr>
 <tr class="memitem:a968771727ebc7e41997c6cacebdec686"><td class="memItemLeft" align="right" valign="top"><a id="a968771727ebc7e41997c6cacebdec686"></a>
 std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>matchedParticleEvNum</b></td></tr>
 <tr class="separator:a968771727ebc7e41997c6cacebdec686"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a368c4cad6799a51c5670d3d4ab9189ee"><td class="memItemLeft" align="right" valign="top"><a id="a368c4cad6799a51c5670d3d4ab9189ee"></a>
+std::vector&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>matchedParticleEntryNum</b></td></tr>
+<tr class="separator:a368c4cad6799a51c5670d3d4ab9189ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d0fd6a91ea825bdac2785b9ab7eb724"><td class="memItemLeft" align="right" valign="top"><a id="a2d0fd6a91ea825bdac2785b9ab7eb724"></a>
+std::vector&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>matchedParticleHasAFT</b></td></tr>
+<tr class="separator:a2d0fd6a91ea825bdac2785b9ab7eb724"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a896a03b411e693062c0fd61427fb95e9"><td class="memItemLeft" align="right" valign="top"><a id="a896a03b411e693062c0fd61427fb95e9"></a>
 std::vector&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>matchedParticleTimeDiff</b></td></tr>
 <tr class="separator:a896a03b411e693062c0fd61427fb95e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -104,6 +116,9 @@ std::vector&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><b
 <tr class="memitem:a6d5ee3b94f358a33ad960bcc5266ad0c"><td class="memItemLeft" align="right" valign="top"><a id="a6d5ee3b94f358a33ad960bcc5266ad0c"></a>
 skroot_lowe_common&#160;</td><td class="memItemRight" valign="bottom"><b>LowECommon</b></td></tr>
 <tr class="separator:a6d5ee3b94f358a33ad960bcc5266ad0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99a05ba515bf724c909eef15aeece5af"><td class="memItemLeft" align="right" valign="top"><a id="a99a05ba515bf724c909eef15aeece5af"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>hasAFT</b></td></tr>
+<tr class="separator:a99a05ba515bf724c909eef15aeece5af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>DataModel/<a class="el" href="ParticleCand_8h_source.html">ParticleCand.h</a></li>
