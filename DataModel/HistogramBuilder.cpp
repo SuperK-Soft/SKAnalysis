@@ -19,7 +19,7 @@ const std::map<std::string, HistogramBuilder::branchType> HistogramBuilder::type
 
 HistogramBuilder::HistogramBuilder(){}
 
-TFile* HistogramBuilder::MakeFile(std::string filename, bool notree_in){
+TFile* HistogramBuilder::MakeFile(std::string filename, std::string treename, bool notree_in){
 	// check if we already have a file open
 	if(ofile!=nullptr){
 		std::cerr<<"HistogramBuilder::MakeFile called to make file '"<<filename<<"'"
@@ -34,7 +34,7 @@ TFile* HistogramBuilder::MakeFile(std::string filename, bool notree_in){
 		ofile = new TFile(ofilename.c_str(),"RECREATE");
 		if(ofile==nullptr || ofile->IsZombie()){
 			std::cerr<<"HistogramBuilder: Error making new file '"<<filename<<"'"<<std::endl;
-			ofile->Close();
+			if(ofile) ofile->Close();
 			delete ofile;
 			ofile=nullptr;
 			return nullptr;
@@ -46,7 +46,7 @@ TFile* HistogramBuilder::MakeFile(std::string filename, bool notree_in){
 		if(ofile==nullptr || ofile->IsZombie()){
 			std::cerr<<"HistogramBuilder::MakeFile error attempting to make temporary file '"
 			         <<ofilename<<"'"<<std::endl;
-			ofile->Close();
+			if(ofile) ofile->Close();
 			delete ofile;
 			ofile=nullptr;
 			return nullptr;
@@ -54,10 +54,16 @@ TFile* HistogramBuilder::MakeFile(std::string filename, bool notree_in){
 		std::cerr<<"HistogramBuilder::MakeFile created temporary file '"<<ofilename<<"'"<<std::endl;
 		fileistmp=true;
 	}
+	notree = notree_in;
+	if(!notree){
+		MakeTree(treename);
+	}
+	
 	return ofile;
 }
 
 TTree* HistogramBuilder::MakeTree(std::string treename){
+	notree=false;
 	
 	// ensure we have a file open
 	if(ofile==nullptr){
@@ -83,6 +89,10 @@ int HistogramBuilder::SetTreeEntries(){
 
 bool HistogramBuilder::Save(){
 	
+	if(ofile==nullptr){
+		std::cerr<<"HistogramBuilder::Save called but no output file!"<<std::endl;
+		return false;
+	}
 	ofile->cd();
 	if(tree){
 		SetTreeEntries();
@@ -97,7 +107,7 @@ bool HistogramBuilder::Save(){
 }
 
 bool HistogramBuilder::Close(){
-	Save();
+	if(tree || ofile) Save();
 	if(tree) tree->ResetBranchAddresses();
 	if(ofile) ofile->Close();
 	// these are owned by the file...

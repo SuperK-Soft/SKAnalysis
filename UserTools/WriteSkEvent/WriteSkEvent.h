@@ -12,9 +12,9 @@
 *
 * make a new TTree entry in an SKROOT file by invoking skroot_fill_tree, and possibly associated functions.
 *
-* $Author: ?.????? $
-* $Date: ????/??/?? $
-* $Contact: ???@km.icrr.u-tokyo.ac.jp
+* $Author: M.O'Flaherty $
+* $Date: 2023/09/06 $
+* $Contact: moflaher@km.icrr.u-tokyo.ac.jp
 */
 
 class WriteSkEvent: public Tool {
@@ -27,9 +27,10 @@ class WriteSkEvent: public Tool {
 	bool Finalise();
 	
 	private:
-	
+	std::string treeReaderName;
 	int LUN=0;
 	bool delete_outside_hits=true;
+	bool require_save_flag=false;
 };
 
 

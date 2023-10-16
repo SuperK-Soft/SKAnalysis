@@ -79,6 +79,13 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			return false;
 		}
 	}
+	// check if we're reading we have at least one input file
+	if(skrootMode!=SKROOTMODE::WRITE && list_of_files.empty()){
+		Log(m_unique_name+" error! no files given!",v_error,m_verbose);
+		m_data->vars.Set("StopLoop",1);
+		return false;
+	}
+	
 	// detect zebra files based on extention of first file
 	if(skrootMode!=SKROOTMODE::WRITE){
 		std::string firstfile = list_of_files.front();
@@ -405,6 +412,9 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				Log(m_unique_name+" failed to make MTreeReader",v_error,m_verbose);
 				return false;
 			}
+			if(mTreeReaderVerbosity) myTreeReader.SetVerbosity(mTreeReaderVerbosity);
+			// closing and deleting the file will be done by the TreeManager
+			myTreeReader.SetOwnsFile(false);
 			
 			// skread/tqreal etc detect whether a file is MC or data by checking
 			// the `mdrnsk` ("SK run mode" ...) member of the HEADER branch.
@@ -572,6 +582,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			Log(m_unique_name+" failed to open reader on tree "+treeName,v_error,m_verbose);
 			return false;
 		}
+		if(mTreeReaderVerbosity) myTreeReader.SetVerbosity(mTreeReaderVerbosity);
 		
 		// for efficiency of reading, only enable used branches
 		Log(m_unique_name+" activating branches",v_debug,m_verbose);
@@ -775,7 +786,6 @@ bool TreeReader::Execute(){
 		m_data->vars.Set("Skip",true);
 		m_data->vars.Set("StopLoop",true);
 	} else {
-		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
 		
 		m_data->vars.Set("newRun",false);
 		m_data->vars.Set("newSubrun",false);
@@ -793,6 +803,15 @@ bool TreeReader::Execute(){
 	}
 	
 	++readEntries;      // keep track of the number of entries we've actually returned
+	if(readEntries%1000==0){
+		Log(m_unique_name+" Read "+toString(readEntries),v_warning,m_verbose);
+		// the TreeManager only calls TFile::Write on destructor,
+		// so it seems like if we crash, we can end up losing everything.
+		// intermittently invoke write
+		if(skrootMode==SKROOTMODE::WRITE || skrootMode==SKROOTMODE::COPY){
+			Write();
+		}
+	}
 	aft_loaded = false; // whether common blocks currently hold SHE or AFT; reset this on every execution
 	
 	// check if we've hit the user-requested limit on number of entries to read
@@ -815,14 +834,22 @@ bool TreeReader::Execute(){
 	in fact the current in-memory event data relates to the last entry from the previous file.
 	*/
 	
+	if(skrootMode!=::SKROOTMODE::NONE){
+		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
+	} else {
+		Log(m_unique_name+" Returning entry "+toString(entrynum),v_debug,m_verbose);
+	}
+	
 	return true;
 }
 
 bool TreeReader::RunChange(){
+	Log(m_unique_name+" Run Change",v_debug,m_verbose);
 	m_data->vars.Set("newRun",true);
 	get_ok = true;
 	
 	// check if this run is bad
+	Log(m_unique_name+": Checking bad run flag for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
 	int isbad = lfbadrun_(&skhead_.nrunsk, &skhead_.nsubsk);
 	if(isbad){
 		Log(m_unique_name+" run "+toString(skhead_.nrunsk)+" flagged as a bad run by lfbadrun!",
@@ -832,17 +859,36 @@ bool TreeReader::RunChange(){
 	
 	// update water transparency
 	float watert;
+	Log(m_unique_name+": Checking days since SK start",v_debug,m_verbose); // guessing what days_to_run_start is
 	int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
-	lfwater_(&days_to_run_start, &watert);
-	Log(m_unique_name+" loaded new water transparency value "+toString(watert)
-	    +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
-	// pass to downstream tools
-	m_data->vars.Set("watert",watert);
+	if(days_to_run_start==0){
+		Log(m_unique_name+" skday_data_.relapse returned 0 for run "+toString(skhead_.nrunsk)
+		   /*+", skipping lfwater call!"*/, v_warning,m_verbose);
+		// actually lfwater does return some nominal value even for invalid inputs,
+		// which are probably better than nothing...?
+	}
+	// else {
+		Log(m_unique_name+": Getting water transparency for day "+toString(days_to_run_start),v_debug,m_verbose);
+		lfwater_(&days_to_run_start, &watert);
+		Log(m_unique_name+" loaded new water transparency value "+toString(watert)
+		    +" for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+		// pass to downstream tools
+		m_data->vars.Set("watert",watert);
+	//}
+	
+	// update dark rate
+	if(myTreeReader.GetMCFlag()){
+		// FIXME presume this is as per above
+		// What is this doing/required by?
+		Log(m_unique_name+" Updating dark rates",v_debug,m_verbose);
+		darklf_(&skhead_.nrunsk);
+	}
 	
 	return get_ok;
 }
 
 bool TreeReader::SubrunChange(){
+	Log(m_unique_name+" SubRun Change",v_debug,m_verbose);
 	m_data->vars.Set("newSubrun",true);
 	get_ok = true;
 	
@@ -857,49 +903,135 @@ bool TreeReader::SubrunChange(){
 		combad_.log_level_skbadch = 0;
 		int ierr;
 		// read badch info & puts it into combad_ common block
+		Log(m_unique_name+" Updating bad channel list for run "+toString(skhead_.nrunsk)
+		    +", subrun "+toString(skhead_.nsubsk),v_debug,m_verbose);
 		skbadch_(&skhead_.nrunsk,&skhead_.nsubsk,&ierr);
 		if(ierr<0){
 			Log(m_unique_name+" Error calling skbadch_ in SubrunChange!",v_error,m_verbose);
 			get_ok = false;
 		} else {
-			Log(m_unique_name+" loaded bad channels for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
+			Log(m_unique_name+" bad channel list updated",v_debug,m_verbose);
 		}
-	}
-	
-	// update dark rate
-	if(myTreeReader.GetMCFlag()){
-		// FIXME presume this is as per above
-		// What is this doing/required by?
-		darklf_(&skhead_.nrunsk);
 	}
 	
 	return get_ok;
 }
 
 bool TreeReader::SkipThisRun(){
-	Log(m_unique_name+" SkipThisRun called, but this feature is not yet implemented!",v_error,m_verbose);
-	// uhhh maybe we should scan the HEADER branch until the run number changes again?
-	// Or can we somehow just jump straight to the next file (TTree) in the TChain?
-	return true;
+	Log(m_unique_name+" SkipThisRun called for run "+toString(skhead_.nrunsk)+", scanning for next run...",v_error,m_verbose);
+	
+	// probably the most efficient way would be to scan the set of filenames in the TChain,
+	// (i.e. the list_of_files vector), parsing the run number from the filename
+	// until we find the next file with a different run number.
+	// how we then jump to that file though...? dunno. What's its correspoding TChain entry number?
+	// It also requires on knowing the filename format and how to parse it.
+	
+	// the next best thing is just to keep jumping to the next file,
+	// until we find one that has a new run number
+	int next_run_num = skhead_.nrunsk;
+	do {
+		// get the number of entries in this file (TTree)
+		int entry_in_current_file = myTreeReader.GetChain()->LoadTree(entrynum);
+		int entries_in_current_file = myTreeReader.GetCurrentTree()->GetEntriesFast();
+		Log(m_unique_name+" File "+myTreeReader.GetFile()->GetName()
+		    +" has "+toString(entries_in_current_file)+" entries",v_debug,m_verbose);
+		// jump forward to the first entry of the next file
+		entrynum += (entries_in_current_file - entry_in_current_file);
+		Log(m_unique_name+" Jumping forward to entry "+toString(entrynum),v_debug,m_verbose);
+		
+		// read that entry (should be first entry of next file), and get run number from the Header
+		//  - ah, but this is only populated in some entries! so we need to scan until one is populated.
+		while(true){
+			get_ok = myTreeReader.GetEntry(entrynum);
+			if(get_ok<=0){
+				Log(m_unique_name+" Hit end of tree while looking for next good run!",v_warning,m_verbose);
+				return false;
+			}
+			const Header* header = nullptr;
+			get_ok = myTreeReader.Get("HEADER", header);
+			if(!get_ok){
+				Log(m_unique_name+" Error getting HEADER while scanning for good run",v_error,m_verbose);
+				return false;
+			}
+			next_run_num = header->nrunsk;
+			if(next_run_num!=0){
+				get_ok=true;
+				break;
+			}
+			++entrynum;
+		}
+		
+		Log(m_unique_name+" Next file "+myTreeReader.GetFile()->GetName()
+		    +" is from run "+toString(next_run_num),v_debug,m_verbose);
+	} while (next_run_num==skhead_.nrunsk);
+	
+	
+	/*
+	// disable all branches and scan forward until run number changes
+	TObjArray* branches = chain->GetListOfBranches();
+	int nbranches = branches->GetEntries();
+	std::vector<bool> bstatus(nbranches);
+	for(int i=0; i<nbranches; ++i){
+		TString bname = branches->At(i)->GetName();
+		bstatus.at(i) = chain->GetBranchStatus(bname);
+		chain->SetBranchStatus(bname, false);
+	}
+	
+	// outer loop to keep going until run number changes
+	int current_run_num = skhead_.nrunsk;
+	int next_run_num = current_run_num;
+	do {
+		// scan forward until the file changes
+		int current_tree_number = chain->GetTreeNumber();
+		do {
+			get_ok = chain->GetEntry(++entrynum);
+			if(get_ok<0) break;
+		} while (chain->GetTreeNumber()==current_tree_number);
+		if(get_ok<0) break;
+		chain->SetBranchStatus("HEADER",true);
+		chain->GetEntry(entrynum);
+		chain->SetBranchStatus("HEADER",false);
+		// is this roundabout route necessary?
+		TBranch* br = chain->GetBranch("HEADER");
+		TLeaf* lf = (TLeaf*)br->GetListOfLeaves()->At(0);
+		// or can we just cast the br to a TBranchElement here?
+		TBranchElement* bev = (TBranchElement*)lf->GetBranch();
+		const Header* hed = reinterpret_cast<const Header*>(bev->GetObject());
+		next_run_num = hed->nrunsk;
+	} while(next_run_num==current_run_num);
+	
+	// reenable the previously active branches
+	for(int i=0; i<nbranches; ++i){
+		TString bname = branches->At(i)->GetName();
+		chain->SetBranchStatus(bname, bstatus.at(i));
+	}
+	*/
+	
+	return get_ok;
+}
+
+bool TreeReader::Write(){
+	TreeManager* mgr = skroot_get_mgr(&LUN);
+	if(!mgr) return false;
+	TTree* otree = mgr->GetOTree();
+	if(!otree) return false;
+	TFile* ofile = otree->GetDirectory()->GetFile();
+	if(!ofile || ofile->IsZombie()) return false;
+	int nbyteswritten = ofile->Write(0,TObject::kOverwrite);
+	Log(m_unique_name+": Wrote "+toString(nbyteswritten)+" to output file "
+	    +ofile->GetName(),v_debug,m_verbose);
+	return (nbyteswritten>=0);
 }
 
 bool TreeReader::Finalise(){
 	
 	if(myTreeSelections) delete myTreeSelections;
 	
-	// FIXME this shouldn't be needed? is AddTree messing it up?
-	// do we also need to do this in copy mode now? if we're adding a tree?
 	if(skrootMode==SKROOTMODE::WRITE){
-		std::cout<<m_unique_name<<" calling Write() on output file"<<std::endl;
 		TreeManager* mgr = skroot_get_mgr(&LUN);
-		mgr->write();
+		TTree* otree = mgr->GetOTree();
+		//std::cout<<m_unique_name<<" tree has "<<otree->GetEntries()<<" entries in Finalise"<<std::endl;
 	}
-	if(skrootMode!=SKROOTMODE::NONE){
-		//CloseLUN();                 // deletes tree, file, TreeManager.
-		// FIXME hacked to disable for now; see AddTree::Finalise for why
-		myTreeReader.SetClosed();   // tell the MTreeReader the file is closed.
-	}
-	// otherwise the MTreeReader destructor will close the file.
 	
 	// We could check our lunlist to see if there are any remaining TreeReaders,
 	// and if this is the last one, clean up the SuperManager.
@@ -911,6 +1043,19 @@ bool TreeReader::Finalise(){
 	//skroot_end_();
 	
 	return true;
+}
+
+TreeReader::~TreeReader(){
+	
+	// FIXME this shouldn't be needed? is AddTree messing it up?
+	// do we also need to do this in copy mode now? if we're adding a tree?
+	if(skrootMode==SKROOTMODE::WRITE){
+		TreeManager* mgr = skroot_get_mgr(&LUN);
+		TTree* otree = mgr->GetOTree();
+		std::cout<<m_unique_name<<" tree has "<<otree->GetEntries()<<" entries in destructor"<<std::endl;
+		std::cout<<m_unique_name<<" calling Write() on output file"<<std::endl;
+		mgr->write();
+	}
 }
 
 int TreeReader::ReadEntry(long entry_number, bool use_buffered){
@@ -1013,6 +1158,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 					//Log(m_unique_name+" skrawread pedestal or status event, skipping",v_debug,m_verbose);
 					// this happens a lot...
 					if(skip_ped_evts) bytesread = -999;
+					//std::cout<<"SKRAWREAD skipping event with status "<<get_ok<<std::endl;
 				} else if(skrootMode==SKROOTMODE::ZEBRA){
 					// get_ok == 0 -> normal physics event... but let's check manually.
 					bool non_phys_evt = ((skhead_.nrunsk==0 && skhead_.mdrnsk!=0 && skhead_.mdrnsk!= 999999) ||
@@ -1045,6 +1191,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 				} else if(get_ok!=0) {
 					// pedestal or status entry
 					if(skip_ped_evts) bytesread = -999;
+					//std::cout<<"SKREAD skipping event with status "<<get_ok<<std::endl;
 				} else if(skrootMode==SKROOTMODE::ZEBRA){
 					// get_ok == 0 -> normal read... but let's double check.
 					bool non_phys_evt = ((skhead_.nrunsk==0 && skhead_.mdrnsk!=0 && skhead_.mdrnsk!= 999999) ||
@@ -1473,6 +1620,7 @@ int TreeReader::LoadConfig(std::string configfile){
 		
 		// other variables
 		else if(thekey=="verbosity") m_verbose = stoi(thevalue);
+		else if(thekey=="mTreeReaderVerbosity") mTreeReaderVerbosity = stoi(thevalue);
 		else if(thekey=="inputFile") inputFile = thevalue;
 		else if(thekey=="outputFile") outputFile = thevalue; // when using SKROOT copy mode
 		else if(thekey=="FileListName") FileListName = thevalue;

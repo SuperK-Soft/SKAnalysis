@@ -32,6 +32,7 @@
 #include "vcvrtxC.h"
 #include "vcworkC.h"
 #include "apmueC.h"
+#include "skpdstC.h"
 
 // header for skroot_* functions. These are actually C functions.
 #include "fortran_interface.h"
@@ -54,6 +55,7 @@ extern "C" void skroot_get_entry_(int*);
 extern "C" void skatmmap2_(int*,int*,int*,int*,int*,int*);
 extern "C" void lfneihit_(int*,int*,int*);
 extern "C" void lfqhit_(int*,float*); 
+extern "C" void lfnhita_(int*);
 extern "C" void lfflasher_(int*,float*,int*);
 extern "C" float wallsk_(float*);
 extern "C" void lfdir2_(float*,float*,float*);
@@ -90,6 +92,12 @@ extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);
 // for these two, see $SKOFL_ROOT/src/softtrg/softtrg_ofldata.c
 extern "C" int softtrg_inittrgtbl_(int*, int*, int*,int*); // probably call this
 extern "C" int softtrg_inittrgtbl(int , int, int, int);    // which internally calls this
+
+namespace sk{
+extern "C" void tdiff_(int*, double*);
+}
+extern "C" void tdiff_sub_(int*, double*);
+//extern "C" void tdiff_muon_(int*, int*, int*, float*);  // in dependencies/relic_sk4, TODO
 
 // the following are provided by libwtlib_5.1.a
 extern "C" void skrunday_();

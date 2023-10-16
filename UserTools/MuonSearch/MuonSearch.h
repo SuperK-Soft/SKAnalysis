@@ -35,6 +35,7 @@ class MuonSearch: public Tool {
 	
 	double coincidence_threshold=100;
 	std::string selectorName;
+	EventType eventType;
 	
 };
 

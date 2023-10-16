@@ -11,6 +11,7 @@
 
 #include "basic_array.h"
 #include "OutputRedirector.h"   // for CStdoutRedirector
+#include "Constants.h"
 
 // TODO what's the best way of pulling these both in without introducing circular dependencies?
 #include "SK_helper_functions.h"
@@ -39,8 +40,10 @@ int safeSystemCallVerbose(std::string cmd);
 void PrintVector(TVector3& avec, bool newline=false);
 void PrintVector(TLorentzVector& avec, bool newline=false);
 bool IsStlContainer(std::string type_as_string);
+std::string toString(const std::string s);
 std::string toString(const TVector3& vec);
 std::string toString(const TLorentzVector& vec);
+std::string toString(const EventType& ev);
 std::unique_ptr<TPie> GeneratePieFromHisto(TH1F* histo, int verbose=0);
 std::unique_ptr<TPie> GeneratePieFromHisto(std::string histoname, int verbose=0);
 

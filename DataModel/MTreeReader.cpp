@@ -22,12 +22,12 @@
 #include "Algorithms.h"  // CheckPath
 
 bool Notifier::Notify(){
-	if(verbosity) std::cout<<"Notifier signalled new TTree!"<<std::endl;
+	if(verbosity) std::cout<<"Notifier for "<<treeReader->GetName()<<" loading new TTree"<<std::endl;
 	//treeReader->GetTree()->Show();
 	treeReader->GetTree()->GetTree()->GetEntry(0);
 	//treeReader->GetTree()->Show();
 	//return treeReader->UpdateBranchPointers(true);  // not sufficient!
-	return treeReader->ParseBranches();
+	return treeReader->ParseBranches();               // probably overkill - TODO happy medium
 }
 
 // TODO constructor/loader for tchains or tree pointers
@@ -175,17 +175,17 @@ int MTreeReader::LoadTree(std::string treename){
 int MTreeReader::ParseBranches(){
 	
 	branch_pointers.clear();
-        branch_istobject.clear();
-        leaf_pointers.clear();
-        branch_titles.clear();
-        branch_value_pointers.clear();
-        branch_types.clear();
-        branch_isobject.clear();
-        branch_isarray.clear();
-        branch_dimensions.clear();
-        branch_dims_cache.clear();
+	branch_istobject.clear();
+	leaf_pointers.clear();
+	branch_titles.clear();
+	branch_value_pointers.clear();
+	branch_types.clear();
+	branch_isobject.clear();
+	branch_isarray.clear();
+	branch_dimensions.clear();
+	branch_dims_cache.clear();
 	
-	if(verbosity) std::cout<<"getting leaves"<<std::endl;
+	if(verbosity) std::cout<<name<<" updating branch addresses"<<std::endl;
 	//for(int i=0; i<thetree->GetListOfLeaves()->GetEntriesFast(); ++i){
 	for(int i=0; i<thetree->GetListOfBranches()->GetEntriesFast(); ++i){
 		//TLeaf* lf=(TLeaf*)thetree->GetListOfLeaves()->At(i);
@@ -305,8 +305,7 @@ int MTreeReader::UpdateBranchPointer(std::string branchname){
 }
 
 int MTreeReader::UpdateBranchPointers(bool all){
-	// assume we only need to re-check dynamic arrays? Objects won't move, right?
-	// dynamically sized arrays may do, if more space is required...
+	// dynamic arrays and/or objects may move when switching files in a TChain
 	for(auto&& abranch : branch_isarray){
 		if(all || abranch.second){
 			// fixed sized arrays won't need to be reallocated
@@ -503,6 +502,9 @@ int MTreeReader::GetEntry(long entry_number, bool skipTreeRead){
 	
 	// check for tree changes
 	if(currentTreeNumber!=thetree->GetTreeNumber()){
+		if(verbosity) std::cout<<"MTreeReader "<<name<<" changed tree number from "<<currentTreeNumber
+		         <<" to "<<thetree->GetTreeNumber()<<" while going from entry "<<currentEntryNumber
+		         <<" to "<<entry_number<<std::endl;
 		// new tree
 		currentTreeNumber = thetree->GetTreeNumber();
 		thefile = thetree->GetCurrentFile();
@@ -534,18 +536,22 @@ long MTreeReader::GetEntries(){
 }
 
 MTreeReader::~MTreeReader(){
-	//if(thechain) thechain->ResetBranchAddresses();  // are these mutually exclusive?
-	if(thetree) thetree->ResetBranchAddresses();      // 
-	if(thefile) thefile->Close();
-	delete thefile;
+	if(iownthisfile){
+		//if(thechain) thechain->ResetBranchAddresses();  // are these mutually exclusive?
+		if(thetree) thetree->ResetBranchAddresses();      // 
+		if(thefile){
+			thefile->Close();
+			delete thefile;
+		}
+	}
 }
 
-void MTreeReader::SetClosed(){
-	// Set the file as closed by an external user
+void MTreeReader::SetOwnsFile(bool ownsfile){
+	// Set whether the MTreeReader owns the file it's reading from.
+	// If so it will close and free the file in the destructor.
+	// If not, the file will be assumed to be closed and freed elsewhere.
 	// (e.g. when using a TreeManager, the TreeManager destructor closes the file).
-	thetree=nullptr;
-	thefile=nullptr;
-	// hey, one could even invoke Load() again and re-use this MTreeReader now!
+	iownthisfile=ownsfile;
 }
 
 // misc operations

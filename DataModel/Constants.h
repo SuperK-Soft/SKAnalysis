@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <map>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_map>
 #include "TInterpreter.h" // TInterpreter::EErrorCode
@@ -18,8 +19,6 @@ static double SOL_IN_CM_PER_NS_IN_WATER = 22.484996; //speed of light in cm/ns
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
 extern std::map<TInterpreter::EErrorCode, std::string> TInterpreterErrors;
-
-enum class TriggerType;
 
 // functions
 std::string G3_process_code_to_string(int process_code);
@@ -45,48 +44,142 @@ const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
 
-enum class TriggerType{
-	LE=0,
-	HE=1,
-	SLE=2,
-	OD_or_Fission=3,
-	Periodic=4,
-	AFT_or_Cal=5,
-	Veto_Start=6,
-	Veto_Stop=7,
-	unknown_8=8,
-	unknown_9=9,
-	unknown_10=10,
-	Random_Wide=11,
-	ID_Laser=12,
-	LED=13,
-	Ni=14,
-	OD_Laser=15,
-	LE_hitsum=16,
-	HE_hitsum=17,
-	SLE_hitsum=18,
-	OD_hitsum=19,
-	unknown_20=20,
-	unknown_21=21,
-	SN_Burst=22,
-	mue_Decay=23,
-	LINAC=24,
-	LINAC_RF=25,
-	unknown_26=26,
-	Periodic_simple=27,
-	SHE=28,
-	AFT=29,
-	Pedestal=30,
-	T2K=31
+// we often need to perform actions only on lowe events, muon events or AFTs
+// when cuts on lowe/muon reconstruction, or including untagged muons, we can't just use the trigger
+enum class EventType : int { Unknown=0, LowE=1, Muon=2, AFT=3 };
+
+inline std::ostream& operator<< (std::ostream& out, EventType eventType){
+	switch(eventType){
+		case EventType::Unknown: out << "Unknown"; break;
+		case EventType::LowE: out << "LowE"; break;
+		case EventType::Muon: out << "Muon"; break;
+		case EventType::AFT: out << "AFT"; break;
+	}
+	return out;
+}
+
+inline std::istream& operator>>(std::istream& str, EventType& eventType){
+	std::string eventType_str;
+	if(!(str >> eventType_str)){
+		std::cout<<"error reading into string"<<std::endl;
+	} else {
+		if(eventType_str=="Unknown") eventType=EventType::Unknown;
+		if(eventType_str=="LowE") eventType=EventType::LowE;
+		if(eventType_str=="Muon") eventType=EventType::Muon;
+		if(eventType_str=="AFT") eventType=EventType::AFT;
+	}
+	return str;
+}
+
+
+class TriggerType {
+	public:
+	enum TriggerTypeEnum {
+		LE=0,
+		HE=1,
+		SLE=2,
+		OD_or_Fission=3,
+		Periodic=4,
+		AFT_or_Cal=5,
+		Veto_Start=6,
+		Veto_Stop=7,
+		unknown_8=8,
+		unknown_9=9,
+		unknown_10=10,
+		Random_Wide=11,
+		ID_Laser=12,
+		LED=13,
+		Ni=14,
+		OD_Laser=15,
+		LE_hitsum=16,
+		HE_hitsum=17,
+		SLE_hitsum=18,
+		OD_hitsum=19,
+		unknown_20=20,
+		unknown_21=21,
+		SN_Burst=22,
+		mue_Decay=23,
+		LINAC=24,
+		LINAC_RF=25,
+		unknown_26=26,
+		Periodic_simple=27,
+		SHE=28,
+		AFT=29,
+		Pedestal=30,
+		T2K=31
+	};
+	TriggerTypeEnum trigtype;
+	TriggerType() = delete;
+	
+	public:
+	constexpr TriggerType(const TriggerTypeEnum& trig) : trigtype(TriggerTypeEnum(trig)) {};
+	constexpr TriggerType(const int& trig) : trigtype(TriggerTypeEnum(trig)) {};
+	int operator()() const { return static_cast<int>(trigtype); };
+	TriggerType& operator=(const TriggerTypeEnum& trig) { trigtype = trig; return *this;}
+	bool operator==(const TriggerTypeEnum trig) const { return trigtype == trig; }
+	bool operator!=(const TriggerTypeEnum trig) const { return trigtype != trig; }
+	operator int() const { return static_cast<int>(trigtype); }
+	operator std::string() const { std::stringstream ss; ss << *this; return ss.str(); }
+	
 };
 
-enum class muboy_classes{
+class EventFlagSKIV{
+	public:
+	enum EventFlagSKIVEnum{
+		QBEE_TQ=0,
+		HARD_TRG=1,
+		QBEE_STAT=2,
+		DB_STAT_BLOCK=3,
+		CORRUPTED_CHECKSUM=4,
+		MISSING_SPACER=5,
+		PED_HIST_BLOCK=6,
+		unknown_7=7,
+		unknown_8=8,
+		PEDESTAL_ON=9,
+		RAW_AMT_BLOCK=10,
+		GPS_DATA=11,
+		PEDESTAL_CHECK=12,
+		SEND_BLOCK=13,
+		INNER_SLOW_DATA=14,
+		RUN_INFORMATION=15,
+		PREV_T0_BLOCK=16,
+		unknown_17=17,
+		FE_TRL_BLOCK=18,
+		SPACER_BLOCK=19,
+		INCOMPLETE_TQ=20,
+		CORRUPT_TQ_BLOCK=21,
+		TRG_MISMATCH_TQ=22,
+		QBEE_ERROR=23,
+		SORT_BLOCK=24,
+		CORRUPTED_BLOCK=25,
+		LED_BURST_ON=26,
+		EVNT_TRAILER=27,
+		INNER_DETECTOR_OFF=28,
+		ANTI_DETECTOR_OFF=29,
+		T2K_GPS=30,
+		EVNT_HDR_AND_SOFTWARE_TRG=31
+	};
+	EventFlagSKIVEnum trigtype;
+	EventFlagSKIV() = delete;
+	
+	public:
+	constexpr EventFlagSKIV(const EventFlagSKIVEnum& trig) : trigtype(EventFlagSKIVEnum(trig)) {};
+	constexpr EventFlagSKIV(const int& trig) : trigtype(EventFlagSKIVEnum(trig)) {};
+	int operator()() const { return static_cast<int>(trigtype); };
+	EventFlagSKIV& operator=(const EventFlagSKIVEnum& trig) { trigtype = trig; return *this;}
+	bool operator==(const EventFlagSKIVEnum trig) const { return trigtype == trig; }
+	bool operator!=(const EventFlagSKIVEnum trig) const { return trigtype != trig; }
+	operator int() const { return static_cast<int>(trigtype); }
+	operator std::string() const { std::stringstream ss; ss << *this; return ss.str(); }
+};
+
+enum class muboy_class{
 	misfit=0,            // too few valid hits (<10) after cuts
 	single_thru_going=1, // good confidence in single throughgoing
 	single_stopping=2,   // 
 	multiple_mu_1=3,     // Scott says: "80% of multiple muons are this type..."
-	multiple_mu_2=4,     // "...and 20% are of this type". What is the difference??
-	corner_clipper=5     // 
+	multiple_mu_2=4,     // "...and 20% are of this type". Maybe 3 is lower SNR?
+	corner_clipper=5     // see lowe school slides.
 };
 
 namespace constants{
@@ -487,22 +580,22 @@ namespace constants{
 		{52, "NC elastic"}
 	};
 	
-	static const std::map<muboy_classes,std::string> muboy_class_to_name{
-		{muboy_classes::misfit,"misfit"},
-		{muboy_classes::single_thru_going,"single_thru_going"},
-		{muboy_classes::single_stopping,"single_stopping"},
-		{muboy_classes::multiple_mu_1,"multiple_mu_1"},
-		{muboy_classes::multiple_mu_2,"multiple_mu_2"},
-		{muboy_classes::corner_clipper,"corner_clipper"}
+	static const std::map<muboy_class,std::string> muboy_class_to_name{
+		{muboy_class::misfit,"misfit"},
+		{muboy_class::single_thru_going,"single_thru_going"},
+		{muboy_class::single_stopping,"single_stopping"},
+		{muboy_class::multiple_mu_1,"multiple_mu_1"},
+		{muboy_class::multiple_mu_2,"multiple_mu_2"},
+		{muboy_class::corner_clipper,"corner_clipper"}
 	};
 	
-	static const std::map<std::string,muboy_classes> muboy_name_to_class{
-		{"misfit",muboy_classes::misfit},
-		{"single_thru_going",muboy_classes::single_thru_going},
-		{"single_stopping",muboy_classes::single_stopping},
-		{"multiple_mu_1",muboy_classes::multiple_mu_1},
-		{"multiple_mu_2",muboy_classes::multiple_mu_2},
-		{"corner_clipper",muboy_classes::corner_clipper}
+	static const std::map<std::string,muboy_class> muboy_name_to_class{
+		{"misfit",muboy_class::misfit},
+		{"single_thru_going",muboy_class::single_thru_going},
+		{"single_stopping",muboy_class::single_stopping},
+		{"multiple_mu_1",muboy_class::multiple_mu_1},
+		{"multiple_mu_2",muboy_class::multiple_mu_2},
+		{"corner_clipper",muboy_class::corner_clipper}
 	};
 	
 	static const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();

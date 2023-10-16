@@ -32,6 +32,7 @@ class lfallfit: public Tool {
 	bool MC=false;
 	int NHITCUT;
 	int flag_skip=0;   // what reconstruction steps to do (or what to skip). Default (0): everything.
+	bool checkEventType=false; // whether to only apply when EventType is LowE
 };
 
 

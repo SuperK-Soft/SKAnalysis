@@ -27,7 +27,7 @@ bool RunwiseEnergyCut::Initialise(std::string configfile, DataModel &data){
 			description<<"{"<<acut.first.first<<" < Run < "<<acut.first.second
 			         <<" : "<<acut.second.first<<" < bsenergy < "<<acut.second.second<<"}\n";
 		}
-		m_data->AddCut(selectorName, m_unique_name, description.str());
+		m_data->AddCut(selectorName, m_unique_name, description.str(),true);
 	}
 	
 	return true;
@@ -36,9 +36,9 @@ bool RunwiseEnergyCut::Initialise(std::string configfile, DataModel &data){
 
 bool RunwiseEnergyCut::Execute(){
 	
-	bool muon = false;
-	m_data->vars.Get("newMuon", muon);
-	if(muon){
+	EventType eventType;
+	m_data->vars.Get("eventType", eventType);
+	if(eventType!=EventType::LowE){
 		return true;
 	}
 	

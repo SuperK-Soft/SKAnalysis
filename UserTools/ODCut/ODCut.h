@@ -13,7 +13,7 @@
 /**
  * \class ODCut
  *
- * Remove events without the 'newMuon' flag set, which have either the OD trigger bit set within the primary trigger window, or more than hitsThreshold OD hits within 500-1300us following the primary trigger.
+ * Remove events flagged as EventType::LowE, which have either the OD trigger bit set within the primary trigger window, or more than hitsThreshold OD hits within 500-1300us following the primary trigger.
 *
 * $Author: B.Richards $
 * $Date: 2019/05/28 10:44:00 $

@@ -10,28 +10,32 @@ bool WriteSkEvent::Initialise(std::string configfile, DataModel &data){
 	
 	m_data= &data;
 	m_log= m_data->Log;
-	
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
-	std::string treeReaderName;
 	get_ok = m_variables.Get("treeReaderName", treeReaderName);
-	m_variables.Get("delete_outside_hits", delete_outside_hits);
+	m_variables.Get("deleteOutsideHits", delete_outside_hits);
+	m_variables.Get("requireSaveFlag", require_save_flag);
 	
-	// we don't actually need the reader itself, just its logic unit number (LUN)
-	LUN = m_data->GetLUN(treeReaderName);
-	if(LUN<0){
-		Log(m_unique_name+" Error! Failed to find TreeReader "+treeReaderName+" in DataModel!",v_error,m_verbose);
-		m_data->vars.Set("StopLoop",1); // fatal error
-		return false;
-	}
-	
-	// sanity check
-	TreeManager* mgr = skroot_get_mgr(&LUN);
-	if(mgr->GetMode()==2){
-		// file is opened in READ mode! no output file to write!
-		Log(m_unique_name+" Error! TreeReader "+treeReaderName+" is opened in SKROOT_READ mode,"
-		    " so cannot write outputs to it!",v_error,m_verbose);
-		m_data->vars.Set("StopLoop",1); // fatal error
-		return false;
+	// we might need to change which tree to write to for each execute loop
+	// in this case specify readerName 'cstore'
+	if(treeReaderName!="cstore"){
+		// we don't actually need the reader itself, just its logic unit number (LUN)
+		LUN = m_data->GetLUN(treeReaderName);
+		if(LUN==0){
+			Log(m_unique_name+" Error! Failed to find TreeReader "+treeReaderName+
+			    " in DataModel!",v_error,m_verbose);
+			m_data->vars.Set("StopLoop",1); // fatal error
+			return false;
+		}
+		
+		// sanity check
+		TreeManager* mgr = skroot_get_mgr(&LUN);
+		if(mgr->GetMode()==2){
+			// file is opened in READ mode! no output file to write!
+			Log(m_unique_name+" Error! TreeReader "+treeReaderName+" is opened in SKROOT_READ mode,"
+				" so cannot write outputs to it!",v_error,m_verbose);
+			m_data->vars.Set("StopLoop",1); // fatal error
+			return false;
+		}
 	}
 	
 	return true;
@@ -41,6 +45,27 @@ bool WriteSkEvent::Initialise(std::string configfile, DataModel &data){
 bool WriteSkEvent::Execute(){
 	
 	Log(m_unique_name+" Executing...",v_debug,m_verbose);
+	
+	// whether to save every event, or just those that are flagged for saving
+	if(require_save_flag){
+		// check datamodel for flag to indicate we should save this event
+		bool saveEvent=false;
+		m_data->vars.Get("saveEvent",saveEvent);
+		if(!saveEvent) return true;
+	}
+	
+	// if we're selecting the output file based on CStore variable, get that now
+	if(treeReaderName=="cstore"){
+		LUN=0;
+		get_ok = m_data->vars.Get("WriteSkEventLUN", LUN);
+		if(!get_ok){
+			Log(m_unique_name+" Error! TreeReaderName given was 'cstore', but no 'WriteSkEventFile' "
+			    "in m_data->vars!",v_error,m_verbose);
+			m_data->vars.Set("StopLoop",1); // fatal error
+			return false;
+		}
+		
+	}
 	
 	// remove hits outside 1.3 microsec window from primary trigger
 	if(delete_outside_hits) delete_outside_hits_();

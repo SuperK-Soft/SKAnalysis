@@ -34,6 +34,8 @@ int FindFilesInDirectory(std::string inputdir, std::string pattern, std::vector<
 		lscommand = std::string("find ") + absdir + depth_string + " -regextype egrep "
 		+ case_char + "regex '.*?/" + pattern + "'";
 	}
+	// add sorting so files appear are returned (and added to TChains?) in the right order.
+	lscommand += " | sort -n";
 	if(verbose) std::cout<<"search command: '"<<lscommand<<"'"<<std::endl;
 	
 	// find matching files

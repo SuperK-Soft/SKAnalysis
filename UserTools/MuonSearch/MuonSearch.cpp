@@ -30,7 +30,7 @@ bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 		std::string description="accept events with a coincident HE+OD trigger pair anywhere"
 		                        " in the readout window. Coincidence defined as within "
 		                        +toString(coincidence_threshold)+" ns";
-		m_data->AddCut(selectorName, m_unique_name, description);
+		m_data->AddCut(selectorName, m_unique_name, description, false);
 	}
 	
 	// convert coincidence_threshold from ns to clock ticks for it0sk and swtrgt0ctr
@@ -41,6 +41,13 @@ bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 
 
 bool MuonSearch::Execute(){
+	
+	// skip AFTs after a relic
+	EventType lastEventType = eventType;
+	m_data->vars.Get("eventType", eventType);
+	if(eventType==EventType::AFT && lastEventType==EventType::LowE){
+		return true;
+	}
 	
 	// get trigger settings from file (why bother?)
 	int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
@@ -128,16 +135,16 @@ bool MuonSearch::Execute(){
 	// if we found any muons
 	if(!untaggedMuonTime.empty()){
 		// flag it for downstream tools (this will not be a relic candidate)
-		m_data->vars.Set("newMuon", true);
+		//std::cout<<"setting eventType of "<<skhead_.nevsk<<" to muon"<<std::endl;
+		m_data->vars.Set("eventType", EventType::Muon);
 		// and pass their times
 		m_data->CStore.Set("muonTimes", untaggedMuonTime);
 		// mark this event as 'passing' the cut
 		if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, m_unique_name);
-	} else {
-		m_data->vars.Set("newMuon", false);
-		std::vector<int> empty_times = {};
-		m_data->CStore.Set("muonTimes", empty_times);
 	}
+	
+	Log(m_unique_name+" Found "+toString(untaggedMuonTime.size())+" muons in this event",v_debug,m_verbose);
+	
 	
 	return true;
 	

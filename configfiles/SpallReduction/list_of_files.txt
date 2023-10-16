@@ -1,0 +1,10 @@
+/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000001.root
+/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000002.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000003.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000004.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000005.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000006.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000007.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000008.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000009.root
+#/disk2/disk02/data7/sk6/run/0868/086831/rfm_run086831.000010.root

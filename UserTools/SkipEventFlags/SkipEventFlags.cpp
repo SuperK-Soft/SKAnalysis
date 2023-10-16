@@ -37,7 +37,7 @@ bool SkipEventFlags::Initialise(std::string configfile, DataModel &data){
 				description+=std::to_string(skippedFlags.at(i));
 			}
 		}
-		m_data->AddCut(selectorName, m_unique_name, description);
+		m_data->AddCut(selectorName, m_unique_name, description,false);
 	}
 	
 	return true;

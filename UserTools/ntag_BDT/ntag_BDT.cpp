@@ -73,6 +73,8 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	// retrieve results as they're generated, equivalently to with an upstream TreeReader Tool
 	outTreeReader.Load(treeout);
 	m_data->RegisterReader("ntag_BDT_OutTree", &outTreeReader);
+	// inform the TreeReader not to close the file when the destructor is called.
+	outTreeReader.SetOwnsFile(false);
 	
 	return true;
 }
@@ -228,9 +230,6 @@ bool ntag_BDT::Finalise(){
 		delete outfile;
 		outfile = nullptr;
 	}
-	
-	// inform the TreeReader not to close the file when the destructor is called.
-	outTreeReader.SetClosed();
 	
 	return true;
 }

@@ -28,6 +28,14 @@
 #include "TPie.h"
 #include "TROOT.h"
 
+std::string toString(const std::string s){ return s; }
+
+std::string toString(const EventType& ev){
+	std::stringstream ss;
+	ss << ev;
+	return ss.str();
+}
+
 std::string toString(const TVector3& vec){
 	std::string s = "("+toString(vec.X())+", "+toString(vec.Y())+", "+toString(vec.Z())+")";
 	return s;
@@ -48,16 +56,19 @@ int ReadListFromFile(std::string filename, std::vector<std::string> &lines, char
 	std::string Line;
 	// loop over file lines
 	while (getline(fin, Line)){
+		if(Line.empty()) continue;
 		if (Line[0] == commentchar){
 			continue;
 		} else{
 			// check for trailing comments
 			if (Line.find(commentchar) != std::string::npos){
-				Line.erase(Line.begin()+Line.find(commentchar), Line.end());
+				Line.erase(Line.find(commentchar));
+				if(Line.empty()) continue;
 			}
 			// trim trailing whitespace
 			if(trim_whitespace){
 				Line.erase(Line.find_last_not_of(" \t\n\015\014\013")+1);
+				if(Line.empty()) continue;
 			}
 			// add to vector
 			lines.push_back(Line);

@@ -9,9 +9,10 @@
 #include "Tool.h"
 
 /**
- * \class RunwiseEnergyCut
- *
- * This is a balnk template for a Tool used by the script to generate a new custom tool. Please fill out the descripton and author information.
+* \class RunwiseEnergyCut
+*
+* Apply a cut on reconstructed (bonsai) energy for events marked as EventType::LowE, where the
+* cut threshold may vary depending on the run number.
 *
 * $Author: B.Richards $
 * $Date: 2019/05/28 10:44:00 $

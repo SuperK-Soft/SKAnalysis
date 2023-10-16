@@ -23,6 +23,7 @@ class AddTree: public Tool {
 	
 	public:
 	AddTree();
+	~AddTree();
 	bool Initialise(std::string configfile,DataModel &data);
 	bool Execute();
 	bool Finalise();

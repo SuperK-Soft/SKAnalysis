@@ -128,11 +128,11 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 	vec_sizes.emplace("vertex_pos",sec_info->vertex_pos.size());
 	vec_sizes.emplace("vertex_time",sec_info->vertex_time.size());
 	vec_sizes.emplace("vertex_incident_particle",sec_info->vertex_incident_particle.size());
-	vec_sizes.emplace("vertex_incident_particle_pdg_code",sec_info->vertex_incident_particle_pdg_code.size());
+	vec_sizes.emplace("vertex_incident_particle_g3_code",sec_info->vertex_incident_particle_g3_code.size());
 	vec_sizes.emplace("vertex_incident_particle_momentum",sec_info->vertex_incident_particle_momentum.size());
-	vec_sizes.emplace("vertex_target_pdg_code",sec_info->vertex_target_pdg_code.size());
+	vec_sizes.emplace("vertex_target_g3_code",sec_info->vertex_target_g3_code.size());
 	vec_sizes.emplace("vertex_medium_id",sec_info->vertex_medium_id.size());
-	vec_sizes.emplace("vertex_process_codes",sec_info->vertex_process_codes.size());
+	vec_sizes.emplace("vertex_g3_process_codes",sec_info->vertex_g3_process_codes.size());
 	vec_sizes.emplace("vertex_kcase_code",sec_info->vertex_kcase_code.size());
 	int asize=-1;
 	for(std::pair<const std::string, size_t>& avec : vec_sizes){
@@ -151,7 +151,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 	vec_sizes.clear();
 	bool tracks_consistent=true;
 	vec_sizes.emplace("track_creation_vtx",sec_info->track_creation_vtx.size());
-	vec_sizes.emplace("track_pdg_code",sec_info->track_pdg_code.size());
+	vec_sizes.emplace("track_g3_code",sec_info->track_g3_code.size());
 	vec_sizes.emplace("track_ini_momentum",sec_info->track_ini_momentum.size());
 	vec_sizes.emplace("track_parent",sec_info->track_parent.size());
 	vec_sizes.emplace("track_creation_toffset",sec_info->track_creation_toffset.size());
@@ -183,21 +183,21 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 			         <<"\ttime = "<<sec_info->vertex_time.at(i)<<"\n"
 			         <<"\tincident_particle (index) = "<<sec_info->vertex_incident_particle.at(i)<<"\n"
 			         <<"\tincident_particle_pdg_code = "
-			         <<sec_info->vertex_incident_particle_pdg_code.at(i)<<"\n"
+			         <<sec_info->vertex_incident_particle_g3_code.at(i)<<"\n"
 			         <<"\tincident_particle_momentum = (";
 			for(int j=0; j<sec_info->vertex_incident_particle_momentum.at(i).size(); ++j){
 				if(j>0) std::cout<<", ";
 				std::cout<<sec_info->vertex_incident_particle_momentum.at(i).at(j);
 			}
 			std::cout<<")\n"
-			         <<"\ttarget_pdg_code = "<<sec_info->vertex_target_pdg_code.at(i)<<"\n"
+			         <<"\ttarget_pdg_code = "<<sec_info->vertex_target_g3_code.at(i)<<"\n"
 			         <<"\tmedium_id = "<<sec_info->vertex_medium_id.at(i)<<"\n"
 			         <<"\tkcase_code = "<<sec_info->vertex_kcase_code.at(i)<<"\n"
-			         <<"\tnum process_codes = "<<sec_info->vertex_process_codes.at(i).size()<<"\n"
+			         <<"\tnum process_codes = "<<sec_info->vertex_g3_process_codes.at(i).size()<<"\n"
 			         <<"\tprocess_codes = {";
-			for(int j=0; j<sec_info->vertex_process_codes.at(i).size(); ++j){
+			for(int j=0; j<sec_info->vertex_g3_process_codes.at(i).size(); ++j){
 				if(j>0) std::cout<<", ";
-				std::cout<<sec_info->vertex_process_codes.at(i).at(j);
+				std::cout<<sec_info->vertex_g3_process_codes.at(i).at(j);
 			}
 			std::cout<<"}\n";
 		}
@@ -205,7 +205,7 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 		std::cout<<"n tracks: "<<sec_info->track_creation_vtx.size()<<"\n";
 		for(int i=0; i<sec_info->track_creation_vtx.size(); ++i){
 			std::cout<<"Track "<<i<<"\n"
-			         <<"\tpdg_code = "<<sec_info->track_pdg_code.at(i)<<"\n"
+			         <<"\tpdg_code = "<<sec_info->track_g3_code.at(i)<<"\n"
 			         <<"\tini_momentum = (";
 			for(int j=0; j<sec_info->track_ini_momentum.at(i).size(); ++j){
 				if(j>0) std::cout<<", ";
@@ -259,11 +259,11 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 				// check that if this is marked primary, that the creation vertex incident_pdg_code
 				// also suggests no particle (-1)
 				if(sec_info->track_parent.at(tracki)==-1){
-					if(sec_info->vertex_incident_particle_pdg_code.at(start_vtx_idx)!=-1){
+					if(sec_info->vertex_incident_particle_g3_code.at(start_vtx_idx)!=-1){
 						Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 							+" has no track parent (primary particle), but start vtx (idx "
 							+toString(start_vtx_idx)+") has incident pdg code !=-1 ("
-							+toString(sec_info->vertex_incident_particle_pdg_code.at(start_vtx_idx))
+							+toString(sec_info->vertex_incident_particle_g3_code.at(start_vtx_idx))
 							+")!",v_error,m_verbose);
 						consistent=false;
 					}
@@ -301,8 +301,8 @@ bool ReadMCParticles::PrintSecondaryVectors(bool checkconsistency){
 			int parent_index = sec_info->track_parent.at(tracki);
 			if(parent_index>0){
 				// direct parent
-				int parent_pdg = sec_info->track_pdg_code.at(parent_index);
-				int vtx_parent_pdg = sec_info->vertex_incident_particle_pdg_code.at(start_vtx_idx);
+				int parent_pdg = sec_info->track_g3_code.at(parent_index);
+				int vtx_parent_pdg = sec_info->vertex_incident_particle_g3_code.at(start_vtx_idx);
 				if(parent_pdg!=vtx_parent_pdg){
 					Log(m_unique_name+": Error! secondary vectors track "+toString(tracki)
 					   +" has parent type "+toString(parent_pdg)+" (from parent track "+toString(parent_index)
@@ -354,21 +354,21 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		avertex.time = sec_info->vertex_time.at(i);
 		avertex.type = (sec_info->vertex_incident_particle.at(i) == -1) ? 1 : 2;   // 1=primary, 2=secondary
 		avertex.SetIncidentParticle(sec_info->vertex_incident_particle.at(i));
-		avertex.incident_particle_pdg = sec_info->vertex_incident_particle_pdg_code.at(i);
+		avertex.incident_particle_pdg = sec_info->vertex_incident_particle_g3_code.at(i);
 		avertex.incident_particle_pdg = avertex.incident_particle_pdg;
 		avertex.incident_particle_mom = TVector3{sec_info->vertex_incident_particle_momentum.at(i).data()};
-		avertex.processes = sec_info->vertex_process_codes.at(i);
+		avertex.processes = sec_info->vertex_g3_process_codes.at(i);
 		
 		// the interaction target pdg code gets set in skdetsim's MICAP algorithm, but this is (was)
 		// only used for neutron interactions < 20MeV; so originally this would only have been valid
 		// for low e neutrons. However, since skdetsim-gd replaced MICAP with Geant4 algorithms,
 		// MICAP is no longer used at all, and i know of no suitable alternative.
-		//avertex.target_pdg = sec_info->vertex_target_pdg_code.at(i);
+		//avertex.target_pdg = sec_info->vertex_target_g3_code.at(i);
 		
 		// Instead this variable got repurposed to hold a volume id, which can be mapped to
 		// something like 'Inner Water volume' instead.
 		// See gumed.h for numbers and sggeom_sk1.F for the corresponding names.
-		int volume_id = sec_info->vertex_target_pdg_code.at(i);
+		int volume_id = sec_info->vertex_target_g3_code.at(i);
 		avertex.extraInfo.Set("volume_id",volume_id);
 		
 		// we also have medium id. this can map to e.g. 'WATER' or 'ACRYLIC'
@@ -384,9 +384,9 @@ bool ReadMCParticles::GetSecondaryVectors(){
 	}
 	
 	// loop over particles
-	for(int i=0; i<sec_info->track_pdg_code.size(); ++i){
+	for(int i=0; i<sec_info->track_g3_code.size(); ++i){
 		MParticle aparticle;
-		aparticle.pdg = sec_info->track_pdg_code.at(i);
+		aparticle.pdg = sec_info->track_g3_code.at(i);
 		aparticle.start_vtx_idx = sec_info->track_creation_vtx.at(i);
 		aparticle.end_vtx_idx = sec_info->track_termination_vtx.at(i);
 		aparticle.SetStartMom(sec_info->track_ini_momentum.at(i).data());

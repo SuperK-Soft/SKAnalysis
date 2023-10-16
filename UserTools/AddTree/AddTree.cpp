@@ -56,7 +56,8 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	// making a new managed Tree, associated with the current ROOT directory
 	// (i.e. our existing file)
 	lun2 = m_data->GetNextLUN(treeWriterName, lun2);
-	std::cerr<<"The following error '<TFile::TFile>: file name is not specified' may be safely ignored"<<std::endl;
+	Log(m_unique_name+": The following error '<TFile::TFile>: file name is not specified'"
+	                  " may be safely ignored",v_warning,m_verbose);
 	skroot_open_write_(&lun2, "", 0);
 	TreeManager* mgr2 = skroot_get_mgr(&lun2);
 	if(mgr2==nullptr){
@@ -83,6 +84,11 @@ bool AddTree::Execute(){
 
 
 bool AddTree::Finalise(){
+	
+	return true;
+}
+
+AddTree::~AddTree(){
 	// the last thing is we need to make sure that this new tree gets written
 	// to disk before the parent file is closed. The parent file is managed by
 	// another TreeManager, which in turn is owned by the SuperManager singleton
@@ -94,8 +100,12 @@ bool AddTree::Finalise(){
 	// ...
 	// unless we close it manually! Whoops! CloseLUN now commented out in TreeReader::Finalise...
 	// FIXME find a better solution?
-	ofile->cd();
-	thistree->Write("",TObject::kOverwrite);
+	std::string newTreeName;
+	m_variables.Get("newTreeName", newTreeName);
+	//std::cout<<m_unique_name<<" Destructor: writing out tree "<<newTreeName<<" which has "<<thistree->GetEntries()
+	//         <<" entries to file "<<ofile->GetName()<<" which is zombie: "<<ofile->IsZombie()<<std::endl;
 	
-	return true;
+	ofile->cd();
+	int nbytes = thistree->Write("",TObject::kOverwrite);
+	//std::cout<<"wrote "<<nbytes<<" bytes"<<std::endl;
 }

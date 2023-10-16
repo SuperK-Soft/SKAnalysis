@@ -845,11 +845,11 @@ bool PrintEvent::PrintTriggerInfo(){
 	// think hit times are already relative to IT0SK so no need to add it anyway...?
 	// but how do we put times into an absolute measure to compare hit times in different subtriggers?
 	std::cout<<"\tTrigger gate spanned: "
-	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_pre_t0[???])*COUNT_PER_NSEC)
+	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_pre_t0[???])/COUNT_PER_NSEC)
 	         <<" ns to "
-	         <<"???" //((skheadqb_.it0sk+skruninf_.softtrg_post_t0[???])*COUNT_PER_NSEC)
+	         <<"???" //((skheadqb_.it0sk+skruninf_.softtrg_post_t0[???])/COUNT_PER_NSEC)
 	         <<" with trigger signal at "
-	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_t0_offset[???])*COUNT_PER_NSEC)<<"\n";
+	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_t0_offset[???])/COUNT_PER_NSEC)<<"\n";
 	         <<std::endl;
 	
 	// TODO add more info such as trigger type? hmm... don't want to overlap the other printers....
@@ -869,6 +869,17 @@ bool PrintEvent::Print_sktrg(){
 	  int    nclk48trghw[3][nsktrghw];  // 48bit clk
 	  int    stattrghw[nsktrghw];       // Status
 	}; */
+	
+	/*
+	From Guillaume:
+	In online, each PMT hit has a time (in clock counts) which can be calculated as:
+	t_hit = (counter_32 | current_event_counts) << 15 + TDC  (stored over 64 bits)
+	with counter_32 (32 bits) is the count number from the TRG module and current_event_counts (16 bits) 
+	is the number of clock counts since the last counter_32 increase. TDC (16 bits) is the time of the hit within the event.
+	After applying the software trigger we get t0.
+	t0 is the t_hit of the hit when the software trigger found a trigger, but stored over 32 bits)
+	so basically, what we are doing here is to recalculate t_hit over 64 bits
+	*/
 	
 	// FIXME seems this is not populated by skead/skrawread... reads 0 even when we had hardware triggers.
 	std::cout<<"\tsktrg_.nsktrghw = "<<sktrg_.nsktrghw<<"\n";
@@ -1139,6 +1150,44 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	return true;
 }
 
+bool PrintEvent::DeleteOutsideHits(int outLUN){
+	
+	// this code / documentation mainly here for reference
+	
+	// prune hits outside a 1.3us window around this trigger, to minimize data.
+	
+	// calling delete_outside_hits_ removes all hits that don't have the in-gate flag set
+	// from the following arrays in the rawtqinfo_ common block:
+	//      ID          OD
+	//  tbuf_raw      taskz_raw
+	//  qbuf_raw      qaskz_raw
+	//  icabbf_raw    icabaz_raw
+	//  itiskz_raw    itaskz_raw
+	//  iqiskz_raw    iqaskz_raw
+	// it then updates the counts nqisk_raw and nhitaz_raw to the number of remaining hits,
+	// and reinialises all remaining elements of the above arrays to 0.
+	// The trouble is neither 'skread' nor 'skrawread' reloads these hits from file!
+	// So if we then try to load and save another subtrigger (with a different set
+	// of hits passing the in-gate cut), the subsequent subtriggers have no hits!
+	// To work around this we need to keep a copy of the original rawtqinfo_ block.
+	static rawtqinfo_common rawtqinfo_backup = rawtqinfo_;
+	
+	// ok now we can safely do this
+	delete_outside_hits_();
+	
+	// set header and tq info
+	// HEAD branch from assorted skhead_* common blocks,
+	// TQREAL branch from rawtqinfo_ common block
+	// (in particular icabbf_raw, qbuf_raw, tbuf_raw for ID,
+	// and icabaz_raw, qaskz_raw, taskz_raw for OD)
+	skroot_set_tree_(&outLUN);
+	
+	// restore the deleted hits for the next loop, if calling delete_outside_hits
+	rawtqinfo_ = rawtqinfo_backup;
+	
+	return true;
+}
+
 bool PrintEvent::PrintSubTriggersMC(bool verbose){
 	
 	// for MC we have some variables in MCInfo that may be similar/relevant?
@@ -1279,7 +1328,7 @@ bool PrintEvent::PrintLowEInfo(){
 		Float_t  lwatert;      // water transparency value (at reconstruction?)
 		Int_t    lninfo;       // # of extra low-e inforamation
 		Int_t    linfo[255];   // extra low-e information (see skroot_lowe.h)
-		// some of interest:
+		// some of interest: (seems like up to 144 are allocated?)
 		linfo[9,10] dwall for clusfit, bonsai
 		linfo[5,6] effwall for clusfit, bonsai
 		linfo[7,8] effective # hits for clusfit, bonsai ("at given water transparency"?)
@@ -1642,7 +1691,7 @@ bool PrintEvent::PrintHeaderInfo(){
 	         <<"\t\t(c.f. skheadqb_.trgmask = "<<skheadqb_.trgmask<<")\n"
 	         // FIXME if so, 'Normal Run' (rfm_run086730.000001.root) includes LINAC, LINAC MW, but not SHE, AFT?
 	         <<"\ttrigger gate width: "<<myHeader->gate_width<<" [ticks]"
-	         <<" = "<<(myHeader->gate_width*COUNT_PER_NSEC)<<" [ns]\n"
+	         <<" = "<<(myHeader->gate_width/COUNT_PER_NSEC)<<" [ns]\n"
 	         <<"\t\t(c.f. skheadqb_.gatewsk = "<<skheadqb_.gatewsk<<")\n" // == SoftwareTrigger::gate_width
 	         <<std::endl;
 	         //<<"\t\"contents\": "<<myHeader->contents<<std::endl;     // skheadqb_.contsk? seriously wtf is this
@@ -1847,11 +1896,11 @@ bool PrintEvent::PrintRunInfo(){
 			     <<"\t\tenabled? "<<(mask.test(i) ? "Y" : "N")<<"\n"  // skruninf_.softtrg_mask
 			     <<"\t\tthreshold: "<<myRunInfo->thr[i]<<" [hits]\n"  // skruninf_.softtrg_thr
 			     <<"\t\tpre-trigger window: "<<myRunInfo->pre_t0[i]<<" [ticks]"
-			     <<" = "<<(myRunInfo->pre_t0[i]*COUNT_PER_NSEC)<<" [ns]\n" // skruninf_.softtrg_pre_t0
+			     <<" = "<<(myRunInfo->pre_t0[i]/COUNT_PER_NSEC)<<" [ns]\n" // skruninf_.softtrg_pre_t0
 			     <<"\t\tpost-trigger window: "<<myRunInfo->post_t0[i]<<" [ticks]"
-			     <<" = "<<(myRunInfo->post_t0[i]*COUNT_PER_NSEC)<<" [ns]\n" // skruninf_.softtrg_post_t0
+			     <<" = "<<(myRunInfo->post_t0[i]/COUNT_PER_NSEC)<<" [ns]\n" // skruninf_.softtrg_post_t0
 			     <<"\t\tt0 offset: "<<myRunInfo->t0_offset[i]<<" [ticks]"
-			     <<" = "<<(myRunInfo->t0_offset[i]*COUNT_PER_NSEC)<<" [ns]\n"; // skruninf_.softtrg_t0_offset
+			     <<" = "<<(myRunInfo->t0_offset[i]/COUNT_PER_NSEC)<<" [ns]\n"; // skruninf_.softtrg_t0_offset
 		// n.b. COUNT_PER_NSEC = 1.92(count/nsec), #defined constant in skheadC.h
 	}
 	std::cout<<std::endl;
