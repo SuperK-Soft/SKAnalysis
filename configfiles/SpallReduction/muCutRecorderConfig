@@ -1,5 +1,5 @@
-verbosity 2
+verbosity 5
 selectorName muCuts
-selectionsFile ~/disk02/mu_cuts.root
-distributionsFile ~/disk02/mu_distributions.root
+selectionsFile /disk02/usr6/moflaher/run870/mu_cuts.root
+distributionsFile /disk02/usr6/moflaher/run870/mu_distributions.root
 treeReaderName spallReader

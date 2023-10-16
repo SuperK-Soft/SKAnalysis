@@ -124,7 +124,7 @@ class DataModel {
   // helper functions for working with MTreeSelections
   // (basically just needed for the case of adding cuts to multiple selectors at once)
   template<typename... Args>
-  bool AddCut(std::string selector, std::string cut, std::string description, Args... rest);
+  bool AddCut(std::string selector, std::string cut, std::string description, bool savedist, Args... rest);
   template<typename... Args>
   bool ApplyCut(std::string selector, std::string cut, double val, Args... rest);
   template<typename... Args>
@@ -190,7 +190,7 @@ class DataModel {
 
 
 template<typename... Args>
-bool DataModel::AddCut(std::string selector, std::string cut, std::string description, Args... rest){
+bool DataModel::AddCut(std::string selector, std::string cut, std::string description, bool savedist, Args... rest){
 	if(selector!="all" && Selectors.count(selector)==0){
 		std::cerr<<"DataModel::AddCut Error! Unrecognised selector "<<selector
 		         <<" for cut "<<cut<<std::endl;
@@ -200,10 +200,10 @@ bool DataModel::AddCut(std::string selector, std::string cut, std::string descri
 	if(selector=="all"){
 		// add this event to all selectors
 		for(auto sel = Selectors.begin(); sel!=Selectors.end(); ++sel){
-			ret &= sel->second->AddCut(cut, description, rest...);
+			ret &= sel->second->AddCut(cut, description, savedist, rest...);
 		}
 	} else {
-		ret = Selectors.at(selector)->AddCut(cut, description, rest...);
+		ret = Selectors.at(selector)->AddCut(cut, description, savedist, rest...);
 	}
 	return ret;
 }

@@ -30,7 +30,7 @@ bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 		std::string description="accept events with a coincident HE+OD trigger pair anywhere"
 		                        " in the readout window. Coincidence defined as within "
 		                        +toString(coincidence_threshold)+" ns";
-		m_data->AddCut(selectorName, m_unique_name, description);
+		m_data->AddCut(selectorName, m_unique_name, description, false);
 	}
 	
 	// convert coincidence_threshold from ns to clock ticks for it0sk and swtrgt0ctr

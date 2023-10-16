@@ -5,7 +5,7 @@ PWD=`pwd`
 Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fmax-errors=1 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds  # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fmax-errors=5 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds  # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.

@@ -36,9 +36,9 @@ class MTreeSelection : public SerialisableObject {
 	bool SetTreeReader(MTreeReader* treereaderin);
 	void MakeOutputFile(std::string fname, std::string distrofname="");
 	bool NoteCut(std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
-	bool AddCut(std::string cutname, std::string description, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
-	bool AddCut(std::string cutname, std::string description, std::string branchname, double low=DOUBLE_MIN, double high=DOUBLE_MAX); // type 1
-	bool AddCut(std::string cutname, std::string description, std::vector<std::string> branchnames, double low=DOUBLE_MIN, double high=DOUBLE_MAX);  // type 1 or 2
+	bool AddCut(std::string cutname, std::string description, bool savedist, double low=DOUBLE_MIN, double high=DOUBLE_MAX);
+	bool AddCut(std::string cutname, std::string description, bool savedist, std::string branchname, double low=DOUBLE_MIN, double high=DOUBLE_MAX); // type 1
+	bool AddCut(std::string cutname, std::string description, bool savedist, std::vector<std::string> branchnames, double low=DOUBLE_MIN, double high=DOUBLE_MAX);  // type 1 or 2
 	bool CheckCut(std::string cutname);   // just check we know this cut
 	void IncrementEventCount(std::string cutname);
 	// apply cut and add if it passes (new way)

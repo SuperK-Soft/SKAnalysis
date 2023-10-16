@@ -36,6 +36,10 @@ bool mufit_sk4::Execute(){
 	", nevsk: "+std::to_string(skhead_.nevsk)+
 	", nmuon: "+std::to_string(nmuon), 0, 0);
   }
+  
+  //TODO call TreeReader::GetAFT - note AFT hits
+  //TODO Set bad channel masking for muons
+  //TODO call TreeReader::GetMuonEntry
 
   // //ignore LED burst events
   // std::bitset<sizeof(int)*8> bits = skhead_.nevsk;
@@ -73,6 +77,10 @@ bool mufit_sk4::Execute(){
   skroot_mu_.muqismsk = skq_.qismsk;
 
   lfmufit_sk4_();
+  
+  // TODO MergeAFTHits
+  
+  // TODO ForEachMuboy if multiple muons
 
   int lun = m_data->GetLUN(tree_reader_str);
   skroot_set_mu_(&lun, skroot_mu_.muentpoint, skroot_mu_.mudir, &skroot_mu_.mutimediff,
@@ -81,10 +89,14 @@ bool mufit_sk4::Execute(){
 		 &skroot_mu_.muboy_goodness, &skroot_mu_.muboy_length, skroot_mu_.muboy_dedx,
 		 skroot_mu_.mubff_entpos, skroot_mu_.mubff_dir, &skroot_mu_.mubff_goodness, &skroot_mu_.muninfo, skroot_mu_.muinfo);
 
-  delete_outside_hits_();
 
+  // TODO call BFF if muboy failed
+  // TODO add dEdx
+  // TODO set index if muboy multiple muons
   skroot_set_tree_(&lun);
   skroot_fill_tree_(&lun);
+  
+  // end ForEachMuboy
   
   return true;
 }

@@ -27,13 +27,13 @@ bool DataQualityCuts::Initialise(std::string configfile, DataModel &data){
 	if(get_ok){
 		// make note of all the cuts we're going to make in the order we're going to apply them
 		// AddCut(selectorName, cutname, description)
-		m_data->AddCut(selectorName, "Incomplete", "reject incomplete events");
-		m_data->AddCut(selectorName, "ID_Off", "reject events with the ID off");
-		m_data->AddCut(selectorName, "OD_Off", "reject events with the OD off");
-		m_data->AddCut(selectorName, "SlowData", "reject slowcontrol entries");
-		m_data->AddCut(selectorName, "RunInfo", "reject runinfo entries");
-		m_data->AddCut(selectorName, "Spacer", "reject spacer entries");
-		m_data->AddCut(selectorName, "LEDburst", "reject LED burst entries");
+		m_data->AddCut(selectorName, "Incomplete", "reject incomplete events",false);
+		m_data->AddCut(selectorName, "ID_Off", "reject events with the ID off",false);
+		m_data->AddCut(selectorName, "OD_Off", "reject events with the OD off",false);
+		m_data->AddCut(selectorName, "SlowData", "reject slowcontrol entries",false);
+		m_data->AddCut(selectorName, "RunInfo", "reject runinfo entries",false);
+		m_data->AddCut(selectorName, "Spacer", "reject spacer entries",false);
+		m_data->AddCut(selectorName, "LEDburst", "reject LED burst entries",false);
 	}
 	
 	return true;

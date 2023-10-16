@@ -91,44 +91,47 @@ bool MTreeSelection::NoteCut(std::string cutname, std::string description, doubl
 	return true;
 }
 
-bool MTreeSelection::AddCut(std::string cutname, std::string description, double low, double high){
+bool MTreeSelection::AddCut(std::string cutname, std::string description, bool savedist, double low, double high){
 	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
 		return false;
 	}
-	cut_pass_entries.at(cutname)->Initialize(0, treereader, distros_tree);
+	TTree* dtree = (savedist ? distros_tree : nullptr);
+	cut_pass_entries.at(cutname)->Initialize(0, treereader, dtree);
 	return true;
 }
 
-bool MTreeSelection::AddCut(std::string cutname, std::string description, std::string branchname, double low, double high){
+bool MTreeSelection::AddCut(std::string cutname, std::string description, bool savedist, std::string branchname, double low, double high){
 	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
 		return false;
 	}
+	TTree* dtree = (savedist ? distros_tree : nullptr);
 	if(branchname=="") std::cerr<<"empty branchname passed for cut "<<cutname<<std::endl; // XXX
-	cut_pass_entries.at(cutname)->Initialize(1, branchname, FindLinkedBranches(branchname), treereader, distros_tree);
+	cut_pass_entries.at(cutname)->Initialize(1, branchname, FindLinkedBranches(branchname), treereader, dtree);
 	return true;
 }
 
-bool MTreeSelection::AddCut(std::string cutname, std::string description, std::vector<std::string> branchnames, double low, double high){
+bool MTreeSelection::AddCut(std::string cutname, std::string description, bool savedist, std::vector<std::string> branchnames, double low, double high){
 	bool ok = NoteCut(cutname, description, low, high);
 	if(not ok){
 		std::cerr<<"Failed to make cut "<<cutname<<", is cut name unique?"<<std::endl;
 		return false;
 	}
+	TTree* dtree = (savedist ? distros_tree : nullptr);
 	if(branchnames.size()==0){
-		cut_pass_entries.at(cutname)->Initialize(0, treereader, distros_tree);
+		cut_pass_entries.at(cutname)->Initialize(0, treereader, dtree);
 	} else if(branchnames.size()==1){
-		cut_pass_entries.at(cutname)->Initialize(1, branchnames[0], FindLinkedBranches(branchnames[0]), treereader, distros_tree);
+		cut_pass_entries.at(cutname)->Initialize(1, branchnames[0], FindLinkedBranches(branchnames[0]), treereader, dtree);
 	} else {
 		std::vector<std::vector<std::string>> linked_branch_lists;
 		for(auto&& branchname : branchnames){
 			if(branchname=="") std::cerr<<"empty string in AddPassingEvent for cut "<<cutname; // XXX
 			linked_branch_lists.emplace_back(FindLinkedBranches(branchname));
 		}
-		cut_pass_entries.at(cutname)->Initialize(2, branchnames, linked_branch_lists, treereader, distros_tree);
+		cut_pass_entries.at(cutname)->Initialize(2, branchnames, linked_branch_lists, treereader, dtree);
 	}
 	return true;
 }

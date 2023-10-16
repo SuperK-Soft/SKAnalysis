@@ -182,7 +182,8 @@ bool lfallfit::Execute(){
 	
 	if(lfflag==-1){
 		Log(m_unique_name+" Warning! lfallfit failed with status -1: 'too many hits for lowe'!\n"
-		    "Maybe an upstream nqisk cut is required?",v_warning,m_verbose);
+		    "Maybe an upstream nqisk cut is required? NQISK for this event: "+toString(skq_.nqisk),
+		    v_warning,m_verbose);
 		//return true;   // XXX i guess maybe just record what we have?
 	} else if(lfflag==-2){
 		Log(m_unique_name+" Warning! lfallfit failed with status -2: 'no hits'!\n",v_error,m_verbose);

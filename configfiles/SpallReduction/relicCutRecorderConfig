@@ -1,5 +1,5 @@
-verbosity 2
+verbosity 5
 selectorName relicCuts
-selectionsFile ~/disk02/relic_cuts.root
-distributionsFile ~/disk02/relic_distributions.root
+selectionsFile /disk02/usr6/moflaher/run870/relic_cuts.root
+distributionsFile /disk02/usr6/moflaher/run870/relic_distributions.root
 treeReaderName spallReader

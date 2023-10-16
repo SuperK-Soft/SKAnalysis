@@ -110,9 +110,9 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 	
 	std::map<int,int> neutrons_map;
 	
-	Log(m_unique_name+" looping over "+toString(sec_info->track_pdg_code.size())
+	Log(m_unique_name+" looping over "+toString(sec_info->track_g3_code.size())
 	            +" particles in event "+toString(entry_number),v_debug,m_verbose);
-	for(unsigned int particle_i=0; particle_i<sec_info->track_pdg_code.size(); ++particle_i){
+	for(unsigned int particle_i=0; particle_i<sec_info->track_g3_code.size(); ++particle_i){
 		// get indices for vertex info
 		int creation_vtx_index = sec_info->track_creation_vtx.at(particle_i);
 		int termination_vtx_index = sec_info->track_termination_vtx.at(particle_i);
@@ -122,7 +122,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 		// store primary particles
 		if(sec_info->track_parent.at(particle_i)<0){
 			Log(m_unique_name+" storing primary",v_debug,m_verbose);
-			out_primary_pdg.push_back(sec_info->track_pdg_code.at(particle_i));
+			out_primary_pdg.push_back(sec_info->track_g3_code.at(particle_i));
 			// store initial momentum
 			out_primary_start_mom.emplace_back(sec_info->track_ini_momentum.at(particle_i)[0],
 			                                   sec_info->track_ini_momentum.at(particle_i)[1],
@@ -154,7 +154,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 		}
 		
 		// store neutrons and parent nuclides
-		if(sec_info->track_pdg_code.at(particle_i)==2112){
+		if(sec_info->track_g3_code.at(particle_i)==2112){
 			Log(m_unique_name+" storing neutron",v_debug,m_verbose);
 			// TODO could store initial momentum, now that we have it
 			// but do we need it? re-think output file given info
@@ -194,7 +194,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 					                             sec_info->vertex_pos.at(termination_vtx_index)[1],
 					                             sec_info->vertex_pos.at(termination_vtx_index)[2],
 					                             sec_info->vertex_time.at(termination_vtx_index));
-				out_neutron_end_process.push_back(sec_info->vertex_process_codes.at(termination_vtx_index).at(0));
+				out_neutron_end_process.push_back(sec_info->vertex_g3_process_codes.at(termination_vtx_index).at(0));
 			} else {
 				out_neutron_end_pos.emplace_back(0,0,0,0);
 				out_neutron_end_process.push_back(-1);
@@ -204,7 +204,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 			out_neutron_ndaughters.push_back(0); // placeholder
 			// capture nuclide pdg
 			if((creation_vtx_index>=0) && (creation_vtx_index<int(sec_info->vertex_time.size()))){
-				out_nuclide_parent_pdg.push_back(sec_info->vertex_target_pdg_code.at(creation_vtx_index));
+				out_nuclide_parent_pdg.push_back(sec_info->vertex_target_g3_code.at(creation_vtx_index));
 			}
 			// daughter nuclide pdg
 			out_nuclide_daughter_pdg.push_back(0); // placeholder
@@ -223,11 +223,11 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 	// the order of recording may be such that this re-scan isn't necessary
 	// (if daughters always follow the neutrons they came from)
 	// but for now, i can't remember if that's necessarily the case
-	for(unsigned int particle_i=0; particle_i<sec_info->track_pdg_code.size(); ++particle_i){
+	for(unsigned int particle_i=0; particle_i<sec_info->track_g3_code.size(); ++particle_i){
 		int creation_vtx_index = sec_info->track_creation_vtx.at(particle_i);
 		int parent_index = sec_info->track_parent.at(particle_i);
 		bool from_ncap=false;  // check all process codes for the creation vertex for any that are ncapture
-		for(auto&& aproc: sec_info->vertex_process_codes.at(creation_vtx_index)){
+		for(auto&& aproc: sec_info->vertex_g3_process_codes.at(creation_vtx_index)){
 			from_ncap = from_ncap || (aproc==18);
 		}
 		// TODO add error checking on these
@@ -237,7 +237,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 		// 4. with valid neutron capture event
 		if( (creation_vtx_index>=0) && (creation_vtx_index<int(sec_info->vertex_time.size())) &&
 			from_ncap &&
-			(parent_index>=0) && (parent_index<int(sec_info->track_pdg_code.size())) &&
+			(parent_index>=0) && (parent_index<int(sec_info->track_g3_code.size())) &&
 			neutrons_map.count(parent_index)
 			){
 			
@@ -245,7 +245,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 			int parent_neutron_index = neutrons_map.at(parent_index);
 			
 			// save gammas
-			if(sec_info->track_pdg_code.at(particle_i)==22){
+			if(sec_info->track_g3_code.at(particle_i)==22){
 				Log(m_unique_name+" storing decay gamma",v_debug,m_verbose);
 				// add this gamma to the appropriate position
 //				out_gamma_time.at(parent_neutron_index).push_back(sec_info->vertex_time.at(creation_vtx_index)
@@ -272,7 +272,7 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 				}
 			}
 			// save conversion electrons: these will also contribute to total deexcitation energy
-			else if(sec_info->track_pdg_code.at(particle_i)==11){
+			else if(sec_info->track_g3_code.at(particle_i)==11){
 				Log(m_unique_name+" storing electron",v_debug,m_verbose);
 				// add this gamma to the appropriate position
 //				out_electron_time.at(parent_neutron_index).push_back(sec_info->vertex_time.at(creation_vtx_index)
@@ -299,9 +299,9 @@ int TruthNeutronCaptures_v2::CalculateVariables(){
 				if(out_nuclide_daughter_pdg.at(parent_neutron_index)!=0){
 					Log(m_unique_name+" ERROR: more than one daughter nuclide for neutron "+toString(parent_neutron_index)
 						+"; current is "+toString(out_nuclide_daughter_pdg.at(parent_neutron_index))+", new is "
-						+toString(sec_info->track_pdg_code.at(particle_i)),v_error,m_verbose);
+						+toString(sec_info->track_g3_code.at(particle_i)),v_error,m_verbose);
 				}
-				out_nuclide_daughter_pdg.at(parent_neutron_index) = sec_info->track_pdg_code.at(particle_i);
+				out_nuclide_daughter_pdg.at(parent_neutron_index) = sec_info->track_g3_code.at(particle_i);
 			}
 		} // if daughter from neutron capture
 	} // end second loop over particles

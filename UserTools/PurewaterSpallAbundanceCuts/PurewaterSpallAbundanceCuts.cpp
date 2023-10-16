@@ -10,7 +10,7 @@
 #include <cmath>       // fabs
 #include <algorithm>   // std::max_element
 
-#include "Constants.h" // muboy_classes
+#include "Constants.h" // muboy_class
 
 PurewaterSpallAbundanceCuts::PurewaterSpallAbundanceCuts():Tool(){}
 
@@ -91,7 +91,7 @@ bool PurewaterSpallAbundanceCuts::Initialise(std::string configfile, DataModel &
 		{"ntag_FOM>0.995",				{}},              // no ntag index; just require event had 1+ passing ntag
 		{"mu_lowe_ntag_triplets",		{"spadt","dt"}}
 	};
-	for(auto&& acut : cut_names) myTreeSelections.AddCut(acut.first, acut.first, acut.second);
+	for(auto&& acut : cut_names) myTreeSelections.AddCut(acut.first, acut.first, false, acut.second);
 	
 	// pass the TreeSelections to downstream tools so they can see which events passed which selections
 	intptr_t myTreeSelectionsPtr = reinterpret_cast<intptr_t>(&myTreeSelections);
@@ -288,8 +288,8 @@ bool PurewaterSpallAbundanceCuts::Analyse(){
 		
 		// Apply nominal lt cut, unless muon type was misfit or a poorly fit single muon
 		Log(m_unique_name+" checking nominal dlt cut",v_debug+2,m_verbose);
-		if(not (dlt_mu_lowe[mu_i] < 200 || mu_class[mu_i] == int(muboy_classes::misfit) || 
-			   (mu_class[mu_i] == int(muboy_classes::single_thru_going) && mu_fit_goodness[mu_i] < 0.4)))
+		if(not (dlt_mu_lowe[mu_i] < 200 || mu_class[mu_i] == int(muboy_class::misfit) || 
+			   (mu_class[mu_i] == int(muboy_class::single_thru_going) && mu_fit_goodness[mu_i] < 0.4)))
 			    continue;
 		myTreeSelections.AddPassingEvent("dlt_mu_lowe>200cm", mu_i);
 		

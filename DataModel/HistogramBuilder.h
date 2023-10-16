@@ -16,8 +16,8 @@ class HistogramBuilder {
 	public:
 	HistogramBuilder();
 	~HistogramBuilder();
-	TFile* MakeFile(std::string filename, bool notree_in=false);
-	TTree* MakeTree(std::string treename);
+	TFile* MakeFile(std::string filename, std::string treename="tree", bool notree_in=false);
+	TTree* MakeTree(std::string treename="tree");
 	void SaveHists(bool dosavehists);
 	void SetVerbosity(int verb);
 	
@@ -384,9 +384,9 @@ bool HistogramBuilder::Fill(std::string name, std::vector<T> vals){
 			         <<std::endl;
 			return false;
 		}
-		     if(vals.size()==1) hist->Fill(vals[0]);
-		else if(vals.size()==2) hist->Fill(vals[0],vals[1]);
-		else if(vals.size()==3) hist->Fill(vals[0],vals[1],vals[2]);
+		     if(vals.size()==1){ hist->Fill(vals[0]); }
+		else if(vals.size()==2){ TH2* hist2 = (TH2*)(hist); hist2->Fill(vals[0],vals[1]); }
+		else if(vals.size()==3){ TH3* hist3 = (TH3*)(hist); hist3->Fill(vals[0],vals[1],vals[2]); }
 	}
 	
 	return true;

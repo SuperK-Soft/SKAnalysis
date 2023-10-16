@@ -22,8 +22,7 @@
 #include "Algorithms.h"  // CheckPath
 
 bool Notifier::Notify(){
-	if(verbosity) std::cout<<"Notifier signalled new TTree at entry "
-	                       <<treeReader->GetEntryNumber()<<std::endl;
+	if(verbosity) std::cout<<"Notifier for "<<treeReader->GetName()<<" loading new TTree"<<std::endl;
 	//treeReader->GetTree()->Show();
 	treeReader->GetTree()->GetTree()->GetEntry(0);
 	//treeReader->GetTree()->Show();
@@ -186,7 +185,7 @@ int MTreeReader::ParseBranches(){
 	branch_dimensions.clear();
 	branch_dims_cache.clear();
 	
-	if(verbosity) std::cout<<"getting leaves"<<std::endl;
+	if(verbosity) std::cout<<name<<" updating branch addresses"<<std::endl;
 	//for(int i=0; i<thetree->GetListOfLeaves()->GetEntriesFast(); ++i){
 	for(int i=0; i<thetree->GetListOfBranches()->GetEntriesFast(); ++i){
 		//TLeaf* lf=(TLeaf*)thetree->GetListOfLeaves()->At(i);
@@ -503,6 +502,9 @@ int MTreeReader::GetEntry(long entry_number, bool skipTreeRead){
 	
 	// check for tree changes
 	if(currentTreeNumber!=thetree->GetTreeNumber()){
+		if(verbosity) std::cout<<"MTreeReader "<<name<<" changed tree number from "<<currentTreeNumber
+		         <<" to "<<thetree->GetTreeNumber()<<" while going from entry "<<currentEntryNumber
+		         <<" to "<<entry_number<<std::endl;
 		// new tree
 		currentTreeNumber = thetree->GetTreeNumber();
 		thefile = thetree->GetCurrentFile();

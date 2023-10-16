@@ -24,7 +24,7 @@ bool CutRecorder::Initialise(std::string configfile, DataModel &data){
 	
 	m_data->Selectors.emplace(selectorName, &myTreeSelections);
 	
-	myTreeSelections.AddCut("all", "all events");
+	myTreeSelections.AddCut("all", "all events",false);
 	
 	return true;
 }

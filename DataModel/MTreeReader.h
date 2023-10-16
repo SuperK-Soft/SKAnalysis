@@ -21,7 +21,7 @@ class Notifier : public TObject {
 	public:
 	bool Notify();
 	MTreeReader* treeReader=nullptr;
-	int verbosity;
+	int verbosity = 0;
 	void SetReader(MTreeReader* in){ treeReader=in; }
 	void SetVerbosity(int verbin){ verbosity=verbin; }
 };

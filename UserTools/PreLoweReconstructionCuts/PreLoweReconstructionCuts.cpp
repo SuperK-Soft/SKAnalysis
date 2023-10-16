@@ -1,5 +1,6 @@
 #include "PreLoweReconstructionCuts.h"
 #include <bitset>
+#include <limits>
 
 PreLoweReconstructionCuts::PreLoweReconstructionCuts():Tool(){}
 
@@ -19,20 +20,20 @@ bool PreLoweReconstructionCuts::Initialise(std::string configfile, DataModel &da
 	if(get_ok){
 		// make note of all the cuts we're going to make in the order we're going to apply them
 		// AddCut(selectorName, cutname, description)
-		m_data->AddCut(selectorName, "SLE_trigger", "reject SLE triggers");
-		m_data->AddCut(selectorName, "Periodic_trigger", "reject Periodic triggers");
-		m_data->AddCut(selectorName, "PeriodicSimple_trigger", "reject Periodic simple triggers");
-		m_data->AddCut(selectorName, "Calib_trigger", "reject Calibration triggers");
-		m_data->AddCut(selectorName, "IDlaser_trigger", "reject ID laser triggers");
-		m_data->AddCut(selectorName, "ODlaser_trigger", "reject OD laser triggers");
-		m_data->AddCut(selectorName, "T2K_trigger", "reject T2K triggers");
-		m_data->AddCut(selectorName, "OD_trigger", "reject OD triggers");
-		m_data->AddCut(selectorName, "LE_trigger", "require LE trigger");
-		m_data->AddCut(selectorName, "Pedestal_flag", "reject pedestal events");
-		m_data->AddCut(selectorName, "IQBCalMode_flag", "reject IQBCALMODE==0 events");
-		m_data->AddCut(selectorName, "NQISK", "reject events with ID charge>1000", 0, 2000);
-		m_data->AddCut(selectorName, "50usTimeCut", "reject events less than 50us from a previous trigger", 0, 50);
-		m_data->AddCut(selectorName, "ODActivity", "reject events with >20 OD hits in 500-->1300ns window", 0, 20);
+		m_data->AddCut(selectorName, "SLE_trigger", "reject SLE triggers",false);
+		m_data->AddCut(selectorName, "Periodic_trigger", "reject Periodic triggers",false);
+		m_data->AddCut(selectorName, "PeriodicSimple_trigger", "reject Periodic simple triggers",false);
+		m_data->AddCut(selectorName, "Calib_trigger", "reject Calibration triggers",false);
+		m_data->AddCut(selectorName, "IDlaser_trigger", "reject ID laser triggers",false);
+		m_data->AddCut(selectorName, "ODlaser_trigger", "reject OD laser triggers",false);
+		m_data->AddCut(selectorName, "T2K_trigger", "reject T2K triggers",false);
+		m_data->AddCut(selectorName, "OD_trigger", "reject OD triggers",false);
+		m_data->AddCut(selectorName, "LE_trigger", "require LE trigger",false);
+		m_data->AddCut(selectorName, "Pedestal_flag", "reject pedestal events",false);
+		m_data->AddCut(selectorName, "IQBCalMode_flag", "reject IQBCALMODE==0 events",false);
+		m_data->AddCut(selectorName, "NQISK", "reject events with ID charge>2000",true, 0, 2000);
+		m_data->AddCut(selectorName, "50usTimeCut", "reject events less than 50us from a previous trigger",true, 50E3, std::numeric_limits<double>::max());
+		m_data->AddCut(selectorName, "ODActivity", "reject events with >20 OD hits in 500-->1300ns window",true, 0, 20);
 	}
 	
 	return true;
@@ -174,7 +175,7 @@ bool PreLoweReconstructionCuts::Execute(){
 	// TODO ltimediff of relics should be updated after MuonSearch to t0_sub(i)/count_per_nsec
 	// where t0_sub(i) is subtrigger time of untagged muon
 	if(!selectorName.empty()) m_data->ApplyCut(selectorName, "50usTimeCut",skroot_lowe_.ltimediff);
-	if(skroot_lowe_.ltimediff < 50E3){  // aka LoweInfo::ltimediff, but not set in RFM files
+	if(skroot_lowe_.ltimediff < 50E6){  // aka LoweInfo::ltimediff, but not set in RFM files
 		m_data->vars.Set("Skip", true);
 		Log(m_unique_name+": event failed 50us time cut",v_debug,m_verbose);
 		return true;

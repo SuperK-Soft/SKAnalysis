@@ -19,12 +19,12 @@ bool PostLoweReconstructionCuts::Initialise(std::string configfile, DataModel &d
 	if(get_ok){
 		// make note of all the cuts we're going to make in the order we're going to apply them
 		// AddCut(selectorName, cutname, description)
-		m_data->AddCut(selectorName, "BSenergy", "relic candidate bonsai energy",8,100);
-		m_data->AddCut(selectorName, "ClusfitGoodness", "relic candidate clusfit goodness",0.3,10);
-		m_data->AddCut(selectorName, "BSgoodness", "relic candidate bonsai goodness",0.5,10);
-		m_data->AddCut(selectorName, "BSovaQ", "relic candidate bonsai vertex+direction combined goodness",0.25,100);
-		m_data->AddCut(selectorName, "WallDistance", "direct distance to closest wall",0,200);
-		m_data->AddCut(selectorName, "SNR", "signal to noise ratio",0,0.55);
+		m_data->AddCut(selectorName, "BSenergy", "relic candidate bonsai energy",true,8,100);
+		m_data->AddCut(selectorName, "ClusfitGoodness", "relic candidate clusfit goodness",true,0.3,10);
+		m_data->AddCut(selectorName, "BSgoodness", "relic candidate bonsai goodness",true,0.5,10);
+		m_data->AddCut(selectorName, "BSovaQ", "relic candidate bonsai vertex+direction combined goodness",true,0.25,100);
+		m_data->AddCut(selectorName, "WallDistance", "direct distance to closest wall",true,200,1E9);
+		m_data->AddCut(selectorName, "SNR", "signal to noise ratio",true,0,0.55);
 	}
 	
 	// whether we need to read the lowe reconstruction variables from file via skroot_get_lowe_
@@ -162,6 +162,7 @@ bool PostLoweReconstructionCuts::Execute(){
 	}
 	
 	// 4.9 remove events with high signal-to-noise ratioq
+	// SNR is defined as N(Q<0.5pe)/N(anyQ) - i.e. fraction of low-charge hits
 	if(!selectorName.empty()) m_data->ApplyCut(selectorName, "SNR",skroot_lowe_.lnsratio);
 	if(skroot_lowe_.lnsratio > 0.55){  // aka LoweInfo::lnsratio; calculated in lfallfit
 		m_data->vars.Set("Skip", true);

@@ -188,7 +188,7 @@ bool PlotMuonDtDlt::PlotMuonDt(){
 	// and their difference to extract spallation distributions.
 	
 	// colour match to the existing paper
-	// muboy_classes{ misfit=0, single_thru_going=1, single_stopping=2, multiple_mu=3, also_multiple_mu=4, corner_clipper=5};
+	// muboy_class{ misfit=0, single_thru_going=1, single_stopping=2, multiple_mu=3, also_multiple_mu=4, corner_clipper=5};
 	std::map<std::string, EColor> class_colours{
 		{"misfit",kBlue},
 		{"single_thru_going",kBlack},

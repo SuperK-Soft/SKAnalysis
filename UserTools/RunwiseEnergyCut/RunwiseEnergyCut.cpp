@@ -27,7 +27,7 @@ bool RunwiseEnergyCut::Initialise(std::string configfile, DataModel &data){
 			description<<"{"<<acut.first.first<<" < Run < "<<acut.first.second
 			         <<" : "<<acut.second.first<<" < bsenergy < "<<acut.second.second<<"}\n";
 		}
-		m_data->AddCut(selectorName, m_unique_name, description.str());
+		m_data->AddCut(selectorName, m_unique_name, description.str(),true);
 	}
 	
 	return true;

@@ -23,7 +23,7 @@ bool WallCut::Initialise(std::string configfile, DataModel &data){
 	get_ok = m_variables.Get("selectorName", selectorName);
 	if(get_ok){
 		std::string description = "bswall < " + toString(cutThreshold);
-		m_data->AddCut(selectorName, m_unique_name, description);
+		m_data->AddCut(selectorName, m_unique_name, description,true);
 	}
 	
 	return true;

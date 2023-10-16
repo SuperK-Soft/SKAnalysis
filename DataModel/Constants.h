@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 #include <map>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_map>
 #include "TInterpreter.h" // TInterpreter::EErrorCode
@@ -118,6 +119,7 @@ class TriggerType {
 	bool operator==(const TriggerTypeEnum trig) const { return trigtype == trig; }
 	bool operator!=(const TriggerTypeEnum trig) const { return trigtype != trig; }
 	operator int() const { return static_cast<int>(trigtype); }
+	operator std::string() const { std::stringstream ss; ss << *this; return ss.str(); }
 	
 };
 
@@ -168,15 +170,16 @@ class EventFlagSKIV{
 	bool operator==(const EventFlagSKIVEnum trig) const { return trigtype == trig; }
 	bool operator!=(const EventFlagSKIVEnum trig) const { return trigtype != trig; }
 	operator int() const { return static_cast<int>(trigtype); }
+	operator std::string() const { std::stringstream ss; ss << *this; return ss.str(); }
 };
 
-enum class muboy_classes{
+enum class muboy_class{
 	misfit=0,            // too few valid hits (<10) after cuts
 	single_thru_going=1, // good confidence in single throughgoing
 	single_stopping=2,   // 
 	multiple_mu_1=3,     // Scott says: "80% of multiple muons are this type..."
-	multiple_mu_2=4,     // "...and 20% are of this type". What is the difference??
-	corner_clipper=5     // 
+	multiple_mu_2=4,     // "...and 20% are of this type". Maybe 3 is lower SNR?
+	corner_clipper=5     // see lowe school slides.
 };
 
 namespace constants{
@@ -577,22 +580,22 @@ namespace constants{
 		{52, "NC elastic"}
 	};
 	
-	static const std::map<muboy_classes,std::string> muboy_class_to_name{
-		{muboy_classes::misfit,"misfit"},
-		{muboy_classes::single_thru_going,"single_thru_going"},
-		{muboy_classes::single_stopping,"single_stopping"},
-		{muboy_classes::multiple_mu_1,"multiple_mu_1"},
-		{muboy_classes::multiple_mu_2,"multiple_mu_2"},
-		{muboy_classes::corner_clipper,"corner_clipper"}
+	static const std::map<muboy_class,std::string> muboy_class_to_name{
+		{muboy_class::misfit,"misfit"},
+		{muboy_class::single_thru_going,"single_thru_going"},
+		{muboy_class::single_stopping,"single_stopping"},
+		{muboy_class::multiple_mu_1,"multiple_mu_1"},
+		{muboy_class::multiple_mu_2,"multiple_mu_2"},
+		{muboy_class::corner_clipper,"corner_clipper"}
 	};
 	
-	static const std::map<std::string,muboy_classes> muboy_name_to_class{
-		{"misfit",muboy_classes::misfit},
-		{"single_thru_going",muboy_classes::single_thru_going},
-		{"single_stopping",muboy_classes::single_stopping},
-		{"multiple_mu_1",muboy_classes::multiple_mu_1},
-		{"multiple_mu_2",muboy_classes::multiple_mu_2},
-		{"corner_clipper",muboy_classes::corner_clipper}
+	static const std::map<std::string,muboy_class> muboy_name_to_class{
+		{"misfit",muboy_class::misfit},
+		{"single_thru_going",muboy_class::single_thru_going},
+		{"single_stopping",muboy_class::single_stopping},
+		{"multiple_mu_1",muboy_class::multiple_mu_1},
+		{"multiple_mu_2",muboy_class::multiple_mu_2},
+		{"corner_clipper",muboy_class::corner_clipper}
 	};
 	
 	static const std::unordered_map<int,std::string>* const pdg_to_string = GetParticleNameMap();

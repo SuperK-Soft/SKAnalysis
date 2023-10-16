@@ -49,6 +49,7 @@ class PrintEvent: public Tool {
 	bool PrintTQCommons(bool ID, int nhits);
 	bool PrintTQZCommons(bool ID, int nhits);
 	bool PrintTQRawCommons(bool ID, int nhits);
+	bool DeleteOutsideHits(int outLUN);
 	
 	MTreeReader* myTreeReader=nullptr;
 	

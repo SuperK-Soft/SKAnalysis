@@ -17,7 +17,7 @@ bool IDHitsCut::Initialise(std::string configfile, DataModel &data){
 	get_ok = m_variables.Get("selectorName", selectorName);
 	if(get_ok){
 		std::string description = "cut events with nqisk > "+toString(hitLimit);
-		m_data->AddCut(selectorName, m_unique_name, description);
+		m_data->AddCut(selectorName, m_unique_name, description,true);
 	}
 	
 	return true;
@@ -38,7 +38,7 @@ bool IDHitsCut::Execute(){
 		m_data->vars.Set("Skip", true);
 	}
 	
-	if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, m_unique_name);
+	if(!selectorName.empty()) m_data->ApplyCut(selectorName, m_unique_name,totalHits);
 	
 	return true;
 }

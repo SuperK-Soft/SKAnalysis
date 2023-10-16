@@ -30,7 +30,7 @@ bool ODCut::Initialise(std::string configfile, DataModel &data){
 		                          +toString(hitsThreshold)+" hits within the time range "
 		                          +toString(windowMinT)+" to "+toString(windowMaxT)
 		                          +" ns from the primary trigger";
-		m_data->AddCut(selectorName, m_unique_name, description);
+		m_data->AddCut(selectorName, m_unique_name, description, true);
 	}
 	
 	return true;

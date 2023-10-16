@@ -88,6 +88,13 @@ class basic_array /*: public generic_array*/ {
 	
 	~basic_array(){};
 	
+	const basic_array<W>& operator=(const basic_array<W>& in) const {
+		basic_array<W> ret;
+		ret.addr = in.addr;
+		ret.a_size = in.a_size;
+		return ret;
+	}
+	
 	const W& at(int i) const {
 		if(i<0||size_t(i)>a_size){
 			throw std::out_of_range ("out of range exception requesting element "+std::to_string(i)+" of "+std::to_string(a_size)+" in "+__FILE__+"::"+std::to_string(__LINE__));
@@ -154,7 +161,7 @@ class basic_array /*: public generic_array*/ {
 template < class T>
 class basic_array<T,true> /*: public generic_array*/ {
 	typedef typename std::remove_pointer<T>::type W;
-	typedef typename std::remove_extent<W>::type U;  // raw element type
+	typedef typename std::remove_all_extents<W>::type U;  // raw element type
 	typedef basic_array<U> V; // wrapped element type
 	public:
 	basic_array(){
@@ -186,6 +193,15 @@ class basic_array<T,true> /*: public generic_array*/ {
 		//	 <<" and holds objects of type "<<type_name<decltype(subarray[0])>()
 		//	 <<" or alternatively "<<type_name<decltype(subarray.at(0))>()
 		//	 <<" while return type is "<<type_name<V>()<<std::endl;
+	}
+	
+	// reference to 2D array
+	template<typename X, size_t N, size_t M>
+	basic_array(X (&ref_in)[N][M]){
+		//std::cout<<"reference constructor with arg type "<<type_name<decltype(ref_in)>()<<std::endl;
+		//std::cout<<"X is of type "<<type_name<X>()<<std::endl;
+		a_size = N; //sizeof(typename std::remove_pointer<X>::type)/sizeof(T);
+		Init(reinterpret_cast<intptr_t>(&ref_in[0]), std::vector<size_t>{M});
 	}
 	
 	template<class X>
@@ -229,6 +245,15 @@ class basic_array<T,true> /*: public generic_array*/ {
 	}
 	
 	~basic_array(){};
+	
+	const basic_array<T>& operator=(const basic_array<T,true>& in) const {
+		basic_array<T> ret;
+		ret.addr = in.addr;
+		ret.a_size = in.a_size;
+		ret.a_dimensions = in.a_dimensions;
+		ret.subarray = in.subarray;
+		return ret;
+	}
 	
 	const V& at(int i) const {
 		if(i<0||size_t(i)>a_size){
