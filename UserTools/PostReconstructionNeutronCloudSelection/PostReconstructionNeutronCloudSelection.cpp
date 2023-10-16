@@ -1,6 +1,7 @@
 #include "PostReconstructionNeutronCloudSelection.h"
 
 #include "NeutronInfo.h"
+#include "MTreeReader.h"
 
 #include "TFile.h"
 
@@ -63,10 +64,10 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
   post_bsn50_cut.Fill(skroot_lowe_.bsn50);
 
   MuInfo* my_muinfo = nullptr;
-  tree_reader_ptr->GetBranch("MU", my_muinfo);
-  const int muboy_idx = my_muinfo->muinfo[7]
+  tree_reader_ptr->Get("MU", my_muinfo);
+  const int muboy_idx = my_muinfo->muinfo[7];
   
-  const float ldt  = CalculateLongitudinalDistance(skroot_mu_.muentpoint, skroot_mu_.muboy_dir[muboy_idx], skroot_lowe_.bsvertex);
+  const float ldt = CalculateLongitudinalDistance(skroot_mu_.muboy_entpos[muboy_idx], skroot_mu_.muboy_dir, skroot_lowe_.bsvertex);
   pre_ldt_cut.Fill(ldt);
   if (ldt  > 500){
     return true;
@@ -128,6 +129,7 @@ float PostReconstructionNeutronCloudSelection::CalculateLongitudinalDistance(flo
 }
 
 void PostReconstructionNeutronCloudSelection::GetReader(){
+  std::string tree_reader_str = "";
   m_variables.Get("tree_reader_str", tree_reader_str);
   if (tree_reader_str.empty() || m_data->Trees.count(tree_reader_str) == 0){
     throw std::invalid_argument("no valid treereader specified!");

@@ -10,6 +10,7 @@
 #include "TH1D.h"
 
 #include "NeutronInfo.h"
+#include "MTreeReader.h"
 
 class PostReconstructionNeutronCloudSelection: public Tool {
 
