@@ -43,6 +43,8 @@ bool CalculatePreactivityObservables::Execute(){
   */
   
   double lowest_in_gate_time = 9999;
+  const double q50n50_window_size = 50;
+  const double preact_window_size = 15;
   
   std::vector<Hit> tof_sub_hits = std::vector<Hit>(sktqz_.nqiskz, {0,0,0});
   
@@ -68,7 +70,7 @@ bool CalculatePreactivityObservables::Execute(){
   
   // prepopulate q50n50_window with first 50ns worth of hits
   for (size_t i = 0; i < tof_sub_hits.size(); ++i){
-    if (tof_sub_hits.at(i).time - tof_sub_hits.front().time < 50){
+    if (tof_sub_hits.at(i).time - tof_sub_hits.front().time < q50n50_window_size){
       q50n50_window.push_back(tof_sub_hits.at(i));
     } else {
       last_hit_idx = i - 1;
@@ -85,23 +87,19 @@ bool CalculatePreactivityObservables::Execute(){
       q50n50_ratio = current_q50 / q50n50_window.size();
     }
 
-    // drop the first hit in the q50n50_window and keep track of the time diff between it and the subsequent hit:
-    const double dt_to_next_hit = q50n50_window.at(1).time - q50n50_window.at(0).time;
+    // drop the first hit in the q50n50_window
     q50n50_window.pop_front();
 
-    const double current_last_hit_time = q50n50_window.back().time;
-    
-    // add new hits until they fall outside of dt from the back
+    // add new hits until the newly truncated window is 50ns long again                                                                                      
     for (size_t new_hit_idx = last_hit_idx; new_hit_idx < tof_sub_hits.size(); ++new_hit_idx){
-      if (tof_sub_hits.at(new_hit_idx).time - current_last_hit_time < dt_to_next_hit){
-	q50n50_window.push_back(tof_sub_hits.at(new_hit_idx));
+      if (tof_sub_hits.at(new_hit_idx).time - q50n50_window.front().time < q50n50_window_size){
+        q50n50_window.push_back(tof_sub_hits.at(new_hit_idx));
       } else {
-	break;
+        break;
       }
     }
     
-    ++last_hit_idx;
-    
+    ++last_hit_idx;    
   }
 
   // back to calculating the preactivity...
@@ -147,35 +145,18 @@ bool CalculatePreactivityObservables::Execute(){
       max_pregate = preact_window.size();
     }
 
-    // drop the first hit in the preact_window and keep track of the time diff between it and the subsequent hit:
-    const double dt_to_next_hit = preact_window.at(1) - preact_window.at(0);
+    // drop the first hit in the preact_window
     preact_window.pop_front();
 
-    const double current_last_hit_time = preact_window.back();
-    
-    // add new hits until they fall outside of dt from the back
+    // add new hits until the newly truncated window is 12ns long again   
     for (size_t new_hit_idx = last_hit_idx; new_hit_idx < tof_sub_hits.size(); ++new_hit_idx){
-      if (tof_sub_hits.at(new_hit_idx).time - current_last_hit_time < dt_to_next_hit){
+      if (tof_sub_hits.at(new_hit_idx).time - preact_window.front() < preact_window_size){
 	preact_window.push_back(tof_sub_hits.at(new_hit_idx).time);
       } else {
 	break;
       }
     }
-    
-    // // add the next subsequent hit not already the preact_window
-    // const double dt_to_next_hit = tof_sub_hits.at(last_hit_idx + 1).time - preact_window.back();
-    // preact_window.push_back(tof_sub_hits.at(last_hit_idx + 1).time);
-
-    // const double current_first_hit = preact_window.front();
-
-    // //remove all hits that are within dt from the front
-    // for (auto hit_it = preact_window.begin(); hit_it != preact_window.end(); ++hit_it){
-    //   if (*hit_it - current_first_hit > dt_to_next_hit){
-    // 	preact_window.erase(preact_window.begin(), hit_it - 1);
-    // 	break;
-    //   }
-    // }
-    
+        
     ++last_hit_idx;
   }
 
