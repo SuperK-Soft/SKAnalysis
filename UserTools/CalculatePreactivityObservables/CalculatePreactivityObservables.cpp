@@ -66,21 +66,21 @@ bool CalculatePreactivityObservables::Execute(){
    */
 
   std::deque<Hit> q50n50_window = {};
-  size_t last_hit_idx = 0;
+  size_t next_hit_idx = 0;
   
   // prepopulate q50n50_window with first 50ns worth of hits
   for (size_t i = 0; i < tof_sub_hits.size(); ++i){
     if (tof_sub_hits.at(i).time - tof_sub_hits.front().time < q50n50_window_size){
       q50n50_window.push_back(tof_sub_hits.at(i));
     } else {
-      last_hit_idx = i - 1;
+      next_hit_idx = i;
       break;
     }
   }
 
   double q50n50_ratio = 0;
   
-  while (last_hit_idx != tof_sub_hits.size()){
+  while (next_hit_idx != tof_sub_hits.size() - 1){
 
     const double current_q50 = std::accumulate(q50n50_window.begin(), q50n50_window.end(), 0, [](double a, const Hit& h){return a + h.charge;});
     if (q50n50_ratio > current_q50 / q50n50_window.size()){
@@ -89,21 +89,19 @@ bool CalculatePreactivityObservables::Execute(){
 
     // drop the first hit in the q50n50_window
     q50n50_window.pop_front();
-
-    // add new hits until the newly truncated window is 50ns long again                                                                                      
-    for (size_t new_hit_idx = last_hit_idx; new_hit_idx < tof_sub_hits.size(); ++new_hit_idx){
-      if (tof_sub_hits.at(new_hit_idx).time - q50n50_window.front().time < q50n50_window_size){
-        q50n50_window.push_back(tof_sub_hits.at(new_hit_idx));
+    
+    // add new hits until the newly truncated window is 50ns long again
+    while(next_hit_idx < tof_sub_hits.size()){
+      if(tof_sub_hits.at(next_hit_idx).time - q50n50_window.front().time < q50n50_window_size){
+	q50n50_window.push_back(tof_sub_hits.at(next_hit_idx));
+	++next_hit_idx;
       } else {
-        break;
+	break;
       }
     }
-    
-    ++last_hit_idx;    
   }
-
-  // back to calculating the preactivity...
   
+  // back to calculating the preactivity...
   for (size_t i = 0; i < tof_sub_hits.size(); ++i){
     for (size_t j = i; j < tof_sub_hits.size(); ++j){
       tof_sub_hits.at(i).goodness += 2 * CalculateGoodness(tof_sub_hits.at(i).time, tof_sub_hits.at(j).time);
@@ -120,7 +118,7 @@ bool CalculatePreactivityObservables::Execute(){
 				    }), tof_sub_hits.end());
   
   std::deque<double> preact_window = {};
-  last_hit_idx = 0;
+  next_hit_idx = 0;
   
   int max_pre = 0;
   int max_pregate = 0;
@@ -130,12 +128,12 @@ bool CalculatePreactivityObservables::Execute(){
     if (tof_sub_hits.at(i).time - tof_sub_hits.front().time < 15){
       preact_window.push_back(tof_sub_hits.at(i).time);
     } else {
-      last_hit_idx = i - 1;
+      next_hit_idx = i;
       break;
     }
   }
   
-  while ((preact_window.back() < -12) && (last_hit_idx != tof_sub_hits.size() - 1)){
+  while ((preact_window.back() < -12) && (next_hit_idx != tof_sub_hits.size() - 1)){
 
     if (preact_window.size() > static_cast<size_t>(max_pre)){
       max_pre = preact_window.size();
@@ -148,16 +146,14 @@ bool CalculatePreactivityObservables::Execute(){
     // drop the first hit in the preact_window
     preact_window.pop_front();
 
-    // add new hits until the newly truncated window is 12ns long again   
-    for (size_t new_hit_idx = last_hit_idx; new_hit_idx < tof_sub_hits.size(); ++new_hit_idx){
-      if (tof_sub_hits.at(new_hit_idx).time - preact_window.front() < preact_window_size){
-	preact_window.push_back(tof_sub_hits.at(new_hit_idx).time);
+    // add new hits until the newly truncated window is 12ns long again
+    while (next_hit_idx < tof_sub_hits.size()){
+      if (tof_sub_hits.at(next_hit_idx).time - preact_window.front() < preact_window_size){
+	preact_window.push_back(tof_sub_hits.at(next_hit_idx).time);
       } else {
 	break;
-      }
+      } 
     }
-        
-    ++last_hit_idx;
   }
 
   m_data->CStore.Set("q50n50_ratio", q50n50_ratio);
