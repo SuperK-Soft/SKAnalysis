@@ -125,7 +125,7 @@ bool CalculatePreactivityObservables::Execute(){
 
   // prepopulate preact_window with first 15ns worth of hits
   for (size_t i = 0; i < tof_sub_hits.size(); ++i){
-    if (tof_sub_hits.at(i).time - tof_sub_hits.front().time < 15){
+    if (tof_sub_hits.at(i).time - tof_sub_hits.front().time < preact_window_size){
       preact_window.push_back(tof_sub_hits.at(i).time);
     } else {
       next_hit_idx = i;
@@ -150,6 +150,7 @@ bool CalculatePreactivityObservables::Execute(){
     while (next_hit_idx < tof_sub_hits.size()){
       if (tof_sub_hits.at(next_hit_idx).time - preact_window.front() < preact_window_size){
 	preact_window.push_back(tof_sub_hits.at(next_hit_idx).time);
+	++next_hit_idx;
       } else {
 	break;
       } 
