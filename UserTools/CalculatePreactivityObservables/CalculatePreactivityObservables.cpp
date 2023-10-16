@@ -80,22 +80,23 @@ bool CalculatePreactivityObservables::Execute(){
   
   while (last_hit_idx != tof_sub_hits.size()){
 
-    const double current_q50 = std::accumulate(q50n50_window.begin(), q50n50_window.end(), 0, [](double a, const Hit& h){return h.charge;});
+    const double current_q50 = std::accumulate(q50n50_window.begin(), q50n50_window.end(), 0, [](double a, const Hit& h){return a + h.charge;});
     if (q50n50_ratio > current_q50 / q50n50_window.size()){
       q50n50_ratio = current_q50 / q50n50_window.size();
     }
+
+    // drop the first hit in the q50n50_window and keep track of the time diff between it and the subsequent hit:
+    const double dt_to_next_hit = q50n50_window.at(1).time - q50n50_window.at(0).time;
+    q50n50_window.pop_front();
+
+    const double current_last_hit_time = q50n50_window.back().time;
     
-    // add the next subsequent hit not already the q50n50_window                                                                                                                                                    
-    const double dt_to_next_hit = tof_sub_hits.at(last_hit_idx + 1).time - q50n50_window.back().time;
-    q50n50_window.push_back(tof_sub_hits.at(last_hit_idx + 1));
-    
-    const double current_first_hit = q50n50_window.front().time;
-    
-    //remove all hits that are within dt from the front                                                                                                                                                             
-    for (auto hit_it = q50n50_window.begin(); hit_it != q50n50_window.end(); ++hit_it){
-      if (hit_it->time - current_first_hit > dt_to_next_hit){
-        q50n50_window.erase(q50n50_window.begin(), hit_it - 1);
-        break;
+    // add new hits until they fall outside of dt from the back
+    for (size_t new_hit_idx = last_hit_idx; new_hit_idx < tof_sub_hits.size(); ++new_hit_idx){
+      if (tof_sub_hits.at(new_hit_idx).time - current_last_hit_time < dt_to_next_hit){
+	q50n50_window.push_back(tof_sub_hits.at(new_hit_idx));
+      } else {
+	break;
       }
     }
     
@@ -146,19 +147,34 @@ bool CalculatePreactivityObservables::Execute(){
       max_pregate = preact_window.size();
     }
 
-    // add the next subsequent hit not already the preact_window
-    const double dt_to_next_hit = tof_sub_hits.at(last_hit_idx + 1).time - preact_window.back();
-    preact_window.push_back(tof_sub_hits.at(last_hit_idx + 1).time);
+    // drop the first hit in the preact_window and keep track of the time diff between it and the subsequent hit:
+    const double dt_to_next_hit = preact_window.at(1) - preact_window.at(0);
+    preact_window.pop_front();
 
-    const double current_first_hit = preact_window.front();
-
-    //remove all hits that are within dt from the front
-    for (auto hit_it = preact_window.begin(); hit_it != preact_window.end(); ++hit_it){
-      if (*hit_it - current_first_hit > dt_to_next_hit){
-	preact_window.erase(preact_window.begin(), hit_it - 1);
+    const double current_last_hit_time = preact_window.back();
+    
+    // add new hits until they fall outside of dt from the back
+    for (size_t new_hit_idx = last_hit_idx; new_hit_idx < tof_sub_hits.size(); ++new_hit_idx){
+      if (tof_sub_hits.at(new_hit_idx).time - current_last_hit_time < dt_to_next_hit){
+	preact_window.push_back(tof_sub_hits.at(new_hit_idx).time);
+      } else {
 	break;
       }
     }
+    
+    // // add the next subsequent hit not already the preact_window
+    // const double dt_to_next_hit = tof_sub_hits.at(last_hit_idx + 1).time - preact_window.back();
+    // preact_window.push_back(tof_sub_hits.at(last_hit_idx + 1).time);
+
+    // const double current_first_hit = preact_window.front();
+
+    // //remove all hits that are within dt from the front
+    // for (auto hit_it = preact_window.begin(); hit_it != preact_window.end(); ++hit_it){
+    //   if (*hit_it - current_first_hit > dt_to_next_hit){
+    // 	preact_window.erase(preact_window.begin(), hit_it - 1);
+    // 	break;
+    //   }
+    // }
     
     ++last_hit_idx;
   }
