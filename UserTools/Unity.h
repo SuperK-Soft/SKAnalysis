@@ -70,7 +70,6 @@
 #include "CalculateNeutronCloudVertex.h"
 #include "NeutCloudCorrelationCuts.h"
 #include "CalculatePreactivityObservables.h"
-#include "DecayElectronCuts.h"
 #include "DataQualityCuts.h"
 #include "PostLoweReconstructionCuts.h"
 #include "PreLoweReconstructionCuts.h"

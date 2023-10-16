@@ -75,7 +75,7 @@ if (tool=="PostReconstructionNeutronCloudSelection") ret=new PostReconstructionN
 if (tool=="CalculateNeutronCloudVertex") ret=new CalculateNeutronCloudVertex;
 if (tool=="NeutCloudCorrelationCuts") ret=new NeutCloudCorrelationCuts;
 if (tool=="CalculatePreactivityObservables") ret=new CalculatePreactivityObservables;
-if (tool=="DecayElectronCuts") ret=new DecayElectronCuts;
+if (tool=="PositronIdentificationCuts") ret=new PositronIdentificationCuts;
 if (tool=="DataQualityCuts") ret=new DataQualityCuts;
 if (tool=="PostLoweReconstructionCuts") ret=new PostLoweReconstructionCuts;
 if (tool=="PreLoweReconstructionCuts") ret=new PreLoweReconstructionCuts;

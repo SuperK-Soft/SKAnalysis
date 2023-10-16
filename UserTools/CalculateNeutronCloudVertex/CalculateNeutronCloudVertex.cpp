@@ -5,6 +5,8 @@
 
 #include "TH1D.h"
 
+#include <algorithm>
+
 CalculateNeutronCloudVertex::CalculateNeutronCloudVertex():Tool(){}
 
 bool CalculateNeutronCloudVertex::Initialise(std::string configfile, DataModel &data){
@@ -20,6 +22,7 @@ bool CalculateNeutronCloudVertex::Initialise(std::string configfile, DataModel &
   GetTreeReader();
 
   mult_plot = TH1D("mult_plot", "multiplcity of neutron cloud;multiplcity", 20, 0, 20);
+  dist_to_mu_plot = TH1D("dist_to_mu_plot", "distance to muon plot; distance [cm]", 100, 100, 100);
   
   return true;
 }
@@ -42,9 +45,12 @@ bool CalculateNeutronCloudVertex::Execute(){
       neutron_cloud_vertex.at(dim) = neutron.bs_vertex.at(dim) / neutrons.size();
     }
   }
-
+  
   mult = neutrons.size();
   mult_plot.Fill(mult);
+
+
+  dist_to_mu_plot.Fill(ClosestApproach(neutron_cloud_vertex));
   
   LOWE_tree_reader->GetTree()->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
   LOWE_tree_reader->GetTree()->Branch("neutron_multiplicity", &mult);
@@ -64,6 +70,7 @@ bool CalculateNeutronCloudVertex::Finalise(){
   }
 
   mult_plot.Write();
+  dist_to_mu_plot.Write();
   
   return true;
 }
@@ -75,4 +82,26 @@ void CalculateNeutronCloudVertex::GetTreeReader(){
     throw std::runtime_error("CalculateNeutronCloudVertex::Execute - Failed to get treereader "+tree_reader_str+"!");
   }
   LOWE_tree_reader = m_data->Trees.at(tree_reader_str);
+}
+
+
+double CalculateNeutronCloudVertex::ClosestApproach(const std::vector<double>& vertex) const {
+  const std::vector<double> muon_ent = std::vector<double>(skroot_mu_.muentpoint, skroot_mu_.muentpoint + 3);
+  const std::vector<double> muon_dir = std::vector<double>(skroot_mu_.mudir, skroot_mu_.mudir + 3);
+
+  std::vector<double> diff = std::vector<double>(3, 0);
+  for (int i = 0; i < 3; ++i){diff.at(i) = vertex.at(i) - muon_ent.at(i);}
+
+  std::vector<double> proj = std::vector<double>(3, 0);
+  std::vector<double> dist_vec = std::vector<double>(3, 0);
+
+  const double diff_mudir_ip = std::inner_product(diff.begin(), diff.end(), muon_dir.begin(), 0);
+  const double mudir_muent_ip = std::inner_product(muon_dir.begin(), muon_dir.end(), muon_dir.end(), 0);
+  
+  for (int i = 0; i < 3; ++i){
+    proj.at(i) = (diff_mudir_ip / mudir_muent_ip) * muon_dir.at(i);
+    dist_vec.at(i) = vertex.at(i) - proj.at(i) - muon_ent.at(i);
+  }
+  
+  return sqrt(std::inner_product(dist_vec.begin(), dist_vec.begin(), dist_vec.end(), 0));
 }
