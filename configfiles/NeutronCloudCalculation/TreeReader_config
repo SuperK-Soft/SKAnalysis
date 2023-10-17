@@ -1,0 +1,36 @@
+verbosity 10
+readerName reader
+
+inputFile /home/moflaher/disk02/run868/run868.root
+
+treeName mu                                    # the name of the tree within the file
+# max num input entries to process
+maxEntries 100
+#maxEntries -1
+skFile 1                                          # do not call SKREAD/SKRAWREAD - no need.
+
+skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)
+skbadopt 23
+
+skrootMode 0
+outputFile /home/mattnich/disk3stor/neutron_cloud_test_run868.root
+
+SK_GEOMETRY 6
+
+StartInputBranchList
+###############
+EVENTHEADER
+TQLIST
+ODTQLIST
+GPSLIST
+PREVT0
+HEADER
+TQREAL
+TQAREAL
+LOWE
+MU
+SLE
+IDODXTLK
+
+#############
+EndInputBranchList
