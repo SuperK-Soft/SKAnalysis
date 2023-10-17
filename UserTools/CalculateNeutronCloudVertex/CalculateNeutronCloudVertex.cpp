@@ -49,11 +49,10 @@ bool CalculateNeutronCloudVertex::Execute(){
   mult = neutrons.size();
   mult_plot.Fill(mult);
 
-
   dist_to_mu_plot.Fill(ClosestApproach(neutron_cloud_vertex));
   
-  LOWE_tree_reader->GetTree()->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
-  LOWE_tree_reader->GetTree()->Branch("neutron_multiplicity", &mult);
+  MU_tree_reader->GetTree()->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
+  MU_tree_reader->GetTree()->Branch("neutron_multiplicity", &mult);
   
   return true;
 }
@@ -77,11 +76,11 @@ bool CalculateNeutronCloudVertex::Finalise(){
 
 void CalculateNeutronCloudVertex::GetTreeReader(){
   std::string tree_reader_str = "";
-  m_variables.Get("LOWE_TreeReader", tree_reader_str);
+  m_variables.Get("MU_TreeReader", tree_reader_str);
   if (m_data->Trees.count(tree_reader_str) == 0){
     throw std::runtime_error("CalculateNeutronCloudVertex::Execute - Failed to get treereader "+tree_reader_str+"!");
   }
-  LOWE_tree_reader = m_data->Trees.at(tree_reader_str);
+  MU_tree_reader = m_data->Trees.at(tree_reader_str);
 }
 
 

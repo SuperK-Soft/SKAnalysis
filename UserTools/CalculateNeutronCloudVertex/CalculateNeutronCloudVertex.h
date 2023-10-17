@@ -26,7 +26,7 @@ class CalculateNeutronCloudVertex: public Tool {
   TH1D dist_to_mu_plot;
   
   int mult = 0;
-  MTreeReader* LOWE_tree_reader = nullptr;
+  MTreeReader* MU_tree_reader = nullptr;
 
   void GetTreeReader();
   double ClosestApproach(const std::vector<double>&) const;
