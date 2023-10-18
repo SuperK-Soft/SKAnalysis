@@ -89,35 +89,36 @@ bool ReconstructMatchedMuons::Execute(){
 	                  ", muons to write out: "+toString(m_data->muonsToRec.size()),v_debug,m_verbose);
 	
 	// write finished candidates to file
-	if(m_data->writeOutRelics.size()){
+	if(m_data->writeOutRelics.size()>0){
 		relics_to_write += m_data->writeOutRelics.size();
 		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Relics to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->writeOutRelics, relicWriterLUN, EventType::LowE);
 		m_data->writeOutRelics.clear();
 	}
 	
-	if(m_data->muonsToRec.size()){
+	if(m_data->muonsToRec.size()>0){
 		muons_to_write += m_data->muonsToRec.size();
-		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Muons to write!",v_warning,m_verbose);
+		Log(m_unique_name+" "+toString(m_data->muonsToRec.size())+" Muons to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->muonsToRec, muWriterLUN, EventType::Muon);
 		m_data->muonsToRec.clear();
 	}
 	
+	return true;
 }
 
 bool ReconstructMatchedMuons::Finalise(){
 	
 	// write any remaining candidates to file
-	if(m_data->writeOutRelics.size()){
+	if(m_data->writeOutRelics.size()>0){
 		relics_to_write += m_data->writeOutRelics.size();
 		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Relics to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->writeOutRelics, relicWriterLUN, EventType::LowE);
 		m_data->writeOutRelics.clear();
 	}
 	
-	if(m_data->muonsToRec.size()){
+	if(m_data->muonsToRec.size()>0){
 		muons_to_write += m_data->muonsToRec.size();
-		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Muons to write!",v_warning,m_verbose);
+		Log(m_unique_name+" "+toString(m_data->muonsToRec.size())+" Muons to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->muonsToRec, muWriterLUN, EventType::Muon);
 		m_data->muonsToRec.clear();
 	}

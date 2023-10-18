@@ -103,7 +103,7 @@ bool RelicMuonMatching::Execute(){
 			Log(m_unique_name+" found AFT after relic",v_debug,m_verbose);
 			thedeque = &m_data->relicCandDeque;
 		}
-		if(thedeque->size() && thedeque->back().EventNumber==(skhead_.nevsk-1)){
+		if(thedeque!=nullptr && thedeque->size() && thedeque->back().EventNumber==(skhead_.nevsk-1)){
 			thedeque->back().hasAFT = true;
 			Log(m_unique_name+" Setting AFT flag for "+(lastEventType==EventType::Muon ? "Muon " : "relic ")
 			         +toString(thedeque->back().EventNumber),v_debug,m_verbose);
@@ -286,7 +286,7 @@ bool RelicMuonMatching::Execute(){
 	}
 	
 	Log(m_unique_name+" Relics to Write out: "+toString(m_data->writeOutRelics.size())+
-	                  ", muons to write out: "+toString(m_data->muonsToRec.size()),v_warning,m_verbose);
+	                  ", muons to write out: "+toString(m_data->muonsToRec.size()),v_debug,m_verbose);
 	
 	return true;
 }
@@ -387,9 +387,10 @@ bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTicks,
 	}
 	
 	// scan over targets, oldest to newest
-	
-	Log(m_unique_name+" matching this "+(loweEventFlag ? "lowE" : "muon")+" candidate to "
-	    +toString(targetDeque->size())+" targets",v_warning,m_verbose);
+	if(targetDeque->size()){
+		Log(m_unique_name+" matching this "+(loweEventFlag ? "lowE" : "muon")+" candidate to "
+		    +toString(targetDeque->size())+" targets",v_warning,m_verbose);
+	}
 	
 	bool firstmatch=true;
 	for(int i = 0; i < targetDeque->size(); i++){
