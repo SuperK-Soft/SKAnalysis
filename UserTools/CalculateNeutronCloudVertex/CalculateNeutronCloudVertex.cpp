@@ -4,6 +4,8 @@
 #include "MTreeReader.h"
 
 #include "TH1D.h"
+#include "TTree.h"
+#include "TFile.h"
 
 #include <algorithm>
 
@@ -21,6 +23,8 @@ bool CalculateNeutronCloudVertex::Initialise(std::string configfile, DataModel &
 
   GetTreeReader();
 
+  CreateOutputFile();
+  
   mult_plot = TH1D("mult_plot", "multiplcity of neutron cloud;multiplcity", 20, 0, 20);
   dist_to_mu_plot = TH1D("dist_to_mu_plot", "distance to muon plot; distance [cm]", 100, 100, 100);
   
@@ -31,18 +35,10 @@ bool CalculateNeutronCloudVertex::Execute(){
 
   std::vector<NeutronInfo> neutrons = {};
   m_data->CStore.Get("event_neutrons", neutrons);
-
-  if (neutrons.empty()){
-    bool skip = true;
-    m_data->CStore.Set("Skip", skip);
-    return true;
-  }
-
-  std::vector<double> neutron_cloud_vertex = {}; 
   
   for (const auto& neutron : neutrons){
     for (int dim = 0; dim < 3; ++dim){
-      neutron_cloud_vertex.at(dim) = neutron.bs_vertex.at(dim) / neutrons.size();
+      neutron_cloud_vertex.at(dim) += neutron.bs_vertex.at(dim) / neutrons.size();
     }
   }
   
@@ -51,8 +47,12 @@ bool CalculateNeutronCloudVertex::Execute(){
 
   dist_to_mu_plot.Fill(ClosestApproach(neutron_cloud_vertex));
   
-  MU_tree_reader->GetTree()->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
-  MU_tree_reader->GetTree()->Branch("neutron_multiplicity", &mult);
+  nvc_tree_ptr->Fill();
+
+  if (MU_tree_reader->GetEntryNumber() % 1000 == 0){
+    nvc_file_ptr->cd();
+    nvc_tree_ptr->Write();
+  }
   
   return true;
 }
@@ -70,6 +70,9 @@ bool CalculateNeutronCloudVertex::Finalise(){
 
   mult_plot.Write();
   dist_to_mu_plot.Write();
+
+  nvc_file_ptr->cd();
+  nvc_tree_ptr->Write();
   
   return true;
 }
@@ -103,4 +106,18 @@ double CalculateNeutronCloudVertex::ClosestApproach(const std::vector<double>& v
   }
   
   return sqrt(std::inner_product(dist_vec.begin(), dist_vec.begin(), dist_vec.end(), 0));
+}
+
+void CalculateNeutronCloudVertex::CreateOutputFile(){
+  std::string nvc_file_str = "";
+  m_variables.Get("nvc_file_str", nvc_file_str);
+  if (nvc_file_str.empty()){
+    throw std::runtime_error("CalculateNeutronCloudVertex::CreateOutputFile - no output file specified!");
+  }
+  nvc_file_ptr = TFile::Open(nvc_file_str.c_str(), "RECREATE");
+  nvc_tree_ptr = new TTree("neutron_cloud_info", "neutron_cloud_info");
+
+  nvc_tree_ptr->Branch("neutron_cloud_multiplicity", &mult);
+  nvc_tree_ptr->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
+  return;
 }
