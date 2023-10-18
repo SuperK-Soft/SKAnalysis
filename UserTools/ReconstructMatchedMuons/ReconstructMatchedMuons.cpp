@@ -90,11 +90,17 @@ bool ReconstructMatchedMuons::Execute(){
 	
 	// write finished candidates to file
 	if(m_data->writeOutRelics.size()){
+		relics_to_write += m_data->writeOutRelics.size();
+		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Relics to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->writeOutRelics, relicWriterLUN, EventType::LowE);
+		m_data->writeOutRelics.clear();
 	}
 	
 	if(m_data->muonsToRec.size()){
+		muons_to_write += m_data->muonsToRec.size();
+		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Muons to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->muonsToRec, muWriterLUN, EventType::Muon);
+		m_data->muonsToRec.clear();
 	}
 	
 }
@@ -103,16 +109,27 @@ bool ReconstructMatchedMuons::Finalise(){
 	
 	// write any remaining candidates to file
 	if(m_data->writeOutRelics.size()){
+		relics_to_write += m_data->writeOutRelics.size();
+		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Relics to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->writeOutRelics, relicWriterLUN, EventType::LowE);
+		m_data->writeOutRelics.clear();
 	}
 	
 	if(m_data->muonsToRec.size()){
+		muons_to_write += m_data->muonsToRec.size();
+		Log(m_unique_name+" "+toString(m_data->writeOutRelics.size())+" Muons to write!",v_warning,m_verbose);
 		WriteEventsOut(m_data->muonsToRec, muWriterLUN, EventType::Muon);
+		m_data->muonsToRec.clear();
 	}
+	
+	Log(m_unique_name+" Wrote "+toString(relics_written)+" of "+toString(relics_to_write)
+	    +" relic events to file",v_warning,m_verbose);
+	Log(m_unique_name+" Wrote "+toString(muons_written)+" of "+toString(muons_to_write)
+	    +" muon events ("+toString(muons_written_wmuboysplit)
+	    +" after splitting muboy multiple muons) to file",v_warning,m_verbose);
 	
 	return true;
 }
-
 
 bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsToWrite, int outLUN, EventType eventType){
 	
@@ -198,7 +215,7 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			if(!get_ok){
 				Log(m_unique_name+" Error reconstructing muon event "
 				    +toString(eventsToWrite[i].InEntryNumber),v_error,m_verbose);
-				continue; // skip writing out this muon i guess...?
+				//continue; // write it out anyway, maybe we can try again later
 			}
 		}
 		
@@ -270,6 +287,8 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			// invoke TTree::Fill
 			skroot_fill_tree_(&outLUN);
 			
+			++relics_written;
+			
 			/*
 			// no longer needed as we've merged with the parent event
 			// if the event had an associated AFT trigger, write that out as well
@@ -286,19 +305,16 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		// for muon events, set the reconstructed muon info if available
 		else if(eventType==EventType::Muon){
 			
-			std::vector<skroot_mu_common> mu_reco_info;
-			get_ok = m_data->CStore.Get("reco_muons", mu_reco_info);
-			
 			// ok, so muboy may reconstruct multiple muons, and we should save all of them
-			if(get_ok && mu_reco_info.size()){
-				for(int j=0; j<mu_reco_info.size(); ++j){
+			if(get_ok && reco_muons.size()){
+				for(int j=0; j<reco_muons.size(); ++j){
 					// note these only differ by the muon entry point
 					// (for which we need to get the corresponding element from
 					// skroot_mu_.muboy_entpos, using the index in skroot_mu_.mu_info[7])
 					// and in the dE/dx arrays in mu_info[10:210] and skroot_mu_.muboy_dedx
 					// to be honest we could save a lot of disk space by being smarter
 					// in the way we read these in, but for now just make every entry independent.
-					skroot_mu_ = mu_reco_info.at(j);
+					skroot_mu_ = reco_muons.at(j);
 					
 					skroot_set_mu_(&outLUN,
 					               skroot_mu_.muentpoint,
@@ -324,13 +340,14 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 					// invoke TTree::Fill
 					skroot_fill_tree_(&outLUN);
 					
+					if(j==0) ++muons_written;
+					++muons_written_wmuboysplit;
+					
 				}
 			}
 		}
 		
 	}
-	
-	eventsToWrite.clear();
 	
 	// reload the previous entry so that no issues are caused with other tools
 	if(currentEntry != rfmReader->GetEntryNumber()){

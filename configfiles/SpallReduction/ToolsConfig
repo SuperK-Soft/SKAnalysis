@@ -33,5 +33,8 @@ lfallfit lfallfit configfiles/SpallReduction/lfallfitConfig
 # post-reconstruction lowe event cuts
 PostLoweCuts PostLoweReconstructionCuts configfiles/SpallReduction/PostLoweCutsConfig
 
-# match muons with close-in-time relics. Write out matched events.
+# match muons with close-in-time relics.
 RelicMuonMatching RelicMuonMatching configfiles/SpallReduction/RelicMuMatchingConfig
+
+# reconstruct muons and write out both relic and matched muons
+ReconstructMatchedMuons ReconstructMatchedMuons configfiles/SpallReduction/ReconstructMatchedMuonsConfig

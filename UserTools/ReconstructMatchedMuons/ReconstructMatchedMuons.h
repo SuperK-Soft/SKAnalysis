@@ -39,6 +39,12 @@ class ReconstructMatchedMuons: public Tool {
 	uint64_t HwClockTicks;
 	int NumRollovers;
 	
+	int relics_to_write=0;
+	int muons_to_write=0;
+	int relics_written=0;
+	int muons_written=0;
+	int muons_written_wmuboysplit=0;
+	
 	int current_badch_masking;
 	std::vector<skroot_mu_common> reco_muons;
 	
