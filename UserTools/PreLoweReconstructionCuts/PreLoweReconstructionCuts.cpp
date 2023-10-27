@@ -144,7 +144,7 @@ bool PreLoweReconstructionCuts::Execute(){
 	// reject events with IQBCALMODE==0, whatever that is, from skpdst.h. No C equivalent?
 	if(skpdst2_.iqbcalmode==0){
 		m_data->vars.Set("Skip", true);
-		Log(m_unique_name+": event failed IQQBCalMode trigger cut",v_debug,m_verbose);
+		Log(m_unique_name+": event failed IQBCalMode trigger cut",v_debug,m_verbose);
 		return true;
 	}
 	if(!selectorName.empty()) m_data->AddPassingEvent(selectorName, "IQBCalMode_flag");
@@ -175,7 +175,7 @@ bool PreLoweReconstructionCuts::Execute(){
 	// TODO ltimediff of relics should be updated after MuonSearch to t0_sub(i)/count_per_nsec
 	// where t0_sub(i) is subtrigger time of untagged muon
 	if(!selectorName.empty()) m_data->ApplyCut(selectorName, "50usTimeCut",skroot_lowe_.ltimediff);
-	if(skroot_lowe_.ltimediff < 50E6){  // aka LoweInfo::ltimediff, but not set in RFM files
+	if(skroot_lowe_.ltimediff < 50E3){  // aka LoweInfo::ltimediff, but not set in RFM files
 		m_data->vars.Set("Skip", true);
 		Log(m_unique_name+": event failed 50us time cut",v_debug,m_verbose);
 		return true;

@@ -92,6 +92,7 @@ class TreeReader: public Tool {
 	bool aft_loaded=false; // is the AFT loaded into the common blocks at present
 	long buffered_entry = -1;
 	long file_cursor=0;
+	bool autoRead=true;
 	
 	// variables to read in
 	// ====================

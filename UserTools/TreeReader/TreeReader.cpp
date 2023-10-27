@@ -89,7 +89,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// detect zebra files based on extention of first file
 	if(skrootMode!=SKROOTMODE::WRITE){
 		std::string firstfile = list_of_files.front();
-		if(firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs"){
+		if( (firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs") ||
+		    (firstfile.substr(firstfile.length()-4,firstfile.length())==".dat") ){
 			Log(m_unique_name+" using zebra mode",v_debug,m_verbose);
 			skrootMode=SKROOTMODE::ZEBRA;
 		}
@@ -122,18 +123,35 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// i guess we can only pracitcally check the first file
 		// i don't think it'll seg as long as at least one file has a 'data' tree
 		// XXX although, perhaps it would be better to check all of them?
-		TFile* f_temp = TFile::Open(list_of_files.front().c_str(),"READ");
-		TTree* t_temp= (TTree*)f_temp->Get(treeName.c_str());
-		if(t_temp==nullptr){
-			Log(m_unique_name+" ERROR! input file "+list_of_files.front()+" has no '"+treeName+"' TTree!",v_error,m_verbose);
+		bool got_good_file=false;
+		for(int first_valid_file_i=0; first_valid_file_i<list_of_files.size(); ++first_valid_file_i){
+			TFile* f_temp = TFile::Open(list_of_files.at(first_valid_file_i).c_str(),"READ");
+			if(!f_temp || f_temp->IsZombie()){
+				Log(m_unique_name+" ERROR opening input file '"+list_of_files.at(first_valid_file_i)
+				    +"'",v_error,m_verbose);
+				continue;
+			}
+			TTree* t_temp= (TTree*)f_temp->Get(treeName.c_str());
+			if(t_temp==nullptr){
+				Log(m_unique_name+" ERROR! input file "+list_of_files.at(first_valid_file_i)
+				    +" has no '"+treeName+"' TTree!",v_error,m_verbose);
+				f_temp->Close();
+				// might as well remove it from the list of files
+				list_of_files.erase(std::next(list_of_files.begin(),first_valid_file_i));
+				continue;
+			}
+			got_good_file=true;
+			present_branches.resize(t_temp->GetListOfBranches()->GetEntriesFast());
+			for(int i=0; i<present_branches.size(); ++i){
+				present_branches.at(i) = t_temp->GetListOfBranches()->At(i)->GetName();
+			}
+			f_temp->Close();
+		}
+		if(!got_good_file){
+			Log(m_unique_name+" ERROR! Found no good files in file list!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
-		present_branches.resize(t_temp->GetListOfBranches()->GetEntriesFast());
-		for(int i=0; i<present_branches.size(); ++i){
-			present_branches.at(i) = t_temp->GetListOfBranches()->At(i)->GetName();
-		}
-		f_temp->Close();
 	}
 	
 	// warning check: see if we're given an input when we're in WRITE mode
@@ -657,6 +675,11 @@ bool TreeReader::Execute(){
 	// nothing to do in write mode
 	if(skrootMode==SKROOTMODE::WRITE) return true;
 	
+	// also offer the option to only read entries on request, not automatically on every entry
+	// this can be useful if we aren't processing one entry per Execute loop,
+	// but still want to use the TreeReader tool to populate SK common blocks.
+	if(!autoRead) return true;
+	
 	Log(m_unique_name+" getting entry "+toString(entrynum),v_debug,m_verbose);
 	
 	// optionally buffer N entries per Execute call
@@ -844,6 +867,10 @@ bool TreeReader::Execute(){
 }
 
 bool TreeReader::RunChange(){
+	// skip for MC runs
+	if(skhead_.nrunsk==999999 || skhead_.nrunsk==0){
+		return true;
+	}
 	Log(m_unique_name+" Run Change",v_debug,m_verbose);
 	m_data->vars.Set("newRun",true);
 	get_ok = true;
@@ -888,16 +915,21 @@ bool TreeReader::RunChange(){
 }
 
 bool TreeReader::SubrunChange(){
+	// skip for MC runs
+	if(skhead_.nrunsk==999999 || skhead_.nrunsk==0){
+		return true;
+	}
 	Log(m_unique_name+" SubRun Change",v_debug,m_verbose);
 	m_data->vars.Set("newSubrun",true);
 	get_ok = true;
 	
 	// update bad channels
 	if(myTreeReader.GetMCFlag()){
-		// FIXME I believe this is only needed for MC...
-		// For data isn't bad channel masking automatically updated?
-		// But the run number is normally 0 for MC, so this will only work if the run number
-		// was overridden to mimic a specific run...? maybe that's the use-case here.
+		// I believe this is only needed for MC...
+		// (FIXME For data isn't bad channel masking automatically updated by skrawread?)
+		// BUT we should only do this when given a reference run for bad channels (i.e not 999999)
+		// FIXME should we override nrunsk for every readout?
+		// or shud we pass `reference_watert_run` instead of `skhead_.nrunsk`?
 		
 		// apparently a loglevel of 4 suppresses outputs...
 		combad_.log_level_skbadch = 0;
@@ -931,7 +963,7 @@ bool TreeReader::SkipThisRun(){
 	int next_run_num = skhead_.nrunsk;
 	do {
 		// get the number of entries in this file (TTree)
-		int entry_in_current_file = myTreeReader.GetChain()->LoadTree(entrynum);
+		int entry_in_current_file = myTreeReader.GetTree()->LoadTree(entrynum);
 		int entries_in_current_file = myTreeReader.GetCurrentTree()->GetEntriesFast();
 		Log(m_unique_name+" File "+myTreeReader.GetFile()->GetName()
 		    +" has "+toString(entries_in_current_file)+" entries",v_debug,m_verbose);
@@ -1646,6 +1678,7 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
 		else if(thekey=="skipBadRuns") skipbadruns = stoi(thevalue);
 		else if(thekey=="referenceWaterRun") reference_watert_run = stoi(thevalue);
+		else if(thekey=="autoEntryRead") autoRead = stoi(thevalue);
 		else {
 			Log(m_unique_name+" error parsing config file line: \""+LineCopy
 				+"\" - unrecognised variable \""+thekey+"\"",v_error,m_verbose);

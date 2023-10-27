@@ -34,6 +34,9 @@ bool LoadFileList::Initialise(std::string configfile, DataModel &data){
 		// truncate the list to the first maxFiles entries
 		Log(m_unique_name+" truncating to first "+toString(maxFiles)+" files",v_debug,m_verbose);
 		list_of_files.resize(maxFiles);
+	} else if(num_files==0){
+		Log(m_unique_name+" found no files!",v_error,m_verbose);
+		return false;
 	}
 	
 	// set the files into the CStore

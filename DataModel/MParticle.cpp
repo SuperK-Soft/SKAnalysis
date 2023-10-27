@@ -32,11 +32,19 @@ bool MParticle::IsParentDirect(){
 }
 
 void MParticle::SetStartMom(double* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetStartMom called with nullptr!"<<std::endl;
+		return;
+	}
 	start_mom = TVector3{nums};
 	start_mom.SetBit(initbit);
 }
 
 void MParticle::SetStartMom(float* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetStartMom called with nullptr!"<<std::endl;
+		return;
+	}
 	start_mom = TVector3{nums};
 	start_mom.SetBit(initbit);
 }
@@ -52,11 +60,19 @@ void MParticle::SetStartMom(double x, double y, double z){
 }
 
 void MParticle::SetEndMom(double* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetEndMom called with nullptr!"<<std::endl;
+		return;
+	}
 	end_mom = TVector3{nums};
 	end_mom.SetBit(initbit);
 }
 
 void MParticle::SetEndMom(float* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetEndMom called with nullptr!"<<std::endl;
+		return;
+	}
 	end_mom = TVector3{nums};
 	end_mom.SetBit(initbit);
 }

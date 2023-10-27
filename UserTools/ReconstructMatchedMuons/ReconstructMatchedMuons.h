@@ -20,7 +20,7 @@ class ReconstructMatchedMuons: public Tool {
 	
 	bool ReconstructNextMuon();
 	bool WriteEventsOut(std::vector<ParticleCand>& eventsToWrite, int outLUN, EventType eventType);
-	bool AddAftHits(const rawtqinfo_common& rawtqinfo_aft);
+	bool AddAftHits(const rawtqinfo_common& rawtqinfo_aft, double aft_trig_time);
 	
 	private:
 	
@@ -32,7 +32,8 @@ class ReconstructMatchedMuons: public Tool {
 	bool noBFF=false;  // veto fallback to BFF
 	
 	std::vector<int> MatchedEvNums;
-	std::vector<int> MatchedEntryNums;
+	std::vector<int> MatchedInEntryNums;
+	std::vector<int> MatchedOutEntryNums;
 	std::vector<float> MatchedTimeDiff;   // [ns]
 	std::vector<float> MatchedParticleE;  // [MeV]
 	std::vector<bool> MatchedHasAFTs;

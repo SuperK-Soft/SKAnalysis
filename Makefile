@@ -5,7 +5,8 @@ PWD=`pwd`
 Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fmax-errors=5 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Wno-reorder -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-sign-compare -Werror=array-bounds -Werror=return-type # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fmax-errors=5 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Werror=array-bounds -Werror=return-type # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
+CXXFLAGS += -Wno-reorder -Wno-misleading-indentation -Wno-sign-compare -Wno-unused-but-set-variable -Wno-unused-variable -Wno-register -Wno-delete-non-virtual-dtor
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
@@ -36,6 +37,13 @@ ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib 
 
 # functions from kirk bays. BFF (aka newmufit), getdl, ...
 KIRKLIB = -L $(Dependencies)/Kirk -lkirk
+
+# functions from relic_sk4_ana (makededx with modifications to take run #)
+# nothing added to it yet; placeholder
+#RELICSK4LIB = -L $(Dependencies)/relic_sk4 -lrelic_sk4_ana
+
+# debugging: find where a function name is defined. Veeery useful.
+#LDFLAGS += -Wl,--trace-symbol=makededx_
 
 # not all fortran routines are built into libraries as part of compiling SKOFL & ATMPD.
 # figure out why standalones don't need to specify a full path when listing in dependencies of a target....?
@@ -147,7 +155,7 @@ EXTRALIBS= -lstdc++fs
 
 # Combine all external libraries and headers needed by user Tools
 MyToolsInclude = $(SKOFLINCLUDE) $(ATMPDINCLUDE) $(PythonInclude) $(TMVAINCLUDE) $(PAIRBONSAIINCLUDE)
-MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS) $(EXTRALIBS) $(PAIRBONSAILIB) $(KIRKLIB)
+MyToolsLib = $(LDFLAGS) $(LDLIBS) $(PythonLib) $(THIRDREDLIB) $(TMVALIB) $(ROOTSTLLIBS) $(EXTRALIBS) $(PAIRBONSAILIB) $(KIRKLIB) $(RELICSK4LIB)
 
 # To add user classes:
 # 1. Add a rule to build them into a shared library (see libMyClass.so example)
@@ -233,7 +241,7 @@ UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so inclu
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
 	cp UserTools/Factory/Factory.h include
 	cp UserTools/Unity.h include
-	-g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
+	g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
 	#-L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelib)
 
 update:

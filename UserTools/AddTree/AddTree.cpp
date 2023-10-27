@@ -15,27 +15,42 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	m_log= m_data->Log;
 	
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
-	std::string renameDataTo, newTreeName, treeReaderName;
+	std::string renameDataTo, newTreeName, baseTreeWriterName;
+	// baseTreeWriterName = 'treeReaderName' of the TreeReader Tool instance
+	// producing the file to which we're adding a new tree
+	m_variables.Get("baseTreeWriterName", baseTreeWriterName);
+	// renameDataTo = by default the TreeManager (or TreeReader Tool conigured in root-2-root mode)
+	// produces an output tree called 'data'. If given, that tree will instead be renamed
+	// according to this variable. (renaming at least one of the trees is of course required,
+	// as we cannot have two trees both called 'data')
 	m_variables.Get("renameDataTo", renameDataTo);
+	// newTreeName = quite simply, name of the new tree to add
 	m_variables.Get("newTreeName", newTreeName);
-	m_variables.Get("treeReaderName", treeReaderName);
+	// LUN = if a particular LUN is desired for the TreeManager associated to this output tree,
+	// specify it here. There is no real reason to do so.
 	int lun2=0;
 	m_variables.Get("LUN",lun2);
-	// give it a name to put it in the datamodel map for downstream Tools
-	std::string treeWriterName;
-	m_variables.Get("treeWriterName", treeWriterName);
+	// thisTreeWriterName = a name to identify this TreeManager in the datamodel for downstream Tools.
+	std::string thisTreeWriterName;
+	m_variables.Get("thisTreeWriterName", thisTreeWriterName);
+	
+	// find the current writer Tool
+	if(m_data->Trees.count(baseTreeWriterName)==0){
+		Log(m_unique_name+" Error! No upstream TreeReader '"+baseTreeWriterName+"' in DataModel!",v_error,m_verbose);
+		return false;
+	}
 	
 	// set the associated file as active
-	int lun1 = m_data->GetLUN(treeReaderName);
+	int lun1 = m_data->GetLUN(baseTreeWriterName);
 	TreeManager* mgr1 = skroot_get_mgr(&lun1);
 	if(mgr1==nullptr){
-		Log(m_unique_name+" Error! Couldn't find manager associated with existing tree '"+treeReaderName+"'",
+		Log(m_unique_name+" Error! Couldn't find manager associated with existing tree '"+baseTreeWriterName+"'",
 		    v_error,m_verbose);
 		return false;
 	}
 	TTree* otree1 = mgr1->GetOTree();
 	if(otree1==nullptr){
-		Log(m_unique_name+" Error! Null output tree for existing tree '"+treeReaderName+"'",
+		Log(m_unique_name+" Error! Null output tree for existing tree '"+baseTreeWriterName+"'",
 		    v_error,m_verbose);
 		return false;
 	}
@@ -55,7 +70,7 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 	// to fail, but this is not checked, so the code subsequently carries on,
 	// making a new managed Tree, associated with the current ROOT directory
 	// (i.e. our existing file)
-	lun2 = m_data->GetNextLUN(treeWriterName, lun2);
+	lun2 = m_data->GetNextLUN(thisTreeWriterName, lun2);
 	Log(m_unique_name+": The following error '<TFile::TFile>: file name is not specified'"
 	                  " may be safely ignored",v_warning,m_verbose);
 	skroot_open_write_(&lun2, "", 0);

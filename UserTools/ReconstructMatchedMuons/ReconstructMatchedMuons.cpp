@@ -65,7 +65,8 @@ bool ReconstructMatchedMuons::Initialise(std::string configfile, DataModel &data
 	muTree->Branch("HwClockTicks", &HwClockTicks);
 	muTree->Branch("NumRollovers", &NumRollovers);
 	muTree->Branch("MatchedEvNums", &MatchedEvNums);
-	muTree->Branch("MatchedEntryNums", &MatchedEntryNums);
+	muTree->Branch("MatchedInEntryNums", &MatchedInEntryNums);
+	muTree->Branch("MatchedOutEntryNums", &MatchedOutEntryNums);
 	muTree->Branch("MatchedEntryHasAFT", &MatchedHasAFTs);
 	muTree->Branch("MatchedTimeDiff", &MatchedTimeDiff);
 	muTree->Branch("MatchedParticleE", &MatchedParticleE);
@@ -75,7 +76,8 @@ bool ReconstructMatchedMuons::Initialise(std::string configfile, DataModel &data
 	relicTree->Branch("HwClockTicks", &HwClockTicks);
 	relicTree->Branch("NumRollovers", &NumRollovers);
 	relicTree->Branch("MatchedEvNums", &MatchedEvNums);
-	relicTree->Branch("MatchedEntryNums", &MatchedEntryNums);
+	relicTree->Branch("MatchedInEntryNums", &MatchedInEntryNums);
+	relicTree->Branch("MatchedOutEntryNums", &MatchedOutEntryNums);
 	relicTree->Branch("MatchedEntryHasAFT", &MatchedHasAFTs);
 	relicTree->Branch("MatchedTimeDiff", &MatchedTimeDiff);
 	relicTree->Branch("MatchedParticleE", &MatchedParticleE);
@@ -152,10 +154,11 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		// in the hits; we'll keep the Header branch (event number, time etc) of the primary event.
 		// In which case it's probably easier to read the AFT first, and just buffer the hits.
 		static rawtqinfo_common rawtqinfo_aft;
-		if(eventsToWrite[i].hasAFT && (eventsToWrite[i].InEntryNumber+1) != currentEntry){
+		int64_t aft_trigticks=0;
+		if(eventsToWrite[i].hasAFT){
 			
-			std::cout<<m_unique_name+" Rolling back input reader to grab AFT for "<<eventType
-			         <<" entry "<<(eventsToWrite[i].InEntryNumber+1)<<std::endl;
+			Log(m_unique_name+" Rolling back input reader to grab AFT for "+toString(eventType)
+			         +" entry "+toString(eventsToWrite[i].InEntryNumber+1),v_debug,m_verbose);
 			
 			Log(m_unique_name+" prefetching AFT entry "+toString(eventsToWrite[i].InEntryNumber+1),
 			    v_debug,m_verbose);
@@ -170,6 +173,13 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			
 			// make a note of the AFT hits
 			rawtqinfo_aft = rawtqinfo_;
+			Log(m_unique_name+" buffering "+toString(rawtqinfo_.nqisk_raw)+" aft hits",v_debug,m_verbose);
+			
+			// and trigger time, so we can correct hit times when transferring to the SHE readout
+			aft_trigticks = (skheadqb_.nevhwsk & ~0x1FFFF);
+			aft_trigticks = aft_trigticks << 15;
+			int64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
+			aft_trigticks += iticks & 0xFFFFFFFF;
 			
 		}
 		
@@ -183,8 +193,8 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			skbadopt_(&newbadopt); // n.b. all this does is update the common block value
 		}
 		
-		std::cout<<m_unique_name+" Rolling back reader to write out "<<eventType
-		         <<" entry "<<eventsToWrite[i].InEntryNumber<<std::endl;
+		Log(m_unique_name+" Rolling back reader to write out "+toString(eventType)
+		    +" entry "+toString(eventsToWrite[i].InEntryNumber),v_debug,m_verbose);
 		
 		m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].InEntryNumber);
 		
@@ -220,8 +230,19 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			}
 		}
 		
+		// get time of prompt readout
+		int64_t prompt_trigticks = (skheadqb_.nevhwsk & ~0x1FFFF);
+		prompt_trigticks = prompt_trigticks << 15;
+		int64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
+		prompt_trigticks += iticks & 0xFFFFFFFF;
+		
+		// calculate ticks difference between the two
+		int64_t ticksDiff = (aft_trigticks - prompt_trigticks);
+		if(ticksDiff<0) ticksDiff += (int64_t(1) << 47); // rollover correction
+		Log(m_unique_name+" ticks between SHE and AFT trigger: "+toString(ticksDiff),v_debug,m_verbose);
+		
 		// add those hits from the AFT to the primary event
-		AddAftHits(rawtqinfo_aft);
+		AddAftHits(rawtqinfo_aft, double(ticksDiff)/COUNT_PER_NSEC);
 		
 		// set header and tq info
 		// HEAD branch from assorted skhead_* common blocks,
@@ -230,7 +251,8 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		
 		// update branch variables w/ info about matches
 		MatchedEvNums = eventsToWrite[i].matchedParticleEvNum;
-		MatchedEntryNums = eventsToWrite[i].matchedParticleEntryNum;
+		MatchedInEntryNums = eventsToWrite[i].matchedParticleOutEntryNum;
+		MatchedOutEntryNums = eventsToWrite[i].matchedParticleInEntryNum;
 		MatchedHasAFTs = eventsToWrite[i].matchedParticleHasAFT;
 		MatchedTimeDiff = eventsToWrite[i].matchedParticleTimeDiff;
 		MatchedParticleE = eventsToWrite[i].matchedParticleBSEnergy;
@@ -240,7 +262,7 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		// for LowE events we need to set the LowE reconstruction info
 		if(eventType==EventType::LowE){
 			skroot_lowe_ = eventsToWrite[i].LowECommon;
-			skroot_set_lowe_(&relicWriterLUN,
+			skroot_set_lowe_(&outLUN,
 			                 skroot_lowe_.bsvertex,
 			                 skroot_lowe_.bsresult,
 			                 skroot_lowe_.bsdir,
@@ -358,7 +380,7 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 	return true;
 }
 
-bool ReconstructMatchedMuons::AddAftHits(const rawtqinfo_common& rawtqinfo_aft){
+bool ReconstructMatchedMuons::AddAftHits(const rawtqinfo_common& rawtqinfo_aft, double aft_trig_time){
 	
 	// add hits from AFT tqinfo to currently loaded (prompt) event
 	// skroot_fill_tree populates the TQREAL branch from the rawtqinfo_ common block;
@@ -366,56 +388,161 @@ bool ReconstructMatchedMuons::AddAftHits(const rawtqinfo_common& rawtqinfo_aft){
 	// and icabaz_raw, qaskz_raw, taskz_raw for OD, so we need to copy over
 	// the new entries for these arrays
 	
-	// we could think about skipping out-of-gate hits, since they're generally
-	// not used for anything.
+	// out-of-gate hits following the SHE event overlap with the AFT,
+	// but of course the first out-of-window hit from the SHE is the first in-window hit of the AFT.
+	// N.B. quick aside; hits in rawtqinfo are not time sorted, so hit i may be out of window,
+	// while hit i+1 is in window. In any case, we need to do 2 things to merge them.
+	// 1. hits in the out-of-window tail of the SHE are hits in the AFT, so just change
+	//    their in-window flag to true.
+	// 2. the out-of-window tail of the SHE event rawtqinfo arrays don't contain all hits
+	//    in the AFT, so we need to copy over those not present
 	
-	// Han's ReadHits tool actually merges SHE+AFT and expects there to be
-	// an overlap between the hit contents of the two,
-	// so perhaps we should check for that and avoid duplicates...
-	int k=0;
-	int last_hit = rawtqinfo_.nqisk_raw-1;
-	for(k=0; k<rawtqinfo_aft.nqisk_raw; ++k){
-		if(rawtqinfo_aft.icabbf_raw[k] != rawtqinfo_.icabbf_raw[last_hit]) continue;
-		if(rawtqinfo_aft.qbuf_raw[k]   != rawtqinfo_.qbuf_raw[last_hit])   continue;
-		//if(rawtqinfo_aft.tbuf_raw[k]   != rawtqinfo_.tbuf_raw[last_hit])   continue;
-		// can't compare times as they are relative to different trigger times
+	// ok, first locate the tail by finding the first out-of-window hit at the end of the hit arrays
+	int last_she_hit = 0;
+	float last_prompt_hit_Q=0;  // debug
+	int last_prompt_hit_PMT=0;  // debug
+	Log(m_unique_name+" Scanning "+toString(rawtqinfo_.nqisk_raw)+" SHE hits for end of window",v_debug,m_verbose);
+	for(int i=0; i<rawtqinfo_.nqisk_raw; ++i){
+		bool in_window = ((rawtqinfo_.icabbf_raw[i] >> 16) & 2);
+		if(last_she_hit==0 && in_window) last_she_hit=1;
+		if(last_she_hit==1 && !in_window){
+			last_she_hit=i-1;
+			
+			// debug
+			if(m_verbose > v_debug){
+				last_prompt_hit_PMT = rawtqinfo_.icabbf_raw[i] & 0xFFFF;
+				last_prompt_hit_Q = rawtqinfo_.icabbf_raw[i] & 0x7FF;
+				std::cout<<"first out-of-window SHE hit on PMT "<<last_prompt_hit_PMT
+				         <<", charge "<<last_prompt_hit_Q
+				         <<", at time "<<rawtqinfo_.tbuf_raw[i]<<std::endl;
+			}
+			
+			break;
+		}
+	}
+	Log(m_unique_name+" first out-of-window hit from SHE readout: "+toString(last_she_hit)
+	    +"/"+toString(rawtqinfo_.nqisk_raw),v_debug,m_verbose);
+	
+	// similarly the AFT readout hit arrays will contain some out-of-window hits
+	// at the front of the arrays which are in-window-hits in the SHE readout.
+	// so scan until we find the first in-window hit in the AFT.
+	Log(m_unique_name+" Scanning "+toString(rawtqinfo_aft.nqisk_raw)+" AFT hits for start of window",v_debug,m_verbose);
+	int first_aft_hit=0;
+	for(int k=0; k<rawtqinfo_aft.nqisk_raw; ++k){
+		bool in_window = ((rawtqinfo_aft.icabbf_raw[k] >> 16) & 2);
+		if(!in_window) continue;
+		first_aft_hit = k;
 		break;
 	}
+	Log(m_unique_name+" first in-window AFT hit: "+toString(first_aft_hit)
+	    +"/"+toString(rawtqinfo_aft.nqisk_raw)+"at time "+toString(rawtqinfo_aft.tbuf_raw[first_aft_hit])
+	    +", c.f. last she hit at time "+toString(rawtqinfo_.tbuf_raw[last_she_hit])
+	    +", trigger time diff: "+toString(aft_trig_time),v_debug,m_verbose);
 	
-	// i'm not aware of any particular sorting of hits required
-	// so we'll just append the new hits to the end. Hope that works...!
+	/*
+	// sanity check that first out-of-window hit in the SHE is first in-window hit of the AFT
+	int pmt_number = rawtqinfo_.icabbf_raw[last_she_hit+1] & 0xFFFF;
+	int iqiskz_raw_q_counts, iqiskz_raw_flags;
+	GetHitChargeAndFlags(rawtqinfo_.iqiskz_raw[last_she_hit+1], iqiskz_raw_q_counts, iqiskz_raw_flags);
+	std::string icabbf_raw_flagstring="";
+	GetHitFlagNames((rawtqinfo_.icabbf_raw[last_she_hit+1] >> 16), &icabbf_raw_flagstring);
+	std::cout<<"first out-of-window SHE hit "<<last_she_hit+1
+	         <<", pmt: "<<pmt_number<<", charge: "<<iqiskz_raw_q_counts
+	         <<", flags: "<<icabbf_raw_flagstring<<std::endl;
 	
-	// ID hits
-	int j = (k != rawtqinfo_aft.nqisk_raw) ?  k : rawtqinfo_.nqisk_raw;
-	for(int i=0; i<rawtqinfo_aft.nqisk_raw; ++i){
-		rawtqinfo_.tbuf_raw[j] = rawtqinfo_aft.tbuf_raw[i];
-		rawtqinfo_.qbuf_raw[j] = rawtqinfo_aft.qbuf_raw[i];
-		rawtqinfo_.icabbf_raw[j] = rawtqinfo_aft.icabbf_raw[i];
-		//rawtqinfo_.itiskz_raw[j] = rawtqinfo_aft.itiskz_raw[i];
-		//rawtqinfo_.iqiskz_raw[j] = rawtqinfo_aft.iqiskz_raw[i];
-		// latter 2 not used by skroot_set_tree, so don't need to copy
+	pmt_number = rawtqinfo_aft.icabbf_raw[first_aft_hit] & 0xFFFF;
+	iqiskz_raw_q_counts=0, iqiskz_raw_flags=0;
+	GetHitChargeAndFlags(rawtqinfo_aft.iqiskz_raw[first_aft_hit], iqiskz_raw_q_counts, iqiskz_raw_flags);
+	icabbf_raw_flagstring="";
+	GetHitFlagNames((rawtqinfo_aft.icabbf_raw[first_aft_hit] >> 16), &icabbf_raw_flagstring);
+	std::cout<<"first in-window AFT hit "<<first_aft_hit
+	         <<", pmt: "<<pmt_number<<", charge: "<<iqiskz_raw_q_counts
+	         <<", flags: "<<icabbf_raw_flagstring<<std::endl;
+	*/
+	
+	// ok now start fixing those SHE arrays, starting from the overlap point
+	int j = last_she_hit+1;
+	for(int i=first_aft_hit; i<rawtqinfo_aft.nqisk_raw; ++i){
+		
+		if(j < rawtqinfo_.nqisk_raw){
+			
+			/*
+			// sanity check all subsequent trailing out-of-window SHE hits are leading in-window AFT hits
+			int she_pmt_number = rawtqinfo_.icabbf_raw[j] & 0xFFFF;
+			int she_hit_charge = rawtqinfo_.icabbf_raw[j] & 0x7FF;
+			bool she_in_window = ((rawtqinfo_.icabbf_raw[j] >> 16) & 2);
+			
+			int aft_pmt_number = rawtqinfo_aft.icabbf_raw[i] & 0xFFFF;
+			int aft_hit_charge = rawtqinfo_aft.icabbf_raw[i] & 0x7FF;
+			bool aft_in_window = ((rawtqinfo_aft.icabbf_raw[i] >> 16) & 2);
+			
+			std::cout<<"SHE hit "<<j<<": in window: "<<she_in_window
+			         <<", pmt: "<<she_pmt_number<<", charge: "<<she_hit_charge<<std::endl;
+			std::cout<<"== AFT hit "<<i<<": in window: "<<aft_in_window
+			         <<", pmt: "<<aft_pmt_number<<", charge: "<<aft_hit_charge<<std::endl;
+			*/
+			
+			// if we're within the SHE arrays we just need to change the in-window flag
+			rawtqinfo_.icabbf_raw[j] |= (2 << 16);
+			
+		} else {
+			
+			// once we're outside the SHE window we need to copy the charge and time over from the AFT
+			// N.B. we need to update the hit time, which will be relative to the AFT trigger
+			rawtqinfo_.tbuf_raw[j] = rawtqinfo_aft.tbuf_raw[i] + aft_trig_time;
+			rawtqinfo_.qbuf_raw[j] = rawtqinfo_aft.qbuf_raw[i];
+			rawtqinfo_.icabbf_raw[j] = rawtqinfo_aft.icabbf_raw[i];
+			//rawtqinfo_.itiskz_raw[j] = rawtqinfo_aft.itiskz_raw[i];
+			//rawtqinfo_.iqiskz_raw[j] = rawtqinfo_aft.iqiskz_raw[i];
+			// latter 2 not used by skroot_set_tree, so don't need to copy
+			
+		}
+		
 		++j;
 	}
+	// finally update the total number of hits
 	rawtqinfo_.nqisk_raw = j;
 	
-	// OD hits
-	k=0;
-	last_hit = rawtqinfo_.nhitaz_raw-1;
-	for(k=0; k<rawtqinfo_aft.nhitaz_raw; ++k){
-		if(rawtqinfo_aft.icabaz_raw[k] != rawtqinfo_.icabaz_raw[last_hit]) continue;
-		if(rawtqinfo_aft.qaskz_raw[k]   != rawtqinfo_.qaskz_raw[last_hit]) continue;
-		//if(rawtqinfo_aft.taskz_raw[k]   != rawtqinfo_.taskz_raw[last_hit]) continue;
-		// can't compare times as they are relative to different trigger times
+	// ==========================================================
+	
+	// repeat process for OD hits
+	
+	last_she_hit = 0;
+	for(int i=0; i<rawtqinfo_.nhitaz_raw; ++i){
+		bool in_window = ((rawtqinfo_.icabaz_raw[i] >> 16) & 2);
+		if(last_she_hit==0 && in_window) last_she_hit=1;
+		if(last_she_hit==1 && !in_window){
+			last_she_hit=i-1;
+			break;
+		}
+	}
+	Log(m_unique_name+" last OD in-window hit from SHE readout: "+toString(last_she_hit)+"/"
+	    +toString(rawtqinfo_.nhitaz_raw),v_debug,m_verbose);
+	
+	first_aft_hit=0;
+	for(int k=0; k<rawtqinfo_aft.nhitaz_raw; ++k){
+		// skip out of window hits
+		bool in_window = ((rawtqinfo_aft.icabaz_raw[k] >> 16) & 2);
+		if(!in_window) continue;
+		first_aft_hit = k;
 		break;
 	}
+	Log(m_unique_name+" First in-window OD hit from AFT readout: "+toString(first_aft_hit)+"/"
+	    +toString(rawtqinfo_aft.nhitaz_raw),v_debug,m_verbose);
 	
-	j = (k != rawtqinfo_.nhitaz_raw) ? k : rawtqinfo_.nhitaz_raw;
-	for(int i=0; i<rawtqinfo_aft.nhitaz_raw; ++i){
-		rawtqinfo_.taskz_raw[j] = rawtqinfo_aft.taskz_raw[i];
-		rawtqinfo_.qaskz_raw[j] = rawtqinfo_aft.qaskz_raw[i];
-		rawtqinfo_.icabaz_raw[j] = rawtqinfo_aft.icabaz_raw[i];
-		//rawtqinfo_.itaskz_raw[j] = rawtqinfo_aft.itaskz_raw[i];
-		//rawtqinfo_.iqaskz_raw[j] = rawtqinfo_aft.iqaskz_raw[i];
+	j = last_she_hit+1; // index of where we'll be copying the AFT hits to
+	for(int i=first_aft_hit; i<rawtqinfo_aft.nhitaz_raw; ++i){
+		
+		if(j<rawtqinfo_.nhitaz_raw){
+			rawtqinfo_.icabaz_raw[j] |= (2 << 16);
+		} else {
+			rawtqinfo_.taskz_raw[j] = rawtqinfo_aft.taskz_raw[i] + aft_trig_time;
+			rawtqinfo_.qaskz_raw[j] = rawtqinfo_aft.qaskz_raw[i];
+			rawtqinfo_.icabaz_raw[j] = rawtqinfo_aft.icabaz_raw[i];
+			//rawtqinfo_.itaskz_raw[j] = rawtqinfo_aft.itaskz_raw[i];
+			//rawtqinfo_.iqaskz_raw[j] = rawtqinfo_aft.iqaskz_raw[i];
+		}
+		
 		++j;
 	}
 	rawtqinfo_.nhitaz_raw = j;
@@ -657,7 +784,7 @@ bool ReconstructMatchedMuons::ReconstructNextMuon(){
 		// * muinfo[6]: whether BFF was applied (1) or not (0)
 		// * muinfo[7]: muboy track number (for distinguishing later muboy tracks)
 		// i can't find anything that seems to use the remaining elements, so just start from 10.
-		float (*muinfo)[200] = (float(*)[200])(skroot_mu_.muinfo+10);
+		float (&muinfo)[200] = *(float(*)[200])(&skroot_mu_.muinfo[10]);
 		// from $RELIC_WORK_DIR/lomufit/{lowfit/mufit}/src/makededx.F
 		makededx_(&muentry,
 		          &mudir,
@@ -668,7 +795,7 @@ bool ReconstructMatchedMuons::ReconstructNextMuon(){
 		          &skq_.nqisk,
 		          &skhead_.nrunsk,
 		//        &watert,*
-		          muinfo);       // populates this
+		          &muinfo);       // populates this
 		// * uncomment this, and the appropriate signature in fortran_routines.h to use relic_sk4_ana ver
 		// TODO maybe we could put them in namespaces to avoid conflicting names
 		

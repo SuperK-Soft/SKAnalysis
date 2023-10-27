@@ -431,11 +431,13 @@ bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTicks,
 		}
 		// fill relic matching tdiff histogram
 		if(!relicSelectorName.empty()){
-			m_data->ApplyCut(relicSelectorName, "relic_mu_tdiff", (ticksDiff/COUNT_PER_NSEC)/1.E9, subtrg_num);
+			double t_diff_sign = (loweEventFlag ? 1 : -1);
+			m_data->ApplyCut(relicSelectorName, "relic_mu_tdiff", t_diff_sign*(ticksDiff/COUNT_PER_NSEC)/1.E9, subtrg_num);
 		}
 		// fill muon matching tdiff histogram
 		if(!muSelectorName.empty()){
-			m_data->ApplyCut(muSelectorName, "relic_mu_tdiff", (ticksDiff/COUNT_PER_NSEC)/1.E9, subtrg_num);
+			double t_diff_sign = (loweEventFlag ? -1 : 1);
+			m_data->ApplyCut(muSelectorName, "relic_mu_tdiff", t_diff_sign*(ticksDiff/COUNT_PER_NSEC)/1.E9, subtrg_num);
 		}
 		
 		//If the time difference between the two events is less than 60 seconds then "match" the particles.
@@ -476,13 +478,15 @@ bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTicks,
 			//add the event # of the current event to the target particle's "matched particle" list and add the
 			//event # of the target particle to the current particle's "matched particle" list
 			currentParticle.matchedParticleEvNum.push_back(targetCand.EventNumber);
-			currentParticle.matchedParticleEntryNum.push_back(targetCand.OutEntryNumber);
+			currentParticle.matchedParticleInEntryNum.push_back(targetCand.InEntryNumber);
+			currentParticle.matchedParticleOutEntryNum.push_back(targetCand.OutEntryNumber);
 			currentParticle.matchedParticleHasAFT.push_back(currentParticle.hasAFT);
 			currentParticle.matchedParticleTimeDiff.push_back(ticksDiff / -COUNT_PER_NSEC);
 			currentParticle.matchedParticleBSEnergy.push_back(targetCand.LowECommon.bsenergy);
 			
 			targetCand.matchedParticleEvNum.push_back(currentParticle.EventNumber);
-			targetCand.matchedParticleEntryNum.push_back(currentParticle.OutEntryNumber);
+			targetCand.matchedParticleInEntryNum.push_back(currentParticle.InEntryNumber);
+			targetCand.matchedParticleOutEntryNum.push_back(currentParticle.OutEntryNumber);
 			targetCand.matchedParticleHasAFT.push_back(currentParticle.hasAFT);
 			targetCand.matchedParticleTimeDiff.push_back(ticksDiff / COUNT_PER_NSEC);
 			targetCand.matchedParticleBSEnergy.push_back(currentParticle.LowECommon.bsenergy);

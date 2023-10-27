@@ -9,6 +9,12 @@
 */
 
 int FindFilesInDirectory(std::string inputdir, std::string pattern, std::vector<std::string> &matches, bool case_sensitive, int max_subdir_depth, bool use_regex, std::vector<std::string>* filenames, std::vector<std::vector<std::string>>* output_submatches, bool verbose){
+	
+	if(inputdir.empty() || pattern.empty()){
+		std::cerr<<"FindFilesInDirectory called with empty input dir or pattern!"<<std::endl;
+		return 0;
+	}
+	
 	// Scan directory for all files matching a glob pattern or regex
 	// optionally strip out just the filenames
 	// optionally do regex submatch extraction
