@@ -99,7 +99,7 @@ bool PostReconstructionNeutronCloudSelection::Finalise(){
   bool ok = m_variables.Get("outfile_name", outfile_name);
   if (!ok || outfile_name.empty()){ outfile_name = "pre_recon_neut_cloud_out.root";}
 
-  TFile* outfile = TFile::Open(outfile_name.c_str(), "UPDATE");
+  TFile* outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
   if (outfile == nullptr){
     throw std::runtime_error("PostReconstructionNeutronCloudSelection::Finalise - Couldn't open output file");
   }
