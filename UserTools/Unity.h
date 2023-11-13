@@ -75,3 +75,4 @@
 #include "PostLoweReconstructionCuts.h"
 #include "PreLoweReconstructionCuts.h"
 #include "FlagAFTs.h"
+#include "MCCuts.h"
