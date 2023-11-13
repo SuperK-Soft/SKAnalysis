@@ -24,7 +24,8 @@ bool CalculateNeutronCloudVertex::Initialise(std::string configfile, DataModel &
   GetTreeReader();
 
   CreateOutputFile();
-  
+
+  N_SLE_plot = TH1D("N_SLE_plot", "number of SLE triggers after muon", 20, 0, 20);
   mult_plot = TH1D("mult_plot", "multiplcity of neutron cloud;multiplcity", 20, 0, 20);
   dist_to_mu_plot = TH1D("dist_to_mu_plot", "distance to muon plot; distance [cm]", 100, 100, 100);
   
@@ -35,6 +36,13 @@ bool CalculateNeutronCloudVertex::Execute(){
 
   std::vector<NeutronInfo> neutrons = {};
   m_data->CStore.Get("event_neutrons", neutrons);
+
+  if (neutrons.empty()){
+    mult = 0;
+    std::fill(neutron_cloud_vertex.begin(), neutron_cloud_vertex.end(), 0);
+    nvc_tree_ptr->Fill();
+    return true;
+  }
   
   for (const auto& neutron : neutrons){
     for (int dim = 0; dim < 3; ++dim){
@@ -46,6 +54,10 @@ bool CalculateNeutronCloudVertex::Execute(){
   mult_plot.Fill(mult);
 
   dist_to_mu_plot.Fill(ClosestApproach(neutron_cloud_vertex));
+
+  int N_SLE = 0;
+  m_data->CStore.Get("N_SLE", N_SLE);
+  N_SLE_plot.Fill(N_SLE);
   
   nvc_tree_ptr->Fill();
 
@@ -63,12 +75,14 @@ bool CalculateNeutronCloudVertex::Finalise(){
   bool ok = m_variables.Get("outfile_name", outfile_name);
   if (!ok || outfile_name.empty()){ outfile_name = "calculateneutroncloudvertex_out.root";}
 
-  TFile* outfile = TFile::Open(outfile_name.c_str(), "UPDATE");
+  TFile* outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
   if (outfile == nullptr){
     throw std::runtime_error("CalculateNeutronCloudVertex::Finalise - Couldn't open output file");
   }
 
+  outfile->cd();
   mult_plot.Write();
+  N_SLE_plot.Write();
   dist_to_mu_plot.Write();
 
   nvc_file_ptr->cd();
@@ -114,7 +128,7 @@ void CalculateNeutronCloudVertex::CreateOutputFile(){
   if (nvc_file_str.empty()){
     throw std::runtime_error("CalculateNeutronCloudVertex::CreateOutputFile - no output file specified!");
   }
-  nvc_file_ptr = TFile::Open(nvc_file_str.c_str(), "RECREATE");
+  nvc_file_ptr = TFile::Open(nvc_file_str.c_str(), "UPDATE");
   nvc_tree_ptr = new TTree("neutron_cloud_info", "neutron_cloud_info");
 
   nvc_tree_ptr->Branch("neutron_cloud_multiplicity", &mult);

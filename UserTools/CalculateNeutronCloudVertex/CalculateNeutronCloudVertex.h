@@ -26,6 +26,7 @@ class CalculateNeutronCloudVertex: public Tool {
 
   TH1D mult_plot;
   TH1D dist_to_mu_plot;
+  TH1D N_SLE_plot;
   
   int mult = 0;
   std::vector<double> neutron_cloud_vertex = {};
