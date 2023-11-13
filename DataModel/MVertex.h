@@ -10,10 +10,13 @@ class DataModel;
 class MVertex {
 	public:
 	MVertex();
+	~MVertex();
+	MVertex(MVertex&) = delete; // must manually declare copy construction that deals with BStore
+	MVertex(MVertex&&);
 	// TODO make these arguments of the constructor so that they're mandatory
 	// (since we don't have getters and can't really identify if they're valid based on default values)
 	TVector3 pos{999,999,999};  // [cm]
-	double time=-999;  // [ns]
+	double time=-999;  // [ns]  FIXME time is a keyword! rename this!!
 	
 	// provide setters/getters for optional components (i.e. probably all the rest)?
 	// or are the default sufficient to identify that they haven't been set...maybe
@@ -36,7 +39,7 @@ class MVertex {
 	TVector3 incident_particle_mom{999,999,999};  // at the interaction point
 	
 	// contents may vary by source
-	BStore extraInfo; // e.g. medium_id, kcase_code
+	BStore* extraInfo=nullptr; // e.g. medium_id, kcase_code
 	
 	MParticle* GetIncidentParticle();
 	bool IsParentDirect();

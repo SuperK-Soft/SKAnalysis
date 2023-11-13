@@ -14,7 +14,8 @@
 
 #include "fortran_routines.h"
 
-static double SOL_IN_CM_PER_NS_IN_WATER = 22.484996; //speed of light in cm/ns
+static const double SOL_IN_CM_PER_NS_IN_WATER = 22.484996; //speed of light in cm/ns
+static const double MC_TIME_OFFSET=1000; // SKG4 adds 1,000 to all hit times to shift t=0 away from 0.
 
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;

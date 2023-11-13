@@ -10,6 +10,9 @@ class DataModel;
 class MParticle {
 	public:
 	MParticle();
+	~MParticle();
+	MParticle(MParticle&) = delete; // must manually declare copy construction that deals with BStore
+	MParticle(MParticle&&);
 	int pdg=-1; // pdg code
 	int start_vtx_idx=-1;
 	int end_vtx_idx=-1;
@@ -24,11 +27,12 @@ class MParticle {
 	void SetParentIndex(int idx);
 	std::vector<int> daughters;
 	// contents may vary by source
-	BStore extraInfo; // e.g. ceren_flag, end_flag
+	BStore* extraInfo=nullptr; // e.g. ceren_flag, end_flag
 	
 	// don't like this solution, but to know whether a particle has its
 	// start or end momentum set (as not all sources record them)
 	// require the use of setters, and provide getters
+	// FIXME perhaps we could change this to use std::optional
 	private:
 	TVector3 start_mom{0,0,0};  // [MeV/c]
 	TVector3 end_mom{0,0,0};    // [MeV/c]

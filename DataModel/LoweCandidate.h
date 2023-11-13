@@ -10,6 +10,9 @@ class DataModel;
 class LoweCandidate {
 	public:
 	LoweCandidate();
+	~LoweCandidate();
+	LoweCandidate(LoweCandidate&) = delete;
+	LoweCandidate(LoweCandidate&&);
 	// XXX if modifying matchType be sure to modify the matchTypes map accordingly!
 	enum class matchType {kNotSet=-1,kMistag=0,kIBDPositron=1,kSpallation=2,kDecaye=3,kOther=4};
 	static const std::map<matchType, std::string> matchTypes;
@@ -23,8 +26,8 @@ class LoweCandidate {
 	double event_energy = 9999; // MeV
 	
 	matchType matchtype=matchType::kNotSet;
-	BStore featureMap{true,constants::BSTORE_BINARY_FORMAT};  // features used by tagging algorithm
-	BStore recoVars{true,constants::BSTORE_BINARY_FORMAT};    // additional reconstruction variables
+	BStore* featureMap=nullptr; //{true,constants::BSTORE_BINARY_FORMAT};  // features used by tagging algorithm
+	BStore* recoVars=nullptr; //{true,constants::BSTORE_BINARY_FORMAT};    // additional reconstruction variables
 	
 	std::string GetMatchType();
 	bool SetTrueParticleIdx(int idx);
@@ -42,9 +45,6 @@ class LoweCandidate {
 	double t_err;
 	double pos_err;
 	double e_err;
-	double* t_err_p=nullptr;
-	double* pos_err_p=nullptr;
-	double* e_err_p=nullptr;
 	DataModel* m_data=nullptr;
 	
 };

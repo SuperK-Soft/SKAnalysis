@@ -9,7 +9,6 @@ namespace {
 	// used for removing redundant particles/vertices
 	const double TIME_TOLERANCE=1;    // 1ns?
 	const double POS_TOLERANCE=0.1;   // 1mm?
-	const double MC_TIME_OFFSET=1000; // SKG4 adds 1,000 to all hit times, so to put MC particles in the same time frame, add this
 }
 
 bool ReadMCParticles::Initialise(std::string configfile, DataModel &data){
@@ -24,7 +23,7 @@ bool ReadMCParticles::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("verbosity",m_verbose);
 	std::string treeReaderName;
 	m_variables.Get("TreeReaderName",treeReaderName);
-	m_variables.Get("dataSrc",dataSrc);
+	m_variables.Get("dataSrc",dataSrc);  // 0 = atmpd style arrays, 1 = new stl vectors
 	m_variables.Get("debugEntryNum",debugEntryNum);
 	
 	Log(m_unique_name+": Initializing",v_debug,m_verbose);
@@ -54,7 +53,6 @@ bool ReadMCParticles::Execute(){
 	
 	if(debugEntryNum>=0 && myTreeReader->GetEntryNumber()==debugEntryNum) m_verbose=99;
 	
-	// N.B. times printed by the Print functions here are before adding MC_TIME_OFFSET
 	if(dataSrc==0){
 		if(m_verbose>5) PrintSecondaryInfo();
 		GetSecondaryInfo();
@@ -73,7 +71,9 @@ bool ReadMCParticles::Execute(){
 	get_ok = myTreeReader->GetBranchValue("MC",mc_info);
 	if(!get_ok) return false;
 	for(auto&& avertex : m_data->eventVertices){
-		avertex.time += MC_TIME_OFFSET - mc_info->prim_pret0[0];
+		// XXX maybe it's better to shift the hit times (and reconstructed variables derived from them) back
+		// since this makes interpretation of MC plots more sensible as things should centre around 0 as you'd naively expect.
+		//avertex.time += MC_TIME_OFFSET - mc_info->prim_pret0[0];
 	}
 	// It then(?) adds noise over the range [???,1.7us], which extends beyond the pre-trigger window,
 	// but usually cut off before the end of the readout window, so we normally add noise from 1.7us onwards
@@ -349,7 +349,11 @@ bool ReadMCParticles::GetSecondaryVectors(){
 	for(int i=0; i<sec_info->vertex_time.size(); ++i){
 		// all information about a vertex relates to the interaction point and is always valid
 		// (unless N/A: e.g. incident particle, in the case of a primary vertex)
-		MVertex avertex;
+		
+		//MVertex avertex;
+		m_data->eventVertices.resize(m_data->eventVertices.size()+1);
+		MVertex& avertex = m_data->eventVertices.back();
+		
 		avertex.pos = TVector3{sec_info->vertex_pos.at(i).data()};
 		avertex.time = sec_info->vertex_time.at(i);
 		avertex.type = (sec_info->vertex_incident_particle.at(i) == -1) ? 1 : 2;   // 1=primary, 2=secondary
@@ -369,23 +373,27 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		// something like 'Inner Water volume' instead.
 		// See gumed.h for numbers and sggeom_sk1.F for the corresponding names.
 		int volume_id = sec_info->vertex_target_g3_code.at(i);
-		avertex.extraInfo.Set("volume_id",volume_id);
+		avertex.extraInfo->Set("volume_id",volume_id);
 		
 		// we also have medium id. this can map to e.g. 'WATER' or 'ACRYLIC'
 		// (i'm not sure where the corresponding mapping can be found, exactly...)
 		int medium_id = sec_info->vertex_medium_id.at(i);
-		avertex.extraInfo.Set("medium_id",medium_id);
+		avertex.extraInfo->Set("medium_id",medium_id);
 		// the kcase code is apparently another number describing the interaction process,
 		// but again i cannot find a map of codes to their meaning in the G3 manual.
 		int kcase_code = sec_info->vertex_kcase_code.at(i);
-		avertex.extraInfo.Set("kcase_code",kcase_code);
+		avertex.extraInfo->Set("kcase_code",kcase_code);
 		
-		m_data->eventVertices.push_back(avertex);
+		//m_data->eventVertices.push_back(avertex);
 	}
 	
 	// loop over particles
 	for(int i=0; i<sec_info->track_g3_code.size(); ++i){
-		MParticle aparticle;
+		
+		//MParticle aparticle;
+		m_data->eventParticles.resize(m_data->eventParticles.size()+1);
+		MParticle& aparticle=m_data->eventParticles.back();
+		
 		aparticle.pdg = sec_info->track_g3_code.at(i);
 		aparticle.start_vtx_idx = sec_info->track_creation_vtx.at(i);
 		aparticle.end_vtx_idx = sec_info->track_termination_vtx.at(i);
@@ -402,9 +410,9 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		// parent particle interaction). The following offset accounts for any delay between
 		// parent interaction and this daughter particle's emission.
 		double time_offset = sec_info->track_creation_toffset.at(i);
-		aparticle.extraInfo.Set("time_offset",time_offset);
+		aparticle.extraInfo->Set("time_offset",time_offset);
 		
-		m_data->eventParticles.push_back(aparticle);
+		//m_data->eventParticles.push_back(aparticle);
 		
 		// add this as a daughter of its parent.
 		// i believe we never have a situation where particle at index A has parent
@@ -531,7 +539,11 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		}
 		if(vertex_idx<0){
 			Log(m_unique_name+" no matching index found, making a new one",v_debug,m_verbose);
-			MVertex avertex;
+			
+			//MVertex avertex;
+			m_data->eventVertices.resize(m_data->eventVertices.size()+1);
+			MVertex& avertex = m_data->eventVertices.back();
+			
 			avertex.pos = TVector3{primary_vtx_pos.at(i).data()};
 			avertex.time = primary_vtx_time.at(i);
 			avertex.type = primary_vtx_type.at(i); // seems to be 1 for primaries? XXX clarify!
@@ -547,10 +559,11 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			//avertex.incident_particle_mom = TVector3{};
 			//avertex.incident_particle_pdg = -1;
 			//avertex.processes = std::vector<int>{};
-			//avertex.extraInfo.Set("kcase_code",);
-			//avertex.extraInfo.Set("medium_id",); 
+			//avertex.extraInfo->Set("kcase_code",);
+			//avertex.extraInfo->Set("medium_id",);
 			
-			m_data->eventVertices.push_back(avertex);
+			//m_data->eventVertices.push_back(avertex);
+			
 		} else {
 			Log(m_unique_name+" this primary vertex is the same as vertex "
 			    +toString(vertex_idx)+", skipping",v_debug,m_verbose);
@@ -560,7 +573,11 @@ bool ReadMCParticles::GetSecondaryInfo(){
 	// then primary particles
 	Log(m_unique_name+" looping over "+toString(n_outgoing_primaries)+" primary particles",v_debug,m_verbose);
 	for(int i=0; i<n_outgoing_primaries; ++i){
-		MParticle aparticle;
+		
+		//MParticle aparticle;
+		m_data->eventParticles.resize(m_data->eventParticles.size()+1);
+		MParticle& aparticle=m_data->eventParticles.back();
+		
 		aparticle.pdg = primary_PDG_code.at(i);
 		aparticle.SetStartMom(primary_start_mom.at(i).data());
 		aparticle.SetParentIndex(primary_parent_idx.at(i)-1); // fortran indexing. always 0 for primaries.
@@ -577,9 +594,9 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		
 		// additional information
 		int ceren_flag = primary_ceren_flag.at(i);
-		aparticle.extraInfo.Set("ceren_flag",ceren_flag);
+//		aparticle.extraInfo->Set("ceren_flag",ceren_flag);
 		bool end_flag = primary_end_flag.at(i);
-		aparticle.extraInfo.Set("end_flag",end_flag);
+//		aparticle.extraInfo->Set("end_flag",end_flag);
 		
 		// consistency checks
 		Log(m_unique_name+" primary particle "+toString(i)+" (pdg "+toString(aparticle.pdg)+")"
@@ -600,14 +617,18 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			     +"] == primary_vtx_pos["+toString(aparticle.start_vtx_idx)+"] = "
 			     +toString(astart),v_debug,m_verbose);
 		}
-		
-		m_data->eventParticles.push_back(aparticle);
+		//m_data->eventParticles.push_back(aparticle);
+		aparticle.extraInfo->Print(false);
 	}
 	
 	// secondary particles
 	Log(m_unique_name+" looping over "+toString(n_secondaries)+" secondaries",v_debug,m_verbose);
 	for(int i=0; i<n_secondaries; ++i){
-		MParticle aparticle;
+		
+		//MParticle aparticle;
+		m_data->eventParticles.resize(m_data->eventParticles.size()+1);
+		MParticle& aparticle=m_data->eventParticles.back();
+		
 		//std::cout<<"init"<<std::endl;
 		aparticle.pdg = secondary_PDG_code.at(i);
 		aparticle.SetStartMom(secondary_start_mom.at(i).data());
@@ -701,7 +722,11 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		} else {
 			// no matching vertex; make one
 			Log(m_unique_name+" no matching vtx, making one",v_debug,m_verbose);
-			MVertex start_vtx;
+			
+			//MVertex start_vtx;
+			m_data->eventVertices.resize(m_data->eventVertices.size()+1);
+			MVertex& start_vtx = m_data->eventVertices.back();
+			
 			start_vtx.type = 2;        // XXX clarify!
 			start_vtx.pos = TVector3{secondary_start_vertex.at(i).data()};
 			start_vtx.time = secondary_start_time.at(i);
@@ -714,9 +739,9 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			//start_vxt.target_pdg = -1;
 			
 			// no extra info
-			//start_vtx.extraInfo.Set();
+			//start_vtx.extraInfo->Set("nothing",0);
 			
-			m_data->eventVertices.push_back(start_vtx);
+			//m_data->eventVertices.push_back(start_vtx);
 			
 			// set this new vertex as the start vertex for our current particle
 			aparticle.start_vtx_idx = m_data->eventVertices.size()-1;
@@ -797,15 +822,15 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		// extra info
 		//std::cout<<"extra info"<<std::endl;
 		int nchilds = secondary_n_childs.at(i);
-		aparticle.extraInfo.Set("nchilds", nchilds);
+		aparticle.extraInfo->Set("nchilds", nchilds);
 		int ichild_idx = secondary_first_daughter_index.at(i)-1+n_outgoing_primaries;
-		aparticle.extraInfo.Set("ichildidx",ichild_idx); // correct fortran indexing and for preceding primary particles
+		aparticle.extraInfo->Set("ichildidx",ichild_idx); // correct fortran indexing and for preceding primary particles
 		int parent_primary_pdg = secondary_parent_primary_pdg.at(i);
-		aparticle.extraInfo.Set("parent_primary_pdg", parent_primary_pdg);
+		aparticle.extraInfo->Set("parent_primary_pdg", parent_primary_pdg);
 		int parent_primary_idx = secondary_parent_primary_idx.at(i)-1;
-		aparticle.extraInfo.Set("parent_primary_idx",parent_primary_idx); // correct fortran indexing
-	        int iflgscnd = secondary_flag.at(i);
-		aparticle.extraInfo.Set("iflgscnd",iflgscnd);
+		aparticle.extraInfo->Set("parent_primary_idx",parent_primary_idx); // correct fortran indexing
+		int iflgscnd = secondary_flag.at(i);
+		aparticle.extraInfo->Set("iflgscnd",iflgscnd);
 		
 		// and of course we have 3 other numbers for the parent index.
 		// not even gonna store these... don't think they're useful??
@@ -815,7 +840,7 @@ bool ReadMCParticles::GetSecondaryInfo(){
 		         +", parent G3 trackid "+toString(secondary_parent_G3_trackid.at(i))
 		         +", parent G3 stack "+toString(secondary_parent_G3_stackid.at(i)),v_debug,m_verbose);
 		
-		m_data->eventParticles.push_back(aparticle);
+		//m_data->eventParticles.push_back(aparticle);
 		
 	}
 	

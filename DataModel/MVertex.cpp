@@ -4,6 +4,31 @@
 
 MVertex::MVertex(){
 	m_data = DataModel::GetInstance();
+	extraInfo = new BStore{true,constants::BSTORE_BINARY_FORMAT};
+}
+
+MVertex::~MVertex(){
+	if(extraInfo) delete extraInfo;
+	extraInfo=nullptr;
+}
+
+MVertex::MVertex(MVertex&& rhs){
+	
+	m_data = rhs.m_data;
+	pos = rhs.pos;
+	time = rhs.time;
+	type = rhs.type;
+	target_pdg = rhs.target_pdg;
+	processes = rhs.processes;
+	incident_particle_idx = rhs.incident_particle_idx;
+	direct_parent = rhs.direct_parent;
+	incident_particle_pdg = rhs.incident_particle_pdg;
+	incident_particle_mom = rhs.incident_particle_mom;
+	
+	// reason for manually doing all this:
+	extraInfo = rhs.extraInfo;
+	rhs.extraInfo = nullptr;
+	
 }
 
 void MVertex::SetIncidentParticle(int idx){
@@ -76,6 +101,6 @@ void MVertex::Print(bool verbose){
 	}
 	std::cout<<"\tTrue incident particle pdg: "<<incident_particle_pdg<<"\n"
 	         <<"\tTrue incident particle momentum [MeV/c]: "<<toString(incident_particle_mom)<<"\n";
-	//std::cout<<"\tExtra Info: "; extraInfo.Print(false);
+	//std::cout<<"\tExtra Info: "; extraInfo->Print(false);
 }
 
