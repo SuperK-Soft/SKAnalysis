@@ -1,7 +1,11 @@
 verbosity 10
 readerName reader
 
-inputFile /home/moflaher/disk02/run868/run868.root
+#inputFile /home/moflaher/disk02/run868/run868.root
+#inputFile /home/moflaher/disk02/SpallReduction/086613.0/output/test_jacks.root
+#inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086614.0/output/test_jacks.root
+
+inputFile /disk02/usr6/moflaher/addaft/test_spall.root
 
 treeName mu                                    # the name of the tree within the file
 # max num input entries to process
