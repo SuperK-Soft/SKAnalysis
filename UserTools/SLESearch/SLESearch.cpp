@@ -26,20 +26,22 @@ bool SLESearch::Execute(){
 
   std::bitset<32> trigger_id{skhead_.idtgsk};
   
-  if (!previous_entry_was_muon){
-    Log("SLESearch::Execute: Last entry was not muon\n", 0, 0);
-    previous_entry_was_muon = (trigger_id.test(static_cast<int>(TriggerType::SHE)) &&
-			       trigger_id.test(static_cast<int>(TriggerType::OD_or_Fission)) &&
-			       !trigger_id.test(static_cast<int>(TriggerType::AFT)));
-  }
+  // if (!previous_entry_was_muon){
+  //   Log("SLESearch::Execute: Last entry was not muon\n", 0, 0);
+  //   previous_entry_was_muon = (trigger_id.test(static_cast<int>(TriggerType::SHE)) &&
+  // 			       trigger_id.test(static_cast<int>(TriggerType::OD_or_Fission)) &&
+  // 			       !trigger_id.test(static_cast<int>(TriggerType::AFT)));
+  // }
   
-  previous_entry_was_muon = (trigger_id.test(static_cast<int>(TriggerType::SHE)) &&
-			     trigger_id.test(static_cast<int>(TriggerType::OD_or_Fission)) &&
-			     !trigger_id.test(static_cast<int>(TriggerType::AFT)));
+  // previous_entry_was_muon = (trigger_id.test(static_cast<int>(TriggerType::SHE)) &&
+  // 			     trigger_id.test(static_cast<int>(TriggerType::OD_or_Fission)) &&
+  // 			     !trigger_id.test(static_cast<int>(TriggerType::AFT)));
   
-  if (!trigger_id.test(static_cast<int>(TriggerType::AFT))){
-    return true; 
-  }
+  // if (!trigger_id.test(static_cast<int>(TriggerType::AFT))){
+  //   int N_SLE = 0;
+  //   m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
+  //   return true; 
+  // }
 
   Log("SLESearch::Execute: Running software trigger to look for SLE", 0, 0);
   int idetector[32], ithr[32], it0_offset[32] ,ipret0[32], ipostt0[32];
