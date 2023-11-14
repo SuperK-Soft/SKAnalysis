@@ -663,7 +663,6 @@ bool ReconstructMatchedMuons::ReconstructNextMuon(){
 	float mudir[3];
 	for(int i=0; i<4; ++i){
 		if(i<3) mudir[i] = skroot_mu_.muboy_dir[i];
-		muentry[i] = skroot_mu_.muboy_entpos[i][0];
 	}
 	
 	// according to Scott's (ambiguously worded) lowe school slide:
@@ -786,16 +785,16 @@ bool ReconstructMatchedMuons::ReconstructNextMuon(){
 		// i can't find anything that seems to use the remaining elements, so just start from 10.
 		float (&muinfo)[200] = *(float(*)[200])(&skroot_mu_.muinfo[10]);
 		// from $RELIC_WORK_DIR/lomufit/{lowfit/mufit}/src/makededx.F
-		makededx_(&muentry,
-		          &mudir,
-		          &skchnl_.ihcab,
-		          &skq_.qisk,
-		          &skt_.tisk,
-		          &geopmt_.xyzpm,
+		makededx_(muentry,
+		          mudir,
+		          skchnl_.ihcab,
+		          skq_.qisk,
+		          skt_.tisk,
+		          geopmt_.xyzpm,
 		          &skq_.nqisk,
 		          &skhead_.nrunsk,
 		//        &watert,*
-		          &muinfo);       // populates this
+		          muinfo);       // populates this
 		// * uncomment this, and the appropriate signature in fortran_routines.h to use relic_sk4_ana ver
 		// TODO maybe we could put them in namespaces to avoid conflicting names
 		
@@ -808,17 +807,21 @@ bool ReconstructMatchedMuons::ReconstructNextMuon(){
 		// still, this is what lomufit_gd does for the "official" lomugd files,
 		// so presumably there's some reason. Maybe the original value is a prerequisite???
 		// from $SKOFL_ROOT/lowe/sklowe/makededx_intg.cc
-		makededx_intg_(&muentry,
-		               &mudir,
+		
+		// XXX NOTE! despite the signature in $SKOFL_ROOT/lowe/sklowe/makededx_intg.cc specifying
+		// `qisk`, `tisk` and `ihcab`, passing these variables yields an empty result!
+		// mufit_sk4.F instead shows we need to pass `qiskz`, `tiskz` and `icabiz` instead!!
+		makededx_intg_(&muentry[0],
+		               &mudir[0],
 		               &skroot_mu_.muboy_length,
-		               &skchnl_.ihcab,
-		               &skq_.qisk,
-		               &skt_.tisk,
-		               &geopmt_.xyzpm,
+		               &sktqz_.icabiz[0],
+		               &sktqz_.qiskz[0],
+		               &sktqz_.tiskz[0],
+		               &geopmt_.xyzpm[0][0],
 		               &sktqz_.nqiskz,
 		               &skhead_.nrunsk,
-		               &skroot_mu_.muboy_dedx,    // populates this
-		               &sktqz_.ihtiflz,
+		               &skroot_mu_.muboy_dedx[0],   // populates this
+		               &sktqz_.ihtiflz[0],
 		               &skhead_.nevsk);
 		
 		/* can't do this if we have multiple muons reconstructed per Execute...

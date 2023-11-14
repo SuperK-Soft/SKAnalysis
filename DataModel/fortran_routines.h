@@ -156,7 +156,8 @@ extern "C" void lfmufit_sk4_();
 extern "C" void newmufit_(float (*)[3], float (*)[3], float*);
 // this function (from atmpd) is apparently bad? replace it with kirk's one
 //extern "C" void makededx_(float (*)[4], float (*)[3], int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, float (*)[200]);
-extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, int*, float (*)[200], int (*)[334380], int*);
+//extern "C" void makededx_intg_(float (*)[4], float (*)[3], float*, int (*)[11146], float (*)[11146], float (*)[11146], float (*)[11146][3], int*, int*, float (*)[200], int (*)[334380], int*);  // where did this signature come from?
+extern "C" void makededx_intg_(float *muboy_entpos, float *muboy_dir, float *muboy_length, int *ihcab, float *qisk, float *tisk, float *xyzpm, int *nqisk, int *runnum, float *dedx, int *ihtiflz, int *nevsk);  // from $SKOFL_ROOT/lowe/sklowe/makededx_intg.cc. Note this is a c++ function!
 extern "C" void mfmuselect_(float (*)[3], float (*)[3], float*, int*);
 extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
 extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
@@ -238,7 +239,8 @@ extern "C" void getdl_(float* mudir, float* x, float* y, float* z, float* muentr
 // note: this conflicts with the standard atmpd makededx: we either need to modify kirk's
 // source code to give it a new name, or we can only link against one of them.
 // it seems like the previous relic analysers used only kirk and scott's ones, so do the same....
-extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float(*dedx)[200]);
+//extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float(*dedx)[200]);
+extern "C" void makededx_(float e[4], float mdir[3], int ihcab[11146], float qisk[11146], float tisk[11146], float xyzpm[11146][3], int* nqisk, int* run, float dedx[200]); // this one matches kirks
 // special version from relic_sk4_ana/lomufit/mufit/src/makdedx.F that takes water transparency.
 // kirk's original version does not! oh, so many choices
 //extern "C" void makededx_(float (*e)[4], float(*mdir)[3], int(*ihcab)[11146], float(*qisk)[11146], float(*tisk)[11146],float(*xyzpm)[11146][3], int* nqisk, int* run, float* watert, float(*dedx)[200]);
