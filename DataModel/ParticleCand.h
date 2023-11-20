@@ -21,6 +21,7 @@ struct ParticleCand {
 	std::vector<float> matchedParticleBSEnergy;
 	skroot_lowe_common LowECommon;
 	bool hasAFT;
+	int AFTEntryNum; // may not be InEntryNumber+1...
 };
 
 #endif

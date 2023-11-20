@@ -75,6 +75,7 @@ bool RelicMuonMatching::Execute(){
 	// or an AFT following one of the above.
 	EventType lastEventType = eventType;
 	m_data->vars.Get("eventType", eventType);
+	//std::cout<<m_unique_name<<": entry "<<rfmReader->GetEntryNumber()<<", event "<<skhead_.nevsk<<" is type "<<eventType<<std::endl;
 	
 	/*
 	logmessage<<m_unique_name<<" Matching event "<<skhead_.nevsk<<" as "<<eventType;
@@ -94,7 +95,11 @@ bool RelicMuonMatching::Execute(){
 	// So for now just note when a previous event being checked had an AFT
 	// N.B. since the preceding event may not have passed cuts, not every AFT
 	// will need to be saved
-	if(eventType==EventType::AFT){
+	//if(eventType==EventType::AFT){
+	// it's possible an AFT will contain an untagged muon
+	// we still want to save it with the associated primary event,
+	// so identify that explicitly from the trigger bit
+	if(skhead_.idtgsk & (1<<29)){
 		std::deque<ParticleCand>* thedeque=nullptr;
 		if(lastEventType==EventType::Muon){
 			Log(m_unique_name+" found AFT after muon",v_debug,m_verbose);
@@ -104,9 +109,12 @@ bool RelicMuonMatching::Execute(){
 			thedeque = &m_data->relicCandDeque;
 		}
 		if(thedeque!=nullptr && thedeque->size() && thedeque->back().EventNumber==(skhead_.nevsk-1)){
-			thedeque->back().hasAFT = true;
 			Log(m_unique_name+" Setting AFT flag for "+(lastEventType==EventType::Muon ? "Muon " : "relic ")
 			         +toString(thedeque->back().EventNumber),v_debug,m_verbose);
+			thedeque->back().hasAFT = true;
+			thedeque->back().AFTEntryNum = rfmReader->GetEntryNumber();
+			/*
+			// no longer do this: we merge AFT with primary event
 			if(lastEventType==EventType::LowE){
 				// the next entry in the output relic tree will be an AFT, so advance our relic entry counter
 				Log(m_unique_name+" Advancing relic entry to account for AFT after relic",v_debug,m_verbose);
@@ -115,8 +123,13 @@ bool RelicMuonMatching::Execute(){
 				Log(m_unique_name+" Advancing muon entry to account for AFT after muon",v_debug,m_verbose);
 				++nextmuentry;
 			}
+			*/
 		}
-		// and that's all we need to do for now
+	}
+	
+	if(eventType==EventType::AFT){
+		// if the AFT flag didn't get overridden by a Muon flag,
+		// then that's all we need to do for this event.
 		return true;
 	}
 	
@@ -367,6 +380,14 @@ bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTicks,
 	currentParticle.InEntryNumber = rfmReader->GetEntryNumber();
 	currentParticle.LowECommon = skroot_lowe_;
 	currentParticle.hasAFT = false;
+	currentParticle.AFTEntryNum = -1;
+	
+//	// XXX XXX XXX DEBUG Force insertion of muon XXX XXX XXX
+//	// assume it has an AFT
+//	currentParticle.hasAFT = true;
+//	m_data->muonsToRec.push_back(currentParticle);
+//	muonsToRemove.push_back(currentParticle.EventNumber);
+//	// XXX XXX XXX DEBUG Force insertion of muon XXX XXX XXX
 	
 	// get the deque of in-memory targets to match this new event against
 	// if this event is a muon then the targets are relic candidates, and vice versa
@@ -471,7 +492,7 @@ bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTicks,
 				if(loweEventFlag){
 					targetCand.OutEntryNumber = nextmuentry;
 					++nextmuentry;
-					if(targetCand.hasAFT) ++nextmuentry;
+					//if(targetCand.hasAFT) ++nextmuentry; // we merge the AFT so one output entry for both now.
 				}
 			}
 			
@@ -480,7 +501,7 @@ bool RelicMuonMatching::RelicMuonMatch(bool loweEventFlag, int64_t currentTicks,
 			currentParticle.matchedParticleEvNum.push_back(targetCand.EventNumber);
 			currentParticle.matchedParticleInEntryNum.push_back(targetCand.InEntryNumber);
 			currentParticle.matchedParticleOutEntryNum.push_back(targetCand.OutEntryNumber);
-			currentParticle.matchedParticleHasAFT.push_back(currentParticle.hasAFT);
+			currentParticle.matchedParticleHasAFT.push_back(targetCand.hasAFT);
 			currentParticle.matchedParticleTimeDiff.push_back(ticksDiff / -COUNT_PER_NSEC);
 			currentParticle.matchedParticleBSEnergy.push_back(targetCand.LowECommon.bsenergy);
 			

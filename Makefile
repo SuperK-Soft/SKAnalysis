@@ -239,6 +239,7 @@ lib/libLogging.so:  $(Dependencies)/ToolFrameworkCore/src/Logging/* | lib/libSto
 
 UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so  $(filter-out UserTools/Factory/Factory.o, $(patsubst UserTools/%.cpp, UserTools/%.o, $(wildcard UserTools/*/*.cpp)) $(patsubst UserTools/%.cc, UserTools/%.o, $(wildcard UserTools/*/*.cc)) $(patsubst UserTools/%.F, UserTools/%.o, $(wildcard UserTools/*/*.F))) | include/Tool.h
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
+	@ls $^ &> /dev/null
 	cp UserTools/Factory/Factory.h include
 	cp UserTools/Unity.h include
 	g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)

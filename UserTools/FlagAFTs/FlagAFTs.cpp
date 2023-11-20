@@ -35,10 +35,12 @@ bool FlagAFTs::Execute(){
 	//std::cout<<"Trigger bits for event: "<<skhead_.nevsk<<": "<<GetTriggerNames(skhead_.idtgsk)<<std::endl;
 	if(triggerID.test(TriggerType::AFT_or_Cal) || triggerID.test(TriggerType::AFT)){
 		m_data->vars.Set("eventType", EventType::AFT);
-		//std::cout<<"flagging event "<<skhead_.nevsk<<" as AFT; last event type was "<<lastEventType<<std::endl;
+		//std::cout<<m_unique_name<<" flagging event "<<skhead_.nevsk<<" as AFT"<<std::endl;
+//		std::cout<<" -- last event type was "<<lastEventType<<std::endl;
 	} else {
 		m_data->vars.Set("eventType", EventType::Unknown);
-		//std::cout<<"flagging event "<<skhead_.nevsk<<" as unknown; last event type was "<<lastEventType<<std::endl;
+		//std::cout<<m_unique_name<<" flagging event "<<skhead_.nevsk<<" as unknown"<<std::endl;
+//		std::cout<<" -- last event type was "<<lastEventType<<std::endl;
 	}
 	
 	

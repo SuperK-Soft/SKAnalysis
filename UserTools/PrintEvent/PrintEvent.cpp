@@ -562,9 +562,9 @@ bool PrintEvent::PrintTQRealHits(bool ID, int nhits){
 				GetHitFlagNames(hitflags, &hitflagstring);
 				std::cout<<"ID Hit "<<j<<"\n"
 				         <<"\tPMT: "<<cableNumber<<"\n"
-				         <<"\tT: TQReal.t: "<<myTQReal->T.at(j)<<" [ns]\n"
-				         <<"\tQ: TQReal.q: "<<myTQReal->Q.at(j)<<" [p.e.]\n"
-				         <<"\fhit flags: "<<hitflagstring<<"\n";
+				         <<"\tT: TQReal.T: "<<myTQReal->T.at(j)<<" [ns]\n"
+				         <<"\tQ: TQReal.Q: "<<myTQReal->Q.at(j)<<" [p.e.]\n"
+				         <<"\thit flags: "<<hitflagstring<<"\n";
 				++j;
 				if(j>=nhits) break;
 			}
@@ -594,9 +594,9 @@ bool PrintEvent::PrintTQRealHits(bool ID, int nhits){
 				GetHitFlagNames(hitflags, &hitflagstring);
 				std::cout<<"OD Hit "<<j<<"\n"
 				         <<"\tPMT: "<<cableNumber<<"\n"
-				         <<"\tT: TQAReal.t: "<<myTQAReal->T.at(j)<<" [ns]\n"
-				         <<"\tQ: TQAReal.q: "<<myTQAReal->Q.at(j)<<" [p.e.]\n"
-				         <<"\fhit flags: "<<hitflagstring<<"\n";
+				         <<"\tT: TQAReal.T: "<<myTQAReal->T.at(j)<<" [ns]\n"
+				         <<"\tQ: TQAReal.Q: "<<myTQAReal->Q.at(j)<<" [p.e.]\n"
+				         <<"\thit flags: "<<hitflagstring<<"\n";
 				++j;
 				if(j>=nhits) break;
 			}
@@ -938,12 +938,22 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	
 	std::cout << "software trigger settings from file:" << std::endl;
 	// XXX for MC these seem to be empty?
-	std::vector<std::string> triggers_of_interest{"SLE","LE","HE","SHE","AFT","OD"};
+	std::vector<TriggerType> triggers_of_interest{ TriggerType::SLE,
+	                                               TriggerType::LE,
+	                                               TriggerType::HE,
+	                                               TriggerType::SHE};
+	//                                             TriggerType::OD};
+	// not sure the software trigger works on OD Nhits? how would we tell it we want it to look at the OD?
 	for(int i=0; i < triggers_of_interest.size(); i++){
-		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerIDToName(i));
+		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerType(i));
 		if(trigit==triggers_of_interest.end()) continue;
-		std::cout<<"\tTrigger "<<i << " = " << TriggerIDToName(i)<<"\n"
+		std::cout<<"\tTrigger "<<i << " = " << TriggerType(i)<<"\n"
 		         << "\t\tthreshold: " << skruninf_.softtrg_thr[i]<<"\n";
+		if(skruninf_.softtrg_thr[i]==0){
+			int default_thresh = GetTriggerThreshold(i);
+			std::cout<<"\t\toverriding with default "<<default_thresh<<"\n";
+			skruninf_.softtrg_thr[i] = default_thresh;
+		}
 		         //<< "\t\tdetector: " << skruninf_.softtrg_detector[i]<<"\n"
 		         //<< "\t\tt0 offset: " << skruninf_.softtrg_t0_offset[i]<<"\n"
 		         //<< "\t\tpre-t0: " << skruninf_.softtrg_pre_t0[i]<<"\n"
@@ -976,11 +986,8 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	// demo: loop over subtrigger types and see how many of each we find.
 	for(int i=0; i<32; ++i){
 		
-		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerIDToName(i));
+		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), i);
 		if(trigit==triggers_of_interest.end()) continue;
-		
-		// also, by definition searching for subtriggers of type AFT doesn't make sense
-		if(i==int(TriggerType::AFT)) continue;
 		
 		int ntrigsfound=0;
 		int MAX_SUBTRIGS=100;
@@ -1133,6 +1140,8 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 			skroot_set_tree(&lun);
 			
 			// call TTree::Fill()
+			// XXX NOTE THIS WILL CLEAR THE TREEMANAGER INTERNAL VARIABLES!!!
+			// use TreeManager::fill_tree() directly to avoid doing that.
 			skroot_fill_tree(&lun);
 			*/
 			
@@ -1504,10 +1513,15 @@ bool PrintEvent::PrintHWTriggerInfo(){
 	
 	std::cout<<"\nPrinting HWTRGLIST Branch\n"<<std::endl;
 	
+	// HWTRGLIST is a TClonesArray of HardwareTrigger objects
 	std::cout<<"This event had "<<hwtriggers->GetEntries()<<" HW triggers"<<std::endl;
 	for(int i=0; i<hwtriggers->GetEntries(); ++i){  // skheadqb_.numhwsk? == SoftwareTrigger::nhwtrgs?
 		
-		HardwareTrigger* trg = dynamic_cast<HardwareTrigger*>((*hwtriggers)[i]);
+		HardwareTrigger* trg = dynamic_cast<HardwareTrigger*>(hwtriggers->At(i));
+		if(trg==nullptr){
+			Log(m_unique_name+" Error converting HWTRGLIST element "+toString(i)+" to HardwareTrigger class?!",v_error,m_verbose);
+			continue;
+		}
 		
 		// make trigger timestamp
 		tm trigdate = {0};

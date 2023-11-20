@@ -64,6 +64,7 @@ class TreeReader: public Tool {
 	std::string treeName="data";
 	std::string readerName;
 	int maxEntries=-1;
+	int maxEntry=-1;
 	int firstEntry=0;
 	int entrynum=0;
 	int readEntries=0;                // count how many entries we've actually returned

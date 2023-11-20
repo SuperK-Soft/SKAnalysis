@@ -48,7 +48,12 @@ class MTreeReader {
 			std::cerr<<"known branches: "<<branchnamestring<<std::endl;
 			return 0;
 		}
-		pointer_in = reinterpret_cast<const T*>(branch_value_pointers.at(branchname));
+		if(branch_isobjectptr.at(branchname)){
+			const T** tmp = reinterpret_cast<const T**>(branch_value_pointers.at(branchname));
+			pointer_in = *tmp;
+		} else {
+			pointer_in = reinterpret_cast<const T*>(branch_value_pointers.at(branchname));
+		}
 		if(verbosity>3) std::cout<<"retrieved pointer to "<<type_name<T>()<<" at "<<pointer_in<<std::endl;
 		return 1;
 	}
@@ -72,7 +77,7 @@ class MTreeReader {
 			return 0;
 		}
 		// check if the branch is a primitive
-		if(branch_isobject.at(branchname)||branch_isarray.at(branchname)){
+		if(branch_isobject.at(branchname)||branch_isobjectptr.at(branchname)||branch_isarray.at(branchname)){
 			std::cerr<<"Branch "<<branchname
 				 <<" is not a primitive; please pass a suitable const pointer"
 				 <<" or basic_array to GetBranchValue()"<<std::endl;
@@ -275,6 +280,7 @@ class MTreeReader {
 	std::map<std::string,intptr_t> branch_value_pointers; // branch name to pointer to value, cast to intptr_t
 	std::map<std::string,std::string> branch_types;  // branch name to string describing type - not good for arrays
 	std::map<std::string,bool> branch_isobject;      // does branch hold an object
+	std::map<std::string,bool> branch_isobjectptr;   // does branch hold an object pointer
 	std::map<std::string,bool> branch_isarray;       // does branch hold a (c-style) array
 	std::map<std::string,std::vector<std::pair<std::string,int>>> branch_dimensions; // dims of variable size arrays
 	std::map<std::string,std::vector<size_t>> branch_dims_cache; // dims of constant sized arrays

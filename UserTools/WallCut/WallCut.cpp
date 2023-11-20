@@ -39,14 +39,14 @@ bool WallCut::Execute(){
 	float wallDistance = 0;
 	
 	// distance to closest wall
-	//wallDistance = skroot_lowe_.linfo[9];    // clwallsk
-	wallDistance = skroot_lowe_.linfo[10];     // bswallsk
+	//wallDistance = skroot_lowe_.linfo[8];    // skroot_lowe_clwallsk
+	wallDistance = skroot_lowe_.linfo[9];      // skroot_lowe_bswallsk
 	// or if it hasn't been calculated yet
 	//wallDistance = bswallsk = wallsk_(&skroot_lowe_.bsvertex[0]);
 	
 	// back-projected distance to wall
-	//wallDistance = skroot_lowe_.linfo[6];     // bseffwal
-	//wallDistance = skroot_lowe_.linfo[5];     // cleffwal
+	//wallDistance = skroot_lowe_.linfo[5];     // skroot_lowe_bseffwal
+	//wallDistance = skroot_lowe_.linfo[3];     // skroot_lowe_cleffwal
 	
 	// deprecated manual version
 	//wallDistance = DistanceToWall();

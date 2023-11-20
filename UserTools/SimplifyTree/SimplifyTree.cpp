@@ -488,6 +488,8 @@ bool SimplifyTree::Execute(){
 	// invoke TTree::Fill on output file in root2root mode. We don't need the resulting file, but why not?
 	// XXX XXX BEWARE: THIS CLEARS TQREAL!!! (and what else?) ONLY DO IT UNTIL AFTER WE'RE DONE WITH THEM!
 	// skroot_fill_tree_(&LUN);
+	// this internally calls TreeManager::fill_tree() then TreeManager::Clear()
+	// so to avoid the clearing just call fill_tree() directly.
 	
 	return true;
 }

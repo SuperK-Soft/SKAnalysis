@@ -153,7 +153,7 @@ bool PostLoweReconstructionCuts::Execute(){
 	
 	// 4.14 FV cut
 	// XXX FV distance can be configured in WallCut Tool
-	skroot_lowe_bswallsk = wallsk_(skroot_lowe_.bsvertex); // XXX seems to already be calculated in lfallfit
+	//skroot_lowe_bswallsk = wallsk_(skroot_lowe_.bsvertex); // already set by lfallfit
 	if(!selectorName.empty()) m_data->ApplyCut(selectorName, "WallDistance",skroot_lowe_bswallsk);
 	if(skroot_lowe_bswallsk < 200){
 		m_data->vars.Set("Skip", true);

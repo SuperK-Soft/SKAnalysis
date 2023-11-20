@@ -42,6 +42,9 @@ class RelicMuonPlots: public Tool {
 	std::string outputFile="relicmuplots.root";
 	std::string relicFile="relicplots.root";
 	std::string muFile="muonplots.root";
+	std::map<int,int> muon_plotted;
+	std::map<int,int> relic_nevsks; // FIXME this shouldn't be needed!
+	std::map<std::pair<int,int>, int> muon_pair_plotted;
 	
 	// table that converts coulombs to photoelectrons
 	// normally in $SKOFL_ROOT/const/lowe/petable.dat
@@ -51,10 +54,11 @@ class RelicMuonPlots: public Tool {
 	std::vector<int> petable_startrun, petable_endrun;
 	
 	// for reading Trees
+	int relicentrynum=0;
 	std::string muReaderName="";
 	std::string relicReaderName="";
 	MTreeReader* relicReader=nullptr;
-	MTreeReader muReader;
+	MTreeReader* muReader=nullptr;
 	
 	// for getting branches
 	// relic:
@@ -65,7 +69,7 @@ class RelicMuonPlots: public Tool {
 	int64_t relicClockTicks=0;
 	int relicRollovers=0;
 	std::vector<int>* relicMatchedEntryNums=nullptr;
-	std::vector<int64_t>* relicTimeDiffs=nullptr;
+	std::vector<float>* relicTimeDiffs=nullptr;
 	
 	// muon:
 	Header* muHeader=nullptr;
@@ -76,9 +80,9 @@ class RelicMuonPlots: public Tool {
 	TQReal* muTQAReal=nullptr;
 	
 	// for tracking rates:
-	int64_t lastmuticks;
-	int lastmu_nevsk;
-	int64_t lastrelicticks;
+	int64_t lastmuticks=0;
+	int lastmu_nevsk=0;
+	int64_t lastrelicticks=0;
 	
 	// for making spallation observables
 	float* muon_dedx;
@@ -86,10 +90,9 @@ class RelicMuonPlots: public Tool {
 	float* muon_direction;
 	double muon_tracklen;
 	
-	
 	int pe_table_index = 0;
 	
-	bool mu_before_relic;
+	int mu_before_relic;
 	float dt;
 	float dll;
 	float dlt;

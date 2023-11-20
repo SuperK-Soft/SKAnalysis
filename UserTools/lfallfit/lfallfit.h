@@ -30,7 +30,7 @@ class lfallfit: public Tool {
 	std::string readerName="";
 	int lun=0;
 	bool MC=false;
-	int NHITCUT;
+	int max_nqisk_for_clusfit;
 	int flag_skip=0;   // what reconstruction steps to do (or what to skip). Default (0): everything.
 	bool checkEventType=false; // whether to only apply when EventType is LowE
 };

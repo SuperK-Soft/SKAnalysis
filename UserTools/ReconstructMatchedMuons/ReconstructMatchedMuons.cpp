@@ -41,7 +41,7 @@ bool ReconstructMatchedMuons::Initialise(std::string configfile, DataModel &data
 	}
 	rfmReader = m_data->Trees.at(rfmReaderName);
 	
-	// get LUNs for output file writers 
+	// get LUNs for output file writers
 	// (needed to pass common block data from reco algorithms to TTrees etc)
 	std::string relicWriterName, muWriterName;
 	m_variables.Get("muWriterName", muWriterName);
@@ -89,6 +89,15 @@ bool ReconstructMatchedMuons::Execute(){
 	
 	Log(m_unique_name+" Relics to Write out: "+toString(m_data->writeOutRelics.size())+
 	                  ", muons to write out: "+toString(m_data->muonsToRec.size()),v_debug,m_verbose);
+	
+	
+//	// XXX XXX XXX DEBUG XXX XXX XXX
+//	// break on the first relic
+//	if(m_data->writeOutRelics.size()>0){
+//		m_data->vars.Set("StopLoop",1);
+//	}
+//	// XXX XXX XXX DEBUG XXX XXX XXX
+	
 	
 	// write finished candidates to file
 	if(m_data->writeOutRelics.size()>0){
@@ -158,17 +167,14 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		if(eventsToWrite[i].hasAFT){
 			
 			Log(m_unique_name+" Rolling back input reader to grab AFT for "+toString(eventType)
-			         +" entry "+toString(eventsToWrite[i].InEntryNumber+1),v_debug,m_verbose);
-			
-			Log(m_unique_name+" prefetching AFT entry "+toString(eventsToWrite[i].InEntryNumber+1),
-			    v_debug,m_verbose);
+			         +" entry "+toString(eventsToWrite[i].AFTEntryNum),v_debug,m_verbose);
 			
 			// read the AFT entry from file
-			get_ok = m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].InEntryNumber+1);
-			if(!get_ok){
-				Log(m_unique_name+" Error reading AFT entry " 
-				    +toString(eventsToWrite[i].InEntryNumber+1),v_error,m_verbose);
-				return false;
+			int bytesread = m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].AFTEntryNum);
+			if(bytesread<=0){
+				Log(m_unique_name+" Error "+toString(bytesread)+" reading AFT entry "
+				    +toString(eventsToWrite[i].AFTEntryNum),v_error,m_verbose);
+				continue;
 			}
 			
 			// make a note of the AFT hits
@@ -196,7 +202,12 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		Log(m_unique_name+" Rolling back reader to write out "+toString(eventType)
 		    +" entry "+toString(eventsToWrite[i].InEntryNumber),v_debug,m_verbose);
 		
-		m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].InEntryNumber);
+		int bytesread = m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].InEntryNumber);
+		if(bytesread<=0){
+			Log(m_unique_name+" Error "+toString(bytesread)+" reading "+toString(eventType)+" entry "
+			    +toString(eventsToWrite[i].InEntryNumber),v_error,m_verbose);
+			continue;
+		}
 		
 		// if this was a subtrigger we should also shift the time window accordingly
 		if(eventsToWrite[i].SubTriggerNumber!=0){
@@ -207,16 +218,14 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			if(get_ok!=0){
 				Log(m_unique_name+" Error! skcread returned "+toString(get_ok)
 				    +" when reloading subtrigger!",v_error,m_verbose);
-				return false;
+				continue;
 			}
 		}
 		
 		if(eventType==EventType::Muon){
 			// reset the bad channel masking for lowe events
 			skbadopt_(&current_badch_masking);
-		}
-		
-		if(eventType==EventType::Muon){
+			
 			// ok, do muon reconstruction
 			// this will populate the reco_muons vector with a set of skroot_mu_common
 			// objects, each representing the result of skroot_mu_ for each muon.
@@ -251,8 +260,8 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		
 		// update branch variables w/ info about matches
 		MatchedEvNums = eventsToWrite[i].matchedParticleEvNum;
-		MatchedInEntryNums = eventsToWrite[i].matchedParticleOutEntryNum;
-		MatchedOutEntryNums = eventsToWrite[i].matchedParticleInEntryNum;
+		MatchedInEntryNums = eventsToWrite[i].matchedParticleInEntryNum;
+		MatchedOutEntryNums = eventsToWrite[i].matchedParticleOutEntryNum;
 		MatchedHasAFTs = eventsToWrite[i].matchedParticleHasAFT;
 		MatchedTimeDiff = eventsToWrite[i].matchedParticleTimeDiff;
 		MatchedParticleE = eventsToWrite[i].matchedParticleBSEnergy;
@@ -317,7 +326,12 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			// if the event had an associated AFT trigger, write that out as well
 			if(eventsToWrite[i].hasAFT){
 				Log(m_unique_name+" Writing out follow-up AFT entry",v_debug,m_verbose);
-				m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].InEntryNumber+1);
+				int bytesread = m_data->getTreeEntry(rfmReaderName, eventsToWrite[i].AFTEntryNum);
+				if(bytesread<=0){
+					Log(m_unique_name+" Error "+toString(bytesread)+" loading AFT entry "
+						+toString(eventsToWrite[i].AFTEntryNum),v_error,m_verbose);
+					continue;
+				}
 				skroot_set_tree_(&outLUN);
 				skroot_fill_tree_(&outLUN);
 			}
@@ -328,54 +342,116 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 		// for muon events, set the reconstructed muon info if available
 		else if(eventType==EventType::Muon){
 			
+			// we'll need the output TreeManager
+			TreeManager* mgr = skroot_get_mgr(&outLUN);
+			
 			// ok, so muboy may reconstruct multiple muons, and we should save all of them
-			if(get_ok && reco_muons.size()){
-				for(int j=0; j<reco_muons.size(); ++j){
-					// note these only differ by the muon entry point
-					// (for which we need to get the corresponding element from
-					// skroot_mu_.muboy_entpos, using the index in skroot_mu_.mu_info[7])
-					// and in the dE/dx arrays in mu_info[10:210] and skroot_mu_.muboy_dedx
-					// to be honest we could save a lot of disk space by being smarter
-					// in the way we read these in, but for now just make every entry independent.
+			
+			// ahhhhhhhhh but wait.
+			// our relics are matched to muons by storing a set of muon TTree entry numbers
+			// with the relic event. Those entry numbers are generated based on the assumption
+			// of one muon which gets reconstructed and written out.
+			// if muon reconstruction then turns this into !=1 output entry in the muon file,
+			// (either 0 from failure to reconstruct or >1 because muboy says its multiple muons)
+			// then those entry numbers will not be correct.
+			// Downstream toolchains could possibly cope with >1 muons by keeping track of muon splits
+			// and adding the running sum of 'secondary' muons to the relic's muon entry number....
+			// for now just keep the first. FIXME TODO
+			// In any case, we definitely need to make 1 entry in order to keep the relic match numbers usable.
+			// (we may want to keep the muon event anyway to allow later re-attempts at muon reconstruction)
+			
+			
+			for(int j=0; j<1/*std::max(1,reco_muons.size())*/; ++j){
+				// note these only differ by the muon entry point
+				// (for which we need to get the corresponding element from
+				// skroot_mu_.muboy_entpos, using the index in skroot_mu_.mu_info[7])
+				// and in the dE/dx arrays in mu_info[10:210] and skroot_mu_.muboy_dedx
+				// to be honest we could save a lot of disk space by being smarter
+				// in the way we read these in, but for now just make every entry independent.
+				if(reco_muons.size()>0){
 					skroot_mu_ = reco_muons.at(j);
-					
-					skroot_set_mu_(&outLUN,
-					               skroot_mu_.muentpoint,
-					               skroot_mu_.mudir,
-					               &skroot_mu_.mutimediff,
-					               &skroot_mu_.mugoodness,
-					               &skroot_mu_.muqismsk,
-					               &skroot_mu_.muyn,
-					               &skroot_mu_.mufast_flag,
-					               &skroot_mu_.muboy_status,
-					               &skroot_mu_.muboy_ntrack,
-					               skroot_mu_.muboy_entpos,
-					               skroot_mu_.muboy_dir,
-					               &skroot_mu_.muboy_goodness,
-					               &skroot_mu_.muboy_length,
-					               skroot_mu_.muboy_dedx,
-					               skroot_mu_.mubff_entpos,
-					               skroot_mu_.mubff_dir,
-					               &skroot_mu_.mubff_goodness,
-					               &skroot_mu_.muninfo,
-					               skroot_mu_.muinfo);
-					
-					// invoke TTree::Fill
-					skroot_fill_tree_(&outLUN);
-					
-					if(j==0) ++muons_written;
-					++muons_written_wmuboysplit;
-					
+				} else {
+					// no reconstructed muons!
+					// use dummy info for skroot_mu_?
+					for(int k=0; k<3; ++k){
+						skroot_mu_.muentpoint[k] = 0;
+						skroot_mu_.mudir[k] = 0;
+						skroot_mu_.muboy_entpos[0][k] = 0;
+						skroot_mu_.muboy_dir[k] = 0;
+						skroot_mu_.mubff_entpos[k] = 0;
+						skroot_mu_.mubff_dir[k] = 0;
+					}
+					skroot_mu_.muentpoint[4] = 0;
+					for(int k=0; k<200; ++k) skroot_mu_.muboy_dedx[k] = 0;
+					skroot_mu_.mutimediff = 0;
+					skroot_mu_.mugoodness = 0;
+					skroot_mu_.muqismsk = 0;
+					skroot_mu_.muyn = 0;
+					skroot_mu_.mufast_flag = 0;
+					skroot_mu_.muboy_status = 0;
+					skroot_mu_.muboy_ntrack = 0;
+					skroot_mu_.muboy_goodness = 0;
+					skroot_mu_.muboy_length = 0;
+					skroot_mu_.mubff_goodness = 0;
+					skroot_mu_.muninfo = 0;
+					skroot_mu_.muinfo[7] = 0;
 				}
+				
+				skroot_set_mu_(&outLUN,
+				               skroot_mu_.muentpoint,
+				               skroot_mu_.mudir,
+				               &skroot_mu_.mutimediff,
+				               &skroot_mu_.mugoodness,
+				               &skroot_mu_.muqismsk,
+				               &skroot_mu_.muyn,
+				               &skroot_mu_.mufast_flag,
+				               &skroot_mu_.muboy_status,
+				               &skroot_mu_.muboy_ntrack,
+				               skroot_mu_.muboy_entpos,
+				               skroot_mu_.muboy_dir,
+				               &skroot_mu_.muboy_goodness,
+				               &skroot_mu_.muboy_length,
+				               skroot_mu_.muboy_dedx,
+				               skroot_mu_.mubff_entpos,
+				               skroot_mu_.mubff_dir,
+				               &skroot_mu_.mubff_goodness,
+				               &skroot_mu_.muninfo,
+				               skroot_mu_.muinfo);
+				
+				// invoke TTree::Fill
+				//skroot_fill_tree_(&outLUN); // ah! But not like this!
+				// this does 2 things:
+				// 1) calls TreeManager::fill_tree();
+				// 2) calls TreeManager::Clear();
+				// but (2) will nuke all the TreeManager internal variables,
+				// meaning that all subsequent muons will have no header/tqreal etc info!
+				// so, just invoke the TreeManager::fill_tree() manually,
+				// and clear only when we are done.
+				mgr->fill_tree();
+				
+				if(j==0) ++muons_written;
+				++muons_written_wmuboysplit;
+				
 			}
+			mgr->Clear();
 		}
 		
 	}
 	
 	// reload the previous entry so that no issues are caused with other tools
 	if(currentEntry != rfmReader->GetEntryNumber()){
-		m_data->getTreeEntry(rfmReaderName, currentEntry);
+		int bytesread = m_data->getTreeEntry(rfmReaderName, currentEntry);
+		if(bytesread<=0){
+			Log(m_unique_name+" Error "+toString(bytesread)+" returning to entry "
+			    +toString(currentEntry),v_error,m_verbose);
+			return false;
+		}
 	}
+	
+	// XXX XXX XXX DEBUG XXX XXX XXX
+	// break on the first written event (muon or relic)
+	//m_data->vars.Set("StopLoop",1);
+	// XXX XXX XXX DEBUG XXX XXX XXX
 	
 	return true;
 }
@@ -552,6 +628,11 @@ bool ReconstructMatchedMuons::AddAftHits(const rawtqinfo_common& rawtqinfo_aft, 
 
 
 bool ReconstructMatchedMuons::ReconstructNextMuon(){
+	
+	if(skq_.nqisk==0){
+		Log(m_unique_name+" Error! About to reconstruct next muon but nqisk==0!?",v_error,m_verbose);
+		return false;
+	}
 	
 	// we'll return a vector of skroot_mu_common structs.
 	// why a vector? because muboy might reconstruct multiple muons.

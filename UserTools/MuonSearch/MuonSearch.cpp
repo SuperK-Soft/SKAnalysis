@@ -42,12 +42,16 @@ bool MuonSearch::Initialise(std::string configfile, DataModel &data){
 
 bool MuonSearch::Execute(){
 	
+	
 	// skip AFTs after a relic
 	EventType lastEventType = eventType;
 	m_data->vars.Get("eventType", eventType);
+	/* don't see a compelling reason we shouldn't scan AFTs after LowE's for untagged muons
 	if(eventType==EventType::AFT && lastEventType==EventType::LowE){
+		Log(m_unique_name+" skipping AFT after LowE event",v_debug,m_verbose);
 		return true;
 	}
+	*/
 	
 	// get trigger settings from file (why bother?)
 	int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
@@ -135,8 +139,8 @@ bool MuonSearch::Execute(){
 	// if we found any muons
 	if(!untaggedMuonTime.empty()){
 		// flag it for downstream tools (this will not be a relic candidate)
-		//std::cout<<"setting eventType of "<<skhead_.nevsk<<" to muon"<<std::endl;
-		m_data->vars.Set("eventType", EventType::Muon);
+		eventType = EventType::Muon;
+		m_data->vars.Set("eventType", eventType);
 		// and pass their times
 		m_data->CStore.Set("muonTimes", untaggedMuonTime);
 		// mark this event as 'passing' the cut

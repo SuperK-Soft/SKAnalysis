@@ -173,6 +173,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// a lot of SK algorithms retrieve data via skroot_get_* calls behind the scenes,
 	// which means if we're processing skroot files we probably need a corresponding TreeManager.
 	if(skrootMode!=SKROOTMODE::NONE){
+		
 		// skroot_open_* invokes the singleton SuperManager class to create a TreeManager
 		// to be associated with a given SKROOT file. This TreeManager is just the usual
 		// TTree wrapper created via ROOT's MakeClass. 
@@ -485,6 +486,10 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			myTreeReader.SetMCFlag(isMC);
 			m_data->vars.Set("inputIsMC",isMC);
 			
+			// XXX assume that if we're processing MC ROOT files, it's SKG4
+			// set to 0 for skdetsim (according to lowfit_sk6_mc_badrun)
+			wtpar_.flag_g4_wtpar = 1;
+			
 			// if we're processing MC, we should probably only call `skread`. If we're processing
 			// data, we probably need to call `skrawread` as well. (see ReadEntry for more info).
 			// SKRAWREAD also requires the presence of a TQLIST branch.
@@ -517,6 +522,10 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// extract isMC
 			isMC = (skhead_.mdrnsk==0 || skhead_.mdrnsk==999999);
 			m_data->vars.Set("inputIsMC",isMC);
+			
+			// XXX assume that if we're processing MC ZBS files, it's skdetsim
+			// set to 0 for skdetsim (according to lowfit_sk6_mc_badrun)
+			wtpar_.flag_g4_wtpar = 0;
 			
 			if(skreadUser==0){
 				skreadMode = (isMC) ? 0 : 2;  // 0=skread only, 1=skrawread only, 2=both
@@ -571,7 +580,9 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		
 		// initialize water transparency table
 		skrunday_();
-		skwt_gain_corr_();
+		// which of these should be called when??
+		if(skheadg_.sk_geometry==4) skwt_gain_corr_();
+		else skwt_();
 		if(reference_watert_run>0 && (skhead_.nrunsk==0 || skhead_.nrunsk == 999999)){
 			Log(m_unique_name+" using reference run "+toString(reference_watert_run)
 				+" for water transparency",v_warning,m_verbose);
@@ -665,6 +676,25 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			}
 			Log(m_unique_name+" reading from entry "+toString(entrynum),v_debug,m_verbose);
 		}
+	}
+	
+	if(skreadMode!=0){
+		// if calling skrawread, it seems like it doesn't work to just jump straight
+		// to a given entry. So, very inefficient, but read all the entries in the chain
+		// up to the requested entry
+		// one of the things this does is set skpdst2_.iqbcalmode variable to 1 in entry 1 (at least in one instance);
+		// note that one of the lomufit_gd reduction cuts is iqbcalmode!=0, so this is necessary
+		// as part of the PreLoweReconstructionCuts Tool.
+		Log(m_unique_name+" Scanning TChain to firstEntry "+toString(firstEntry),v_warning,m_verbose);
+		// turn off verbosity for this scan as we know we're not interested in these events
+		// and excessive printouts slow things down considerably
+		int tmp_verb = m_verbose;
+		m_verbose=0;
+		for(int i=0; i<firstEntry; ++i){
+			if(i%1000) Log(m_unique_name+" entry "+toString(i)+"...",v_error,m_verbose);
+			ReadEntry(i,true);
+		}
+		m_verbose = tmp_verb;
 	}
 	
 	return true;
@@ -838,7 +868,8 @@ bool TreeReader::Execute(){
 	aft_loaded = false; // whether common blocks currently hold SHE or AFT; reset this on every execution
 	
 	// check if we've hit the user-requested limit on number of entries to read
-	if((maxEntries>0)&&(readEntries>=maxEntries)){
+	if( ((maxEntries>0)&&(readEntries>=maxEntries)) ||
+	    ((maxEntry>0)&&(entrynum>maxEntry)) ){
 		Log(m_unique_name+" hit max events, setting StopLoop",v_message,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	}
@@ -859,6 +890,7 @@ bool TreeReader::Execute(){
 	
 	if(skrootMode!=::SKROOTMODE::NONE){
 		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
+		//std::cout<<"entry "<<entrynum<<", nevsk "<<skhead_.nevsk<<std::endl;
 	} else {
 		Log(m_unique_name+" Returning entry "+toString(entrynum),v_debug,m_verbose);
 	}
@@ -867,10 +899,14 @@ bool TreeReader::Execute(){
 }
 
 bool TreeReader::RunChange(){
+	/*
+	// do we do it for MC? or not? I don't know.
 	// skip for MC runs
 	if(skhead_.nrunsk==999999 || skhead_.nrunsk==0){
 		return true;
 	}
+	*/
+	
 	Log(m_unique_name+" Run Change",v_debug,m_verbose);
 	m_data->vars.Set("newRun",true);
 	get_ok = true;
@@ -915,10 +951,14 @@ bool TreeReader::RunChange(){
 }
 
 bool TreeReader::SubrunChange(){
+	/*
+	// do we do it for MC? not for MC? only for MC? i dont know
 	// skip for MC runs
 	if(skhead_.nrunsk==999999 || skhead_.nrunsk==0){
 		return true;
 	}
+	*/
+	
 	Log(m_unique_name+" SubRun Change",v_debug,m_verbose);
 	m_data->vars.Set("newSubrun",true);
 	get_ok = true;
@@ -1252,10 +1292,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 	
 	// stop loop if we ran off the end of the tree
 	if(bytesread==0){
-		// not good because downstream tools will not have valid data!
-		// we should protect against this in Execute() though.
-		Log(m_unique_name+" hit end of input file, stopping loop",v_warning,m_verbose);
-		m_data->vars.Set("StopLoop",1);
+		Log(m_unique_name+" entry "+toString(entry_number)+" off end of input file!",v_error,m_verbose);
 	} else if(bytesread==-999){
 		Log(m_unique_name+" skrawread pedestal or status event",v_debug+10,m_verbose);
 	}
@@ -1660,6 +1697,7 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="readerName") readerName = thevalue;
 		else if(thekey=="firstEntry") firstEntry = stoi(thevalue);
 		else if(thekey=="maxEntries") maxEntries = stoi(thevalue);
+		else if(thekey=="maxEntry") maxEntry = stoi(thevalue);
 		else if(thekey=="selectionsFile") selectionsFile = thevalue;
 		else if(thekey=="cutName") cutName = thevalue;
 		else if(thekey=="skFile") skFile = stoi(thevalue);

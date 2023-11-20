@@ -34,6 +34,9 @@
 #include "apmueC.h"
 #include "skpdstC.h"
 
+// flag_g4_wtpar
+#include "lfparmC.h"
+
 // header for skroot_* functions. These are actually C functions.
 #include "fortran_interface.h"
 

@@ -41,10 +41,10 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	MC = m_data->Trees.at(readerName)->GetMCFlag();
 	
 	// skip clusfit if we have too many hits. get the limit for 'too many hits'
-	get_ok = m_variables.Get("hitLimitForClusfit",NHITCUT);
+	get_ok = m_variables.Get("hitLimitForClusfit",max_nqisk_for_clusfit);
 	if(!get_ok){
 		// fall back to relic sk4 defaults...
-		NHITCUT = (MC) ? 800 : 1000;
+		max_nqisk_for_clusfit = (MC) ? 800 : 1000;
 	}
 	
 	// initialize bonsai
@@ -65,6 +65,7 @@ bool lfallfit::Execute(){
 		}
 	}
 	
+	Log(m_unique_name+" Passed event type check, executing...",v_debug,m_verbose);
 	if((nread%10000)==0){
 		Log(m_unique_name+" read loop "+toString(nread)+", current run "
 		    +toString(skhead_.nrunsk),v_message,m_verbose);
@@ -72,6 +73,9 @@ bool lfallfit::Execute(){
 	++nread;
 	
 	// clear variables for low & mu fitters
+	Log(m_unique_name+" clearall",v_debug,m_verbose);
+	// XXX n.b. lfnewfit would seem to indicate we may only need to do this on change of run/subrun
+	// and that (perhaps after doing so??) we may need to re-set the darkrate, watert and bad channels?
 	lfclear_all_();
 	
 	// fetch latest water transparency, which may have changed if we changed run.
@@ -97,36 +101,49 @@ bool lfallfit::Execute(){
 	
 	int lfflag;
 	int flag_log;
+	switch(m_verbose){
+		case 0:
+		case 1: flag_log = 3; break; // error or warn: print only on error
+		case 2:
+		case 3: flag_log = 2; break; // message/debug: print filenames (of what?)
+		default: flag_log = 1;       // high verbosity: enable lfallfit high verb.
+	}
 	
-	if(m_verbose>=v_debug) std::cout<<m_unique_name+" Running lfallfit..."<<std::flush;
+	Log(m_unique_name+" calling lfallfit with MC "+toString(MC)
+	    +", geometry "+toString(skheadg_.sk_geometry)+", flag_skip "+toString(flag_skip)
+	    +", nhitcut "+toString(max_nqisk_for_clusfit)+" and water transp "
+	    +toString(watert), v_debug,m_verbose);
 	if(MC){
 		switch (skheadg_.sk_geometry) {
-			case 1:  //lfallfit_sk1_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
-			case 2:  //lfallfit_sk2_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
-			case 3:  //lfallfit_sk3_mc_(&watert, &NHITCUT, &lfflag);    // does not exist
+			case 1:  //lfallfit_sk1_mc_(&watert, &max_nqisk_for_clusfit, &lfflag);    // does not exist
+			case 2:  //lfallfit_sk2_mc_(&watert, &max_nqisk_for_clusfit, &lfflag);    // does not exist
+			case 3:  //lfallfit_sk3_mc_(&watert, &max_nqisk_for_clusfit, &lfflag);    // does not exist
 				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
 				    +" MC!",v_error,m_verbose);
 				return false;
 			case 4: {
 				// which lfallfit_sk4 would you prefer...?
-				//lfallfit_sk4_mc_(&watert, &NHITCUT, &lfflag);
-				//lfallfit_sk4_final_qe41_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
-				lfallfit_sk4_final_qe43_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
-				//lfallfit_sk4_gain_corr_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				//lfallfit_sk4_mc_(&watert, &max_nqisk_for_clusfit, &lfflag);
+				//lfallfit_sk4_final_qe41_mc_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk4_final_qe43_mc_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
+				//lfallfit_sk4_gain_corr_mc_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 5: {
-				lfallfit_sk5_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk5_mc_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 6: {
-				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk6_mc_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 7: {
 				// FIXME doesn't yet exist; for now use SK-6
 				// not sure if this will work: it doesn't for data....
-				lfallfit_sk6_mc_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				Log(m_unique_name+" Warning! Calling lfallfit_sk6_mc for SK geometry 7"
+				    ", because no lfallfit_sk7_mc exists at time of writing",v_warning,m_verbose);
+				lfallfit_sk6_mc_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
+				break;
 			}
 			default: {
 				Log(m_unique_name+": Error! lfallfit does not exist for SK-"+toString(skheadg_.sk_geometry)
@@ -137,38 +154,38 @@ bool lfallfit::Execute(){
 	} else {
 		switch (skheadg_.sk_geometry) {
 			case 1: {
-				lfallfit_sk1_data_(&watert, &NHITCUT, &lfflag);
+				lfallfit_sk1_data_(&watert, &max_nqisk_for_clusfit, &lfflag);
 				break;
 			}
 			case 2: {
-				lfallfit_sk2_data_(&watert, &NHITCUT, &lfflag);
+				lfallfit_sk2_data_(&watert, &max_nqisk_for_clusfit, &lfflag);
 				break;
 			}
 			case 3: {
-				// lfallfit_sk3_data_(&watert, &NHITCUT, &lfflag); // does not exist
+				// lfallfit_sk3_data_(&watert, &max_nqisk_for_clusfit, &lfflag); // does not exist
 				Log(m_unique_name+": Error! lfallfit does not exist for SK-III!",v_error,m_verbose);
 				return false;
 			}
 			case 4: {
-				//lfallfit_sk4_data_(&watert, &NHITCUT, &lfflag);
-				//lfallfit_sk4_final_qe41_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
-				lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
-				//lfallfit_sk4_gain_corr_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				//lfallfit_sk4_data_(&watert, &max_nqisk_for_clusfit, &lfflag);
+				//lfallfit_sk4_final_qe41_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk4_final_qe43_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
+				//lfallfit_sk4_gain_corr_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 5: {
-				lfallfit_sk5_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk5_data_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			case 6: {
-				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				lfallfit_sk6_data_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
 				break;
 			}
 			/*
 			case 7: {
-				// FIXME doesn't yet exist; for now use SK-6
-				// actually can't do this, it crashes with "trabs_sk6: absfitfac is negative!"
-				lfallfit_sk6_data_(&watert, &NHITCUT, &flag_skip, &flag_log, &lfflag);
+				// FIXME can't do this, it crashes with "trabs_sk6: absfitfac is negative!"
+				lfallfit_sk6_data_(&watert, &max_nqisk_for_clusfit, &flag_skip, &flag_log, &lfflag);
+				break;
 			}
 			*/
 			default: {
@@ -178,7 +195,7 @@ bool lfallfit::Execute(){
 			}
 		}
 	}
-	if(m_verbose>=v_debug) std::cout<<m_unique_name+" done"<<std::endl;
+	Log(m_unique_name+" fitting done with return value lfflag "+toString(lfflag),v_debug,m_verbose);
 	
 	if(lfflag==-1){
 		Log(m_unique_name+" Warning! lfallfit failed with status -1: 'too many hits for lowe'!\n"
@@ -190,6 +207,7 @@ bool lfallfit::Execute(){
 		return false;    // XXX we really should not have events with no hits...!
 	}
 	
+	Log(m_unique_name+" setting results into lowe branch",v_debug,m_verbose);
 	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
 	skroot_set_lowe_(&lun,                      &skroot_lowe_.bsvertex[0], &skroot_lowe_.bsresult[0],
 	                 &skroot_lowe_.bsdir[0],    &skroot_lowe_.bsgood[0],   &skroot_lowe_.bsdirks,

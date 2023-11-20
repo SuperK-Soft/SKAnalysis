@@ -264,7 +264,7 @@ bool CombinedFitter::Execute(){
 	mct_ncapture=9999;
 	tgood=9999; tgood_prev=9999; tgood_combined=9999; tgood_combined_prev=9999;
 	
-	int NHITCUT = 800; //(MC) ? 800 : 1000;  //  max no. hits to reconstruct
+	int max_nqisk_for_clusfit = 800; //(MC) ? 800 : 1000;  //  max no. hits to reconstruct
 	
 	//--------------Get the MC information we want----------------------//
 	// Assumes IBD events - TODO does this need to work for other types?
@@ -440,7 +440,7 @@ bool CombinedFitter::Execute(){
 		std::copy(charges.begin(),charges.end(),bscharges);
 		std::copy(times.begin(),times.end(),bstimes);
 		std::copy(cableIDs.begin(),cableIDs.end(),bscableIDs);
-		if (nhit>9 && nhit<=NHITCUT) {
+		if (nhit>9 && nhit<=max_nqisk_for_clusfit) {
 			int nbf = bonsaifit_(&bsvertex[0],&bsresult[0],&bsgood[0],&nsel,&nhit,&bscableIDs[0],&bstimes[0],&bscharges[0]);
 		}
 		tgood_prev = bsgood[1];
@@ -493,7 +493,7 @@ bool CombinedFitter::Execute(){
 		std::copy(timesAFT.begin(),timesAFT.end(),bstimesAFT);
 		std::copy(cableIDsAFT.begin(),cableIDsAFT.end(),bscableIDsAFT);
 		nsel=0;
-		if (bsvertex[0]<9999 && nhitsAFT>9 && nhitsAFT<=NHITCUT) {
+		if (bsvertex[0]<9999 && nhitsAFT>9 && nhitsAFT<=max_nqisk_for_clusfit) {
 			int nbf = bonsaifit_(&bsvertexAFT[0],&bsresultAFT[0],&bsgoodAFT[0],&nsel,&nhitsAFT,&bscableIDsAFT[0],&bstimesAFT[0],&bschargesAFT[0]);
 			tgood = bsgoodAFT[1];
 			
@@ -587,7 +587,7 @@ bool CombinedFitter::Execute(){
 		skroot_lowe_.lnsratio = float(nqrng[1])/float(nqrng[0]+nqrng[1]+nqrng[2]);
 	}
 	
-	if (nhit>9 && nhit<=NHITCUT) {
+	if (nhit>9 && nhit<=max_nqisk_for_clusfit) {
 	
 		//------------------------------------------------------------------------
 		// Now get the other values based on the reconstructed vertex

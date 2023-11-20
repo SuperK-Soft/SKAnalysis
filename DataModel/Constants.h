@@ -41,6 +41,7 @@ double PdgToMass(int code);
 std::string TriggerIDToName(int code);
 std::string GetTriggerNames(int32_t trigid);
 int TriggerNameToID(std::string trigname);
+int GetTriggerThreshold(int trigbit);
 const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
@@ -794,6 +795,20 @@ namespace constants{
 		{"AFT", 29}, // (SW)
 		{"Pedestal", 30}, // (SW)
 		{"T2K", 31} // (SW)
+	};
+	
+	// obviously the following is only relevant for nhits based thresholds
+	static const std::map<int, int> default_trig_thresholds{
+		// note these are run-dependent, roughly based on the majority of SK-VI
+		{TriggerType::LE, 49},
+		{TriggerType::LE_hitsum, 49},
+		{TriggerType::HE, 52},
+		{TriggerType::HE_hitsum, 52},
+		{TriggerType::SLE, 34},
+		{TriggerType::SLE_hitsum, 34},
+		{TriggerType::SHE, 60},
+		{TriggerType::OD_or_Fission, 0},  // TODO look these up
+		{TriggerType::OD_hitsum, 0}       // TODO look these up
 	};
 	
 	static const std::map<int, std::string> flag_to_string_SKI_III{
