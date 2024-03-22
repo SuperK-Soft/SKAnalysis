@@ -24,19 +24,19 @@ bool LoadSubTrigger::Initialise(std::string configfile, DataModel &data){
 
 bool LoadSubTrigger::Execute(){
    
-  std::vector<int> SLE_times = {};
+  std::vector<double> SLE_times = {};
   m_data->CStore.Get("SLE_times", SLE_times);
-  int this_subtrigger_ticks = SLE_times.at(trigger_idx);
-  
-  set_timing_gate_(&this_subtrigger_ticks);
+  std::cout << "this_subtrigger_nsec:  " << SLE_times.at(trigger_idx) << std::endl;
+  double this_subtrigger_ticks = (SLE_times.at(trigger_idx) * COUNT_PER_NSEC) + skheadqb_.it0sk;
+  std::cout << "this_subtrigger ticks:  " << this_subtrigger_ticks << std::endl;
+
+  int this_subtrigger_ticks_tmp = int(this_subtrigger_ticks);
+  set_timing_gate_(&this_subtrigger_ticks_tmp);
 
   // call `skcread` to re-load common blocks for this subtrigger
   int get_ok = 0;
   skcread_(&neglun, &get_ok);
-
-  // increment the trigger idx unless we've loaded all subtriggers, in which case set to zero, ready for the next event.
-  trigger_idx < SLE_times.size() - 1 ? ++trigger_idx : trigger_idx = 0;
-
+  
   // check for errors
   // get_ok = 0 (physics entry), 1 (error), 2 (EOF), other (non-physics)
   if(get_ok!=0){
@@ -44,6 +44,16 @@ bool LoadSubTrigger::Execute(){
 	+ " when reloading SLE subtrigger!\n", 0, 0);
     return false;
   }
+
+  std::cout<<"ID hits:\n"
+	   <<"\tskq_.nqisk (in-1.3us only): "<<skq_.nqisk<<"\n"
+	   <<"\tsktqz_.nqiskz (all hits, after bad channel masking): "<<sktqz_.nqiskz<<"\n" // == skq_.nqisk_raw
+	   <<"\trawtqinfo_.nqisk_raw (all hits, before bad channel masking): "<<rawtqinfo_.nqisk_raw<<"\n"
+	   <<"\tin 1.3us gate:\n"
+	   <<"\t\tTotal ID charge (skq_.qismsk): "<<skq_.qismsk<<" [p.e.]" << std::endl; // charges are floats btw
+  
+  // increment the trigger idx unless we've loaded all subtriggers, in which case set to zero, ready for the next event.
+  trigger_idx < SLE_times.size() - 1 ? ++trigger_idx : trigger_idx = 0;
   
   return true;
 }
