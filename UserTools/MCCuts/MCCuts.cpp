@@ -1,6 +1,7 @@
 #include "MCCuts.h"
 
 #include "TH1D.h"
+#include "TROOT.h"
 
 MCCuts::MCCuts():Tool(){}
 
@@ -14,6 +15,22 @@ bool MCCuts::Initialise(std::string configfile, DataModel &data){
 
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 
+  GetReader();
+
+  LUN = m_data->GetLUN(tree_reader_str);
+  TreeManager* tree_manager = skroot_get_mgr(&LUN);
+  if (tree_manager == nullptr){
+    throw std::runtime_error("MCCuts::Initialise: Couldn't get tree manager!");
+  }
+  TTree* out_tree = tree_manager->GetOTree();
+  if (out_tree == nullptr){
+    throw std::runtime_error("MCCuts::Initialise: Null output tree");
+  }
+
+  out_tree->Branch("passed_mc_cuts", &pass);
+
+  gROOT->cd();
+    
   nqisk_plot = TH1D("nqisk_plot", "nqisk", 100, 20, 20);
   bsenergy_plot = TH1D("bsenergy_plot", "bsenergy", 100, 20, 20);
   bsgoodness_plot = TH1D("bsgoodness_plot", "bsgoodness", 100, 20, 20);
@@ -27,7 +44,7 @@ bool MCCuts::Initialise(std::string configfile, DataModel &data){
 
 
 bool MCCuts::Execute(){
-
+  
   skroot_get_lowe_(&skheadf_.root_id,
 		   &get_ok,
 		   skroot_lowe_.bsvertex,
@@ -73,15 +90,33 @@ bool MCCuts::Execute(){
 		   &skroot_lowe_.lwatert,
 		   &skroot_lowe_.lninfo,
 		   skroot_lowe_.linfo);
+
+  double cherenkov_angle = acos(skroot_lowe_.bsresult[3]) * 180 / 3.1415926535;
+  m_data->CStore.Set("c_angle", cherenkov_angle);
   
   const double nqisk = skq_.nqisk;
   nqisk_plot.Fill(nqisk);
 
-  const double bsenergy = skroot_lowe_.bsenergy;
-  bsenergy_plot.Fill(bsenergy);
+  double bsenergy = skroot_lowe_.bsenergy;
+  if (bsenergy < 1000){
+    bsenergy_plot.Fill(bsenergy);
+  }
+    m_data->CStore.Set("bsenergy", bsenergy);
+  
 
+  double positron_energy=-1;
+  positron_energy = skroot_lowe_.energymc[1];
+  // for(int i=0; i<m_data->eventParticles.size(); ++i){
+  //   MParticle& aparticle = m_data->eventParticles.at(i);
+  //   if(aparticle.pdg==-11){
+  //     if(aparticle.GetStartE()!=nullptr) positron_energy = *aparticle.GetStartE();
+  //     break;
+  //   }
+  // }
+  m_data->CStore.Set("mcenergy", positron_energy);
+  
   const double bsgoodness = skroot_lowe_.bsgood[1];
-  bsgoodness_plot.Fill(bsgoodness);
+  if (bsgoodness < 100){bsgoodness_plot.Fill(bsgoodness);}
 
   const double ovaq = skroot_lowe_bsovaq;
   ovaq_plot.Fill(ovaq);
@@ -95,27 +130,17 @@ bool MCCuts::Execute(){
   lfnhita_(&skroot_lowe_lnahit);
   n_od_plot.Fill(skroot_lowe_lnahit);
   
-  if (nqisk > 2000){
-    m_data->vars.Set("Skip", true);
-  }
-  if (bsenergy < 8 || bsenergy > 100){
-     m_data->vars.Set("Skip", true);
-  }
-  if (bsgoodness < 0.5){
-     m_data->vars.Set("Skip", true);
-  }
-  if (ovaq < 0.25){
-    m_data->vars.Set("Skip", true);
-  }
-  if (clusfit_goodness < 0.3){
-    m_data->vars.Set("Skip", true);
-  }
-  if (wall < 200){
-    m_data->vars.Set("Skip", true);
-  }
-  if (skroot_lowe_lnahit > 20){
-   m_data->vars.Set("Skip", true);
-  } 
+  pass = ((nqisk < 2000) &&
+		     (bsenergy > 8 && bsenergy < 100) &&
+		     (bsgoodness > 0.5) &&
+		     (ovaq > 0.25) &&
+		     (clusfit_goodness > 0.3) &&
+		     (wall > 200) &&
+		     (skroot_lowe_lnahit < 20));
+
+  m_data->CStore.Set("pass", pass);
+  
+  skroot_fill_tree_(&LUN);
   
   return true;
 }
@@ -132,6 +157,8 @@ bool MCCuts::Finalise(){
     throw std::runtime_error("MCCuts::Finalise - Couldn't open output file");
   }
 
+  outfile->cd();
+  
   nqisk_plot.Write();
   bsenergy_plot.Write();
   bsgoodness_plot.Write();
@@ -141,4 +168,16 @@ bool MCCuts::Finalise(){
   n_od_plot.Write();
   
   return true;
+}
+
+void MCCuts::GetReader(){
+  m_variables.Get("tree_reader_str", tree_reader_str);
+  if (tree_reader_str.empty() || m_data->Trees.count(tree_reader_str) == 0){
+    throw std::invalid_argument("no valid treereader specified!");
+  }
+  tree_reader_ptr = m_data->Trees.at(tree_reader_str);
+  if (tree_reader_ptr == nullptr){
+    throw std::runtime_error("couldn't get treereader");
+  }
+  return;
 }
