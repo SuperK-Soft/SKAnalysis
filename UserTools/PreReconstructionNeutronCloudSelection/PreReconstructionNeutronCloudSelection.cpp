@@ -50,6 +50,8 @@ bool PreReconstructionNeutronCloudSelection::Execute(){
     post_dt_cut.Fill(dt);
   }
 
+  std::cout << "Pre recon cuts: " << SLE_times.size() << std::endl;
+  
   m_data->CStore.Set("SLE_times", SLE_times);
   
   return true;
