@@ -4,6 +4,8 @@
 #include "TH1D.h"
 #include "TFile.h"
 
+#include "MTreeReader.h"
+
 NeutCloudCorrelationCuts::NeutCloudCorrelationCuts():Tool(){}
 
 bool NeutCloudCorrelationCuts::Initialise(std::string configfile, DataModel &data){
@@ -45,28 +47,40 @@ bool NeutCloudCorrelationCuts::Initialise(std::string configfile, DataModel &dat
   post_sample_m69_dl = TH1D("post_sample_m69_dl", "m = 6-9;distance from relic candidate [cm]", 100, 0, 5000);
   post_sample_m10_dl = TH1D("post_sample_m10_dl", "m = 10+;distance from relic candidate [cm]", 100, 0, 5000);  
 
+  GetTreeReaders();
+  
   return true;
 }
 
 bool NeutCloudCorrelationCuts::Execute(){
 
-  std::vector<double> muon_dir = std::vector<double>(skroot_mu_.mudir, skroot_mu_.mudir +3);
-  std::vector<double> neutron_cloud_vertex;
-  m_data->CStore.Get("neutron_cloud_vertex", neutron_cloud_vertex);
-  
-  std::vector<TVector3> coord_change_tensor = GetTensor(muon_dir, neutron_cloud_vertex);
-  
-  std::vector<int> matched_relic_entries = {};
-  std::vector<double> matched_relic_tdiffs = {};
-  
-  int multiplicity = 0;
-  m_data->CStore.Get("neutron_cloud_multiplicity", multiplicity);
+  bool ok = relic_tree_reader->Get("MatchedOutEntryNums", relicMatchedEntryNums);
+  if (!ok){throw std::runtime_error("NeutCloudCorrelationCuts::Execute - couldn't retrieve matched entries");}
+  ok = relic_tree_reader->Get("MatchedTimeDiffs", relicTimeDiffs);
+  if (!ok){throw std::runtime_error("NeutCloudCorrelationCuts::Execute - couldn't retrieve matched time differences");}  
 
-  for (int i = 0; i < matched_relic_entries.size(); ++i){
-    const double dt = matched_relic_tdiffs.at(i);
+  if (relicMatchedEntryNums->empty()){return true;}
 
-    m_data->getTreeEntry(relic_reader_name, matched_relic_entries.at(i));
+  for (size_t i = 0; i < relicMatchedEntryNums->size(); ++i){
 
+    const int match_idx = relicMatchedEntryNums->at(i);
+    std::cout << "match_idx: " << match_idx << std::endl;
+    const double dt = relicTimeDiffs->at(i);
+    std::cout << "matched time diff" << std::endl;
+
+    ok = m_data->getTreeEntry(cloud_tree_reader_str, match_idx);
+    if (!ok){throw std::runtime_error("NeutCloudCorrelationCuts::Execute - failed to retrieve cloud file entry");} 
+
+    std::vector<double> muon_dir = {}; //std::vector<double>(skroot_mu_.mudir, skroot_mu_.mudir +3);
+    std::vector<double> neutron_cloud_vertex = {};
+    int* multiplicity = nullptr;
+
+    cloud_tree_reader->Get("neutron_cloud_vertex", neutron_cloud_vertex);
+    cloud_tree_reader->Get("neutron_cloud_multiplicity", *multiplicity);
+    cloud_tree_reader->Get("muon_dir", muon_dir);
+  
+    std::vector<TVector3> coord_change_tensor = GetTensor(muon_dir, neutron_cloud_vertex);
+     
     // old - regular sk coordinate system
     // new - cloud coordinate system with z aligning with muon track
     const TVector3 dr_old = TVector3(neutron_cloud_vertex.data()) - TVector3(skroot_lowe_.bsvertex);
@@ -94,7 +108,7 @@ bool NeutCloudCorrelationCuts::Execute(){
     };
       
     //ellipse cuts
-    if (multiplicity == 2){
+    if (*multiplicity == 2){
       if (dt < 0){
 	pre_sample_m2_dl.Fill(dL);
 	pre_sample_m2_dt.Fill(dt);
@@ -107,7 +121,7 @@ bool NeutCloudCorrelationCuts::Execute(){
       }
     }
 
-    if (multiplicity == 3){
+    if (*multiplicity == 3){
       if (dt < 0){
 	pre_sample_m3_dl.Fill(dL);
 	pre_sample_m3_dt.Fill(dt);
@@ -120,7 +134,7 @@ bool NeutCloudCorrelationCuts::Execute(){
       }
     }
   
-    if((multiplicity == 4) || (multiplicity == 5)){
+    if((*multiplicity == 4) || (*multiplicity == 5)){
       if (dt < 0){
 	pre_sample_m45_dl.Fill(dL);
 	pre_sample_m45_dt.Fill(dt);
@@ -133,7 +147,7 @@ bool NeutCloudCorrelationCuts::Execute(){
       }
     }
     
-    if ((multiplicity > 6) && (multiplicity < 9)){
+    if ((*multiplicity > 6) && (*multiplicity < 9)){
       if (dt < 0){
 	pre_sample_m69_dl.Fill(dL);
 	pre_sample_m69_dt.Fill(dt);
@@ -146,7 +160,7 @@ bool NeutCloudCorrelationCuts::Execute(){
       }
     }
     
-    if (multiplicity >= 10){
+    if (*multiplicity >= 10){
       if (dt < 0){
 	pre_sample_m10_dl.Fill(dL);
 	pre_sample_m10_dt.Fill(dt);
@@ -160,7 +174,7 @@ bool NeutCloudCorrelationCuts::Execute(){
     }
 
     //box cuts
-    if ((multiplicity > 2) && ((std::abs(dt) < 0.1 && dL < 1200) || (std::abs(dt) < 1 && dL < 800))){
+    if ((*multiplicity > 2) && ((std::abs(dt) < 0.1 && dL < 1200) || (std::abs(dt) < 1 && dL < 800))){
       SkipEntry();
     }
     
@@ -235,4 +249,21 @@ std::vector<TVector3> NeutCloudCorrelationCuts::GetTensor(const std::vector<doub
 void NeutCloudCorrelationCuts::SkipEntry(){
   bool skip = true;
   m_data->CStore.Set("Skip", skip);
+}
+
+void NeutCloudCorrelationCuts::GetTreeReaders(){
+  std::string tree_reader_str = "";
+  m_variables.Get("relic_TreeReader", tree_reader_str);
+  if (m_data->Trees.count(tree_reader_str) == 0){
+    throw std::runtime_error("CalculateNeutronCloudVertex::Execute - Failed to get treereader "+tree_reader_str+"!");
+  }
+  relic_tree_reader = m_data->Trees.at(tree_reader_str);
+
+  m_variables.Get("cloud_TreeReader", tree_reader_str);
+  cloud_tree_reader_str = tree_reader_str;
+  if (m_data->Trees.count(tree_reader_str) == 0){
+    throw std::runtime_error("CalculateNeutronCloudVertex::Execute - Failed to get treereader "+tree_reader_str+"!");
+  }
+  cloud_tree_reader = m_data->Trees.at(tree_reader_str);
+
 }
