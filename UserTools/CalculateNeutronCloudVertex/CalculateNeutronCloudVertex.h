@@ -30,6 +30,7 @@ class CalculateNeutronCloudVertex: public Tool {
   
   int mult = 0;
   std::vector<double> neutron_cloud_vertex = {};
+  std::vector<double> muon_dir = {};
   MTreeReader* MU_tree_reader = nullptr;
 
   TFile* nvc_file_ptr = nullptr;
@@ -37,7 +38,7 @@ class CalculateNeutronCloudVertex: public Tool {
 
   void GetTreeReader();
   void CreateOutputFile();
-  double ClosestApproach(const std::vector<double>&) const;
+  double ClosestApproach(const std::vector<double>&);
   
 };
 

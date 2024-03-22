@@ -101,9 +101,9 @@ void CalculateNeutronCloudVertex::GetTreeReader(){
 }
 
 
-double CalculateNeutronCloudVertex::ClosestApproach(const std::vector<double>& vertex) const {
+double CalculateNeutronCloudVertex::ClosestApproach(const std::vector<double>& vertex) {
   const std::vector<double> muon_ent = std::vector<double>(skroot_mu_.muentpoint, skroot_mu_.muentpoint + 3);
-  const std::vector<double> muon_dir = std::vector<double>(skroot_mu_.mudir, skroot_mu_.mudir + 3);
+  muon_dir = std::vector<double>(skroot_mu_.mudir, skroot_mu_.mudir + 3);
 
   std::vector<double> diff = std::vector<double>(3, 0);
   for (int i = 0; i < 3; ++i){diff.at(i) = vertex.at(i) - muon_ent.at(i);}
@@ -133,5 +133,6 @@ void CalculateNeutronCloudVertex::CreateOutputFile(){
 
   nvc_tree_ptr->Branch("neutron_cloud_multiplicity", &mult);
   nvc_tree_ptr->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
+  nvc_tree_ptr->Branch("muon_dir", &muon_dir);
   return;
 }
