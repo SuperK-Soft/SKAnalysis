@@ -1,3 +1,3 @@
 myTreeReader TreeReader configfiles/SK2p2MeV_v0/TreeReaderConfig
-mylfallfit lf_allfit_new configfiles/SK2p2MeV_v0/lf_allfit_newConfig
-mySK2p2MeV_ntag SK2p2MeV_ntag configfiles/SK2p2MeV_v0/SK2p2MeVConfig
+#mylfallfit lfallfit configfiles/SK2p2MeV_v0/lf_allfit_newConfig
+#mySK2p2MeV_ntag SK2p2MeV_ntag configfiles/SK2p2MeV_v0/SK2p2MeVConfig

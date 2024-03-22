@@ -4,12 +4,12 @@ readerName reader
 #inputFile /home/moflaher/disk02/run868/run868.root
 #inputFile /home/moflaher/disk02/SpallReduction/086613.0/output/test_jacks.root
 #inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086614.0/output/test_jacks.root
-
-inputFile /disk02/usr6/moflaher/addaft/test_spall.root
+inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
+#inputFile /disk02/usr6/moflaher/addaft/test_spall.root
 
 treeName mu                                    # the name of the tree within the file
 # max num input entries to process
-maxEntries 100
+maxEntries 10
 #maxEntries -1
 skFile 1                                          # do not call SKREAD/SKRAWREAD - no need.
 

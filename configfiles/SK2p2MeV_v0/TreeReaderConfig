@@ -1,14 +1,18 @@
-verbosity 1
+verbosity 10
 readerName sk2p2mevReader
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
 #inputFile $HOME/rfm_run074724.000001.root         # a full rfm data file, supported by NTag (no MC info though)
 #inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root # skdetsim gd water neutron gun sims
 #inputFile $HOME/SKG4/outputs/SKG4_pure_lin_neuts_noincident.root # SKG4 neutron gun
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root            # before adding noise with NTag
-inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root              # after adding noise with NTag
+#inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root              # after adding noise with NTag
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wonoise.root       # before adding noise with NTag
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise.root        # after adding noise with NTag
 #inputFile /home/mattnich/disk3stor/prepared_data/lowe/rfm_run086613.001134_lowe.root
+
+#inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3141_skg4_bonsai.mcfit.root
+
+inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3256_skg4_bonsai.mcfit.root
 
 treeName data                                     # the name of the tree within the file
 maxEntries -1                                     # max num input entries to process
