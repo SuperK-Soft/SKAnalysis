@@ -75,27 +75,28 @@ $(function() {
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;skroot_loweC.h&quot;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160; </div>
 <div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="structParticleCand.html">    6</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structParticleCand.html">ParticleCand</a> {</div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;    <span class="keywordtype">int</span> EventNumber;</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    <span class="keywordtype">int</span> SubTriggerNumber;</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;    <span class="keywordtype">int</span> nevhwsk;</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    <span class="keywordtype">int</span> it0xsk;</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    int64_t EventTicks;</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <span class="keywordtype">int</span> NumRollovers;</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keywordtype">int</span> InEntryNumber;  <span class="comment">// entry number in input file TTree</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keywordtype">int</span> OutEntryNumber; <span class="comment">// entry number in output file TTree</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keywordtype">int</span> PID = 0; <span class="comment">//0 = muon 1 = LowE</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    std::vector&lt;int&gt; matchedParticleEvNum;         <span class="comment">// nevsk of matches</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    std::vector&lt;int&gt; matchedParticleInEntryNum;    <span class="comment">// TTree entry number of matches in input tree</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    std::vector&lt;int&gt; matchedParticleOutEntryNum;   <span class="comment">// TTree entry number of matches in output tree</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    std::vector&lt;bool&gt; matchedParticleHasAFT;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    std::vector&lt;float&gt; matchedParticleTimeDiff;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    std::vector&lt;float&gt; matchedParticleBSEnergy;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    skroot_lowe_common LowECommon;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">bool</span> hasAFT;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">int</span> AFTEntryNum; <span class="comment">// may not be InEntryNumber+1...</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;};</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;    <span class="keywordtype">bool</span> flaggedForWrite;</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;    <span class="keywordtype">int</span> EventNumber;</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;    <span class="keywordtype">int</span> SubTriggerNumber;</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    <span class="keywordtype">int</span> nevhwsk;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    <span class="keywordtype">int</span> it0xsk;</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    int64_t EventTicks;</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keywordtype">int</span> NumRollovers;</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    <span class="keywordtype">int</span> InEntryNumber;  <span class="comment">// entry number in input file TTree</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keywordtype">int</span> OutEntryNumber; <span class="comment">// entry number in output file TTree</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">int</span> PID = 0; <span class="comment">//0 = muon 1 = LowE</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    std::vector&lt;int&gt; matchedParticleEvNum;         <span class="comment">// nevsk of matches</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    std::vector&lt;int&gt; matchedParticleInEntryNum;    <span class="comment">// TTree entry number of matches in input tree</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    std::vector&lt;int&gt; matchedParticleOutEntryNum;   <span class="comment">// TTree entry number of matches in output tree</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    std::vector&lt;bool&gt; matchedParticleHasAFT;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    std::vector&lt;float&gt; matchedParticleTimeDiff;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    std::vector&lt;float&gt; matchedParticleBSEnergy;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    skroot_lowe_common LowECommon;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">bool</span> hasAFT;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">int</span> AFTEntryNum; <span class="comment">// may not be InEntryNumber+1...</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;};</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="astructParticleCand_html"><div class="ttname"><a href="structParticleCand.html">ParticleCand</a></div><div class="ttdef"><b>Definition:</b> ParticleCand.h:6</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
