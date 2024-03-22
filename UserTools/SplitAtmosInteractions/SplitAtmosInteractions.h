@@ -8,6 +8,12 @@
 
 #include "MTreeReader.h"
 
+#include "TH1D.h"
+
+// const static std::map<int, std::string> interaction_modes = {
+  
+// };
+
 class SplitAtmosInteractions: public Tool {
 
  public:
@@ -21,7 +27,14 @@ class SplitAtmosInteractions: public Tool {
 
   MTreeReader* tree_reader_ptr = nullptr;
   void GetReader();
+
+  TH1D interaction_mode_plot;
+  TH1D interaction_mode_zero;
+  TH1D NCQE_plot;
+  TH1D non_NCQE_plot;
+
 };
 
-
 #endif
+
+
