@@ -76,3 +76,6 @@
 #include "PreLoweReconstructionCuts.h"
 #include "FlagAFTs.h"
 #include "MCCuts.h"
+#include "MakeSpectralFitHistos.h"
+#include "SpectralFit.h"
+#include "SplitAtmosInteractions.h"

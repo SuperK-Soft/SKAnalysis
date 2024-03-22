@@ -81,6 +81,9 @@ if (tool=="PostLoweReconstructionCuts") ret=new PostLoweReconstructionCuts;
 if (tool=="PreLoweReconstructionCuts") ret=new PreLoweReconstructionCuts;
 if (tool=="FlagAFTs") ret=new FlagAFTs;
 if (tool=="MCCuts") ret=new MCCuts;
+if (tool=="MakeSpectralFitHistos") ret=new MakeSpectralFitHistos;
+if (tool=="SpectralFit") ret=new SpectralFit;
+if (tool=="SplitAtmosInteractions") ret=new SplitAtmosInteractions;
 return ret;
 }
 
