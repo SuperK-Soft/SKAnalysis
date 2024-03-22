@@ -42,7 +42,8 @@ class NCaptInfo: public Tool {
 	bool MakePlots(int step);
 	
 	protected:
-	MTreeReader* myTreeReader;
+	MTreeReader* dataTreeReader=nullptr;
+	MTreeReader* myTreeReader=nullptr;
 	bool match_mistags=false;
 	std::string candidates_file="";
 	std::string mctruth_file="";
@@ -50,6 +51,7 @@ class NCaptInfo: public Tool {
 	double time_match_tolerance;
 	double dist_match_tolerance;
 	double likelihood_threshold=-999;
+	double likelihood_cut=0.99;
 	
 	// histograms
 	std::string outfilename="";

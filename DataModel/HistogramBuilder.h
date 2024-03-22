@@ -355,7 +355,7 @@ bool HistogramBuilder::Fill(std::string name, std::vector<T> vals){
 	}
 	
 	// ensure we have something to Fill
-	if(!notree && branches.count(name)==0){
+	if(!notree && branches.count(name+"_0")==0){
 		std::cout<<"HistogramBuilder::Fill making new branches for name '"<<name<<"'"<<std::endl;
 		// two values so we'll need two branches
 		for(int i=0; i<vals.size(); ++i){

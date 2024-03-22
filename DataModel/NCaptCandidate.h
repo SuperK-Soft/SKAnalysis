@@ -11,6 +11,11 @@ class LoweCandidate;
 class NCaptCandidate {
 	public:
 	NCaptCandidate();
+	~NCaptCandidate();
+	NCaptCandidate(const NCaptCandidate&) = delete; // no copy construction until BStore supports it
+	NCaptCandidate& operator=(const NCaptCandidate&) = delete;
+	NCaptCandidate(NCaptCandidate&&);         // we need to handle move construction manually
+	
 	// XXX if modifying matchType be sure to modify the matchTypes map accordingly!
 	enum class matchType {kNotSet=-1,kMistag=0,kHCapture=1,kGdCapture=2,kUnknownCapture=3,kDecaye=4};
 	static const std::map<matchType, std::string> matchTypes;
@@ -24,8 +29,8 @@ class NCaptCandidate {
 	double capture_E = -1; // MeV
 	
 	matchType matchtype=matchType::kNotSet;
-	BStore featureMap{true,constants::BSTORE_BINARY_FORMAT};  // features used by tagging algorithm
-	BStore recoVars{true,constants::BSTORE_BINARY_FORMAT};    // additional reconstruction variables
+	BStore* featureMap=nullptr; //{true,constants::BSTORE_BINARY_FORMAT};  // features used by tagging algorithm
+	BStore* recoVars=nullptr; //{true,constants::BSTORE_BINARY_FORMAT};    // additional reconstruction variables
 	
 	std::string GetMatchType();
 	bool SetTrueCaptureIdx(int idx);
@@ -46,9 +51,6 @@ class NCaptCandidate {
 	double cap_t_err;
 	double cap_pos_err;
 	double cap_e_err;
-	double* cap_t_err_p=nullptr;
-	double* cap_pos_err_p=nullptr;
-	double* cap_e_err_p=nullptr;
 	DataModel* m_data=nullptr;
 	
 };

@@ -39,6 +39,7 @@ class PlotHitTimes: public Tool {
 	TFile* fout = nullptr;
 	TCanvas* c_subtriggers = nullptr;
 	ColourWheel colourwheel;
+	int onlyWriteSubtriggers=0;
 	
 };
 

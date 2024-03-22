@@ -89,7 +89,8 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// detect zebra files based on extention of first file
 	if(skrootMode!=SKROOTMODE::WRITE){
 		std::string firstfile = list_of_files.front();
-		if(firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs"){
+		if( (firstfile.substr(firstfile.length()-4,firstfile.length())==".zbs") ||
+		    (firstfile.substr(firstfile.length()-4,firstfile.length())==".dat") ){
 			Log(m_unique_name+" using zebra mode",v_debug,m_verbose);
 			skrootMode=SKROOTMODE::ZEBRA;
 		}
@@ -122,18 +123,35 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// i guess we can only pracitcally check the first file
 		// i don't think it'll seg as long as at least one file has a 'data' tree
 		// XXX although, perhaps it would be better to check all of them?
-		TFile* f_temp = TFile::Open(list_of_files.front().c_str(),"READ");
-		TTree* t_temp= (TTree*)f_temp->Get(treeName.c_str());
-		if(t_temp==nullptr){
-			Log(m_unique_name+" ERROR! input file "+list_of_files.front()+" has no '"+treeName+"' TTree!",v_error,m_verbose);
+		bool got_good_file=false;
+		for(int first_valid_file_i=0; first_valid_file_i<list_of_files.size(); ++first_valid_file_i){
+			TFile* f_temp = TFile::Open(list_of_files.at(first_valid_file_i).c_str(),"READ");
+			if(!f_temp || f_temp->IsZombie()){
+				Log(m_unique_name+" ERROR opening input file '"+list_of_files.at(first_valid_file_i)
+				    +"'",v_error,m_verbose);
+				continue;
+			}
+			TTree* t_temp= (TTree*)f_temp->Get(treeName.c_str());
+			if(t_temp==nullptr){
+				Log(m_unique_name+" ERROR! input file "+list_of_files.at(first_valid_file_i)
+				    +" has no '"+treeName+"' TTree!",v_error,m_verbose);
+				f_temp->Close();
+				// might as well remove it from the list of files
+				list_of_files.erase(std::next(list_of_files.begin(),first_valid_file_i));
+				continue;
+			}
+			got_good_file=true;
+			present_branches.resize(t_temp->GetListOfBranches()->GetEntriesFast());
+			for(int i=0; i<present_branches.size(); ++i){
+				present_branches.at(i) = t_temp->GetListOfBranches()->At(i)->GetName();
+			}
+			f_temp->Close();
+		}
+		if(!got_good_file){
+			Log(m_unique_name+" ERROR! Found no good files in file list!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1);
 			return false;
 		}
-		present_branches.resize(t_temp->GetListOfBranches()->GetEntriesFast());
-		for(int i=0; i<present_branches.size(); ++i){
-			present_branches.at(i) = t_temp->GetListOfBranches()->At(i)->GetName();
-		}
-		f_temp->Close();
 	}
 	
 	// warning check: see if we're given an input when we're in WRITE mode
@@ -155,6 +173,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 	// a lot of SK algorithms retrieve data via skroot_get_* calls behind the scenes,
 	// which means if we're processing skroot files we probably need a corresponding TreeManager.
 	if(skrootMode!=SKROOTMODE::NONE){
+		
 		// skroot_open_* invokes the singleton SuperManager class to create a TreeManager
 		// to be associated with a given SKROOT file. This TreeManager is just the usual
 		// TTree wrapper created via ROOT's MakeClass. 
@@ -416,6 +435,11 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// closing and deleting the file will be done by the TreeManager
 			myTreeReader.SetOwnsFile(false);
 			
+		}
+		
+		
+		if(skrootMode!=SKROOTMODE::ZEBRA && skrootMode!=SKROOTMODE::WRITE){
+			
 			// skread/tqreal etc detect whether a file is MC or data by checking
 			// the `mdrnsk` ("SK run mode" ...) member of the HEADER branch.
 			// Unfortunately this is only populated in physics event entries
@@ -467,6 +491,10 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			myTreeReader.SetMCFlag(isMC);
 			m_data->vars.Set("inputIsMC",isMC);
 			
+			// XXX assume that if we're processing MC ROOT files, it's SKG4
+			// set to 0 for skdetsim (according to lowfit_sk6_mc_badrun)
+			wtpar_.flag_g4_wtpar = 1;
+			
 			// if we're processing MC, we should probably only call `skread`. If we're processing
 			// data, we probably need to call `skrawread` as well. (see ReadEntry for more info).
 			// SKRAWREAD also requires the presence of a TQLIST branch.
@@ -480,6 +508,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			}
 			
 		} else if(skrootMode==SKROOTMODE::ZEBRA){
+			
 			// fall back to using skread to scan for MC if we're not reading ROOT files
 			while(true){
 				skcread_(&LUN, &get_ok); // get_ok = 0 (physics entry), 1 (error), 2 (EOF), other (non-physics)
@@ -500,6 +529,10 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			isMC = (skhead_.mdrnsk==0 || skhead_.mdrnsk==999999);
 			m_data->vars.Set("inputIsMC",isMC);
 			
+			// XXX assume that if we're processing MC ZBS files, it's skdetsim
+			// set to 0 for skdetsim (according to lowfit_sk6_mc_badrun)
+			wtpar_.flag_g4_wtpar = 0;
+			
 			if(skreadUser==0){
 				skreadMode = (isMC) ? 0 : 2;  // 0=skread only, 1=skrawread only, 2=both
 			} else {
@@ -515,24 +548,28 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			}
 		} // else SKROOT::Write mode, cannot check whether it's MC or not.
 		
+		// make a note of is_mc in m_variables so it gets saved in m_data->tool_configs
+		m_variables.Set("is_mc",isMC);
+		
 		// now we know if our file is MC or not, set the appropriate runwise bad channel masking if required
 		if(skrootMode!=SKROOTMODE::WRITE && skroot_options.find("25")!=std::string::npos && use_runwise_bad_ch_masking){
 			if(not isMC){
 				skroot_options = skroot_options + " 26";
 				skoptn_(const_cast<char*>(skroot_options.c_str()), skroot_options.size());
 			} else {
-				if(skroot_badch_ref_run==-1){
+				if(skroot_ref_run==-1){
 					Log(m_unique_name+" Error! skbadoptn contains 25 (mask bad channels) but not 26 "
-						+"(look up bad channels based on run number). In this case one needs to provide "
+						+"(i.e. look up bad channels based on run number). In this case one needs to provide "
 						+"a reference run to use for the bad channel list! Please specify a run to use in "
-						+"option skbadchrefrun in "+m_unique_name+" config",v_error,m_verbose);
+						+"option 'mcReferenceRun' in "+m_unique_name+" config",v_error,m_verbose);
 					return false;
 				}
 				Log(m_unique_name+" masking bad channels with reference run "
-					+toString(skroot_badch_ref_run),v_debug,m_verbose);
+					+toString(skroot_ref_run),v_debug,m_verbose);
+				combad_.log_level_skbadch = 0;  // n.b. loglevel of 4 suppresses printouts
 				int refSubRunNo = 1;   // lowe school suggested "normally use subrun 1"
 				int istat = 0;
-				skbadch_(&skroot_badch_ref_run, &refSubRunNo, &istat);
+				skbadch_(&skroot_ref_run, &refSubRunNo, &istat);
 				/*
 				*        istat  ; -1 : error
 				*        istat  ;  0 : normal end  no modification
@@ -545,19 +582,24 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				*/
 				if(istat<0){
 					Log(m_unique_name+" Error applying skbadch with reference run "+
-					    toString(skroot_badch_ref_run),v_error,m_verbose);
+					    toString(skroot_ref_run),v_error,m_verbose);
 					return false;
 				}
 			}
 		}
 		
-		// initialize water transparency table
-		skrunday_();
-		skwt_gain_corr_();
-		if(reference_watert_run>0 && (skhead_.nrunsk==0 || skhead_.nrunsk == 999999)){
-			Log(m_unique_name+" using reference run "+toString(reference_watert_run)
-				+" for water transparency",v_warning,m_verbose);
+		// FIXME is there an order to the following actions?
+		
+		// for MC, use reference run to set parameters
+		if(skrootMode!=SKROOTMODE::WRITE && isMC && skroot_ref_run>0
+		      && (skhead_.nrunsk==0 || skhead_.nrunsk == 999999)){
+			
+			// we should override nrunsk according to harada-san
+			skhead_.nrunsk = skroot_ref_run;
+			
 			// update water transparency
+			Log(m_unique_name+" using reference run "+toString(skhead_.nrunsk)
+				+" for water transparency",v_warning,m_verbose);
 			float watert;
 			int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
 			lfwater_(&days_to_run_start, &watert);
@@ -566,11 +608,18 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// pass to downstream tools
 			m_data->vars.Set("watert",watert);
 			
+			// initialise dark rates
+			Log(m_unique_name+" Updating dark rates",v_debug,m_verbose);
+			darklf_(&skroot_ref_run);
+			
 		}
 		
+		// initialize water transparency table
+		skrunday_();
 		
-		// make a note of is_mc in m_variables so it gets saved in m_data->tool_configs
-		m_variables.Set("is_mc",isMC);
+		// which of these should be called when??
+		if(skheadg_.sk_geometry==4) skwt_gain_corr_();
+		else skwt_();
 		
 	} else {
 		// else not SK ROOT or zebra file; just a plain ROOT file.
@@ -649,6 +698,25 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		}
 	}
 	
+	if(skreadMode!=0){
+		// if calling skrawread, it seems like it doesn't work to just jump straight
+		// to a given entry. So, very inefficient, but read all the entries in the chain
+		// up to the requested entry
+		// one of the things this does is set skpdst2_.iqbcalmode variable to 1 in entry 1 (at least in one instance);
+		// note that one of the lomufit_gd reduction cuts is iqbcalmode!=0, so this is necessary
+		// as part of the PreLoweReconstructionCuts Tool.
+		Log(m_unique_name+" Scanning TChain to firstEntry "+toString(firstEntry),v_warning,m_verbose);
+		// turn off verbosity for this scan as we know we're not interested in these events
+		// and excessive printouts slow things down considerably
+		int tmp_verb = m_verbose;
+		m_verbose=0;
+		for(int i=0; i<firstEntry; ++i){
+			if(i%1000) Log(m_unique_name+" entry "+toString(i)+"...",v_error,m_verbose);
+			ReadEntry(i,true);
+		}
+		m_verbose = tmp_verb;
+	}
+	
 	return true;
 }
 
@@ -656,6 +724,11 @@ bool TreeReader::Execute(){
 	
 	// nothing to do in write mode
 	if(skrootMode==SKROOTMODE::WRITE) return true;
+	
+	// also offer the option to only read entries on request, not automatically on every entry
+	// this can be useful if we aren't processing one entry per Execute loop,
+	// but still want to use the TreeReader tool to populate SK common blocks.
+	if(!autoRead) return true;
 	
 	Log(m_unique_name+" getting entry "+toString(entrynum),v_debug,m_verbose);
 	
@@ -773,10 +846,24 @@ bool TreeReader::Execute(){
 			
 		} while(get_ok==-999);
 		
+		// if reading MC, we should override run number
+		if( get_ok>0 && skrootMode!=SKROOTMODE::NONE &&
+		    (skhead_.nrunsk==999999 || skhead_.nrunsk==0) ){
+			skhead_.nrunsk = skroot_ref_run;
+			skhead_.nsubsk = 1;
+		}
+		
 		if(entriesPerExecute>1) PushCommons();
 		if(get_ok==0) break;  // end of file
 	} // read and buffer loop
 	
+	if(get_ok<0){
+		// FIXME uhm, not sure waht this represents tbh.
+		Log(m_unique_name+" get_ok returned "+toString(get_ok),v_error,m_verbose);
+		assert(false);
+		exit(-1);
+		return false;
+	}
 	
 	// when processing SKROOT files we can't rely on LoadTree(next_entry)
 	// to indicate that there are more events to process - all remaining entries
@@ -786,17 +873,16 @@ bool TreeReader::Execute(){
 		m_data->vars.Set("Skip",true);
 		m_data->vars.Set("StopLoop",true);
 	} else {
-		
 		m_data->vars.Set("newRun",false);
 		m_data->vars.Set("newSubrun",false);
 		// check if we've changed run or subrun, and if so, update things like
 		// water transparency and bad channel masking
-		if(skhead_.nrunsk != last_nrunsk){
+		if(skrootMode!=SKROOTMODE::NONE && skhead_.nrunsk != last_nrunsk){
 			RunChange();
 			SubrunChange();
 			last_nrunsk=skhead_.nrunsk;
 			last_nsubsk=skhead_.nsubsk;
-		} else if(skhead_.nsubsk != last_nsubsk){
+		} else if(skrootMode!=SKROOTMODE::NONE && skhead_.nsubsk != last_nsubsk){
 			SubrunChange();
 			last_nsubsk=skhead_.nsubsk;
 		}
@@ -815,7 +901,8 @@ bool TreeReader::Execute(){
 	aft_loaded = false; // whether common blocks currently hold SHE or AFT; reset this on every execution
 	
 	// check if we've hit the user-requested limit on number of entries to read
-	if((maxEntries>0)&&(readEntries>=maxEntries)){
+	if( ((maxEntries>0)&&(readEntries>=maxEntries)) ||
+	    ((maxEntry>0)&&(entrynum>maxEntry)) ){
 		Log(m_unique_name+" hit max events, setting StopLoop",v_message,m_verbose);
 		m_data->vars.Set("StopLoop",1);
 	}
@@ -836,6 +923,7 @@ bool TreeReader::Execute(){
 	
 	if(skrootMode!=::SKROOTMODE::NONE){
 		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
+		//std::cout<<"entry "<<entrynum<<", nevsk "<<skhead_.nevsk<<std::endl;
 	} else {
 		Log(m_unique_name+" Returning entry "+toString(entrynum),v_debug,m_verbose);
 	}
@@ -843,7 +931,15 @@ bool TreeReader::Execute(){
 	return true;
 }
 
+// FIXME no idea how much of this runchange / subrun change stuff is required
+// either for MC or for data
 bool TreeReader::RunChange(){
+	
+	// skip for invalid MC run numbers.
+	if(skhead_.nrunsk==999999 || skhead_.nrunsk<=0){
+		return true;
+	}
+	
 	Log(m_unique_name+" Run Change",v_debug,m_verbose);
 	m_data->vars.Set("newRun",true);
 	get_ok = true;
@@ -877,41 +973,36 @@ bool TreeReader::RunChange(){
 	//}
 	
 	// update dark rate
-	if(myTreeReader.GetMCFlag()){
-		// FIXME presume this is as per above
-		// What is this doing/required by?
-		Log(m_unique_name+" Updating dark rates",v_debug,m_verbose);
-		darklf_(&skhead_.nrunsk);
-	}
+	// What is this doing/required by?
+	Log(m_unique_name+" Updating dark rates",v_debug,m_verbose);
+	darklf_(&skhead_.nrunsk);
 	
 	return get_ok;
 }
 
 bool TreeReader::SubrunChange(){
+	
+	// skip for invalid MC run numbers
+	if(skhead_.nrunsk==999999 || skhead_.nrunsk<=0){
+		return true;
+	}
+	
 	Log(m_unique_name+" SubRun Change",v_debug,m_verbose);
 	m_data->vars.Set("newSubrun",true);
 	get_ok = true;
 	
 	// update bad channels
-	if(myTreeReader.GetMCFlag()){
-		// FIXME I believe this is only needed for MC...
-		// For data isn't bad channel masking automatically updated?
-		// But the run number is normally 0 for MC, so this will only work if the run number
-		// was overridden to mimic a specific run...? maybe that's the use-case here.
-		
-		// apparently a loglevel of 4 suppresses outputs...
-		combad_.log_level_skbadch = 0;
-		int ierr;
-		// read badch info & puts it into combad_ common block
-		Log(m_unique_name+" Updating bad channel list for run "+toString(skhead_.nrunsk)
-		    +", subrun "+toString(skhead_.nsubsk),v_debug,m_verbose);
-		skbadch_(&skhead_.nrunsk,&skhead_.nsubsk,&ierr);
-		if(ierr<0){
-			Log(m_unique_name+" Error calling skbadch_ in SubrunChange!",v_error,m_verbose);
-			get_ok = false;
-		} else {
-			Log(m_unique_name+" bad channel list updated",v_debug,m_verbose);
-		}
+	// read badch info & puts it into combad_ common block
+	Log(m_unique_name+" Updating bad channel list for run "+toString(skhead_.nrunsk)
+	    +", subrun "+toString(skhead_.nsubsk),v_debug,m_verbose);
+	combad_.log_level_skbadch = 0;
+	int ierr;
+	skbadch_(&skroot_ref_run,&skhead_.nsubsk,&ierr);
+	if(ierr<0){
+		Log(m_unique_name+" Error calling skbadch_ in SubrunChange!",v_error,m_verbose);
+		get_ok = false;
+	} else {
+		Log(m_unique_name+" bad channel list updated",v_debug,m_verbose);
 	}
 	
 	return get_ok;
@@ -931,7 +1022,7 @@ bool TreeReader::SkipThisRun(){
 	int next_run_num = skhead_.nrunsk;
 	do {
 		// get the number of entries in this file (TTree)
-		int entry_in_current_file = myTreeReader.GetChain()->LoadTree(entrynum);
+		int entry_in_current_file = myTreeReader.GetTree()->LoadTree(entrynum);
 		int entries_in_current_file = myTreeReader.GetCurrentTree()->GetEntriesFast();
 		Log(m_unique_name+" File "+myTreeReader.GetFile()->GetName()
 		    +" has "+toString(entries_in_current_file)+" entries",v_debug,m_verbose);
@@ -1225,10 +1316,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 	
 	// stop loop if we ran off the end of the tree
 	if(bytesread==0){
-		// not good because downstream tools will not have valid data!
-		// we should protect against this in Execute() though.
-		Log(m_unique_name+" hit end of input file, stopping loop",v_warning,m_verbose);
-		m_data->vars.Set("StopLoop",1);
+		Log(m_unique_name+" entry "+toString(entry_number)+" off end of input file!",v_error,m_verbose);
 	} else if(bytesread==-999){
 		Log(m_unique_name+" skrawread pedestal or status event",v_debug+10,m_verbose);
 	}
@@ -1635,6 +1723,7 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="readerName") readerName = thevalue;
 		else if(thekey=="firstEntry") firstEntry = stoi(thevalue);
 		else if(thekey=="maxEntries") maxEntries = stoi(thevalue);
+		else if(thekey=="maxEntry") maxEntry = stoi(thevalue);
 		else if(thekey=="selectionsFile") selectionsFile = thevalue;
 		else if(thekey=="cutName") cutName = thevalue;
 		else if(thekey=="skFile") skFile = stoi(thevalue);
@@ -1643,7 +1732,13 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="LUN") LUN = stoi(thevalue);
 		else if(thekey=="skoptn") skroot_options = thevalue;
 		else if(thekey=="skbadopt") skroot_badopt = stoi(thevalue);
-		else if(thekey=="skbadchrun") skroot_badch_ref_run = stoi(thevalue);
+		else if(thekey=="mcReferenceRun") skroot_ref_run = stoi(thevalue);
+		//else if(thekey=="skbadchrun") skroot_badch_ref_run = stoi(thevalue);
+		// this reference run is used bad channel masking, dark rates and water transparency
+		// not sure it make sense to use multiple different ones, but moreover it seems like
+		// skhead_.nevsk is used internally by some algos so must be overridden for every MC readout
+		// (or at least at all places before such algos are called - a global override is more manageable).
+		//else if(thekey=="referenceWaterRun") reference_watert_run = stoi(thevalue);
 		else if(thekey=="SK_GEOMETRY") sk_geometry = stoi(thevalue);
 		else if(thekey=="skipPedestals") skip_ped_evts = stoi(thevalue);
 		else if(thekey=="readSheAftTogether") loadSheAftPairs = stoi(thevalue);
@@ -1652,7 +1747,7 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="allowedTriggers") allowedTriggersString = thevalue;
 		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
 		else if(thekey=="skipBadRuns") skipbadruns = stoi(thevalue);
-		else if(thekey=="referenceWaterRun") reference_watert_run = stoi(thevalue);
+		else if(thekey=="autoEntryRead") autoRead = stoi(thevalue);
 		else {
 			Log(m_unique_name+" error parsing config file line: \""+LineCopy
 				+"\" - unrecognised variable \""+thekey+"\"",v_error,m_verbose);

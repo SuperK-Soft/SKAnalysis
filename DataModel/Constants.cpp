@@ -298,3 +298,10 @@ std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& ad
 	}
 	return labels;
 }
+
+int GetTriggerThreshold(int trigbit){
+	if(constants::default_trig_thresholds.count(trigbit)){
+		return constants::default_trig_thresholds.at(trigbit);
+	}
+	return 0;
+}

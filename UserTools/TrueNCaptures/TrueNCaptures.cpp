@@ -301,6 +301,21 @@ bool TrueNCaptures::MakePlots(int step){
 			}
 			tplots->Fill();
 			//tplots->Show(tplots->GetEntries()-1);
+			
+			if(m_verbose>v_debug){
+				std::cout<<"writing to tree neutron with prompt time "<<dbranchvars.at("prompt_t")
+				         <<", position ("<<dbranchvars.at("prompt_x")
+				         <<", "<<dbranchvars.at("prompt_y")<<", "<<dbranchvars.at("prompt_z")<<"), capture time "
+				         <<dbranchvars.at("capt_t")<<", position ("
+				         <<dbranchvars.at("capt_x")<<", "<<dbranchvars.at("capt_y")<<", "<<dbranchvars.at("capt_z")
+				         <<"), travel time "<<dbranchvars.at("neutron_travel_time")<<", distance ("
+				         <<dbranchvars.at("xtravel")<<", "<<dbranchvars.at("ytravel")<<", "
+				         <<dbranchvars.at("ztravel")<<")"<<std::endl;
+				std::cout<<"This is based on capture: "; acap.Print(); std::cout<<std::endl;
+			}
+			
+			
+			
 		}
 		Log(m_unique_name+": done filling tree",v_debug,m_verbose);
 		

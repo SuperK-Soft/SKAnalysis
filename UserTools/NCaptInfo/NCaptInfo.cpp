@@ -27,11 +27,27 @@ bool NCaptInfo::Initialise(std::string configfile, DataModel &data){
 	m_variables.Get("time_match_tolerance",time_match_tolerance); // [ns]
 	m_variables.Get("dist_match_tolerance",dist_match_tolerance); // [cm]
 	// whether to try to match candidates to non-neutron-capture truth vertices
-	m_variables.Get("match_mistags",match_mistags);
-	m_variables.Get("likelihood_threshold",likelihood_threshold);
 	m_variables.Get("outfilename",outfilename);
+	m_variables.Get("match_mistags",match_mistags);
+	// reject neutron capture candidates with likelihoods below a cut
+	m_variables.Get("likelihood_threshold",likelihood_threshold);
 	
-	// initialisation required to read in
+	// make plots of neutron capture time and position errors both in general,
+	// and after a likelihood cut. This is necessary because there's so much noise
+	// the distributions just look flat until a very harsh likelihood cut is placed.
+	// maybe this is redundant with the above.
+	m_variables.Get("likelihood_cut",likelihood_cut);
+	
+	// get treereader for the data file
+	std::string dataReaderName="";
+	m_variables.Get("dataReaderName", dataReaderName);
+	if(m_data->Trees.count(dataReaderName)==0){
+		Log(m_unique_name+": Failed to find TreeReader "+dataReaderName+" in DataModel!",0,0);
+		return false;
+	}
+	dataTreeReader = m_data->Trees.at(dataReaderName);
+	
+	// initialisation required to read in the neutron captures
 	InitCandidateReader();
 	
 	// get name of MC truth file used for matching, if applicable
@@ -58,10 +74,21 @@ bool NCaptInfo::Execute(){
 		return false;
 	}
 	
-	// could add any standard (non-algorithm-specific) information
-	//for(NCaptCandidate& cand : candidates){
-	//	? anything?
-	//}
+	// add any standard (non-algorithm-specific) information....
+	// actually maybe we should correct the times back to sane MC times?
+	const MCInfo* mc_info=nullptr;
+	get_ok = dataTreeReader->Get("MC",mc_info);
+	if(!get_ok){
+		Log(m_unique_name+" Error getting MCInfo from data tree!",v_error,m_verbose);
+		return false;
+	}
+	for(NCaptCandidate& cand : candidates){
+		cand.capture_time -= (MC_TIME_OFFSET - mc_info->prim_pret0[0]);
+		LoweCandidate* prompt_event = cand.GetPromptEvent();
+		if(prompt_event){
+			prompt_event->event_time -= (MC_TIME_OFFSET - mc_info->prim_pret0[0]);
+		}
+	}
 	
 	// match to true captures, if we have them
 	MatchToTrueCaptures();
@@ -118,8 +145,7 @@ bool NCaptInfo::MatchToTrueCaptures(){
 		// we could place a cut on likelihood metric first
 		if(candidate.capture_likelihood_metric<likelihood_threshold) continue;
 		
-		// for each candidate, loop over all true captures
-		// and match to the best one
+		// for each candidate, loop over all true captures and match to the best one
 		int best_match_index=-1;
 		//std::cout<<"scanning "<<m_data->NCapturesTrue.size()<<" true captures"<<std::endl;
 		for(int truecapi=0; truecapi<m_data->NCapturesTrue.size(); ++truecapi){
@@ -400,39 +426,39 @@ bool NCaptInfo::MakePlots(int step){
 			//std::cout<<"candidate "<<cand_i<<" has true cap at: "<<truecap<<std::endl;
 			if(truecap){
 				mibranchvars["matchtype"] = int(acand.matchtype);
-				mdbranchvars["cap_terr"] = (acand.GetCaptTerr() ? *acand.GetCaptTerr() : 0);
-				mdbranchvars["cap_derr"] = (acand.GetCaptPosErr() ? *acand.GetCaptPosErr() : 0);
+				mdbranchvars["cap_terr"] = (acand.GetCaptTerr() ? *acand.GetCaptTerr() : 9999);
+				mdbranchvars["cap_derr"] = (acand.GetCaptPosErr() ? *acand.GetCaptPosErr() : 9999);
 				TVector3* truecaptpos = truecap->GetPos();
 				if(truecaptpos){
 					mdbranchvars["cap_xerr"] = acand.capture_pos.X() - truecaptpos->X();
 					mdbranchvars["cap_yerr"] = acand.capture_pos.Y() - truecaptpos->Y();
 					mdbranchvars["cap_zerr"] = acand.capture_pos.Z() - truecaptpos->Z();
 				} else {
-					mdbranchvars["cap_xerr"] = 0;
-					mdbranchvars["cap_yerr"] = 0;
-					mdbranchvars["cap_zerr"] = 0;
+					mdbranchvars["cap_xerr"] = 9999;
+					mdbranchvars["cap_yerr"] = 9999;
+					mdbranchvars["cap_zerr"] = 9999;
 				}
 				double truetraveld = 0;
 				if(truecap->NeutronTravelDist(truetraveld)){
 					mdbranchvars["n_travel_derr"] = cdbranchvars["n_travel_d"] - truetraveld;
 				} else {
-					mdbranchvars["n_travel_derr"] = 0;
+					mdbranchvars["n_travel_derr"] = 9999;
 				}
 				double truetravelt = 0;
 				if(truecap->NeutronTravelTime(truetravelt)){
 					mdbranchvars["n_travel_terr"] = cdbranchvars["n_travel_t"] - truetravelt;
 				} else {
-					mdbranchvars["n_travel_terr"] = 0;
+					mdbranchvars["n_travel_terr"] = 9999;
 				}
 				
 				// also compare prompt events
 				// first init to defaults
-				mdbranchvars["prompt_terr"] = 0;
-				mdbranchvars["prompt_derr"] = 0;
-				mdbranchvars["prompt_xerr"] = 0;
-				mdbranchvars["prompt_yerr"] = 0;
-				mdbranchvars["prompt_zerr"] = 0;
-				mdbranchvars["prompt_eerr"] = 0;
+				mdbranchvars["prompt_terr"] = 9999;
+				mdbranchvars["prompt_derr"] = 9999;
+				mdbranchvars["prompt_xerr"] = 9999;
+				mdbranchvars["prompt_yerr"] = 9999;
+				mdbranchvars["prompt_zerr"] = 9999;
+				mdbranchvars["prompt_eerr"] = 9999;
 				MParticle* truepositron = truecap->GetIBDPositron();
 				if(prompt_event!=nullptr && truepositron!=nullptr){
 					TVector3* cand_prompt_pos = &prompt_event->event_pos;
@@ -444,21 +470,50 @@ bool NCaptInfo::MakePlots(int step){
 						mdbranchvars["prompt_yerr"] = diffvec.Y();
 						mdbranchvars["prompt_zerr"] = diffvec.Z();
 					}
-					double* cand_prompt_t = &prompt_event->event_time;
+					double cand_prompt_t = prompt_event->event_time;
 					double* true_prompt_t = truepositron->GetStartTime();
-					if(cand_prompt_t && true_prompt_t){
-						mdbranchvars["prompt_terr"] = (*cand_prompt_t - (*true_prompt_t));
+					if(true_prompt_t){
+						mdbranchvars["prompt_terr"] = cand_prompt_t - *true_prompt_t;
 					}
-					double* cand_prompt_e = &prompt_event->event_energy;
+					double cand_prompt_e = prompt_event->event_energy;
 					double* true_prompt_e = truepositron->GetStartE();
-					if(cand_prompt_e && true_prompt_e){
-						mdbranchvars["prompt_eerr"] = (*cand_prompt_e - *true_prompt_e);
+					if(true_prompt_e){
+						mdbranchvars["prompt_eerr"] = cand_prompt_e - *true_prompt_e;
 					}
 				}
+			} else {
+				mibranchvars["matchtype"] = int(NCaptCandidate::matchType::kNotSet);
+				mdbranchvars["cap_terr"] = 9999;
+				mdbranchvars["cap_derr"] = 9999;
+				mdbranchvars["cap_xerr"] = 9999;
+				mdbranchvars["cap_yerr"] = 9999;
+				mdbranchvars["cap_zerr"] = 9999;
+				mdbranchvars["n_travel_derr"] = 9999;
+				mdbranchvars["n_travel_terr"] = 9999;
+				mdbranchvars["prompt_derr"] = 9999;
+				mdbranchvars["prompt_xerr"] = 9999;
+				mdbranchvars["prompt_yerr"] = 9999;
+				mdbranchvars["prompt_zerr"] = 9999;
+				mdbranchvars["prompt_eerr"] = 9999;
 			}
 			
 			matchtree->Fill();
 			
+			if(m_verbose>v_debug && (cdbranchvars["cap_likelihood"]>0.9999)){
+				double true_prompt_t = 9999;
+				if(truecap && truecap->GetIBDPositron() && truecap->GetIBDPositron()->GetStartTime()){
+					true_prompt_t = *truecap->GetIBDPositron()->GetStartTime();
+				}
+				double true_cap_t = 9999;
+				if(truecap && truecap->GetTime()){
+					true_cap_t = *truecap->GetTime();
+				}
+				std::cout<<"writing to match tree neutron candidate with reco prompt time "
+				         <<cdbranchvars["prompt_t"]<<", vs true prompt time "<<true_prompt_t
+				         <<", prompt t error: "<<mdbranchvars["prompt_terr"]
+				         <<", capture time "<<cdbranchvars["cap_t"]<<", true capture time: "
+				         <<true_cap_t<<", capture time error: "<<mdbranchvars["cap_terr"]<<std::endl;
+			}
 		}
 		
 	} else if(step==2){
@@ -474,39 +529,49 @@ bool NCaptInfo::MakePlots(int step){
 		
 		///*
 		TH1D h_cap_likelihood("h_cap_likelihood","cap_likelihood;metric;num events",100,0,1);
-		TH1D h_cap_t("h_cap_t","Capture Time;T;num events",100,-1000,60000);
-		TH1D h_cap_x("h_cap_x","Capture X Position;X;num events",100,-2000,2000);
-		TH1D h_cap_y("h_cap_y","Capture Y Position;Y;num events",100,-2000,2000);
-		TH1D h_cap_z("h_cap_z","Capture Z Position;Z;num events",100,-2000,2000);
+		TH1D h_cap_t("h_cap_t","Capture Time;T;num events",100,0,0);
+		TH1D h_cap_x("h_cap_x","Capture X Position;X;num events",100,0,0);
+		TH1D h_cap_y("h_cap_y","Capture Y Position;Y;num events",100,0,0);
+		TH1D h_cap_z("h_cap_z","Capture Z Position;Z;num events",100,0,0);
 		
 		TH1D h_prompt_goodness("h_prompt_goodness","prompt_goodness;metric;num events",100,0,1);
-		TH1D h_prompt_t("h_prompt_t","Prompt Time;T;num events",100,-100,2000);
-		TH1D h_prompt_x("h_prompt_x","Prompt X Position;X;num events",100,-2000,2000);
-		TH1D h_prompt_y("h_prompt_y","Prompt Y Position;Y;num events",100,-2000,2000);
-		TH1D h_prompt_z("h_prompt_z","Prompt Z Position;Z;num events",100,-2000,2000);
-		TH1D h_prompt_e("h_prompt_e","Prompt Energy;Energy [MeV];num events",100,0,20);
+		TH1D h_prompt_t("h_prompt_t","Prompt Time;T;num events",100,0,0);
+		TH1D h_prompt_x("h_prompt_x","Prompt X Position;X;num events",100,0,0);
+		TH1D h_prompt_y("h_prompt_y","Prompt Y Position;Y;num events",100,0,0);
+		TH1D h_prompt_z("h_prompt_z","Prompt Z Position;Z;num events",100,0,0);
+		TH1D h_prompt_e("h_prompt_e","Prompt Energy;Energy [MeV];num events",100,0,0);
 		
-		TH1D h_n_travel_d("h_n_travel_d","Neutron Travel D;D;num events",100,0,2000);
-		TH1D h_n_travel_t("h_n_travel_t","Neutron Travel T;T;num events",100,0,2000);
+		TH1D h_n_travel_d("h_n_travel_d","Neutron Travel D;D;num events",100,0,0);
+		TH1D h_n_travel_t("h_n_travel_t","Neutron Travel T;T;num events",100,0,0);
 		
-		TH1D h_cap_terr("h_cap_terr","Capture Time Error;Terr;num events",100,-1000,1000);
-		TH1D h_cap_xerr("h_cap_xerr","Capture X Position Error;Xerr;num events",100,0,2000);
-		TH1D h_cap_yerr("h_cap_yerr","Capture Y Position Error;Yerr;num events",100,0,2000);
-		TH1D h_cap_zerr("h_cap_zerr","Capture Z Position Error;Zerr;num events",100,0,2000);
-		TH1D h_cap_derr("h_cap_derr","Capture Total Position Error;Rerr;num events",100,0,2000);
+		TH1D h_cap_terr("h_cap_terr","Capture Time Error;Terr;num events",100,0,0);
+		TH1D h_cap_xerr("h_cap_xerr","Capture X Position Error;Xerr;num events",100,0,0);
+		TH1D h_cap_yerr("h_cap_yerr","Capture Y Position Error;Yerr;num events",100,0,0);
+		TH1D h_cap_zerr("h_cap_zerr","Capture Z Position Error;Zerr;num events",100,0,0);
+		TH1D h_cap_derr("h_cap_derr","Capture Total Position Error;Rerr;num events",100,0,0);
 		
-		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,-1000,2000);
-		TH1D h_prompt_xerr("h_prompt_xerr","Prompt X Position Error;Xerr;num events",100,0,2000);
-		TH1D h_prompt_yerr("h_prompt_yerr","Prompt Y Position Error;Yerr;num events",100,0,2000);
-		TH1D h_prompt_zerr("h_prompt_zerr","Prompt Z Position Error;Zerr;num events",100,0,2000);
-		TH1D h_prompt_derr("h_prompt_derr","Prompt Total Position Error;Rerr;num events",100,0,2000);
-		TH1D h_prompt_eerr("h_prompt_eerr","Prompt Energy Error;Eerr;num events",100,0,10);
+		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,0,0);
+		TH1D h_prompt_xerr("h_prompt_xerr","Prompt X Position Error;Xerr;num events",100,0,0);
+		TH1D h_prompt_yerr("h_prompt_yerr","Prompt Y Position Error;Yerr;num events",100,0,0);
+		TH1D h_prompt_zerr("h_prompt_zerr","Prompt Z Position Error;Zerr;num events",100,0,0);
+		TH1D h_prompt_derr("h_prompt_derr","Prompt Total Position Error;Rerr;num events",100,0,0);
+		TH1D h_prompt_eerr("h_prompt_eerr","Prompt Energy Error;Eerr;num events",100,0,0);
 		
-		TH2D h_capt_terr_vs_metric("h_capt_terr_vs_metric","Capture Terr vs Likelihood;cap_likelihood;Terr",200,0,1,200,-300,300);
-		TH2D h_capt_derr_vs_metric("h_capt_derr_vs_metric","Capture Rerr vs Likelihood;cap_likelihood;Rerr",200,0,1,200,0,2000);
+		TH2D h_capt_terr_vs_metric("h_capt_terr_vs_metric","Capture Terr vs Likelihood;cap_likelihood;Terr",100,0,0,100,0,0);
+		TH2D h_capt_derr_vs_metric("h_capt_derr_vs_metric","Capture Rerr vs Likelihood;cap_likelihood;Rerr",100,0,1,100,0,0);
 		
-		TH2D h_prompt_terr_vs_metric("h_prompt_terr_vs_metric","Prompt Terr vs Goodness;prompt_goodness;Terr",200,0,1,200,-300,300);
-		TH2D h_prompt_derr_vs_metric("h_prompt_derr_vs_metric","Prompt Rerr vs Goodness;prompt_goodness;Rerr",200,0,1,200,0,2000);
+		TH2D h_prompt_terr_vs_metric("h_prompt_terr_vs_metric","Prompt Terr vs Goodness;prompt_goodness;Terr",100,0,1,100,0,0);
+		TH2D h_prompt_derr_vs_metric("h_prompt_derr_vs_metric","Prompt Rerr vs Goodness;prompt_goodness;Rerr",100,0,1,100,0,0);
+		
+		TH1D h_cap_likelihood_cut("h_cap_likelihood_cut","cap_likelihood;metric;num events",100,0,0);
+		TH1D h_cap_terr_cut("h_cap_terr_cut","Capture Time Error;Terr;num events",100,0,0);
+		TH1D h_cap_xerr_cut("h_cap_xerr_cut","Capture X Position Error;Xerr;num events",100,0,0);
+		TH1D h_cap_yerr_cut("h_cap_yerr_cut","Capture Y Position Error;Yerr;num events",100,0,0);
+		TH1D h_cap_zerr_cut("h_cap_zerr_cut","Capture Z Position Error;Zerr;num events",100,0,0);
+		TH1D h_cap_derr_cut("h_cap_derr_cut","Capture Total Position Error;Rerr;num events",100,0,0);
+		
+		TH2D h_capt_terr_vs_metric_cut("h_capt_terr_vs_metric_cut","Capture Terr vs Likelihood;cap_likelihood;Terr",100,0,0,100,0,0);
+		TH2D h_capt_derr_vs_metric_cut("h_capt_derr_vs_metric_cut","Capture Rerr vs Likelihood;cap_likelihood;Rerr",100,0,1,100,0,0);
 		
 		// also plot against visible energy? need a suitable metric... N50? N200?
 		//TH2D h_capt_terr_vs_E("h_capt_terr_vs_E","Terr;Terr;cap_likelihood;N events",100,-10000,10000,100,0,1);
@@ -519,89 +584,121 @@ bool NCaptInfo::MakePlots(int step){
 		matchtree->Print();
 		*/
 		
-		candtree->Draw("cap_likelihood>>h_cap_likelihood","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_t>>h_cap_t","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_x>>h_cap_x","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_y>>h_cap_y","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_z>>h_cap_z","prompt_t!=9999 && cap_t!=9999");
+		// must have valid capture
+		std::string cutstring = "cap_t!=9999";
+		candtree->Draw("cap_likelihood>>h_cap_likelihood",cutstring.c_str());
+		candtree->Draw("cap_t>>h_cap_t",cutstring.c_str());
+		candtree->Draw("cap_x>>h_cap_x",cutstring.c_str());
+		candtree->Draw("cap_y>>h_cap_y",cutstring.c_str());
+		candtree->Draw("cap_z>>h_cap_z",cutstring.c_str());
 		
-		candtree->Draw("prompt_goodness>>h_prompt_goodness","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_t>>h_prompt_t","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_x>>h_prompt_x","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_y>>h_prompt_y","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_z>>h_prompt_z","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_e>>h_prompt_e","prompt_e!=9999 && cap_t!=9999");
+		// must have valid prompt event
+		cutstring = "prompt_t!=9999";
+		candtree->Draw("prompt_goodness>>h_prompt_goodness",cutstring.c_str());
+		candtree->Draw("prompt_t>>h_prompt_t",cutstring.c_str());
+		candtree->Draw("prompt_x>>h_prompt_x",cutstring.c_str());
+		candtree->Draw("prompt_y>>h_prompt_y",cutstring.c_str());
+		candtree->Draw("prompt_z>>h_prompt_z",cutstring.c_str());
+		cutstring = "prompt_e!=9999";
+		candtree->Draw("prompt_e>>h_prompt_e",cutstring.c_str());
 		
-		candtree->Draw("n_travel_t>>h_n_travel_t","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("n_travel_d>>h_n_travel_d","prompt_t!=9999 && cap_t!=9999");
+		// must have valid prompt and capture event
+		cutstring = "cap_t!=9999 && prompt_t!=9999";
+		candtree->Draw("n_travel_t>>h_n_travel_t",cutstring.c_str());
+		candtree->Draw("n_travel_d>>h_n_travel_d",cutstring.c_str());
 		
 		candtree->AddFriend(matchtree);
 		
-		candtree->Draw("cap_terr>>h_cap_terr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_xerr>>h_cap_xerr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_yerr>>h_cap_yerr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_zerr>>h_cap_zerr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_derr>>h_cap_derr","prompt_t!=9999 && cap_t!=9999");
+		// capture error requires valid capture and match
+		cutstring = "cap_terr!=9999 && cap_derr!=9999";
+		candtree->Draw("cap_terr>>h_cap_terr",cutstring.c_str());
+		candtree->Draw("cap_xerr>>h_cap_xerr",cutstring.c_str());
+		candtree->Draw("cap_yerr>>h_cap_yerr",cutstring.c_str());
+		candtree->Draw("cap_zerr>>h_cap_zerr",cutstring.c_str());
+		candtree->Draw("cap_derr>>h_cap_derr",cutstring.c_str());
 		
-		candtree->Draw("prompt_terr>>h_prompt_terr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_xerr>>h_prompt_xerr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_yerr>>h_prompt_yerr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_zerr>>h_prompt_zerr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_derr>>h_prompt_derr","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_eerr>>h_prompt_eerr","prompt_t!=9999 && cap_t!=9999");
+		// prompt error requires valid prompt and match
+		cutstring = "prompt_terr!=9999 && prompt_derr!=9999";
+		candtree->Draw("prompt_terr>>h_prompt_terr",cutstring.c_str());
+		candtree->Draw("prompt_xerr>>h_prompt_xerr",cutstring.c_str());
+		candtree->Draw("prompt_yerr>>h_prompt_yerr",cutstring.c_str());
+		candtree->Draw("prompt_zerr>>h_prompt_zerr",cutstring.c_str());
+		candtree->Draw("prompt_derr>>h_prompt_derr",cutstring.c_str());
+		// also need valid prompt energy reco, which is independent of position reco
+		cutstring = "prompt_terr!=9999 && prompt_eerr!=9999";
+		candtree->Draw("prompt_eerr>>h_prompt_eerr",cutstring.c_str());
 		
-		candtree->Draw("cap_terr:cap_likelihood>>h_capt_terr_vs_metric","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("cap_derr:cap_likelihood>>h_capt_derr_vs_metric","prompt_t!=9999 && cap_t!=9999");
-		candtree->Draw("prompt_terr:prompt_goodness>>h_prompt_terr_vs_metric","prompt_t!=9999 && cap_t!=9999 && prompt_goodness >0 && prompt_goodness<1");
-		candtree->Draw("prompt_derr:prompt_goodness>>h_prompt_derr_vs_metric","prompt_t!=9999 && cap_t!=9999 && prompt_goodness >0 && prompt_goodness<1");
+		cutstring = "cap_terr!=9999";
+		candtree->Draw("cap_terr:cap_likelihood>>h_capt_terr_vs_metric",cutstring.c_str());
+		candtree->Draw("cap_derr:cap_likelihood>>h_capt_derr_vs_metric",cutstring.c_str());
+		cutstring = "prompt_terr!=9999 && prompt_derr!=9999";
+		candtree->Draw("prompt_terr:prompt_goodness>>h_prompt_terr_vs_metric",cutstring.c_str());
+		candtree->Draw("prompt_derr:prompt_goodness>>h_prompt_derr_vs_metric",cutstring.c_str());
 		
+		cutstring = "cap_terr!=9999 && cap_likelihood>" + std::to_string(likelihood_cut);
+		candtree->Draw("cap_likelihood>>h_cap_likelihood_cut",cutstring.c_str());
+		candtree->Draw("cap_terr>>h_cap_terr_cut",cutstring.c_str());
+		candtree->Draw("cap_xerr>>h_cap_xerr_cut",cutstring.c_str());
+		candtree->Draw("cap_yerr>>h_cap_yerr_cut",cutstring.c_str());
+		candtree->Draw("cap_zerr>>h_cap_zerr_cut",cutstring.c_str());
+		candtree->Draw("cap_derr>>h_cap_derr_cut",cutstring.c_str());
+		candtree->Draw("cap_terr:cap_likelihood>>h_capt_terr_vs_metric_cut",cutstring.c_str());
+		candtree->Draw("cap_derr:cap_likelihood>>h_capt_derr_vs_metric_cut",cutstring.c_str());
+		
+		std::string opt=""; //"goff";
+		c1->Clear();
 		c1->Divide(2,2);
 		c1->cd(1);
-		h_cap_t.Draw("goff");
+		h_cap_t.Draw(opt.c_str());
 		c1->cd(2);
-		h_cap_x.Draw("goff");
+		h_cap_x.Draw(opt.c_str());
 		c1->cd(3);
-		h_cap_y.Draw("goff");
+		h_cap_y.Draw(opt.c_str());
 		c1->cd(4);
-		h_cap_z.Draw("goff");
+		h_cap_z.Draw(opt.c_str());
 		savename = m_unique_name + "_captures.png";
 		c1->SaveAs(savename.c_str());
 		
+		c1->Clear();
+		c1->Divide(2,2);
 		c1->cd(1);
-		h_prompt_t.Draw("goff");
+		h_prompt_t.Draw(opt.c_str());
 		c1->cd(2);
-		h_prompt_x.Draw("goff");
+		h_prompt_x.Draw(opt.c_str());
 		c1->cd(3);
-		h_prompt_y.Draw("goff");
+		h_prompt_y.Draw(opt.c_str());
 		c1->cd(4);
-		h_prompt_z.Draw("goff");
+		h_prompt_z.Draw(opt.c_str());
 		savename = m_unique_name + "_prompts.png";
 		c1->SaveAs(savename.c_str());
 		
+		c1->Clear();
+		c1->Divide(2,2);
 		c1->cd(1);
-		h_cap_likelihood.Draw("goff");
+		h_cap_likelihood.Draw(opt.c_str());
 		c1->cd(2);
-		h_prompt_goodness.Draw("goff");
+		// FIXME something
 		c1->cd(3);
-		h_n_travel_d.Draw("goff");
+		h_n_travel_d.Draw(opt.c_str());
 		c1->cd(4);
-		h_n_travel_t.Draw("goff");
+		h_n_travel_t.Draw(opt.c_str());
 		savename = m_unique_name + "_extras.png";
 		c1->SaveAs(savename.c_str());
 		
+		c1->Clear();
 		c1->Divide(4,2);
 		c1->cd(1);
-		h_cap_xerr.Draw("goff");
+		h_cap_xerr.Draw(opt.c_str());
 		c1->cd(2);
-		h_cap_yerr.Draw("goff");
+		h_cap_yerr.Draw(opt.c_str());
 		c1->cd(3);
-		h_cap_zerr.Draw("goff");
+		h_cap_zerr.Draw(opt.c_str());
 		c1->cd(4);
-		h_cap_derr.Draw("goff");
+		h_cap_derr.Draw(opt.c_str());
 		c1->cd(5);
-		h_cap_terr.Draw("goff");
+		h_cap_terr.Draw(opt.c_str());
 		c1->cd(6);
-		h_cap_likelihood.Draw("goff");
+		h_cap_likelihood.Draw(opt.c_str());
 		c1->cd(7);
 		h_capt_terr_vs_metric.Draw("goff colz");
 		c1->cd(8);
@@ -613,20 +710,43 @@ bool NCaptInfo::MakePlots(int step){
 		c1->Clear();
 		c1->Divide(4,2);
 		c1->cd(1);
-		h_prompt_xerr.Draw("goff");
+		h_prompt_xerr.Draw(opt.c_str());
 		c1->cd(2);
-		h_prompt_yerr.Draw("goff");
+		h_prompt_yerr.Draw(opt.c_str());
 		c1->cd(3);
-		h_prompt_zerr.Draw("goff");
+		h_prompt_zerr.Draw(opt.c_str());
 		c1->cd(4);
-		h_prompt_derr.Draw("goff");
+		h_prompt_derr.Draw(opt.c_str());
 		c1->cd(5);
-		h_prompt_terr.Draw("goff");
+		h_prompt_terr.Draw(opt.c_str());
 		c1->cd(6);
-		h_prompt_terr_vs_metric.Draw("goff");
+		h_prompt_terr_vs_metric.Draw("goff colz");
 		c1->cd(7);
-		h_prompt_derr_vs_metric.Draw("goff");
+		h_prompt_derr_vs_metric.Draw("goff colz");
+		c1->cd(8);
+		h_prompt_goodness.Draw(opt.c_str());
 		savename = m_unique_name + "_prompt_errs.png";
+		c1->SaveAs(savename.c_str());
+		
+		c1->Clear();
+		c1->Divide(4,2);
+		c1->cd(1);
+		h_cap_xerr_cut.Draw(opt.c_str());
+		c1->cd(2);
+		h_cap_yerr_cut.Draw(opt.c_str());
+		c1->cd(3);
+		h_cap_zerr_cut.Draw(opt.c_str());
+		c1->cd(4);
+		h_cap_derr_cut.Draw(opt.c_str());
+		c1->cd(5);
+		h_cap_terr_cut.Draw(opt.c_str());
+		c1->cd(6);
+		h_cap_likelihood_cut.Draw(opt.c_str());
+		c1->cd(7);
+		h_capt_terr_vs_metric_cut.Draw("goff colz");
+		c1->cd(8);
+		h_capt_derr_vs_metric_cut.Draw("goff colz");
+		savename = m_unique_name + "_capture_errs_cut.png";
 		c1->SaveAs(savename.c_str());
 		
 		h_cap_likelihood.Write();
@@ -655,6 +775,15 @@ bool NCaptInfo::MakePlots(int step){
 		h_prompt_terr.Write();
 		h_prompt_terr_vs_metric.Write();
 		h_prompt_derr_vs_metric.Write();
+		
+		h_cap_xerr_cut.Write();
+		h_cap_yerr_cut.Write();
+		h_cap_zerr_cut.Write();
+		h_cap_derr_cut.Write();
+		h_cap_terr_cut.Write();
+		h_cap_likelihood_cut.Write();
+		h_capt_terr_vs_metric_cut.Write();
+		h_capt_derr_vs_metric_cut.Write();
 		//*/
 		
 		/*

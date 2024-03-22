@@ -67,7 +67,10 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 		// we ought to save some info about the prompt event too, as this is used for the search starting point
 		if(myLowE){
 			
-			LoweCandidate prompt;
+			//LoweCandidate prompt;
+			m_data->LoweCandidates.resize(m_data->LoweCandidates.size()+1);
+			LoweCandidate& prompt = m_data->LoweCandidates.back();
+			
 			prompt.algo = "bonsai";
 			prompt.event_pos = TVector3(myLowE->bsvertex[0],
 			                            myLowE->bsvertex[1],
@@ -76,10 +79,11 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 			prompt.event_energy = myLowE->bsenergy;
 			prompt.goodness_metric = myLowE->bsgood[1]; // seems to be the main 'goodness' metric
 			std::vector<float> bsgood_vec{myLowE->bsgood, myLowE->bsgood+3};
-			prompt.recoVars.Set("bsgood",bsgood_vec);
-			prompt.recoVars.Set("bsdirks",myLowE->bsdirks);
-			prompt.recoVars.Set("ovaQ",myLowE->linfo[26]);
-			m_data->LoweCandidates.push_back(prompt);
+			prompt.recoVars->Set("bsgood",bsgood_vec);
+			prompt.recoVars->Set("bsdirks",myLowE->bsdirks);
+			prompt.recoVars->Set("ovaQ",myLowE->linfo[26]);
+			
+			//m_data->LoweCandidates.push_back(prompt);
 			cand.SetPromptEvent(m_data->LoweCandidates.size()-1);
 			
 		}

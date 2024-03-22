@@ -47,6 +47,7 @@ class MyClass {
 	bool Print(){
 		std::cout<<"internal is currently "<<internal.str()<<std::endl;
 		//std::cout<<"bs is currently "<<bs<<std::endl;
+		return true;
 	}
 	
 	std::stringstream internal;

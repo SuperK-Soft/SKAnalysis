@@ -64,6 +64,7 @@ class TreeReader: public Tool {
 	std::string treeName="data";
 	std::string readerName;
 	int maxEntries=-1;
+	int maxEntry=-1;
 	int firstEntry=0;
 	int entrynum=0;
 	int readEntries=0;                // count how many entries we've actually returned
@@ -73,7 +74,9 @@ class TreeReader: public Tool {
 	int LUN=0;                        // Assumed 10 by some SK routines, only change if you know what you're doing!
 	std::string skroot_options="31";  // 31 = read HEADER (required).
 	int skroot_badopt=23;             // 23 = LOWE default (mask bad chs, dead chs, noisy ID chs and OD chs)
-	int skroot_badch_ref_run=0;       // reference run for bad channel list for e.g. MC.
+//	int skroot_badch_ref_run=0;       // reference run for bad channel list for e.g. MC.
+//	int reference_watert_run=-1;      // run to use for water transparency (for use with MC)
+	int skroot_ref_run = -1;          // one reference run for all parameters (bad channels, dark rate, water properties)
 	int sk_geometry=4;                // TODO increment the default to 6.
 	std::string outputFile="";        // for when using SKROOT copy mode
 	int skip_ped_evts = 1;            // automatically skip pedestal/status TTree entries
@@ -83,7 +86,6 @@ class TreeReader: public Tool {
 	std::vector<int> allowedTriggers; // one of these trigger bits must be set to return an entry
 	std::vector<int> skippedTriggers; // if any of these bits are set the entry will be skipped
 	bool skipbadruns=false;           // should we try to skip any runs identified as bad by lfbadrun?
-	int reference_watert_run=-1;      // run to use for water transparency (for use with MC)
 	int mTreeReaderVerbosity=0;
 	
 	std::vector<std::string> list_of_files;
@@ -92,6 +94,7 @@ class TreeReader: public Tool {
 	bool aft_loaded=false; // is the AFT loaded into the common blocks at present
 	long buffered_entry = -1;
 	long file_cursor=0;
+	bool autoRead=true;
 	
 	// variables to read in
 	// ====================

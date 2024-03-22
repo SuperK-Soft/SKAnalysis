@@ -73,7 +73,10 @@ bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 		
 		// save information about the reconstructed prompt event used as a starting point?
 		// TODO
-		LoweCandidate prompt;
+		//LoweCandidate prompt;
+		m_data->LoweCandidates.resize(m_data->LoweCandidates.size()+1);
+		LoweCandidate& prompt = m_data->LoweCandidates.back();
+		
 		prompt.event_pos = *prompt_vtx;
 		prompt.event_time = prompt_t;
 		/*
@@ -82,11 +85,12 @@ bool NCaptInfo_NTag::GetCandidates(std::vector<NCaptCandidate>& candidates){
 		prompt.goodness_metric = 0;
 		
 		// any other variables we want to save
-		cand.recoVars.Set("bsgood",std::vector<float>{myLowE->bsgood,myLowE->bsgood+3});
-		cand.recoVars.Set("bsdirks",myLowE->bsdirks);
-		cand.recoVars.Set("ovaQ",myLowE->linfo[26]);
+		cand.recoVars->Set("bsgood",std::vector<float>{myLowE->bsgood,myLowE->bsgood+3});
+		cand.recoVars->Set("bsdirks",myLowE->bsdirks);
+		cand.recoVars->Set("ovaQ",myLowE->linfo[26]);
 		*/
-		m_data->LoweCandidates.push_back(prompt);
+		
+		//m_data->LoweCandidates.push_back(prompt);
 		cand.SetPromptEvent(m_data->LoweCandidates.size()-1);
 		
 		// TODO

@@ -1,9 +1,16 @@
 verbosity 1
+FileListName MyFileList
 #inputFile ./rootFiles/data/sk4/061525/lowe_rfm_run061525.000002.root
 #inputFile /disk02/usr7/jfannon/data/lowe_rfm_run074558.000002.root << lfallfit doesn't like this file
 #inputFile /disk02/data7/sk6/run/0867/086730/rfm_run086730.000001.root
-FileListName MyFileList
 #inputFile /disk02/data7/sk6/run/0868/086831/rfm_run086831.000001.root  # works!
+#inputFile /disk02/data7/sk6/run/0866/086669/rfm_run086669.000061.root ## why now failing?
+#inputFile /disk02/data7/sk6/run/0870/087096/rfm_run087096.000282.root
+
+#firstEntry 33000 # relic at 33162
+#firstEntry 7271  # relic at 7571
+#firstEntry 13475403
+#maxEntries 10000                       # max num input entries to process
 
 treeName data
 readerName spallReader
@@ -11,7 +18,6 @@ skFile 1
 #skrootMode 0 # root2root
 #outputFile muWriter
 skoptn 31,30,26,25
-#maxEntries 10000                       # max num input entries to process
 skbadopt 23   # 55? we need to re-read with 0 for muons
 skipBadRuns 1
 SK_GEOMETRY 6

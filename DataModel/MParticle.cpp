@@ -12,6 +12,32 @@ namespace {
 
 MParticle::MParticle(){
 	m_data = DataModel::GetInstance();
+	extraInfo = new BStore{true,constants::BSTORE_BINARY_FORMAT};
+}
+
+MParticle::~MParticle(){
+	if(extraInfo) delete extraInfo;
+	extraInfo=nullptr;
+}
+
+MParticle::MParticle(MParticle&& rhs){
+	
+	m_data = rhs.m_data;
+	pdg = rhs.pdg;
+	start_vtx_idx = rhs.start_vtx_idx;
+	end_vtx_idx = rhs.end_vtx_idx;
+	parent_idx = rhs.parent_idx;
+	direct_parent = rhs.direct_parent;
+	daughters = rhs.daughters;
+	
+	start_mom = rhs.start_mom;
+	end_mom = rhs.end_mom;
+	startE = rhs.startE;
+	endE = rhs.endE;
+	
+	extraInfo = rhs.extraInfo;
+	rhs.extraInfo = nullptr;
+	
 }
 
 void MParticle::SetParentIndex(int idx){
@@ -32,11 +58,19 @@ bool MParticle::IsParentDirect(){
 }
 
 void MParticle::SetStartMom(double* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetStartMom called with nullptr!"<<std::endl;
+		return;
+	}
 	start_mom = TVector3{nums};
 	start_mom.SetBit(initbit);
 }
 
 void MParticle::SetStartMom(float* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetStartMom called with nullptr!"<<std::endl;
+		return;
+	}
 	start_mom = TVector3{nums};
 	start_mom.SetBit(initbit);
 }
@@ -52,11 +86,19 @@ void MParticle::SetStartMom(double x, double y, double z){
 }
 
 void MParticle::SetEndMom(double* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetEndMom called with nullptr!"<<std::endl;
+		return;
+	}
 	end_mom = TVector3{nums};
 	end_mom.SetBit(initbit);
 }
 
 void MParticle::SetEndMom(float* nums){
+	if(nums==nullptr){
+		std::cerr<<"MParticle::SetEndMom called with nullptr!"<<std::endl;
+		return;
+	}
 	end_mom = TVector3{nums};
 	end_mom.SetBit(initbit);
 }
@@ -187,7 +229,13 @@ MParticle* MParticle::GetParent(){
 }
 
 int MParticle::GetNearestParentIndex(){
-	return std::abs(parent_idx);
+	// -1: unrecorded
+	// 0+: index of parent. Use IsParentDirect() to see if it's a direct parent.
+	// should not have any other negative numbers.
+	if(parent_idx<-1){
+		std::cerr<<"Error! MParticle with parent index "<<parent_idx<<": should not be <-1!"<<std::endl;
+	}
+	return parent_idx;
 }
 
 // ===================
@@ -371,9 +419,9 @@ void MParticle::Print(bool verbose){
 			std::cout<<"?";
 		}
 		std::cout<<" within a medium of type ";
-		if(GetStartVertex()->extraInfo.Has("medium_id")){
+		if((GetStartVertex()->extraInfo) && GetStartVertex()->extraInfo->Has("medium_id")){
 			int medium_id=-1;
-			GetStartVertex()->extraInfo.Get("medium_id",medium_id);
+			GetStartVertex()->extraInfo->Get("medium_id",medium_id);
 			std::cout<<((medium_id<0) ? "?" : toString(medium_id))<<"\n";
 		} else {
 			std::cout<<"?\n";

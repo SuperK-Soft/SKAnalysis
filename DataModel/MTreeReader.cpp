@@ -181,6 +181,7 @@ int MTreeReader::ParseBranches(){
 	branch_value_pointers.clear();
 	branch_types.clear();
 	branch_isobject.clear();
+	branch_isobjectptr.clear();
 	branch_isarray.clear();
 	branch_dimensions.clear();
 	branch_dims_cache.clear();
@@ -217,6 +218,7 @@ int MTreeReader::ParseBranches(){
 			intptr_t objpp=reinterpret_cast<intptr_t>(bev->GetObject());
 			branch_value_pointers.emplace(branchname,objpp);
 			branch_isobject.emplace(branchname,true);
+			branch_isobjectptr.emplace(branchname,false);
 			branch_isarray.emplace(branchname,false);
 			
 			// both classes inheriting from TObject and STL containers
@@ -232,7 +234,8 @@ int MTreeReader::ParseBranches(){
 				// is it sufficient simply to instead just say it does not inherit from TObject?
 				branch_istobject.emplace(branchname,false);
 			}
-		} else if (strcmp(br->ClassName(),"TBranchObject")==0){
+		} else if( (strcmp(br->ClassName(),"TBranchObject")==0) ||
+		           (strcmp(lf->GetTypeName(),"TClonesArray")==0) ){
 			// some classes, such as TVector3, are stored as TBranchObjects
 			// rather than TBranchElements. Similar to basic primitives
 			// we need to get the pointer from TLeaf::GetValuePointer(),
@@ -240,10 +243,16 @@ int MTreeReader::ParseBranches(){
 			// a pointer to a pointer to the object, rather than a pointer to the object itself.
 			// (TBranchElement::GetObject performs one dereference, returning a
 			// pointer to the object directly, but is not a method for TBranchObjects)
+			// The handling of TClonesArrays is the same; although they identify as TBranchElements,
+			// TBranchElement::GetObject returns nullptr
 			void** ptrptr=reinterpret_cast<void**>(lf->GetValuePointer());
-			intptr_t objpp = reinterpret_cast<intptr_t>(*ptrptr);
+			//intptr_t objpp = reinterpret_cast<intptr_t>(*ptrptr);
+			// don't dereference it: it seems like this can change from entry to entry!
+			intptr_t objpp = reinterpret_cast<intptr_t>(ptrptr);
+			// n.b. we can use TClonesArray->GetClass()->GetName() to get the class name of held elements
 			branch_value_pointers.emplace(branchname,objpp);
-			branch_isobject.emplace(branchname,true);
+			branch_isobject.emplace(branchname,false);
+			branch_isobjectptr.emplace(branchname,true);
 			branch_isarray.emplace(branchname,false);
 			// not sure if we can assume that objects in a TBranchObject derive from TObject...maybe?
 			TClass* ac = TClass::GetClass(lf->GetTypeName());
@@ -260,6 +269,7 @@ int MTreeReader::ParseBranches(){
 			intptr_t objpp=reinterpret_cast<intptr_t>(lf->GetValuePointer());
 			branch_value_pointers.emplace(branchname,objpp);
 			branch_isobject.emplace(branchname,false);
+			branch_isobjectptr.emplace(branchname,false);
 			branch_isarray.emplace(branchname,true);
 			branch_istobject.emplace(branchname,false);
 		}
@@ -268,6 +278,7 @@ int MTreeReader::ParseBranches(){
 			intptr_t objpp=reinterpret_cast<intptr_t>(lf->GetValuePointer());
 			branch_value_pointers.emplace(branchname,objpp);
 			branch_isobject.emplace(branchname,false);
+			branch_isobjectptr.emplace(branchname,false);
 			branch_isarray.emplace(branchname,false);
 			branch_istobject.emplace(branchname,false);
 		}
@@ -294,10 +305,22 @@ int MTreeReader::UpdateBranchPointer(std::string branchname){
 	TLeaf* lf = leaf_pointers.at(branchname);
 	intptr_t objpp;
 	if(branch_isobject.at(branchname)){
-		// objects need another level of indirection
+		// for objects TLeaf::GetValuePointer returns a pointer to a pointer
+		// to the held object. We can remove the additional level of indirection
+		// by calling TBranchElement::GetObject instead
 		TBranchElement* bev = (TBranchElement*)lf->GetBranch();
 		objpp=reinterpret_cast<intptr_t>(bev->GetObject());
+	} else if(branch_isobjectptr.at(branchname)){
+		// for some classes such as TClonesArrays and TVector3s,
+		// TLeafElement::GetValuePointer returns a pointer to a pointer,
+		// but the parent branch is a TBranchObject not TBranchElement
+		// and does not support a GetObject method.
+		// In such cases we need to do the additional dereference ourselves
+		void** ptrptr=reinterpret_cast<void**>(lf->GetValuePointer());
+		objpp = reinterpret_cast<intptr_t>(*ptrptr);
 	} else {
+		// for simple types TLeaf::GetValuePointer returns
+		// a pointer to the object itself.
 		objpp=reinterpret_cast<intptr_t>(lf->GetValuePointer());
 	}
 	branch_value_pointers.at(branchname)=objpp;
@@ -447,7 +470,18 @@ int MTreeReader::Clear(){
 		// and invoke that if not? Should be safe even without doing that though.
 		if(not isobject.second) continue;
 		// get pointer to the object otherwise
-		TObject* theobject = reinterpret_cast<TObject*>(branch_value_pointers.at(isobject.first));
+		TObject* theobject = nullptr;
+		if(branch_isobjectptr.at(isobject.first)){
+			TObject** ptrptr = reinterpret_cast<TObject**>(branch_value_pointers.at(isobject.first));
+			if(not ptrptr){
+				std::cerr<<"MTreeReader AutoClear error: failure to get pointer to TObject* "
+						 <<"for branch "<<isobject.first<<std::endl;
+				continue;  // TODO throw suitable exception
+			}
+			theobject = *ptrptr;
+		} else {
+			theobject = reinterpret_cast<TObject*>(branch_value_pointers.at(isobject.first));
+		}
 		if(not theobject){
 			// no object... is this an error?
 			std::cerr<<"MTreeReader AutoClear error: failure to get pointer to TObject "
@@ -607,6 +641,7 @@ std::map<std::string,std::string> MTreeReader::GetBranchTitles(){
 }
 
 std::map<std::string, intptr_t> MTreeReader::GetBranchAddresses(){
+	// dangerous! Some of these are pointers to pointers!
 	return branch_value_pointers;
 }
 

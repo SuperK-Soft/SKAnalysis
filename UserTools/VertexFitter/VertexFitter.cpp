@@ -188,7 +188,7 @@ bool VertexFitter::Execute(){
     std::cerr<<"calling lfclear_all"<<std::endl;
     lfclear_all_();
 
-    int NHITCUT = 800;//(MC) ? 800 : 1000;  //  maximum number of hits to reconstruct
+    int max_nqisk_for_clusfit = 800;//(MC) ? 800 : 1000;  //  maximum number of hits to reconstruct
 
     //--------------Get the MC information we want----------------------//
     // Assumes IBD events - TODO does this need to work for other types?
@@ -450,7 +450,7 @@ bool VertexFitter::Execute(){
     
     
     std::cerr<<"doing reconstruction with "<<nhit<<" hits?"<<std::endl;
-    if (nhit>9 && nhit<=NHITCUT) // reconstruction unstable with < 10 hits, slow with > 800 hits
+    if (nhit>9 && nhit<=max_nqisk_for_clusfit) // reconstruction unstable with < 10 hits, slow with > 800 hits
     {
     std::cerr<<"yes"<<std::endl;
         // Do the BONSAI fit

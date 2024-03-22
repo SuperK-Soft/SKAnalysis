@@ -3,6 +3,40 @@
 
 LoweCandidate::LoweCandidate(){
 	m_data = DataModel::GetInstance();
+	featureMap=new BStore{true,constants::BSTORE_BINARY_FORMAT};
+	recoVars=new BStore{true,constants::BSTORE_BINARY_FORMAT};
+}
+
+LoweCandidate::~LoweCandidate(){
+	if(featureMap) delete featureMap;
+	if(recoVars) delete recoVars;
+	featureMap=nullptr;
+	recoVars=nullptr;
+}
+
+LoweCandidate::LoweCandidate(LoweCandidate&& rhs){
+	
+	m_data = rhs.m_data;
+	algo = rhs.algo;
+	goodness_metric = rhs.goodness_metric;
+	event_time = rhs.event_time;
+	event_pos = rhs.event_pos;
+	event_energy = rhs.event_energy;
+	matchtype = rhs.matchtype;
+	
+	trueparticle_idx = rhs.trueparticle_idx;
+	got_pos_err = rhs.got_pos_err;
+	got_t_err = rhs.got_t_err;
+	got_e_err = rhs.got_e_err;
+	t_err = rhs.t_err;
+	pos_err = rhs.pos_err;
+	e_err = rhs.e_err;
+	
+	featureMap = rhs.featureMap;
+	rhs.featureMap = nullptr;
+	recoVars = rhs.recoVars;
+	rhs.recoVars = nullptr;
+	
 }
 
 // XXX if modifying this, be sure to also modify the enum class in the header file!
@@ -40,40 +74,37 @@ MParticle* LoweCandidate::GetTrueParticle(){
 }
 
 double* LoweCandidate::GetTerr(){
-	if(got_t_err) return t_err_p;
+	if(got_t_err) return &t_err;
 	MParticle* trueparticle = GetTrueParticle();
 	if(trueparticle==nullptr || trueparticle->GetStartTime()==nullptr) return nullptr;
 	t_err = (event_time - *trueparticle->GetStartTime());
-	t_err_p = &t_err;
 	got_t_err=true;
-	return t_err_p;
+	return &t_err;
 }
 
 double* LoweCandidate::GetPosErr(){
-	if(got_pos_err) return pos_err_p;
+	if(got_pos_err) return &pos_err;
 	MParticle* trueparticle = GetTrueParticle();
 	if(trueparticle==nullptr || trueparticle->GetStartPos()==nullptr) return nullptr;
 	pos_err = (event_pos - *trueparticle->GetStartPos()).Mag();
-	pos_err_p = &pos_err;
 	got_pos_err=true;
-	return pos_err_p;
+	return &pos_err;
 }
 
 double* LoweCandidate::GetEnergyErr(){
-	if(got_e_err) return e_err_p;
+	if(got_e_err) return &e_err;
 	MParticle* trueparticle = GetTrueParticle();
 	if(trueparticle==nullptr || trueparticle->GetStartE()==nullptr) return nullptr;
 	e_err = (event_energy - *trueparticle->GetStartE());
-	e_err_p = &e_err;
 	got_e_err=true;
-	return e_err_p;
+	return &e_err;
 }
 
 void LoweCandidate::Print(bool printRecoVarsMap, bool printRecoVarsMapValues, bool printFeatureMap, bool printFeatureMapValues){
 	std::string t_err_s="?";
 	std::string pos_err_s="?";
-	if(GetTerr()!=nullptr) t_err_s = toString(*t_err_p);
-	if(GetPosErr()!=nullptr) pos_err_s = toString(*pos_err_p);
+	if(GetTerr()!=nullptr) t_err_s = toString(t_err);
+	if(GetPosErr()!=nullptr) pos_err_s = toString(pos_err);
 	
 	std::cout<<"\tgoodness: "<<goodness_metric<<"\n"
 	         <<"\time [ns]: "<<event_time<<"\n"
@@ -85,10 +116,10 @@ void LoweCandidate::Print(bool printRecoVarsMap, bool printRecoVarsMapValues, bo
 	
 	if(printRecoVarsMap){
 		std::cout<<"\tlist of reconstruction variables: \n";
-		if(printRecoVarsMapValues){
-			recoVars.Print();
-		} else {
-			std::vector<std::string> recovariables = recoVars.GetKeys();
+		if(printRecoVarsMapValues && recoVars){
+			recoVars->Print();
+		} else if(recoVars){
+			std::vector<std::string> recovariables = recoVars->GetKeys();
 			for(const std::string& recovar : recovariables){
 				std::cout<<"\t\t"<<recovar<<"\n";
 			}
@@ -97,10 +128,10 @@ void LoweCandidate::Print(bool printRecoVarsMap, bool printRecoVarsMapValues, bo
 	
 	if(printFeatureMap){
 		std::cout<<"\tlist of feature variables: \n";
-		if(printFeatureMapValues){
-			featureMap.Print();
-		} else {
-			std::vector<std::string> features = featureMap.GetKeys();
+		if(printFeatureMapValues && featureMap){
+			featureMap->Print();
+		} else if(featureMap){
+			std::vector<std::string> features = featureMap->GetKeys();
 			for(const std::string& featurename : features){
 				std::cout<<"\t\t"<<featurename<<"\n";
 			}

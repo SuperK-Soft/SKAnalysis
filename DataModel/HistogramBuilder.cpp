@@ -220,10 +220,12 @@ TH1* HistogramBuilder::GetHist(std::string name, std::string cut, int unbinned){
 			// we choose option 4: make a new histogram with the given options
 			// we will need a unique *user* name to use as a key for the histnames map.
 			int i=0;
+			std::string tmphname;
 			do {
-				histname = histname+"_"+std::to_string(hbuildercounter+i);
+				tmphname = histname+"_"+std::to_string(hbuildercounter+i);
 				++i;
-			} while(gROOT->FindObject(histname.c_str())!=nullptr);
+			} while(gROOT->FindObject(tmphname.c_str())!=nullptr);
+			histname = tmphname;
 			
 		} else {
 			// otherwise no options given, the histogram already exists, return it

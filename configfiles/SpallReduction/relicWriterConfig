@@ -1,4 +1,4 @@
 verbosity 10
-treeReaderName muWriter
-treeWriterName relicWriter
+baseTreeWriterName muWriter
+thisTreeWriterName relicWriter
 newTreeName relic

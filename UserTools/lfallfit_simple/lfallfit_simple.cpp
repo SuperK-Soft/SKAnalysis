@@ -135,14 +135,14 @@ bool lfallfit_simple::Execute(){
 	
 	int lfflag;
 	int log_level;
-	int NHITCUT = 1000;  //  number of hit limit for clusfit (changed for relic analysis)
+	int max_nqisk_for_clusfit = 1000;  //  number of hit limit for clusfit (changed for relic analysis)
 	int flag_skip=0;
 	// apply lowfit
 	/*
-	C         call lfallfit_sk4_data(watert, NHITCUT, lfflag)
-	C         call lfallfit_sk4_gain_corr(watert, NHITCUT, 0, log_level, lfflag)
+	C         call lfallfit_sk4_data(watert, max_nqisk_for_clusfit, lfflag)
+	C         call lfallfit_sk4_gain_corr(watert, max_nqisk_for_clusfit, 0, log_level, lfflag)
 	*/
-	lfallfit_sk4_final_qe43_(&watert, &NHITCUT, &flag_skip, &log_level, &lfflag);
+	lfallfit_sk4_final_qe43_(&watert, &max_nqisk_for_clusfit, &flag_skip, &log_level, &lfflag);
 	
 	/*
 	c***         read all branches into memory for output

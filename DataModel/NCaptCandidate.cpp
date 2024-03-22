@@ -4,6 +4,46 @@
 
 NCaptCandidate::NCaptCandidate(){
 	m_data = DataModel::GetInstance();
+	featureMap = new BStore{true,constants::BSTORE_BINARY_FORMAT};
+	recoVars = new BStore{true,constants::BSTORE_BINARY_FORMAT};
+}
+
+NCaptCandidate::~NCaptCandidate(){
+	if(featureMap) delete featureMap;
+	if(recoVars) delete recoVars;
+	featureMap = nullptr;
+	recoVars = nullptr;
+}
+
+NCaptCandidate::NCaptCandidate(NCaptCandidate&& rhs){
+	
+	m_data= rhs.m_data;
+	
+	algo = rhs.algo;
+	capture_likelihood_metric = rhs.capture_likelihood_metric;
+	capture_time = rhs.capture_time;
+	capture_pos = rhs.capture_pos;
+	capture_E = rhs.capture_E;
+	matchtype = rhs.matchtype;
+	
+	truecap_idx = rhs.truecap_idx;
+	prompt_idx = rhs.prompt_idx;
+	
+	cap_t_err = rhs.cap_t_err;
+	cap_pos_err = rhs.cap_pos_err;
+	cap_e_err = rhs.cap_e_err;
+	got_cap_pos_err = rhs.got_cap_pos_err;
+	got_cap_t_err = rhs.got_cap_t_err;
+	got_cap_e_err = rhs.got_cap_e_err;
+	
+	// here's the reason we need to manually specify the move constructor:
+	// we need to nullify the pointers to any on-heap data members
+	// from the moved-from object after the move.
+	featureMap = rhs.featureMap;
+	rhs.featureMap = nullptr;
+	recoVars = rhs.recoVars;
+	rhs.recoVars = nullptr;
+	
 }
 
 // XXX if modifying this, be sure to also modify the enum class in the header file!
@@ -56,40 +96,37 @@ LoweCandidate* NCaptCandidate::GetPromptEvent(){
 }
 
 double* NCaptCandidate::GetCaptTerr(){
-	if(got_cap_t_err) return cap_t_err_p;
+	if(got_cap_t_err) return &cap_t_err;
 	NCapture* truecap = GetTrueCapture();
 	if(truecap==nullptr || truecap->GetTime()==nullptr) return nullptr;
 	cap_t_err = (capture_time - *truecap->GetTime());
-	cap_t_err_p = &cap_t_err;
 	got_cap_t_err=true;
-	return cap_t_err_p;
+	return &cap_t_err;
 }
 
 double* NCaptCandidate::GetCaptPosErr(){
-	if(got_cap_pos_err) return cap_pos_err_p;
+	if(got_cap_pos_err) return &cap_pos_err;
 	NCapture* truecap = GetTrueCapture();
 	if(truecap==nullptr || truecap->GetPos()==nullptr) return nullptr;
 	cap_pos_err = (capture_pos - *truecap->GetPos()).Mag();
-	cap_pos_err_p = &cap_pos_err;
 	got_cap_pos_err=true;
-	return cap_pos_err_p;
+	return &cap_pos_err;
 }
 
 double* NCaptCandidate::GetCaptEnergyErr(){
-	if(got_cap_e_err) return cap_e_err_p;
+	if(got_cap_e_err) return &cap_e_err;
 	NCapture* truecap = GetTrueCapture();
 	double truecap_E;
 	if(truecap==nullptr || truecap->SumGammaE(truecap_E)==false) return nullptr;
 	cap_e_err = (capture_E - truecap_E);
-	cap_e_err_p = &cap_e_err;
-	return cap_e_err_p;
+	return &cap_e_err;
 }
 
 void NCaptCandidate::Print(bool printPrompt, bool printRecoVarsMap, bool printRecoVarsMapValues, bool printFeatureMap, bool printFeatureMapValues){
 	std::string cap_t_err_s="?";
 	std::string cap_pos_err_s="?";
-	if(GetCaptTerr()!=nullptr) cap_t_err_s = toString(*cap_t_err_p/1000.);
-	if(GetCaptPosErr()!=nullptr) cap_pos_err_s = toString(*cap_pos_err_p);
+	if(GetCaptTerr()!=nullptr) cap_t_err_s = toString(cap_t_err/1000.);
+	if(GetCaptPosErr()!=nullptr) cap_pos_err_s = toString(cap_pos_err);
 	
 	std::cout<<"\tcapture likelihood: "<<capture_likelihood_metric<<"\n"
 	         <<"\tcapture time [us]: "<<capture_time/1000.<<"\n"
@@ -101,10 +138,10 @@ void NCaptCandidate::Print(bool printPrompt, bool printRecoVarsMap, bool printRe
 	
 	if(printRecoVarsMap){
 		std::cout<<"\tlist of reconstruction variables: \n";
-		if(printRecoVarsMapValues){
-			recoVars.Print();
-		} else {
-			std::vector<std::string> recovariables = recoVars.GetKeys();
+		if(printRecoVarsMapValues && recoVars){
+			recoVars->Print();
+		} else if(recoVars){
+			std::vector<std::string> recovariables = recoVars->GetKeys();
 			for(const std::string& recovar : recovariables){
 				std::cout<<"\t\t"<<recovar<<"\n";
 			}
@@ -113,10 +150,10 @@ void NCaptCandidate::Print(bool printPrompt, bool printRecoVarsMap, bool printRe
 	
 	if(printFeatureMap){
 		std::cout<<"\tlist of feature variables: \n";
-		if(printFeatureMapValues){
-			featureMap.Print();
-		} else {
-			std::vector<std::string> features = featureMap.GetKeys();
+		if(printFeatureMapValues && featureMap){
+			featureMap->Print();
+		} else if(featureMap){
+			std::vector<std::string> features = featureMap->GetKeys();
 			for(const std::string& featurename : features){
 				std::cout<<"\t\t"<<featurename<<"\n";
 			}
