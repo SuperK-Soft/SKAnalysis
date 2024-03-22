@@ -12,7 +12,8 @@ class NCaptCandidate {
 	public:
 	NCaptCandidate();
 	~NCaptCandidate();
-	NCaptCandidate(NCaptCandidate&) = delete; // no copy construction until BStore supports it
+	NCaptCandidate(const NCaptCandidate&) = delete; // no copy construction until BStore supports it
+	NCaptCandidate& operator=(const NCaptCandidate&) = delete;
 	NCaptCandidate(NCaptCandidate&&);         // we need to handle move construction manually
 	
 	// XXX if modifying matchType be sure to modify the matchTypes map accordingly!

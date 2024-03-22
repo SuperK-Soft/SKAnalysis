@@ -4,6 +4,7 @@
 #include "skroot_loweC.h"
 
 struct ParticleCand {
+	bool flaggedForWrite;
 	int EventNumber;
 	int SubTriggerNumber;
 	int nevhwsk;

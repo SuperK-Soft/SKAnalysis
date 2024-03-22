@@ -11,7 +11,8 @@ class MParticle {
 	public:
 	MParticle();
 	~MParticle();
-	MParticle(MParticle&) = delete; // must manually declare copy construction that deals with BStore
+	MParticle(const MParticle&) = delete; // must manually declare copy construction that deals with BStore
+	MParticle& operator=(const MParticle&) = delete;
 	MParticle(MParticle&&);
 	int pdg=-1; // pdg code
 	int start_vtx_idx=-1;

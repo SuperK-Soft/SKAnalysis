@@ -1,16 +1,28 @@
-verbosity 1
-inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
+verbosity 10
+#inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
 #inputFile /disk02/data7/sk6/run/0867/086730/rfm_run086730.000001.root
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root
 #inputFile /home/moflaher/skg4/SKG4/ibd_testtoff.root
-#treeName data                                  # the name of the tree within the file
+#inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086783.0/output/test_jacks.root
+#inputFile /disk02/usr6/moflaher/trashme/test_jacks.root
+#inputFile /disk02/data7/sk6/run/0870/087096/rfm_run087096.000001.root
+#inputFile /disk02/data7/sk6/run/0870/087096/rfm_run087096.000002.root
+#inputFile /home/moflaher/file.zbs
+inputFile /disk03/lowe12/warwick/mc/atmos/bonsai_out/3001_lowe.mcfit.root
+
+#inputFile ~/standalones/filltqreal/conv2.root # converted rfm_run087096.000001.root with filltqreal
 #inputFile ~/disk02/test_jacks.root
+#inputFile /disk02/usr6/moflaher/run870/test_jacks.root
+#treeName data                                  # the name of the tree within the file
 #treeName mu
 readerName demoReader                          # the name to give the MTreeReader in the DataModel
-maxEntries 1                                   # max number of entries to process before stopping the ToolChain (-1)
-skFile 1                                       # whether to enable additional functionality (1)
-skoptn 31,30,25  #26 - for data                           # options describing what to load via skread/skrawread (31)
-skbadchrun 85609 # for mc when 26 is not given above
+#maxEntry 1644   # for rfm_run087096.000001.root
+#firstEntry 352   # for conv.root
+maxEntries 1     # for conv.root               # max number of entries to process before stopping the ToolChain (-1)
+skFile 0                                       # whether to enable additional functionality (1)
+skoptn 31,30,25,26 # use 26 for data           # options describing what to load via skread/skrawread (31)
+#skbadchrun 85609 # for mc when 26 is not given above
 SK_GEOMETRY 6                                  # which SK geometry this file relates to (4)
-allowedTriggers 28                             # only pass SHE
+#allowedTriggers 28                            # only pass SHE
+#skipPedestals 0

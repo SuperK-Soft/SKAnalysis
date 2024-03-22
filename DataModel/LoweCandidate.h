@@ -11,7 +11,8 @@ class LoweCandidate {
 	public:
 	LoweCandidate();
 	~LoweCandidate();
-	LoweCandidate(LoweCandidate&) = delete;
+	LoweCandidate(const LoweCandidate&) = delete;
+	LoweCandidate& operator=(const LoweCandidate&) = delete;
 	LoweCandidate(LoweCandidate&&);
 	// XXX if modifying matchType be sure to modify the matchTypes map accordingly!
 	enum class matchType {kNotSet=-1,kMistag=0,kIBDPositron=1,kSpallation=2,kDecaye=3,kOther=4};

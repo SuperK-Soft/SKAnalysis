@@ -11,7 +11,8 @@ class MVertex {
 	public:
 	MVertex();
 	~MVertex();
-	MVertex(MVertex&) = delete; // must manually declare copy construction that deals with BStore
+	MVertex(const MVertex&) = delete; // must manually declare copy construction that deals with BStore
+	MVertex& operator=(const MVertex&) = delete;
 	MVertex(MVertex&&);
 	// TODO make these arguments of the constructor so that they're mandatory
 	// (since we don't have getters and can't really identify if they're valid based on default values)
