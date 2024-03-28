@@ -26,11 +26,11 @@ bool SLESearch::Initialise(std::string configfile, DataModel &data){
   m_log= m_data->Log;
 
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
+  if(!m_variables.Get("include_offset", include_offset)) include_offset=false;
 
   connection_table = m_data->GetConnectionTable();
 
   hit_times_plot = TH1D("hit_times", "hit times;time us; number of hits", 1000, 0, 0);
-  event_hit_times_plot = TH1D("event_hit_times_plot", "event_hit_times_plot", 100, 0, 0);
   
   return true;
 }
@@ -61,8 +61,9 @@ bool SLESearch::Execute(){
   std::cout << "constructing vector of hits from event" << std::endl;
   std::vector<double> hits = std::vector<double>(sktqz_.tiskz, sktqz_.tiskz + sktqz_.nqiskz);
   std::vector<double> first_hit_times;
-  
 
+  event_hit_times_plot = TH1D("event_hit_times_plot", "event_hit_times_plot", 200, hits.front(), hits.back());
+  
   // 2. sort hits in time order
   std::cout << "sorting hits into time order" << std::endl;
   std::sort(hits.begin(), hits.end());
@@ -108,8 +109,12 @@ bool SLESearch::Execute(){
       std::cout << " threshold exceeded with window.size(): " << window.size() << std::endl;
       //std::cout << "hits size: " << hits.size() << " next hit idx: " << next_hit_idx << std::endl;
       //std::cout << "before adding deadtime" << std::endl;
-      std::cout<< "at time: " << window.front() << ", window.back() at: " << window.back() << std::endl;
-      first_hit_times.push_back(window.front());
+      //      std::cout<< "at time: " << window.front() << ", window.back() at: " << window.back() << std::endl;
+
+      std::cout << "window.front() at in ticks: " << (window.front() * COUNT_PER_NSEC) + skheadqb_.it0sk;
+      std::cout << "window.back() at in ticks: " << (window.back() * COUNT_PER_NSEC) + skheadqb_.it0sk;
+      
+      first_hit_times.push_back(window.front() + (include_offset ? SLE_t0_offset : 0));
 
       // 5. Yes to 4? Use "algorithm" to determine the timing of the SLE trigger (eg median or quantile calculation)
       // since this may not be accurate for where the hit cluster is, maybe also try to better estimate it
@@ -216,10 +221,17 @@ bool SLESearch::Execute(){
   m_data->CStore.Set("SLE_times", first_hit_times);
 
   int N_SLE = SLE_times.size();
-  std::cout << "found " << N_SLE << " SLE times" << std::endl;
+  std::cout << "found " << N_SLE << " SLE times, they are:" << std::endl;
+
+  for (const auto& time : SLE_times){
+    std::cout << time << std::endl;
+  }
+  
   m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
-  hit_times_plot.SaveAs("hit_times.root");
+  //  hit_times_plot.SaveAs("hit_times.root");
   event_hit_times_plot.SaveAs("event_hit_times_plot.root");
+
+  //  std::cout << 
   
   return true;
 }

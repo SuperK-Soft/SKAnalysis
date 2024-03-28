@@ -22,7 +22,9 @@ class SLESearch: public Tool {
   bool previous_entry_was_muon = false;
   
   ConnectionTable* connection_table = nullptr;
-
+  bool include_offset = false;
+  const double SLE_t0_offset = -885.417;
+  
   double TimeOfFlight(const float*, const float*) const;
 
   TH1D hit_times_plot;
