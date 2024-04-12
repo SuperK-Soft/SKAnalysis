@@ -29,7 +29,7 @@ bool CopyHits::Execute(){
 
   /* 
      To run bonsai we need the skt_ and skq_ commons to actually have hits.
-     There is probably some deep clandestine reason why set_timing_gate() is removing these hits
+     There is probably some deep clandestine reason why set_timing_gate() followed by skcread() is removing these hits
      Rather than finding this, we'll just do things quick and dirty - copying the hits from the TQREAL branch to the required commons.
    */
 
@@ -61,14 +61,32 @@ bool CopyHits::Execute(){
   /* 
      Now let's copy the info over to the skt_ and skq_ commons
      
-     TQReal::T() has indexing running from 0 to TQReal::nhits
+     TQReal::T() has indexing running from 0 to TQReal::nhits-1
      skt_.tisk[] is indexed with the (PMT number - 1) given by skchnl_.ihcab
 
      For example, we need skt_.tisk[skchnl_.ihcab[i] - 1] == TQReal::T(i) for i : 0 -> TQReal::T().size()-1
 
    */
 
-  // first skq_  and skqa_ common blocks - minus the hits:
+  /*
+    first we need to populate the skchnl_.ichab (PMT cable numbers) and IHTIFLZ (the hit flags)
+    They're found in the upper and lower 16 bits respectively of the elements of TQReal::cables.
+  */
+
+  // ID:
+  for (int i = 0; i < tqreal_ptr->nhits; ++i){
+    skchnl_.ihcab[i] = tqreal_ptr->cables.at(i) & 0x0000FFFF;
+    sktqz_.ihtiflz[i] = tqreal_ptr->cables.at(i) >> 16;
+  }
+
+  //OD:  
+  for (int i = 0; i < tqareal_ptr->nhits; ++i){
+    sktqaz_.ihacab[i] = (tqareal_ptr->cables.at(i) & 0x0000FFFF) - QB_OD_OFFSET;
+    sktqaz_.ihtflz[i] = tqareal_ptr->cables.at(i) >> 16;
+  }
+  
+  
+  // then skq_  and skqa_ common blocks - minus the hits:
   // number of ID hits:
   skq_.nqisk = tqreal_ptr->nhits;
   // number of OD hits:
@@ -87,7 +105,7 @@ bool CopyHits::Execute(){
   // charge on OD PMT with max charge:
   skqa_.qamxsk = *max_OD_charge_it;
   // PMT number of that PMT:
-  skqa_.mxqask = skchnl_.ihcab[std::distance(tqareal_ptr->Q.begin(), max_OD_charge_it)] + QB_OD_OFFSET;
+  skqa_.mxqask = sktqaz_.ihacab[std::distance(tqareal_ptr->Q.begin(), max_OD_charge_it)];
 
   // then skt_ and skta_ common blocks - again minus the hits:
   const auto min_ID_time_it = std::min_element(tqreal_ptr->T.begin(),tqreal_ptr->T.end());
@@ -105,11 +123,11 @@ bool CopyHits::Execute(){
   // PMT number for ID PMT that collected the hit with min time:
   skt_.mntisk = skchnl_.ihcab[std::distance(tqreal_ptr->T.begin(), min_ID_time_it)];
   // PMT number for OD PMT that collected the hit with min time:
-  skta_.mntask = skchnl_.ihcab[std::distance(tqreal_ptr->T.begin(), max_ID_time_it)] + QB_OD_OFFSET;
+  skta_.mntask = sktqaz_.ihacab[std::distance(tqreal_ptr->T.begin(), max_ID_time_it)];
   // PMT number for ID PMT that collected the hit with max time:
   skt_.mxtisk = skchnl_.ihcab[std::distance(tqareal_ptr->T.begin(), min_OD_time_it)];
   // PMT number for OD PMT that collected the hit with max time:
-  skta_.mxtask = skchnl_.ihcab[std::distance(tqareal_ptr->T.begin(), max_OD_time_it)] + QB_OD_OFFSET;
+  skta_.mxtask = sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), max_OD_time_it)];
   
   // now the hits in the ID
   for (int i = 0; i < tqreal_ptr->nhits; ++i){
@@ -119,8 +137,8 @@ bool CopyHits::Execute(){
 
   // and finally the hits in the OD
   for (int j = 0; j < tqareal_ptr->nhits; ++j){
-    skta_.task[skchnl_.ihcab[j] - 1 + QB_OD_OFFSET] = tqareal_ptr->T.at(j);
-    skqa_.qask[skchnl_.ihcab[j] - 1 + QB_OD_OFFSET] = tqareal_ptr->Q.at(j);
+    skta_.task[sktqaz_.ihacab[j] - 1] = tqareal_ptr->T.at(j);
+    skqa_.qask[sktqaz_.ihacab[j] - 1] = tqareal_ptr->Q.at(j);
   }
 
   //Let's check everything's worked:
