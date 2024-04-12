@@ -84,6 +84,7 @@ if (tool=="MCCuts") ret=new MCCuts;
 if (tool=="MakeSpectralFitHistos") ret=new MakeSpectralFitHistos;
 if (tool=="SpectralFit") ret=new SpectralFit;
 if (tool=="SplitAtmosInteractions") ret=new SplitAtmosInteractions;
+if (tool=="CopyHits") ret=new CopyHits;
 return ret;
 }
 

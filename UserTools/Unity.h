@@ -79,3 +79,4 @@
 #include "MakeSpectralFitHistos.h"
 #include "SpectralFit.h"
 #include "SplitAtmosInteractions.h"
+#include "CopyHits.h"
