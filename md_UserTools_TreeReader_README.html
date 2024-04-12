@@ -81,6 +81,7 @@ Configuration</h1>
 </div><!-- fragment --><p>When reading ROOT files the following options are also available: </p><div class="fragment"><div class="line">treeName MyTree                                # the name of the tree within the file</div>
 <div class="line">firstEntry 10                                  # the first entry to read (0)</div>
 </div><!-- fragment --><p>When enabling additional functionality for SK files the following options are also available: </p><div class="fragment"><div class="line">LUN 10                                         # LUN to assign to the file (10)</div>
+<div class="line">LUN2 1                                         # one or more additional LUNs may be allocated if required</div>
 <div class="line">SK_GEOMETRY 4                                  # which SK geometry this file relates to (4)</div>
 <div class="line">skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)</div>
 <div class="line">skbadopt 23                                    # which classes of channels to mask (23)</div>
@@ -103,6 +104,7 @@ Configuration</h1>
 <li>skreadMode: on each entry call... 3=both <code>skrawread</code> and <code>skread</code>, 2=<code>skrawread</code> only, 1=<code>skread</code> only, 0=<code>auto</code> - both if input file has no MC branch, only <code>skread</code> otherwise.</li>
 <li>if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see $SKOFL_ROOT/src/skrd/skoptn.F for all options)</li>
 <li>LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.</li>
+<li>duplicate LUNs may be needed if invoking SKOFL/ATMPD functions that hard-code the LUN number, and have different hard-coded values.</li>
 <li>skipPedestals will load the next entry for which <code>skread</code> or <code>skrawread</code> did not return 3 or 4 (not pedestal or runinfo entry).</li>
 <li>Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use: <div class="fragment"><div class="line">StartSkippedInputBranches</div>
 <div class="line">branchA</div>

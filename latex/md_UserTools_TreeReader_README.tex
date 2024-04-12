@@ -28,6 +28,7 @@ When reading ROOT files the following options are also available\+:
 When enabling additional functionality for SK files the following options are also available\+: 
 \begin{DoxyCode}{0}
 \DoxyCodeLine{LUN 10                                         \# LUN to assign to the file (10)}
+\DoxyCodeLine{LUN2 1                                         \# one or more additional LUNs may be allocated if required}
 \DoxyCodeLine{SK\_GEOMETRY 4                                  \# which SK geometry this file relates to (4)}
 \DoxyCodeLine{skoptn 31,30,26,25                             \# options describing what to load via skread/skrawread (31)}
 \DoxyCodeLine{skbadopt 23                                    \# which classes of channels to mask (23)}
@@ -61,6 +62,7 @@ Notes\+:
 \item skread\+Mode\+: on each entry call... 3=both {\ttfamily skrawread} and {\ttfamily skread}, 2={\ttfamily skrawread} only, 1={\ttfamily skread} only, 0={\ttfamily auto} -\/ both if input file has no MC branch, only {\ttfamily skread} otherwise.
 \item if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see \$\+SKOFL\+\_\+\+ROOT/src/skrd/skoptn.F for all options)
 \item LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.
+\item duplicate LUNs may be needed if invoking SKOFL/\+ATMPD functions that hard-\/code the LUN number, and have different hard-\/coded values.
 \item skip\+Pedestals will load the next entry for which {\ttfamily skread} or {\ttfamily skrawread} did not return 3 or 4 (not pedestal or runinfo entry).
 \item Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use\+: 
 \begin{DoxyCode}{0}
