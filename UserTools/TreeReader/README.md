@@ -33,6 +33,7 @@ firstEntry 10                                  # the first entry to read (0)
 When enabling additional functionality for SK files the following options are also available:
 ```
 LUN 10                                         # LUN to assign to the file (10)
+LUN2 1                                         # one or more additional LUNs may be allocated if required
 SK_GEOMETRY 4                                  # which SK geometry this file relates to (4)
 skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)
 skbadopt 23                                    # which classes of channels to mask (23)
@@ -61,6 +62,7 @@ Notes:
 * skreadMode: on each entry call... 3=both `skrawread` and `skread`, 2=`skrawread` only, 1=`skread` only, 0=`auto` - both if input file has no MC branch, only `skread` otherwise.
 * if skoptn contains 25 (mask bad channels) but not 26 (get bad ch list based on current run number), then a reference run must be provided in skbadchrun. skoptn 26 cannot be used with MC data files. (see $SKOFL_ROOT/src/skrd/skoptn.F for all options)
 * LUN will only be respected if it is not already in use. Otherwise the next free LUN will be used. Assignments start from 10.
+* duplicate LUNs may be needed if invoking SKOFL/ATMPD functions that hard-code the LUN number, and have different hard-coded values.
 * skipPedestals will load the next entry for which `skread` or `skrawread` did not return 3 or 4 (not pedestal or runinfo entry).
 * Reading ROOT files can be sped up by only enabling branches you will use. To disable specific branches use:
 ```

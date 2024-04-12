@@ -11,8 +11,10 @@
 #include "type_name_as_string.h"
 #include "MTreeSelection.h"
 #include "TreeManagerMod.h"
+#include "SuperWrapper.h"
 #include "fortran_routines.h"
 #include "SK_helper_functions.h"
+#include <cstdlib> // atoi
 
 TreeReader::TreeReader():Tool(){}
 
@@ -221,6 +223,11 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				case SKROOTMODE::WRITE: skroot_open_write_(&LUN, outputFile.c_str(), outputFile.size()); break;
 				case SKROOTMODE::COPY:  skroot_open_(&LUN, outputFile.c_str(), outputFile.size()); break;
 				default: break; /* no action, just to quiet compiler warnings */
+			}
+			
+			// register any duplicate LUNs requested
+			for(int& dup : duplicate_luns){
+				AddDuplicateLun(LUN, dup);
 			}
 			
 			// the following are not relevant for WRITE mode
@@ -1124,6 +1131,12 @@ bool TreeReader::Finalise(){
 		//std::cout<<m_unique_name<<" tree has "<<otree->GetEntries()<<" entries in Finalise"<<std::endl;
 	}
 	
+	
+	// remove duplicate luns to prevent double deletion
+	for(int& dup : duplicate_luns){
+		EraseLun(dup);
+	}
+	
 	// We could check our lunlist to see if there are any remaining TreeReaders,
 	// and if this is the last one, clean up the SuperManager.
 	// The issue with that is we can't check whether the SuperManager has any
@@ -1741,6 +1754,14 @@ int TreeReader::LoadConfig(std::string configfile){
 		else if(thekey=="skippedTriggers") skippedTriggersString = thevalue;
 		else if(thekey=="skipBadRuns") skipbadruns = stoi(thevalue);
 		else if(thekey=="autoEntryRead") autoRead = stoi(thevalue);
+		// support for adding duplicate LUN numbers. This is rather silly because some SKOFL / ATMPD routines
+		// hard-code the LUN number they read from, and if it's not matched to the one we're using, they either
+		// read the wrong file, or dereference a pointer to a non-existent file and seg. Trouble is, LOWE group
+		// has hard-coded use of LUN 10, while ATMPD has hard-coded use of LUN 1, so we can't even just make sure
+		// we're using the expected number! So, we will allow referencing the same file under multiple LUNs
+		else if(thekey.substr(0,3)=="LUN" && atoi(&thekey.data()[3])!=0){
+			duplicate_luns.push_back(stoi(thevalue));
+		}
 		else {
 			Log(m_unique_name+" error parsing config file line: \""+LineCopy
 				+"\" - unrecognised variable \""+thekey+"\"",v_error,m_verbose);
