@@ -23,6 +23,10 @@ public:
 
  private:
 
+  std::vector<double> interaction_ratios = std::vector<double>(104);
+  
+  TH1D bsenergy_plot;
+  
   TH1D pre_bsgood_cut;
   TH1D pre_bsdirks_cut;
   TH1D pre_bsn50_cut;
