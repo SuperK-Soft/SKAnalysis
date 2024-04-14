@@ -5,7 +5,7 @@ PWD=`pwd`
 Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
-CXXFLAGS += -fmax-errors=5 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Werror=array-bounds -Werror=return-type # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
+CXXFLAGS += -fmax-errors=1 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Werror=array-bounds -Werror=return-type # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
 CXXFLAGS += -Wno-reorder -Wno-misleading-indentation -Wno-sign-compare -Wno-unused-but-set-variable -Wno-unused-variable -Wno-register -Wno-delete-non-virtual-dtor
 
 # debug mode: disable the try{}-catch{} around all Tool methods.
@@ -33,7 +33,7 @@ BINLIB = -L ${RFA_ROOT} -lrfa
 # Atmospheric, Muon and Proton Decay libraries (ATMPD) Headers & Libraries
 OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
 ATMPDINCLUDE = -I $(ATMPD_ROOT)/include -I $(OLD_NTAG_GD_ROOT) -I $(ATMPD_ROOT)/src/recon/fitqun
-ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k -lska
+ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k -lska -lpolfit -lprotonid -lexpq
 
 # functions from kirk bays. BFF (aka newmufit), getdl, ...
 KIRKLIB = -L $(Dependencies)/Kirk -lkirk
@@ -229,7 +229,7 @@ lib/libDataModel.so: DataModel/* lib/libLogging.so lib/libStore.so  $(patsubst D
 
 lib/libMyTools.so: UserTools/*/* UserTools/* lib/libStore.so include/Tool.h lib/libLogging.so UserTools/Factory/Factory.o | lib/libDataModel.so 
 	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
-	g++ $(CXXFLAGS) -shared UserTools/*/*.o -I include -L lib -lStore -lDataModel -lLogging -o lib/libMyTools.so $(MyToolsInclude) $(DataModelInclude) $(MyToolsLib) $(DataModelLib)
+	g++ $(CXXFLAGS) -shared UserTools/*/*.o UserTools/SubToolChain/SubToolChain.o -I include -L lib -lStore -lDataModel -lLogging -o lib/libMyTools.so $(MyToolsInclude) $(DataModelInclude) $(MyToolsLib) $(DataModelLib)
 
 lib/libLogging.so:  $(Dependencies)/ToolFrameworkCore/src/Logging/* | lib/libStore.so
 	cd $(Dependencies)/ToolFrameworkCore && $(MAKE) lib/libLogging.so
@@ -237,11 +237,17 @@ lib/libLogging.so:  $(Dependencies)/ToolFrameworkCore/src/Logging/* | lib/libSto
 	cp $(Dependencies)/ToolFrameworkCore/src/Logging/Logging.h include/
 	cp $(Dependencies)/ToolFrameworkCore/lib/libLogging.so lib/
 
-UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so  $(filter-out UserTools/Factory/Factory.o, $(patsubst UserTools/%.cpp, UserTools/%.o, $(wildcard UserTools/*/*.cpp)) $(patsubst UserTools/%.cc, UserTools/%.o, $(wildcard UserTools/*/*.cc)) $(patsubst UserTools/%.F, UserTools/%.o, $(wildcard UserTools/*/*.F))) | include/Tool.h
-	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
-	@ls $^ &> /dev/null
+UserTools/Factory/Factory.o: UserTools/Factory/Factory.cpp lib/libStore.so include/Tool.h lib/libLogging.so lib/libDataModel.so  $(filter-out UserTools/SubToolChain/SubToolChain.o, $(filter-out UserTools/Factory/Factory.o, $(patsubst UserTools/%.cpp, UserTools/%.o, $(wildcard UserTools/*/*.cpp)) $(patsubst UserTools/%.cc, UserTools/%.o, $(wildcard UserTools/*/*.cc)) $(patsubst UserTools/%.F, UserTools/%.o, $(wildcard UserTools/*/*.F)))) | include/Tool.h
 	cp UserTools/Factory/Factory.h include
 	cp UserTools/Unity.h include
+	
+	@echo -e "\e[38;5;214m\n*************** Making SubToolChain.o ****************\e[0m"
+	cp Dependencies/ToolFrameworkCore/src/ToolChain/ToolChain.h include/
+	cp UserTools/SubToolChain/SubToolChain.h include/
+	g++ $(CXXFLAGS) -c -o UserTools/SubToolChain/SubToolChain.o UserTools/SubToolChain/SubToolChain.cpp -I include $(MyToolsInclude) $(DataModelInclude)
+	
+	@echo -e "\e[38;5;214m\n*************** Making " $@ "****************\e[0m"
+	@ls $^ &> /dev/null
 	g++ $(CXXFLAGS) -c -o $@ $< -I include $(MyToolsInclude) $(DataModelInclude)
 	#-L lib -lStore -lDataModel -lLogging $(MyToolsLib) $(DataModelib)
 
