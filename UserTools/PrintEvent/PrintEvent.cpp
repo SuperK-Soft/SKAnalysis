@@ -41,6 +41,7 @@ bool PrintEvent::Execute(){
 	
 	PrintHeaderInfo();
 	
+	runinfsk_();
 	PrintRunInfo();
 	
 	PrintTriggerInfo(); // from commons... not sure this is all available from a single class.
@@ -1073,6 +1074,7 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 			// print hits
 			std::cout<<"Hits in subtrigger "<<j<<"\n"
 			         <<"----------------------"<<std::endl;
+			//PrintHits(); // everything
 			PrintTQCommons(true, 3);   // ID hits
 			//PrintTQCommons(false, 3);  // OD hits
 			//PrintTQZCommons(false, 3);  // all hits
@@ -1149,6 +1151,10 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 		
 	}
 	
+	// we should re-set the timing gate back to the primary trigger
+	set_timing_gate_(&it0sk);
+	skcread_(&lun, &get_ok);
+	//PrintTQCommons(true,3);
 	
 	// *see $SKOFL_ROOT/examples/lowe/mue_decay.F for example that selects parent mu & decay-e,
 	// applies lfmufit to primary SHE triggers and saves event, then applies lfallfit_sk4_data_

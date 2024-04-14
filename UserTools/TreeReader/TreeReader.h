@@ -104,6 +104,7 @@ class TreeReader: public Tool {
 	std::vector<std::string> ActiveOutputBranches;
 	std::vector<std::string> SkippedInputBranches;
 	std::vector<std::string> SkippedOutputBranches;
+	std::vector<int> duplicate_luns;
 	
 	// functions involved in buffering common blocks
 	// to load SHE+AFT pairs together
