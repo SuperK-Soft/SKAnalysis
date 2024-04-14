@@ -33,6 +33,8 @@ class SplitAtmosInteractions: public Tool {
   TH1D NCQE_plot;
   TH1D non_NCQE_plot;
 
+  std::map<std::string, int> interactions_for_pi_chart;
+
 };
 
 #endif

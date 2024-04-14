@@ -4,6 +4,8 @@
 #include "loweroot.h"
 #include "MTreeReader.h"
 
+#include "Constants.h"
+
 SplitAtmosInteractions::SplitAtmosInteractions():Tool(){}
 
 
@@ -18,7 +20,8 @@ bool SplitAtmosInteractions::Initialise(std::string configfile, DataModel &data)
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 
   GetReader();
-
+  
+  
   interaction_mode_plot = TH1D("interaction_mode", "interaction_mode", 100, 0, 0);
   interaction_mode_zero = TH1D("interaction_mode_zero", "interaction_mode_zero;bsenergy", 100, 0, 0);
   NCQE_plot = TH1D("NCQE_plot", "NCQE_plot;bsenergy", 100, 0, 0);
@@ -38,7 +41,9 @@ bool SplitAtmosInteractions::Execute(){
   int interaction_mode = nework_.modene;
   std::cout << "interaction mode: " << interaction_mode << std::endl;
 
-  if (bsenergy > 1000){
+  std::cout << NEUTInteractionModeToString(interaction_mode) << std::endl;
+  
+  if (bsenergy > 9000){
     return true;
   }
 
@@ -55,7 +60,9 @@ bool SplitAtmosInteractions::Execute(){
   } else {
     non_NCQE_plot.Fill(bsenergy);
   }
-  
+
+  //interactions_for_pi_chart[NEUTInteractionModeToString(interaction_mode)]++;
+  interactions_for_pi_chart[GetNEUTModeProcess(interaction_mode)]++;
   
   return true;
 }
@@ -73,6 +80,11 @@ bool SplitAtmosInteractions::Finalise(){
   NCQE_plot.Write();
   non_NCQE_plot.Write();
 
+  std::cout << "interaction values are\n";
+  for (const auto& [x,y] : interactions_for_pi_chart){
+    std::cout << x << " = " << y << std::endl;
+  }
+  
   return true;
 }
 
