@@ -68,101 +68,91 @@ bool CopyHits::Execute(){
 
    */
 
-  /*
-    first we need to populate the skchnl_.ichab (PMT cable numbers) and IHTIFLZ (the hit flags)
-    They're found in the upper and lower 16 bits respectively of the elements of TQReal::cables.
-  */
+  // let's zero/max things where appropriate
+  skq_.nqisk = 0;
+  skq_.mxqisk = 0;
+  skt_.timnsk = 9999999;
+  skt_.timxsk = 0;
+
+  skqa_.nqask = 0;
+  skqa_.qasmsk = 0;
+  skta_.tamnsk = 9999999;
+  skta_.mxtask = 0;
   
   // ID:
   for (int i = 0; i < tqreal_ptr->nhits; ++i){
+    // first we need to populate the skchnl_.ichab (PMT cable numbers) and IHTIFLZ (the hit flags)
+    // the upper 16 bits are the cable numbers
     skchnl_.ihcab[i] = tqreal_ptr->cables.at(i) & 0x0000FFFF;
+    // the lower 16 are the hit flags
     sktqz_.ihtiflz[i] = tqreal_ptr->cables.at(i) >> 16;
-  }
-
-  //OD:  
-  for (int i = 0; i < tqareal_ptr->nhits; ++i){
-    sktqaz_.ihacab[i] = (tqareal_ptr->cables.at(i) & 0x0000FFFF) - QB_OD_OFFSET;
-    //if (sktqaz_.ihacab[i] > MAXPMA){std::cout << "tqareal_ptr->cables.at(i) & 0x0000FFFF: "<< (tqareal_ptr->cables.at(i) & 0x0000FFFF) << std::endl;}
-    if (i<5){std::cout << "tqareal_ptr->cables.at("<<i<<") & 0x0000FFFF: "<< (tqareal_ptr->cables.at(i) & 0x0000FFFF) << std::endl;}
-    sktqaz_.ihtflz[i] = tqareal_ptr->cables.at(i) >> 16;
-  }
-  
-  // then skq_  and skqa_ common blocks - minus the hits:
-  // number of ID hits:
-  skq_.nqisk = tqreal_ptr->nhits;
-  // number of OD hits:
-  skqa_.nqask = tqareal_ptr->nhits;
-  // total charge in ID:
-  skq_.qismsk = std::accumulate(tqreal_ptr->Q.begin(), tqreal_ptr->Q.end(), 0);
-  // total charge in OD:
-  skqa_.qasmsk = std::accumulate(tqareal_ptr->Q.begin(), tqareal_ptr->Q.end(), 0);
-
-  const auto max_ID_charge_it = std::max_element(tqreal_ptr->Q.begin(), tqreal_ptr->Q.end());
-  // charge on ID PMT with max charge:
-  skq_.qimxsk = *max_ID_charge_it;
-  // PMT number of that PMT:
-  skq_.mxqisk = skchnl_.ihcab[std::distance(tqreal_ptr->Q.begin(), max_ID_charge_it)];
-  const auto max_OD_charge_it = std::max_element(tqareal_ptr->Q.begin(), tqareal_ptr->Q.end());
-  // charge on OD PMT with max charge:
-  skqa_.qamxsk = *max_OD_charge_it;
-  // PMT number of that PMT:
-  skqa_.mxqask = sktqaz_.ihacab[std::distance(tqareal_ptr->Q.begin(), max_OD_charge_it)];
-
-  // then skt_ and skta_ common blocks - again minus the hits:
-  const auto min_ID_time_it = std::min_element(tqreal_ptr->T.begin(),tqreal_ptr->T.end());
-  // min hit time in ID:
-  skt_.timnsk = *min_ID_time_it;
-  const auto min_OD_time_it = std::min_element(tqareal_ptr->T.begin(),tqareal_ptr->T.end());
-  // min hit time in OD:
-  skta_.tamnsk = *min_OD_time_it;
-  const auto max_ID_time_it = std::max_element(tqreal_ptr->T.begin(),tqreal_ptr->T.end());
-  // max hit time in ID:
-  skt_.timxsk = *max_ID_time_it;
-  const auto max_OD_time_it = std::max_element(tqareal_ptr->T.begin(),tqareal_ptr->T.end());
-  // max hit time in OD:
-  skta_.tamxsk = *max_OD_time_it;
-  // PMT number for ID PMT that collected the hit with min time:
-  skt_.mntisk = skchnl_.ihcab[std::distance(tqreal_ptr->T.begin(), min_ID_time_it)];
-  // PMT number for OD PMT that collected the hit with min time:
-  std::cout << "std::distance(tqareal_ptr->T.begin(), min_OD_time_it): " << std::distance(tqareal_ptr->T.begin(), min_OD_time_it) << std::endl;
-  std::cout << "sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), min_OD_time_it)]: " << sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), min_OD_time_it)] << std::endl;
-  skta_.mntask = sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), min_OD_time_it)]; //
-  std::cout << "skta_.mntask: " << skta_.mntask << std::endl;
-  // PMT number for ID PMT that collected the hit with max time:
-  skt_.mxtisk = skchnl_.ihcab[std::distance(tqreal_ptr->T.begin(), max_ID_time_it)];
-  // PMT number for OD PMT that collected the hit with max time:
-  skta_.mxtask = sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), max_OD_time_it)]; //
-  std::cout << "std::distance(tqareal_ptr->T.begin(), max_OD_time_it): " << std::distance(tqareal_ptr->T.begin(), max_OD_time_it) << std::endl;
-  std::cout << "sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), max_OD_time_it)]: " << sktqaz_.ihacab[std::distance(tqareal_ptr->T.begin(), max_OD_time_it)] << std::endl;
-  std::cout << "skta_.mxtask (after assignment): " << skta_.mxtask << std::endl;
-  // now the hits in the ID
-  bool bad = false;
-  for (int i = 0; i < tqreal_ptr->nhits; ++i){
-    if (skta_.mxtask > 1000000 && !bad){
-      std::cout << "goes bad after i = " << i << " of nhits = " << tqreal_ptr->nhits << std::endl;
-      bad = true;
+    if (!(sktqz_.ihtiflz[i] & 1)){continue;} // ignore hits not in 1.3us window around the primary trigger
+    // number of ID hits:
+    ++skq_.nqisk;
+    // total ID charge:
+    skq_.qismsk += tqreal_ptr->Q.at(i);
+    // max charge deposited on ID PMT:
+    if (tqreal_ptr->Q.at(i) > skq_.qimxsk){
+      skq_.qimxsk = tqreal_ptr->Q.at(i);
+      // the PMT number with that charge:
+      skq_.mxqisk = skchnl_.ihcab[i];
     }
-    if (i == 0){std::cout << "skta_.mxtask (at start of ID hit fill loop): " << skta_.mxtask << std::endl;}
+    // min hit time in ID:
+    if (skt_.timnsk > tqreal_ptr->T.at(i)){
+      skt_.timnsk = tqreal_ptr->T.at(i);
+      // the PMT number with that time:
+      skt_.mntisk = skchnl_.ihcab[i];
+    }
+    // max hit time in ID:
+    if (skt_.timxsk < tqreal_ptr->T.at(i)){
+      skt_.timxsk = tqreal_ptr->T.at(i);
+      // the PMT number with that time:
+      skt_.mxtisk = skchnl_.ihcab[i];
+    }
+    // then the actual hits in the ID:
     skt_.tisk[skchnl_.ihcab[i] - 1] = tqreal_ptr->T.at(i);
-    if (i == 0){std::cout << "skta_.mxtask (after 0th ID hit time): " << skta_.mxtask << std::endl;}
-    if (i == tqreal_ptr->nhits-1){std::cout << "skta_.mxtask (after last ID hit time): " << skta_.mxtask << std::endl;}
     skq_.qisk[skchnl_.ihcab[i] - 1] = tqreal_ptr->Q.at(i);
-    if (i == 0){std::cout << "skta_.mxtask (after 0th ID hit charge): " << skta_.mxtask << std::endl;}
-    if (i == tqreal_ptr->nhits-1){std::cout << "skta_.mxtask (after last ID hit charge): " << skta_.mxtask << std::endl;}
   }
-  std::cout << "skta_.mxtask (after filling ID hits): " << skta_.mxtask << std::endl;
-  // and finally the hits in the OD
+
+  // OD:
   for (int j = 0; j < tqareal_ptr->nhits; ++j){
+    // first we need to populate the sktqaz_.ihacab (PMT cable numbers) and IHTFLZ (the hit flags)
+    // the upper 16 bits are the cable numbers
+    sktqaz_.ihacab[j] = (tqareal_ptr->cables.at(j) & 0x0000FFFF) - QB_OD_OFFSET;
+    // the lower 16 are the hit flags
+    sktqaz_.ihtflz[j] = tqareal_ptr->cables.at(j) >> 16;
+    if (!(sktqaz_.ihtflz[j] & 1)){continue;} // ignore hits not in 1.3us window around the primary trigger
+    // number of OD hits:
+    ++skqa_.nqask;
+    // total OD charge:
+    skqa_.qasmsk += tqareal_ptr->Q.at(j);
+    // max charge deposited on OD PMT:
+    if (tqareal_ptr->Q.at(j) > skqa_.qamxsk){
+      skqa_.qamxsk = tqareal_ptr->Q.at(j);
+      // the PMT number with that charge:
+      skqa_.mxqask = sktqaz_.ihacab[j];
+    }
+    // min hit time in OD:
+    if (skta_.tamnsk > tqareal_ptr->T.at(j)){
+      skta_.tamnsk = tqareal_ptr->T.at(j);
+      // the PMT number with that time:
+      skta_.mntask = sktqaz_.ihacab[j];
+    }
+    // max hit time in OD:
+    if (skta_.mxtask < tqareal_ptr->T.at(j)){
+      skta_.mxtask = tqareal_ptr->T.at(j);
+      // the PMT number with that time:
+      skta_.mxtask = sktqaz_.ihacab[j];
+    }
+
+    //now the hits in the OD
     skta_.task[sktqaz_.ihacab[j] - 1] = tqareal_ptr->T.at(j);
     skqa_.qask[sktqaz_.ihacab[j] - 1] = tqareal_ptr->Q.at(j);
   }
-  std::cout << "skta_.mxtask (after filling OD hits): " << skta_.mxtask << std::endl;
-  
+    
   //Let's check everything's worked:
   PrintTQCommons(true, 5);
-  std::cout << "skta_.mxtask (after first PrintTQCommons): " << skta_.mxtask << std::endl;
   PrintTQCommons(false, 5);
-  std::cout << "skta_.mxtask (after second PrintTQCommons): " << skta_.mxtask << std::endl;
    
   return true;
 }
@@ -187,8 +177,6 @@ void CopyHits::GetReader(){
 }
 
 bool CopyHits::PrintTQCommons(const bool& ID, const int& nhits){
-  std::cout << "skta_.mxtask (first line of PrintTQCommons scope): " << skta_.mxtask << std::endl;
-	
   std::cout<<"\nPrinting Hits in "<<(ID ? "skq_, skt_" : "skta_, skqa_")<<"\n"<<std::endl;
 	
   if(ID){
@@ -252,6 +240,5 @@ bool CopyHits::PrintTQCommons(const bool& ID, const int& nhits){
 		
   }
 
-  std::cout << "skta_.mxtask (end of PrintTQCommons scope): " << skta_.mxtask << std::endl;
   return true;
 }
