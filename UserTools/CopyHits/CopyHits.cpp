@@ -139,8 +139,8 @@ bool CopyHits::Execute(){
       skta_.mntask = sktqaz_.ihacab[j];
     }
     // max hit time in OD:
-    if (skta_.mxtask < tqareal_ptr->T.at(j)){
-      skta_.mxtask = tqareal_ptr->T.at(j);
+    if (skta_.tamxsk < tqareal_ptr->T.at(j)){
+      skta_.tamxsk= tqareal_ptr->T.at(j);
       // the PMT number with that time:
       skta_.mxtask = sktqaz_.ihacab[j];
     }
