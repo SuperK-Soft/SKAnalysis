@@ -363,19 +363,14 @@ int DataModel::GetNextLUN(std::string reader, int lun){
 	// sorting allows us to immediately know the next free LUN in case this one is in use.
 	std::map<int,std::string> revlist;
 	for(auto&& apair : lunlist){ revlist.emplace(apair.second,apair.first); }
-	if(lun!=0 && revlist.count(lun)){
-		int reqLUN=lun;
+	int reqLUN=(lun==0) ? 10 : lun;
+	if(revlist.count(lun)){
 		lun = revlist.rbegin()->first; // get the last assigned LUN
 		++lun;                         // we'll use the next one
 		std::cerr<<"DataModel::GetNextLUN Warning! Cannot assign LUN "<<reqLUN
 		         <<" as it is already taken. Assigning "<<lun<<" instead."<<std::endl;
-	} else if(revlist.size()) {
-		// if given lun 0, just pass out the next one without warning
-		lun = revlist.rbegin()->first;
-		++lun;
 	} else {
-		// default to 10
-		lun = 10;
+		lun=reqLUN;
 	}
 	//assign the LUN
 	lunlist.emplace(reader,lun);
