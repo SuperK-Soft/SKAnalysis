@@ -124,9 +124,13 @@ bool SLESearch::Execute(){
       //      for (int i = ; 
       // 7. Store new SLE time
       std::cout << "estimated SLE time: " << current_SLE_time << std::endl;
-      hit_times_plot.Fill(current_SLE_time);
-      SLE_times.push_back(current_SLE_time);
-      
+      if (current_SLE_time > 0){
+	hit_times_plot.Fill(current_SLE_time);
+	SLE_times.push_back(current_SLE_time);
+      } else {
+	std::cout << "SLE time was before primary trigger - so we ignore" << std::endl; 
+      }
+	
       std::cout << std::endl << std::endl;
 
       /*std::cout << "some hits: " << std::endl;
@@ -217,21 +221,23 @@ bool SLESearch::Execute(){
       }
     }
   }
-  
-  m_data->CStore.Set("SLE_times", first_hit_times);
+
+  //m_data->CStore.Set("SLE_times", first_hit_times);
+  m_data->CStore.Set("SLE_times", SLE_times);
 
   int N_SLE = SLE_times.size();
   std::cout << "found " << N_SLE << " SLE times, they are:" << std::endl;
 
-  for (const auto& time : SLE_times){
-    std::cout << time << std::endl;
-  }
-  
+  for (const auto& time : SLE_times){std::cout << "time in ns: " << time << std::endl;}
+  std::cout << "then" << std::endl;
+  for (const auto& time : SLE_times){std::cout << "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
+
+
+  // we do this again in Pre recon cuts
   m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
+
   //  hit_times_plot.SaveAs("hit_times.root");
   event_hit_times_plot.SaveAs("event_hit_times_plot.root");
-
-  //  std::cout << 
   
   return true;
 }

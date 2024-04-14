@@ -23,15 +23,37 @@ bool LoadSubTrigger::Initialise(std::string configfile, DataModel &data){
 
 
 bool LoadSubTrigger::Execute(){
-   
+
+  std::cout << "before:" << std::endl;
+  std::cout<<"ID hits:\n"
+	   <<"\tskq_.nqisk (in-1.3us only): "<<skq_.nqisk<<"\n"
+	   <<"\tsktqz_.nqiskz (all hits, after bad channel masking): "<<sktqz_.nqiskz<<"\n" // == skq_.nqisk_raw
+	   <<"\trawtqinfo_.nqisk_raw (all hits, before bad channel masking): "<<rawtqinfo_.nqisk_raw<<"\n"
+	   <<"\tin 1.3us gate:\n"
+	   <<"\t\tTotal ID charge (skq_.qismsk): "<<skq_.qismsk<<" [p.e.]" << std::endl; // charges are floats btw
+
+  
   std::vector<double> SLE_times = {};
   m_data->CStore.Get("SLE_times", SLE_times);
+
+  // for (const auto& time : SLE_times){std::cout << "time in ns: " << time << std::endl;}
+  // std::cout << "then" << std::endl;
+  // for (const auto& time : SLE_times){std::cout << "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
+  
   std::cout << "this_subtrigger_nsec:  " << SLE_times.at(trigger_idx) << std::endl;
   double this_subtrigger_ticks = (SLE_times.at(trigger_idx) * COUNT_PER_NSEC) + skheadqb_.it0sk;
   std::cout << "this_subtrigger ticks:  " << this_subtrigger_ticks << std::endl;
 
   int this_subtrigger_ticks_tmp = int(this_subtrigger_ticks);
   set_timing_gate_(&this_subtrigger_ticks_tmp);
+
+  std::cout << "after set_timing_gate: " << std::endl;
+  std::cout<<"ID hits:\n"
+	   <<"\tskq_.nqisk (in-1.3us only): "<<skq_.nqisk<<"\n"
+	   <<"\tsktqz_.nqiskz (all hits, after bad channel masking): "<<sktqz_.nqiskz<<"\n" // == skq_.nqisk_raw
+	   <<"\trawtqinfo_.nqisk_raw (all hits, before bad channel masking): "<<rawtqinfo_.nqisk_raw<<"\n"
+	   <<"\tin 1.3us gate:\n"
+	   <<"\t\tTotal ID charge (skq_.qismsk): "<<skq_.qismsk<<" [p.e.]" << std::endl; // charges are floats btw
 
   // call `skcread` to re-load common blocks for this subtrigger
   int get_ok = 0;
@@ -45,6 +67,7 @@ bool LoadSubTrigger::Execute(){
     return false;
   }
 
+  std::cout << "after skcread: " << std::endl;
   std::cout<<"ID hits:\n"
 	   <<"\tskq_.nqisk (in-1.3us only): "<<skq_.nqisk<<"\n"
 	   <<"\tsktqz_.nqiskz (all hits, after bad channel masking): "<<sktqz_.nqiskz<<"\n" // == skq_.nqisk_raw
