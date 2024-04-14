@@ -42,24 +42,41 @@ bool CalculatePreactivityObservables::Execute(){
     - loop from * to ** until the last hit in the vector is 12ns before the main trigger
   */
   
-  double lowest_in_gate_time = 9999;
-  const double q50n50_window_size = 50;
-  const double preact_window_size = 15;
+  double lowest_in_gate_time = 9999999;
+  const double q50n50_window_size = 50; //think this is in ns
+  const double preact_window_size = 15; 
   
-  std::vector<Hit> tof_sub_hits = std::vector<Hit>(sktqz_.nqiskz, {0,0,0});
+  //std::vector<Hit> tof_sub_hits = std::vector<Hit>(sktqz_.nqiskz, {0,0,0});
+  std::cout << "number of hits: " << sktqz_.nqiskz << std::endl;
+  std::vector<Hit> tof_sub_hits;
   
   for (int pmt_idx = 0; pmt_idx < sktqz_.nqiskz; ++pmt_idx){
     const int cable_number = sktqz_.icabiz[pmt_idx];
     float pmt_loc[3] = {};
     connection_table->GetTubePosition(cable_number, pmt_loc);
+    if (pmt_idx < 10){
+      std::cout << "pmt_idx: " << pmt_idx << " has location: (" << pmt_loc[0] << ", " << pmt_loc[1] << ", " << pmt_loc[2] << ")" << std::endl;
+    }
+    
     const double new_time = sktqz_.tiskz[pmt_idx] - skroot_lowe_.bsvertex[3] - TimeOfFlight(skroot_lowe_.bsvertex, pmt_loc);
     if (((sktqz_.ihtiflz[pmt_idx] & 0x01)==1) && (new_time < lowest_in_gate_time)){
       lowest_in_gate_time = new_time;
     }
     tof_sub_hits.emplace_back(new_time, 0, sktqz_.qiskz[pmt_idx]); //calculate goodness in the next loop
   }
+  std::cout << "lowest_in_gate_time was: " << lowest_in_gate_time << std::endl;
 
+  std::cout << "some of the " << tof_sub_hits.size() << " hits before sort:" << std::endl;
+  for (size_t hit_idx; hit_idx < tof_sub_hits.size(); ++hit_idx){
+    if (hit_idx < 10){std::cout << tof_sub_hits.at(hit_idx).time << std::endl;}
+  }
+  
   std::sort(tof_sub_hits.begin(), tof_sub_hits.end(), [](const Hit& h1, const Hit& h2){return h1.time < h2.time;});
+
+  std::cout << "some of the " << tof_sub_hits.size() << " hits after sort:" << std::endl;
+  for (size_t hit_idx; hit_idx < tof_sub_hits.size(); ++hit_idx){
+    if (hit_idx < 10){std::cout << tof_sub_hits.at(hit_idx).time << std::endl;}
+  }
 
   /*
     Since a lot of this code would be duplicated, we'll also calculate the q50/n50 variables whilst we're at it.
@@ -78,11 +95,17 @@ bool CalculatePreactivityObservables::Execute(){
     }
   }
 
+  std::cout << "q50n50_window.size(): " << q50n50_window.size() << std::endl;
   double q50n50_ratio = 0;
   
   while (next_hit_idx != tof_sub_hits.size() - 1){
 
-    const double current_q50 = std::accumulate(q50n50_window.begin(), q50n50_window.end(), 0, [](double a, const Hit& h){return a + h.charge;});
+    double current_q50 = 0;
+    for (const auto& h : q50n50_window){
+      current_q50 += h.charge;
+    }
+    
+    //const double current_q50 = std::accumulate(q50n50_window.begin(), q50n50_window.end(), 0, [](double a, const Hit& h){return a + h.charge;});
     if (q50n50_ratio > current_q50 / q50n50_window.size()){
       q50n50_ratio = current_q50 / q50n50_window.size();
     }
@@ -157,6 +180,10 @@ bool CalculatePreactivityObservables::Execute(){
     }
   }
 
+  std::cout << "q50n50_ratio: " << q50n50_ratio << std::endl;
+  std::cout << "max_pre: " << max_pre << std::endl;
+  std::cout << "max_pregate: " << max_pregate << std::endl;
+  
   m_data->CStore.Set("q50n50_ratio", q50n50_ratio);
   m_data->CStore.Set("max_pre", max_pre);
   m_data->CStore.Set("max_pregate", max_pregate);
