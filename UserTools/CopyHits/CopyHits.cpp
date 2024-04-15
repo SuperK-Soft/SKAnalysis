@@ -38,10 +38,10 @@ bool CopyHits::Execute(){
     throw std::runtime_error("CopyHits::Execute: failed to get TQREAL branch");
   }
 
-  TQReal* tqareal_ptr = nullptr;
-  if (!tree_reader_ptr->Get("TQAREAL", tqareal_ptr) || tqareal_ptr == nullptr){
-    throw std::runtime_error("CopyHits::Execute: failed to get TQAREAL branch");
-  }
+  // TQReal* tqareal_ptr = nullptr;
+  // if (!tree_reader_ptr->Get("TQAREAL", tqareal_ptr) || tqareal_ptr == nullptr){
+  //   throw std::runtime_error("CopyHits::Execute: failed to get TQAREAL branch");
+  // }
   
   std::cout << "got TQREAL and TQAREAL branches, here are some hits:" << std::endl;
   std::cout << "TQREAL::nhits = " << tqreal_ptr->nhits << std::endl;
@@ -51,12 +51,12 @@ bool CopyHits::Execute(){
 	      << " and charge " << tqreal_ptr->Q.at(i)
 	      << std::endl;
   }
-  for (int i = 0; i < std::min(tqareal_ptr->nhits, 5); ++i){
-    std::cout << "TQAREAL hit no: " << i
-	      << " has time " << tqareal_ptr->T.at(i)
-	      << " and charge " << tqareal_ptr->Q.at(i)
-	      << std::endl;
-  }
+  // for (int i = 0; i < std::min(tqareal_ptr->nhits, 5); ++i){
+  //   std::cout << "TQAREAL hit no: " << i
+  // 	      << " has time " << tqareal_ptr->T.at(i)
+  // 	      << " and charge " << tqareal_ptr->Q.at(i)
+  // 	      << std::endl;
+  // }
 
   /* 
      Now let's copy the info over to the skt_ and skq_ commons
@@ -114,46 +114,57 @@ bool CopyHits::Execute(){
     skq_.qisk[skchnl_.ihcab[i] - 1] = tqreal_ptr->Q.at(i);
   }
 
-  // OD:
-  for (int j = 0; j < tqareal_ptr->nhits; ++j){
-    // first we need to populate the sktqaz_.ihacab (PMT cable numbers) and IHTFLZ (the hit flags)
-    // the upper 16 bits are the cable numbers
-    sktqaz_.ihacab[j] = (tqareal_ptr->cables.at(j) & 0x0000FFFF) - QB_OD_OFFSET;
-    // the lower 16 are the hit flags
-    sktqaz_.ihtflz[j] = tqareal_ptr->cables.at(j) >> 16;
-    if (!(sktqaz_.ihtflz[j] & 1)){continue;} // ignore hits not in 1.3us window around the primary trigger
-    // number of OD hits:
-    ++skqa_.nqask;
-    // total OD charge:
-    skqa_.qasmsk += tqareal_ptr->Q.at(j);
-    // max charge deposited on OD PMT:
-    if (tqareal_ptr->Q.at(j) > skqa_.qamxsk){
-      skqa_.qamxsk = tqareal_ptr->Q.at(j);
-      // the PMT number with that charge:
-      skqa_.mxqask = sktqaz_.ihacab[j];
-    }
-    // min hit time in OD:
-    if (skta_.tamnsk > tqareal_ptr->T.at(j)){
-      skta_.tamnsk = tqareal_ptr->T.at(j);
-      // the PMT number with that time:
-      skta_.mntask = sktqaz_.ihacab[j];
-    }
-    // max hit time in OD:
-    if (skta_.tamxsk < tqareal_ptr->T.at(j)){
-      skta_.tamxsk= tqareal_ptr->T.at(j);
-      // the PMT number with that time:
-      skta_.mxtask = sktqaz_.ihacab[j];
-    }
+  // BONSAI supposedly doesn't need the OD hits to reconstruct but there might be other sections of the reduction that do require them, so this is commented out for now.
+  // FIXME: charges and times were not being read in properly - the 1.3us selection was cutting out everything
+  
+  // // OD:
+  // for (int j = 0; j < tqareal_ptr->nhits; ++j){
+  //   // first we need to populate the sktqaz_.ihacab (PMT cable numbers) and IHTFLZ (the hit flags)
+  //   // the upper 16 bits are the cable numbers
+  //   sktqaz_.ihacab[j] = (tqareal_ptr->cables.at(j) & 0x0000FFFF) - QB_OD_OFFSET;
+  //   // the lower 16 are the hit flags
+  //   sktqaz_.ihtflz[j] = tqareal_ptr->cables.at(j) >> 16;
+  //   //if (!(sktqaz_.ihtflz[j] & 1)){std::cout << "reject hit j="<<j<<std::endl;continue;} // ignore hits not in 1.3us window around the primary trigger
+  //   if((sktqaz_.ihtflz[j] & 0x01)==0){continue;}
+  //   std::cout << "accept hit j="<<j<<std::endl;
+  //   // number of OD hits:
+  //   ++skqa_.nqask;
+  //   // total OD charge:
+  //   skqa_.qasmsk += tqareal_ptr->Q.at(j);
+  //   // max charge deposited on OD PMT:
+  //   if (tqareal_ptr->Q.at(j) > skqa_.qamxsk){
+  //     skqa_.qamxsk = tqareal_ptr->Q.at(j);
+  //     // the PMT number with that charge:
+  //     skqa_.mxqask = sktqaz_.ihacab[j];
+  //   }
+  //   // min hit time in OD:
+  //   if (skta_.tamnsk > tqareal_ptr->T.at(j)){
+  //     skta_.tamnsk = tqareal_ptr->T.at(j);
+  //     // the PMT number with that time:
+  //     skta_.mntask = sktqaz_.ihacab[j];
+  //   }
+  //   // max hit time in OD:
+  //   if (skta_.tamxsk < tqareal_ptr->T.at(j)){
+  //     skta_.tamxsk= tqareal_ptr->T.at(j);
+  //     // the PMT number with that time:
+  //     skta_.mxtask = sktqaz_.ihacab[j];
+  //   }
 
-    //now the hits in the OD
-    skta_.task[sktqaz_.ihacab[j] - 1] = tqareal_ptr->T.at(j);
-    skqa_.qask[sktqaz_.ihacab[j] - 1] = tqareal_ptr->Q.at(j);
-  }
+  //   //now the hits in the OD
+  //   skta_.task[sktqaz_.ihacab[j] - 1] = tqareal_ptr->T.at(j);
+  //   skqa_.qask[sktqaz_.ihacab[j] - 1] = tqareal_ptr->Q.at(j);
+
+  //   if (j <= 5){
+  //     std::cout << "skta_.task[sktqaz_.ihacab["<<j<<"] - 1] : " << skta_.task[sktqaz_.ihacab[j] - 1];
+  //     std::cout << "skqa_.qask[sktqaz_.ihacab["<<j<<"<<] - 1] : " << skqa_.qask[sktqaz_.ihacab[j] - 1];
+  //   }
+    
+  // }
     
   //Let's check everything's worked:
   PrintTQCommons(true, 5);
-  PrintTQCommons(false, 5);
-   
+  //PrintTQCommons(false, 5);
+  
   return true;
 }
 
