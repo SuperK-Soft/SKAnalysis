@@ -401,7 +401,7 @@ int MTreeReader::ParseBranchDims(std::string branchname){
 	}
 	
 	int vlevel=2;
-	if(verbosity>vlevel) std::cout<<"end of branch title parsing, found "
+	if(verbosity>vlevel) std::cout<<"end of parsing branch title '"<< branchname << "', found "
 								  <<branch_dimensions.at(branchname).size()<<" dimensions, [";
 	// loop over the vector of dimensions
 	std::string dims_string = "";
@@ -419,6 +419,7 @@ int MTreeReader::ParseBranchDims(std::string branchname){
 		}
 		if((verbosity>vlevel)&&(dims_pair!=(branch_dimensions.at(branchname).back()))) std::cout<<"], [";
 	}
+	if (verbosity>vlevel){std::cout << "]" << std::endl;}
 	// if all dimensions are static we can cache the results for quicker lookup
 	if(allstatics){ branch_dims_cache.emplace(branchname,cached_dims); }
 	// append dimensions to the type string, since they aren't properly indicated by TLeaf::GetTypeName
