@@ -47,6 +47,11 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
      
   */
 
+  std::vector<int> SLE_times;
+  m_data->CStore.Get("SLE_times", SLE_times);
+  N = SLE_times.size();
+  
+  
   std::cout << "this neutron candidate has:" << std::endl;
   std::cout << "skroot_lowe_.bsgood[1]: " << skroot_lowe_.bsgood[1] << std::endl;
   std::cout << "skroot_lowe_.bsdirks: " << skroot_lowe_.bsdirks << std::endl;
@@ -65,11 +70,17 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
   // const float ldt = CalculateLongitudinalDistance(skroot_mu_.muboy_entpos[muboy_idx], skroot_mu_.muboy_dir, skroot_lowe_.bsvertex);
   // pre_ldt_cut.Fill(ldt);
   // std::cout << "ldt: " << ldt << std::endl;
-  
+
+  if (skroot_lowe_.bsenergy > 9000){
+    std::cout << "neutron candidate was not reconstructed properly - rejected" << std::endl;
+    --N;
+    return true;
+  }
   bsenergy_plot.Fill(skroot_lowe_.bsenergy);
   
   pre_bsgood_cut.Fill(skroot_lowe_.bsgood[1]);
   if (skroot_lowe_.bsgood[1] < 0.4){
+    --N;
     std::cout << "neutron candidate does not meet bsgood cut of > 0.4" << std::endl;
     return true;
   }
@@ -77,6 +88,7 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
 
   pre_bsdirks_cut.Fill(skroot_lowe_.bsdirks);
   if (skroot_lowe_.bsdirks > 0.4){
+    --N;
     std::cout << "neutron candidate does not meet bsdirks cut of < 0.4" << std::endl;
     return true;
   }
@@ -84,6 +96,7 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
 
   pre_bsn50_cut.Fill(skroot_lowe_.bsn50);
   if (skroot_lowe_.bsn50 < 24 || skroot_lowe_.bsn50 > 50){
+    --N;
     std::cout << "neutron candidate does not meet bsn50 > 24 && bsn50 < 50" << std::endl;
     return true;
   }
@@ -97,10 +110,10 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
   // }
   // post_ldt_cut.Fill(ldt);
 
-  std::vector<int> SLE_times;
-  m_data->CStore.Get("SLE_times", SLE_times);
   
-  if (neutrons.size() == SLE_times.size()){
+  
+  
+  if (neutrons.size() == N){
     m_data->CStore.Set("event_neutrons", neutrons);
     neutrons.clear();
   } else {
