@@ -69,6 +69,9 @@ bool muechk::Execute(){
 
   */
 
+  std::cout << "calling runinf_(): " << std::endl;
+  runinfsk_();
+  
   std::cout << "calling apfit(0):" << std::endl;
   int flag = 0;
   // apclrall_();
@@ -96,4 +99,26 @@ bool muechk::Finalise(){
   nmue_plot.SaveAs("nmue_plot.root");
   
   return true;
+}
+
+extern "C" void lfhits_(int* lfflag, float* sg, float* bg, float* tspread,
+		       float* signif, int* lfhit, float* tlf, float* qlf,
+		       float* xyzlf, float* ttrg, int* n200, int* nbgbef,
+		       int* nbgaft, int* nnba);
+
+
+extern "C" void lfhits(int* lfflag, float* sg, float* bg, float* tspread,
+	    float* signif, int* lfhit, float* tlf, float* qlf,
+	    float* xyzlf, float* ttrg, int* n200, int* nbgbef,
+	    int* nbgaft){
+
+  std::cout << "calling decoy lfhits" << std::endl;
+  
+  int my_nnba = 0;
+  lfhits_(lfflag, sg, bg, tspread,
+	 signif, lfhit, tlf, qlf,
+	 xyzlf, ttrg, n200, nbgbef,
+	 nbgaft, &my_nnba);
+  return;
+  
 }
