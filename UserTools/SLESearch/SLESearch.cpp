@@ -1,6 +1,9 @@
 #include "SLESearch.h"
 
 #include <algorithm>
+#include <bitset>
+#include <iomanip>
+
 
 #include "MTreeReader.h"
 #include "fortran_routines.h"
@@ -12,8 +15,6 @@
 #include <algorithm>
 
 #include "TH1D.h"
-
-#include <bitset>
 
 SLESearch::SLESearch():Tool(){}
 
@@ -38,6 +39,16 @@ bool SLESearch::Initialise(std::string configfile, DataModel &data){
 
 bool SLESearch::Execute(){
 
+  /*
+    First for testing/validating the neutron cloud cut, we need to copy the skt_, skq_ commons into the datamodel for later comparisons. 
+   */
+
+  m_data->skq_common_dupl = skq_;
+  m_data->skt_common_dupl = skt_;
+  m_data->skchnl_common_dupl = skchnl_;
+  m_data->sktqz_common_dupl = sktqz_;
+  
+  
   std::bitset<32> trigger_id{skhead_.idtgsk};
 
   /* 
@@ -222,15 +233,20 @@ bool SLESearch::Execute(){
     }
   }
 
+  
   //m_data->CStore.Set("SLE_times", first_hit_times);
+  // we don't want the primary trigger either - aka muon not the neutrons
+  assert(!SLE_times.empty());
+  SLE_times.erase(SLE_times.begin());
   m_data->CStore.Set("SLE_times", SLE_times);
 
+ 
   int N_SLE = SLE_times.size();
   std::cout << "found " << N_SLE << " SLE times, they are:" << std::endl;
 
   for (const auto& time : SLE_times){std::cout << "time in ns: " << time << std::endl;}
   std::cout << "then" << std::endl;
-  for (const auto& time : SLE_times){std::cout << "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
+  for (const auto& time : SLE_times){std::cout << std::setprecision(9) <<  "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
 
 
   // we do this again in Pre recon cuts
