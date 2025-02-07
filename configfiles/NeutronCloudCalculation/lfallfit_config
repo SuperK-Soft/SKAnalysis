@@ -1,1 +1,2 @@
-readerName reader
+ readerName reader
+#hitLimitForClusfit -1 ## crashes womp womp

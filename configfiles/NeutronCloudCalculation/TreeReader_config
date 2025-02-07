@@ -4,8 +4,10 @@ readerName reader
 #inputFile /home/moflaher/disk02/run868/run868.root
 #inputFile /home/moflaher/disk02/SpallReduction/086613.0/output/test_jacks.root
 #inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086614.0/output/test_jacks.root
-inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
+#inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
 #inputFile /disk02/usr6/moflaher/addaft/test_spall.root
+
+inputFile  /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
 
 #inputFile /disk02/data7/sk6/run/0866/086658/rfm_run086658.000012.root
 
