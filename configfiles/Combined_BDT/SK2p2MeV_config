@@ -1,0 +1,15 @@
+verbosity 10
+treeReaderName reader_input
+#derived_classname relic
+derived_classname mc
+#outFile SK2p2MeV_testout.root
+#outFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_SK2p2.root
+#outFile SK2p2MeV_testout.root
+#outFile SK2p2MeV_atmnu_2500_04.root
+#outFile SK2p2MeV_SKG4_ngun.root
+#outFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_SK2p2.root
+#outFile /home/mattnich/disk3stor/mc/atmos/ntag_out/atmospherics_ntag_out.root
+outFile /disk03/lowe12/warwick/mc/atmos/harada_test_sk2p2.root
+#outFile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_SK2p2.root
+
+#useTrueVertex false
