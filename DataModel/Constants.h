@@ -15,7 +15,14 @@
 #include "fortran_routines.h"
 
 static const double SOL_IN_CM_PER_NS_IN_WATER = 22.484996; //speed of light in cm/ns
-static const double MC_TIME_OFFSET=1000; // SKG4 adds 1,000 to all hit times to shift t=0 away from 0.
+static const double MC_TIME_OFFSET = 1000; // SKG4 adds 1,000 to all hit times to shift t=0 away from 0.
+
+static const double one_p_three_gate_pre_t0 = SKGATE_START_COUNT;
+static const double one_p_three_gate_post_t0 = SKGATE_END_COUNT;
+// found in $SKOFL_ROOT/inc/sktq.h, these values are in ticks
+// may depend in run number! see $SKOFL_ROOT/src/skrd/set_timing_gate.F
+// note: SKGATE_START_COUNT is negative  
+  
 
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
