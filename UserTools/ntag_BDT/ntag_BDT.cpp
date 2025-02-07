@@ -71,6 +71,10 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	// So that downstream Tools can access our results without needing to run a second
 	// ToolChain that reads the results off disk, make a TreeReader that they can use to
 	// retrieve results as they're generated, equivalently to with an upstream TreeReader Tool
+
+	// crank verbosity
+	outTreeReader.SetVerbosity(100);
+	
 	outTreeReader.Load(treeout);
 	m_data->RegisterReader("ntag_BDT_OutTree", &outTreeReader);
 	// inform the TreeReader not to close the file when the destructor is called.
@@ -81,15 +85,31 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 
 
 bool ntag_BDT::Execute(){
-	
-	Log(m_unique_name+": Getting branch values",v_debug,m_verbose);
-	get_ok = GetBranchValues();
-	if(not get_ok){
-		Log(m_unique_name+": Error getting branch values!",v_error,m_verbose);
-		//return false;
+
+	if (myTreeReader->GetTree()->GetEntries() == n_entries_tmp){
+	  std::cout << "ntag_BDT:: there is no new entry from upstream tools, number of candidates for this event is zero" << std::endl;
+	    np = 0;
+	  // delete[] neutron5;
+	  // delete[] nlow;
+	  // MAX_EVENTS = np;
+	  // neutron5 = new float[MAX_EVENTS];
+	  // nlow = new int[MAX_EVENTS];
+	  // treeout->SetBranchAddress("neutron5",  neutron5);
+	  // treeout->SetBranchAddress("nlow",      nlow);
+	  // outTreeReader.UpdateBranchPointer("neutron5");
+	  // outTreeReader.UpdateBranchPointer("nlow");
+	} else {
+	  n_entries_tmp = myTreeReader->GetTree()->GetEntries();
+       
+	  Log(m_unique_name+": Getting branch values",v_debug,m_verbose);
+	  get_ok = GetBranchValues();
+	  if(not get_ok){
+	    Log(m_unique_name+": Error getting branch values!",v_error,m_verbose);
+	    //return false;
+	  }
+	  Log(m_unique_name+": "+toString(np)+" candidates this entry",v_debug,m_verbose);
 	}
-	Log(m_unique_name+": "+toString(np)+" candidates this entry",v_debug,m_verbose);
-	
+
 	// unlikely to have >500 neutron candidates in an event,
 	// but still better not to segfault if we can avoid it
 	if(np > MAX_EVENTS){
@@ -176,8 +196,12 @@ bool ntag_BDT::Execute(){
 	}
 	Log(m_unique_name+": "+toString(passing_indices.size())+" candidates passed preselection",v_debug,m_verbose);
 	
-	// only need to do prediction if any candidates passed preselection
-	if(passing_indices.size()){
+	// only need to do prediction if any candidates passed preselectionqq
+	if(!passing_indices.size()){
+	  std::cout << "no candidates passed preselection for this entry" << std::endl;
+	  np = 0;
+	  std::fill(neutron5, neutron5 + MAX_EVENTS, 0);
+	} else {
 		
 		// when do we need to call this?
 //		py::scoped_interpreter guard{};  // XXX ???
@@ -209,7 +233,9 @@ bool ntag_BDT::Execute(){
 	
 	// fill output tree with BDT metrics
 	Log(m_unique_name+": Filling output branches",v_debug,m_verbose);
+	std::cout << "ntag_BDT::Execute: number of entries before fill " << treeout->GetEntries() << std::endl;
 	treeout->Fill();
+	std::cout << "ntag_BDT::Execute: number of entries after fill " << treeout->GetEntries() << std::endl;
 	
 	unsigned long num_entries = treeout->GetEntries();
 	if(num_entries%WRITE_FREQUENCY){
