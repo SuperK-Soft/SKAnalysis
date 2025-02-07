@@ -1,12 +1,15 @@
 verbosity 10
 readerName reader_ZBS
 
-inputFile /disk03/lowe12/warwick/mc/atmos/zbs_input/3001.zbs
+#inputFile /disk03/lowe12/warwick/mc/atmos/zbs_input/3001.zbs
+#inputFile /disk03/lowe12/warwick/mc/atmos/single_zbs.zbs
+
+inputFile /disk03/lowe12/warwick/mc/atmos/medium_tests/output.r90014.300.dat
 
 treeName sk2p2                                    # the name of the tree within the file
 # max num input entries to process
 #maxEntries 8000
-#maxEntries 1
+#maxEntries 3
 maxEntries -1
 skFile 0                                          # do not call SKREAD/SKRAWREAD - no need.
 
@@ -15,7 +18,7 @@ skbadopt 23
 
 skrootMode 0
 outputFile /home/mattnich/disk3stor/atmos_interaction_test.root
-
+#outFile /disk03/lowe12/warwick/mc/atmos/small_tests/bs_bdt_atmossplit.root
 SK_GEOMETRY 6
 
 StartInputBranchList
