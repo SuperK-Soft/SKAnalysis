@@ -71,6 +71,10 @@ SK2p2MeV::~SK2p2MeV ()
     //bonsai_combined_end_();
 }
 
+void SK2p2MeV::Clear(){
+	res.Clear();
+}
+
 void SK2p2MeV::Print()
 {
     // Show current status of SK2p2MeV

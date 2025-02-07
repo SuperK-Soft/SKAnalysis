@@ -227,6 +227,7 @@ class SK2p2MeV: public TObject {
     void SetBackCutFlag (const Bool_t flag = kTRUE);
     void SetVertex (const Float_t x, const Float_t y, const Float_t z);
     void SetDarkRate(Int_t run);
+    void Clear();
   
   private:
     SK2p2MeV (const SK2p2MeV& rhs);

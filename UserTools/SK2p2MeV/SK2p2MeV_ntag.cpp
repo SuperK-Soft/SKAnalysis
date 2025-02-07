@@ -106,6 +106,8 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 bool SK2p2MeV_ntag::Execute(){
 	
 	get_ok = ntagger->GetBranchValues();
+	// important; intialise results to 0
+	ntagger->Clear();
 	/*
 	// ignore this for now - SK2p2MeV currently gets more branches than may be needed,
 	// depending on the input source (data / mc). If branches are not present, it just
