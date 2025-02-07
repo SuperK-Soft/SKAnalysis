@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "MTreeReader.h"
+#include "fortran_routines.h"
 
 #include "Tool.h"
 
@@ -22,8 +23,16 @@ class CopyHits: public Tool {
   
  private:
 
-  bool PrintTQCommons(const bool&, const int&);
+  // skq_common skq_dupl;
+  // skt_common skt_dupl;
   
+  bool PrintTQCommons(const bool&, const int&);
+
+  void Compare_skq(const skq_common&, const skq_common&) const;
+  void Compare_skt(const skt_common&, const skt_common&) const;
+
+  template <typename T>
+  bool CompareArray(T*, T*, const int&) const;
 };
 
 
