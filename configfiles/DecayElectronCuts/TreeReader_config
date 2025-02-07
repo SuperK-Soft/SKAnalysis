@@ -12,8 +12,8 @@ inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
 treeName relic                                   # the name of the tree within the file
 #treeName data
 # max num input entries to process
-maxEntries 2
-#maxEntries -1
+#maxEntries 2
+maxEntries -1
 skFile 1                                          # do not call SKREAD/SKRAWREAD - no need.
 
 #skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)
@@ -24,6 +24,8 @@ skrootMode 0
 outputFile /home/mattnich/disk3stor/decay_electrons_test.root
 
 LUN 1
+LUN2 10
+LUN3 0
 SK_GEOMETRY 6
 
 # StartInputBranchList
