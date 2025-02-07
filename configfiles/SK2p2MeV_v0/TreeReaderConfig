@@ -12,10 +12,14 @@ readerName sk2p2mevReader
 
 #inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3141_skg4_bonsai.mcfit.root
 
-inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3256_skg4_bonsai.mcfit.root
+#inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3256_skg4_bonsai.mcfit.root
+inputFile /disk03/lowe12/warwick/mc/atmos/harada_test.root
+
+#inputFile /disk03/lowe12/warwick/mc/ibd/bdt_out/test.root
 
 treeName data                                     # the name of the tree within the file
-maxEntries -1                                     # max num input entries to process
+#maxEntries -1                                     # max num input entries to process
+maxEntries 100
 skFile 1                                          # must populate common blocks to run lfallfit
 triggerMasks 28 29                                # only pass on SHE (28) and AFT (29) triggers
 SK_GEOMETRY 6
