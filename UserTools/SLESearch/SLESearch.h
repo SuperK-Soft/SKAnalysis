@@ -20,6 +20,8 @@ class SLESearch: public Tool {
  private:
 
   bool previous_entry_was_muon = false;
+
+  int max_triggers = -999;
   
   ConnectionTable* connection_table = nullptr;
   bool include_offset = false;

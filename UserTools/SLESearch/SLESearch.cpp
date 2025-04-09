@@ -32,6 +32,9 @@ bool SLESearch::Initialise(std::string configfile, DataModel &data){
   connection_table = m_data->GetConnectionTable();
 
   hit_times_plot = TH1D("hit_times", "hit times;time us; number of hits", 1000, 0, 0);
+
+  max_triggers = -999;
+  m_variables.Get("max_triggers", max_triggers);
   
   return true;
 }
@@ -43,6 +46,22 @@ bool SLESearch::Execute(){
     First for testing/validating the neutron cloud cut, we need to copy the skt_, skq_ commons into the datamodel for later comparisons. 
    */
 
+  //////// CHCKING HITS \\\\\\\\\\
+  std::cout << "nrunsk: "  << skhead_.nrunsk << std::endl;
+  std::cout << "SKGATE_START_COUNT: " << SKGATE_START_COUNT << std::endl;
+  std::cout << "SKGATE_END_COUNT: " << SKGATE_END_COUNT << std::endl;
+
+  std::cout << "sktqz_.nqiskz: " << sktqz_.nqiskz << std::endl;
+  for (int i = 0; i < 5; ++i){
+    std::cout << "sktqz_.iqiskz["<<i<<"]: " << sktqz_.iqiskz[i] << std::endl;
+    std::cout << "sktqz_.itiskz["<<i<<"]: " << sktqz_.itiskz[i] << std::endl;
+    std::cout << "rawtqinfo_.itiskz_raw["<<i<<"]: " << rawtqinfo_.itiskz_raw[i] << std::endl;
+    std::cout << "rawtqinfo_.iqiskz_raw["<<i<<"]: " << rawtqinfo_.iqiskz_raw[i] << std::endl;
+  }
+  //////// DONE \\\\\\\\\\
+
+
+  
   m_data->skq_common_dupl = skq_;
   m_data->skt_common_dupl = skt_;
   m_data->skchnl_common_dupl = skchnl_;
@@ -69,28 +88,28 @@ bool SLESearch::Execute(){
   double current_SLE_time = 0;
       
   // 1. Construct vector of hits from event
-  std::cout << "constructing vector of hits from event" << std::endl;
+  // std::cout << "constructing vector of hits from event" << std::endl;
   std::vector<double> hits = std::vector<double>(sktqz_.tiskz, sktqz_.tiskz + sktqz_.nqiskz);
   std::vector<double> first_hit_times;
 
-  event_hit_times_plot = TH1D("event_hit_times_plot", "event_hit_times_plot", 200, hits.front(), hits.back());
+  //event_hit_times_plot = TH1D("event_hit_times_plot", "event_hit_times_plot", 200, hits.front(), hits.back());
   
   // 2. sort hits in time order
-  std::cout << "sorting hits into time order" << std::endl;
+  // std::cout << "sorting hits into time order" << std::endl;
   std::sort(hits.begin(), hits.end());
 
-  for (const auto& time : hits){event_hit_times_plot.Fill(time);}
+  //for (const auto& time : hits){event_hit_times_plot.Fill(time);}
   
   // 3. Starting from the first hit, construct a deque of the first [window size] hits
   const double window_size = 200;
 
   std::deque<double> window = {};
 
-  std::cout << "hits.size(): " << hits.size() << std::endl;
-  std::cout << "hits.front(): " << hits.front() << std::endl;
-  std::cout << "hits.back(): " << hits.back() << std::endl;
-  std::cout<<"event window length: "<<(hits.back()-hits.front())<<" ns"<<std::endl;
-  std::cout<<"window length: "<<window_size<<" ns"<<std::endl;
+  // std::cout << "hits.size(): " << hits.size() << std::endl;
+  // std::cout << "hits.front(): " << hits.front() << std::endl;
+  // std::cout << "hits.back(): " << hits.back() << std::endl;
+  // std::cout<<"event window length: "<<(hits.back()-hits.front())<<" ns"<<std::endl;
+  // std::cout<<"window length: "<<window_size<<" ns"<<std::endl;
   size_t next_hit_idx = 0;
   for (size_t i = 0; i < hits.size(); ++i){
     if (hits.at(i) - hits.front() < window_size){
@@ -105,10 +124,10 @@ bool SLESearch::Execute(){
   const double SLE_deadtime = 0; // assume no deadtime?
   const double SLE_readout_length = 1501.56; //nope
 
-  std::cout<<"initial hits window had "<<window.size()<<" hits vs threshold "<<SLE_threshold<<std::endl;
+  // std::cout<<"initial hits window had "<<window.size()<<" hits vs threshold "<<SLE_threshold<<std::endl;
 
   //  while (window.back() != hits.back()){
-  std::cout<<"window front index: "<<next_hit_idx<<std::endl;
+  //std::cout<<"window front index: "<<next_hit_idx<<std::endl;
   while ( (next_hit_idx != hits.size()) && (window.back() != hits.back()) ){
     //  std::cout << "next_hit_idx: " << next_hit_idx << std::endl;
 
@@ -117,13 +136,13 @@ bool SLESearch::Execute(){
 
     if (window.size() > SLE_threshold){
       //std::cout << "number of hits in window exceeds SLE threshold!" << std::endl;
-      std::cout << " threshold exceeded with window.size(): " << window.size() << std::endl;
+      //std::cout << " threshold exceeded with window.size(): " << window.size() << std::endl;
       //std::cout << "hits size: " << hits.size() << " next hit idx: " << next_hit_idx << std::endl;
       //std::cout << "before adding deadtime" << std::endl;
       //      std::cout<< "at time: " << window.front() << ", window.back() at: " << window.back() << std::endl;
 
-      std::cout << "window.front() at in ticks: " << (window.front() * COUNT_PER_NSEC) + skheadqb_.it0sk;
-      std::cout << "window.back() at in ticks: " << (window.back() * COUNT_PER_NSEC) + skheadqb_.it0sk;
+      // std::cout << "window.front() at in ticks: " << (window.front() * COUNT_PER_NSEC) + skheadqb_.it0sk;
+      // std::cout << "window.back() at in ticks: " << (window.back() * COUNT_PER_NSEC) + skheadqb_.it0sk;
       
       first_hit_times.push_back(window.front() + (include_offset ? SLE_t0_offset : 0));
 
@@ -134,16 +153,14 @@ bool SLESearch::Execute(){
       // double this_SLE_time = 0;
       //      for (int i = ; 
       // 7. Store new SLE time
-      std::cout << "estimated SLE time: " << current_SLE_time << std::endl;
+      //std::cout << "estimated SLE time: " << current_SLE_time << std::endl;
       if (current_SLE_time > 0){
 	hit_times_plot.Fill(current_SLE_time);
 	SLE_times.push_back(current_SLE_time);
       } else {
-	std::cout << "SLE time was before primary trigger - so we ignore" << std::endl; 
+	//std::cout << "SLE time was before primary trigger - so we ignore" << std::endl; 
       }
 	
-      std::cout << std::endl << std::endl;
-
       /*std::cout << "some hits: " << std::endl;
 	for (int i = 0; i < window.size(); ++i){
 	if (i % 50 == 0){std::cout << window.at(i) << std::endl;}
@@ -155,8 +172,8 @@ bool SLESearch::Execute(){
       double new_start_time = window.front() + SLE_readout_length + SLE_deadtime;
       //std::cout << "last_hit_in_window_time: " << last_hit_in_window_time << std::endl;
       //std::cout << "last hit in event time " << hits.back() << std::endl;
-      std::cout<<"scanning forward by readout lenght "<<SLE_readout_length<<" + deadtime "<<SLE_deadtime
-	       <<" from end of window "<<new_start_time<<" ns -> new start time "<<new_start_time << " ns"<<std::endl;
+      //std::cout<<"scanning forward by readout lenght "<<SLE_readout_length<<" + deadtime "<<SLE_deadtime
+      //<<" from end of window "<<new_start_time<<" ns -> new start time "<<new_start_time << " ns"<<std::endl;
       for (size_t i = next_hit_idx; i < hits.size(); ++i){
 	++next_hit_idx; // next hit to consider
 	//if (hits.at(i) - new_start_time < SLE_deadtime){
@@ -233,27 +250,27 @@ bool SLESearch::Execute(){
     }
   }
 
-  
-  //m_data->CStore.Set("SLE_times", first_hit_times);
   // we don't want the primary trigger either - aka muon not the neutrons
-  assert(!SLE_times.empty());
-  SLE_times.erase(SLE_times.begin());
+
+  if (max_triggers != -999){
+    SLE_times.resize(max_triggers);
+  }
+  
+  if (!SLE_times.empty()){SLE_times.erase(SLE_times.begin());}
   m_data->CStore.Set("SLE_times", SLE_times);
-
- 
+  
   int N_SLE = SLE_times.size();
-  std::cout << "found " << N_SLE << " SLE times, they are:" << std::endl;
-
+  std::cout << "SLESearch found " << N_SLE << " SLE times, they are:" << std::endl;
   for (const auto& time : SLE_times){std::cout << "time in ns: " << time << std::endl;}
   std::cout << "then" << std::endl;
   for (const auto& time : SLE_times){std::cout << std::setprecision(9) <<  "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
-
+  std::cout << "where skheadqb_.it0sk = " << skheadqb_.it0sk << std::endl;
 
   // we do this again in Pre recon cuts
   m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
 
   //  hit_times_plot.SaveAs("hit_times.root");
-  event_hit_times_plot.SaveAs("event_hit_times_plot.root");
+  //event_hit_times_plot.SaveAs("event_hit_times_plot.root");
   
   return true;
 }

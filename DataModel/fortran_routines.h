@@ -56,6 +56,7 @@ extern "C" void skcrawread_(int*, int*);
 extern "C" void skcread_(int*, int*);
 extern "C" void skroot_set_tree_(int*);
 extern "C" void skroot_get_entry_(int*);
+extern "C" void skroot_get_tqskz_(int*);
 
 // additional functions from lfallfit
 extern "C" void skatmmap2_(int*,int*,int*,int*,int*,int*);

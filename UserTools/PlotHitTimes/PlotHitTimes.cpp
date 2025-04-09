@@ -7,6 +7,8 @@
 #include "ColourWheel.h"
 #include "Constants.h"
 
+extern "C" void set_timing_gate_proc_(int*);
+
 PlotHitTimes::PlotHitTimes():Tool(){}
 
 bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
@@ -36,6 +38,9 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 		c_subtriggers = new TCanvas("c_subtriggers","c_subtriggers",1024,800);
 		gDirectory->cd();
 	}
+
+        useSLESearchTool=false;
+        m_variables.Get("useSLESearchTool",useSLESearchTool);
 	
 	return true;
 }
@@ -241,12 +246,24 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 	
 	int ntrigsfound=0;
 	std::vector<int> t0_sub(MAX_SUBTRIGS,-1);  // relative time of subtrigger to IT0SK
+
+        if(useSLESearchTool){
+	  std::vector<int> sle_times;
+	  get_ok = m_data->CStore.Get("SLE_times",sle_times);
+	  if(!get_ok){
+	    Log(m_unique_name+" no SLE_times in CStore!",v_error,m_verbose);
+	    return false;
+	  }
+	  // convert nanoseconds from primary trigger to clock ticks                                                                                     
+	  for(int i=0; i<sle_times.size(); ++i) t0_sub.at(i)=sle_times.at(i)*COUNT_PER_NSEC;
+	  ntrigsfound=sle_times.size();
+	} else {
 	
-	// run subtrigger algorithm to search for subtriggers of this type
-	get_sub_triggers_(&subtrigtype, &ntrigsfound, t0_sub.data(), &MAX_SUBTRIGS);
-	
+	  // run subtrigger algorithm to search for subtriggers of this type
+	  get_sub_triggers_(&subtrigtype, &ntrigsfound, t0_sub.data(), &MAX_SUBTRIGS);
+	}
 	Log(m_unique_name+" found "+toString(ntrigsfound)+" subtriggers of type "
-	      +TriggerIDToName(subtrigtype),v_message,m_verbose);
+	    +TriggerIDToName(subtrigtype),v_message,m_verbose);
 	
 	// process the subtriggers
 	int nhiterrs=5;
@@ -254,7 +271,7 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		
 		// trigger time of the subtrigger
 		int it0xsk = it0sk + t0_sub.at(i);
-		std::cout<<"subtrigger "<<i<<" is at "<<it0xsk<<std::endl;
+		std::cout<<"subtrigger "<<i<<" is at "<<it0xsk<<", "<<t0_sub.at(i)<<std::endl;
 		
 		// get in-gate times (for check?)
 		float pre_t0 = 0;  //skruninf_.softtrg_pre_t0[0];  FIXME not sure what index to use
@@ -263,7 +280,7 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		float subtr_end_t = it0xsk + post_t0;
 		
 		// set IT0XSK to the position of the next subtrigger
-		set_timing_gate_(&it0xsk);
+		//set_timing_gate_proc_(&it0xsk);
 		
 		int n_in_gate_hits_this_subtrigger=0;
 		

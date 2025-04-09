@@ -205,6 +205,7 @@ bool lfallfit::Execute(){
 	} else if(lfflag==-2){
 		Log(m_unique_name+" Warning! lfallfit failed with status -2: 'no hits'!\n",v_error,m_verbose);
 		return false;    // XXX we really should not have events with no hits...!
+		//return true;
 	}
 	
 	Log(m_unique_name+" setting results into lowe branch",v_debug,m_verbose);

@@ -88,9 +88,10 @@ if (tool=="CopyHits") ret=new CopyHits;
 if (tool=="MakeBDTOutputFile") ret=new MakeBDTOutputFile;
 if (tool=="GetSubTrg_SetTimingGate") ret=new GetSubTrg_SetTimingGate;
 if (tool=="CompareCommons") ret=new CompareCommons;
-if (tool=="ModelIndependentFit") ret=new ModelIndependentFit;
-if (tool=="NTagAnalysis") ret=new NTagAnalysis;
-if (tool=="MergeDipstickFiles") ret=new MergeDipstickFiles;
+// if (tool=="ModelIndependentFit") ret=new ModelIndependentFit;
+// if (tool=="NTagAnalysis") ret=new NTagAnalysis;
+// if (tool=="MergeDipstickFiles") ret=new MergeDipstickFiles;
+if (tool=="GetSubTriggers") ret=new GetSubTriggers;
 return ret;
 }
 

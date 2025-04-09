@@ -1310,6 +1310,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 			if(bytesread>0 && skrootMode!=SKROOTMODE::ZEBRA){
 				Log(m_unique_name+" calling skroot_get_entry",v_debug,m_verbose);
 				skroot_get_entry_(&LUN);
+				//skroot_get_tqskz_(&LUN); // might want to fix this - god I hate it all so much
 			}
 			if(bytesread > 0 && skrootMode == SKROOTMODE::ZEBRA){
 			  Log(m_unique_name+" calling nerdnebk to retrieve NEUT bank", v_debug, m_verbose);

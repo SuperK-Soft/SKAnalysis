@@ -21,6 +21,8 @@ class LoadSubTrigger: public Tool {
 
   sktqz_common sktqz_after;
   skchnl_common skchnl_after;
+
+  std::string trigger_time_names = "";
   
   int TreeReaderLUN;
   int neglun;
@@ -28,8 +30,12 @@ class LoadSubTrigger: public Tool {
   int trigger_idx = 0;
   int GetReaderLUN();
 
-  TH1D hits_before;
-  TH1D hits_after;
+  bool made_plots = false;
+  TH1D hits_before_inwindow;
+  TH1D hits_after_inwindow;
+  TH1D hits_before_outwindow;
+  TH1D hits_after_outwindow;
+
   bool saved = false;
   
   void CompareSKTQZ(const sktqz_common& before, const skchnl_common& before_chnl,

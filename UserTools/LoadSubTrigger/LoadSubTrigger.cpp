@@ -1,6 +1,9 @@
 #include "LoadSubTrigger.h"
 
 #include "fortran_routines.h"
+#include <bitset>
+
+extern "C" void set_timing_gate_proc_(int*);
 
 LoadSubTrigger::LoadSubTrigger():Tool(){}
 
@@ -18,33 +21,90 @@ bool LoadSubTrigger::Initialise(std::string configfile, DataModel &data){
   TreeReaderLUN = GetReaderLUN();
   neglun = -std::abs(TreeReaderLUN);
 
-  hits_before = TH1D("hits_before", "hits_before", 100, 0, 0);
-  hits_after = TH1D("hits_after", "hits_after", 100, 0, 0);
+  bool ok = m_variables.Get("trigger_time_names", trigger_time_names);
+  if (!ok || trigger_time_names.empty()){throw std::runtime_error("LoadSubTrigger::Execute - on trigger time variables name selected!");}
   
-
   return true;
+
 }
 
 
 bool LoadSubTrigger::Execute(){
 
-  sktqz_after = sktqz_;
-  skchnl_after = skchnl_;
+  if (!made_plots){
+    hits_before_inwindow = TH1D("hits_before_inwindow", "hits_before_inwindow", 100,
+		      *std::min_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz),
+		       *std::max_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz));
+    hits_before_outwindow = TH1D("hits_before_outwindow", "hits_before_outwindow", 100,
+		      *std::min_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz),
+		      *std::max_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz));
+    
+    for (int i = 0; i < sktqz_.nqiskz; ++i){
+      if((sktqz_.ihtiflz[i] & 0x01)==0){
+	hits_before_outwindow.Fill(sktqz_.tiskz[i]);
+      } else {
+	hits_before_inwindow.Fill(sktqz_.tiskz[i]);
+      }
+    }
+    std::cout << "skheadqb_.it0xsk: " << skheadqb_.it0xsk << std::endl;
+  }
   
   std::vector<double> SLE_times = {};
-  m_data->CStore.Get("SLE_times", SLE_times);
-
-  // for (const auto& time : SLE_times){std::cout << "time in ns: " << time << std::endl;}
-  // std::cout << "then" << std::endl;
-  // for (const auto& time : SLE_times){std::cout << "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
+  bool ok = m_data->CStore.Get(trigger_time_names, SLE_times); // ns
+  if(!ok){throw std::runtime_error("LoadSubTrigger::Execute couldn't retrieve trigger times");}
   
-  std::cout << "this_subtrigger_nsec:  " << SLE_times.at(trigger_idx) << std::endl;
-  double this_subtrigger_ticks = (SLE_times.at(trigger_idx) * COUNT_PER_NSEC) + skheadqb_.it0sk;
-  skheadqb_.it0xsk = this_subtrigger_ticks;
+  double this_subtrigger_ticks = (SLE_times.at(trigger_idx) * COUNT_PER_NSEC) + skheadqb_.it0sk; // ticks
+  //  skheadqb_.it0xsk = this_subtrigger_ticks;
   std::cout << "this_subtrigger ticks:  " << this_subtrigger_ticks << std::endl;
+  
+  // int icabbf_counter = 0;
+  // int itiskz_counter = 0;
+  // int id_start_counter = 0;
+  // int id_end_counter = 0;
+  // int total_counter = 0;
 
+  // std::cout << "nrunsk: "  << skhead_.nrunsk << std::endl;
+  // std::cout << "SKGATE_START_COUNT: " << SKGATE_START_COUNT << std::endl;
+  // std::cout << "SKGATE_END_COUNT: " << SKGATE_END_COUNT << std::endl;
+  
+  // for (int i = 0; i < 5; ++i){
+  //   std::cout << "sktqz_.itiskz["<<i<<"]: " << sktqz_.itiskz[i] << std::endl;
+  //   std::cout << "rawtqinfo_.itiskz_raw["<<i<<"]: " << rawtqinfo_.itiskz_raw[i] << std::endl;
+  // }
+  
+  // for (int i = 0; i < sktqz_.nqiskz; ++i){
+  //   if (sktqz_.icabiz[i] > MAXPM){
+  //     continue;
+  //   }
+  //   int count = 0;
+  //   std::bitset<16> bits(rawtqinfo_.icabbf_raw[i] >> 16);
+    
+  //   if (bits.test(2)){
+  //     ++icabbf_counter;
+  //     ++count;
+  //   }
+  //   if (sktqz_.tiskz[i] >= SKGATE_START_COUNT + (SLE_times.at(trigger_idx) * COUNT_PER_NSEC)){
+  //     ++id_start_counter;
+  //     ++count;
+  //   }
+  //   if (sktqz_.tiskz[i] <= SKGATE_END_COUNT + (SLE_times.at(trigger_idx) * COUNT_PER_NSEC)){
+  //     ++id_end_counter;
+  //     ++count;
+  //   }
+  //   if (count == 3){++total_counter;}
+  // }
+
+  // std::cout << "if checks:" << std::endl;
+  // std::cout << "icabbf: " << icabbf_counter << std::endl;
+  // std::cout << "id start: " << id_start_counter << std::endl;
+  // std::cout << "id end: " << id_end_counter << std::endl;
+  // std::cout << "total: " << total_counter << "\\" << sktqz_.nqiskz << std::endl;
+  
+  
   int this_subtrigger_ticks_tmp = int(this_subtrigger_ticks);
-  set_timing_gate_(&this_subtrigger_ticks_tmp);
+  set_timing_gate_proc_(&this_subtrigger_ticks_tmp); // ticks
+
+  //set_timing_gate_(&skheadqb_.it0sk);
 
   // call `skcread` to re-load common blocks for this subtrigger
   int get_ok = 0;
@@ -70,18 +130,44 @@ bool LoadSubTrigger::Execute(){
   trigger_idx < SLE_times.size() - 1 ? ++trigger_idx : trigger_idx = 0;
 
 
-  std::cout << "COMPARING SKTQZ" << std::endl;
-  CompareSKTQZ(sktqz_, skchnl_, sktqz_after, skchnl_after);
-  std::cout << std::endl << "COMPARING SKQ" << std::endl;
-  Compare_skq(skq_, skchnl_, m_data->skq_common_dupl, m_data->skchnl_common_dupl);
-  std::cout << std::endl << "COMPARING SKT" << std::endl;
-  Compare_skt(skt_, skchnl_, m_data->skt_common_dupl, m_data->skchnl_common_dupl);
+  // std::cout << "COMPARING SKTQZ" << std::endl;
+  // CompareSKTQZ(sktqz_, skchnl_, sktqz_after, skchnl_after);
+  // std::cout << std::endl << "COMPARING SKQ" << std::endl;
+  // Compare_skq(skq_, skchnl_, m_data->skq_common_dupl, m_data->skchnl_common_dupl);
+  // std::cout << std::endl << "COMPARING SKT" << std::endl;
+  // Compare_skt(skt_, skchnl_, m_data->skt_common_dupl, m_data->skchnl_common_dupl);
 
   // if (!saved){
   //   saved = true;
   //   hits_before.SaveAs("hits_before.root");
   //   hits_after.SaveAs("hits_after.root");
   // }
+
+  if (!made_plots){
+    hits_after_inwindow = TH1D("hits_after_inwindow", "hits_after_inwindow", 100,
+		      *std::min_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz),
+		      *std::max_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz));
+    hits_after_outwindow = TH1D("hits_after_outwindow", "hits_after_outwindow", 100,
+		      *std::min_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz),
+		      *std::max_element(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz));
+
+    for (int i = 0; i < sktqz_.nqiskz; ++i){
+      if((sktqz_.ihtiflz[i] & 0x01)==0){
+      hits_after_outwindow.Fill(sktqz_.tiskz[i]);
+      } else {
+	hits_after_inwindow.Fill(sktqz_.tiskz[i]);
+      }
+    }
+    std::cout << "skheadqb_.it0xsk: " << skheadqb_.it0xsk << std::endl;
+    made_plots = true;
+    
+    hits_before_inwindow.SaveAs("hits_before_inwindow.root");
+    hits_after_inwindow.SaveAs("hits_after_inwindow.root");
+    hits_before_outwindow.SaveAs("hits_before_outwindow.root");
+    hits_after_outwindow.SaveAs("hits_after_outwindow.root");
+
+  }
+
   
   return true;
 }
