@@ -1,0 +1,5 @@
+verbosity 10
+treeReaderName reader_input
+#derived_classname relic
+derived_classname mc
+outFile ./harada_test_sk2p2.root

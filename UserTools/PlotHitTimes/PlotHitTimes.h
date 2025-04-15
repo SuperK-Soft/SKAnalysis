@@ -40,6 +40,7 @@ class PlotHitTimes: public Tool {
 	TCanvas* c_subtriggers = nullptr;
 	ColourWheel colourwheel;
 	int onlyWriteSubtriggers=0;
+	bool useSLESearchTool=false;
 	
 };
 

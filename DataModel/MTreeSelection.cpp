@@ -300,6 +300,9 @@ bool MTreeSelection::Write(){
 
 std::vector<std::string> MTreeSelection::FindLinkedBranches(std::string cut_branch){
 	
+	// linked branches are a concept only relevant for branches holding arrays
+	if(!treereader->GetBranchIsArray(cut_branch)) return std::vector<std::string>{};
+	
 	// when we're cutting out a particular index from an array in a branch,
 	// there may be other arrays in other branches that reference the same object.
 	// e.g. we may have a TTree entry containing an array of muons, which may have

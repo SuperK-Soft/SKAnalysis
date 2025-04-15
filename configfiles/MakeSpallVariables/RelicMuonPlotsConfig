@@ -1,4 +1,11 @@
-verbosity 2
-outputFile ~/disk02/murelicplots.root
+verbosity 4
 relicReaderName relicReader
 muReaderName muReader
+
+#outputFile /disk02/usr6/moflaher/SpallReduction/summary/murelicplots.root
+#relicFile /disk02/usr6/moflaher/SpallReduction/summary/relicplots.root
+#muFile /disk02/usr6/moflaher/SpallReduction/summary/muonplots.root
+
+outputFile /disk02/usr6/moflaher/run870/murelicplots.root
+relicFile /disk02/usr6/moflaher/run870/relicplots.root
+muFile /disk02/usr6/moflaher/run870/muonplots.root

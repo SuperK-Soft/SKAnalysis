@@ -1,11 +1,11 @@
 verbosity 1
-inputFile ~/disk02/test_jacks.root
-#FileListName MyFileList
+#inputFile /disk02/usr6/moflaher/run870/test_jacks.root
+FileListName MyFileList
 
 treeName relic
 readerName relicReader
 maxEntries -1                       # max num input entries to process
-skFile 1
+skFile 0    # maybe we don't need SK mode for relics....
 skoptn 31,30,26,25
 skbadopt 23   # 55? we need to re-read with 0 for muons
 SK_GEOMETRY 6

@@ -37,6 +37,10 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 		gDirectory->cd();
 	}
 	
+	// how to find subtriggers - SLESearch Tool or get_sub_triggers
+	useSLESearchTool=false;
+	m_variables.Get("useSLESearchTool",useSLESearchTool);
+	
 	return true;
 }
 
@@ -237,13 +241,29 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 	
 	// trigger time of the primary trigger
 	int it0sk = skheadqb_.it0sk;
-	std::cout<<"primary trigger is at "<<it0sk<<std::endl;
+	std::cout<<"primary trigger is at "<<it0sk
+	         <<" or "<<(double(it0sk)/COUNT_PER_NSEC)<<" ns"<<std::endl;
+	std::cout<<"t0 offset is "<<skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum]<<" or "
+	         <<double(skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum])/COUNT_PER_NSEC<<" ns"<<std::endl;
 	
 	int ntrigsfound=0;
 	std::vector<int> t0_sub(MAX_SUBTRIGS,-1);  // relative time of subtrigger to IT0SK
 	
 	// run subtrigger algorithm to search for subtriggers of this type
-	get_sub_triggers_(&subtrigtype, &ntrigsfound, t0_sub.data(), &MAX_SUBTRIGS);
+	if(useSLESearchTool){
+		std::vector<int> sle_times;
+		get_ok = m_data->CStore.Get("SLE_times",sle_times);
+		if(!get_ok){
+			Log(m_unique_name+" no SLE_times in CStore!",v_error,m_verbose);
+			return false;
+		}
+		// convert nanoseconds from primary trigger to clock ticks
+		for(int i=0; i<sle_times.size(); ++i) t0_sub.at(i)=sle_times.at(i)*COUNT_PER_NSEC;
+		ntrigsfound=sle_times.size();
+	} else {
+		std::cout<<"before get_sub_triggers nqiskz is "<<sktqz_.nqiskz<<" hits"<<std::endl;
+		get_sub_triggers_(&subtrigtype, &ntrigsfound, t0_sub.data(), &MAX_SUBTRIGS);
+	}
 	
 	Log(m_unique_name+" found "+toString(ntrigsfound)+" subtriggers of type "
 	      +TriggerIDToName(subtrigtype),v_message,m_verbose);
@@ -254,7 +274,10 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		
 		// trigger time of the subtrigger
 		int it0xsk = it0sk + t0_sub.at(i);
-		std::cout<<"subtrigger "<<i<<" is at "<<it0xsk<<std::endl;
+		std::cout<<"subtrigger "<<i<<" is at "<<it0xsk
+		         <<" or "<<(t0_sub.at(i)/COUNT_PER_NSEC)<<" ns from the primary trigger"
+		         <<" so peak should be at "<<(double(t0_sub.at(i))/COUNT_PER_NSEC)
+		         +(double(skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum])*COUNT_PER_NSEC)<<" ns"<<std::endl;
 		
 		// get in-gate times (for check?)
 		float pre_t0 = 0;  //skruninf_.softtrg_pre_t0[0];  FIXME not sure what index to use
@@ -268,11 +291,14 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		int n_in_gate_hits_this_subtrigger=0;
 		
 		// scan hits, check whether they're in the new 1.3us gate
-		for(int k=0; k<sktqz_.nqiskz; ++k){
+		std::cout<<"looping over "<<subtrigger_flags.size()<<" hits"<<std::endl;
+		for(int k=0; k<subtrigger_flags.size(); ++k){
 			std::unordered_map<std::string, int> hit_flags = GetHitFlagNames(sktqz_.ihtiflz[k]);
 			
 			// sanity check
 			/* FIXME enable when we know what index to use for pre- and post- t0's
+			// fixed; pretty sure it's runinfo_.t0_offset[i] where i is the index for the type of trigger
+			// as in GetTriggerName(i)
 			float new_time = sktqz_.tiskz[i] - (it0xsk - it0sk)/COUNT_PER_NSEC;
 			if(nhiterrs>0 && hit_flags.at("in 1.3us") != (new_time > subtr_start_t && new_time < subtr_end_t)){
 				Log(m_unique_name+" hit "+toString(k)+" in subtrigger "+toString(j)+" has time "

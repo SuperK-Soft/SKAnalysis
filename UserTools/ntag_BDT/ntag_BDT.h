@@ -112,6 +112,7 @@ class ntag_BDT : public Tool {
 	int MAX_EVENTS=500;
 	float* neutron5 = nullptr;
 	int* nlow = nullptr;
+	int last_in_entries=0;
 	
 };
 

@@ -1,4 +1,5 @@
-verbosity 1
+verbosity 10
 readerName sk2p2mevReader
 StepsToPerform 0   # 0=everything, 1=energy only, 2=everything except vertex? (energy, clik, msg, etc)
+checkEventType 0
 #hitLimitForClusfit 800

@@ -75,3 +75,5 @@
 #include "PostLoweReconstructionCuts.h"
 #include "PreLoweReconstructionCuts.h"
 #include "FlagAFTs.h"
+#include "LoadSubTrigger.h"
+#include "MakeBDTOutputFile.h"

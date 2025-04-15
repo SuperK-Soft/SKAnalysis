@@ -24,6 +24,7 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	// 1D arrays of size np (number of candidates)
 	basic_array<float*> metrics;
 	basic_array<float*> times;
+	basic_array<float*> prompt_times;
 	basic_array<float*> xs;
 	basic_array<float*> ys;
 	basic_array<float*> zs;
@@ -34,7 +35,9 @@ bool NCaptInfo_BDT::GetCandidates(std::vector<NCaptCandidate>& candidates){
 	get_ok &= myTreeReader->Get("nvy",ys);
 	get_ok &= myTreeReader->Get("nvz",zs);
 	// dt= time of prompt event, dtn=time of capture event
-	get_ok &= myTreeReader->Get("dtn",times);
+	// hmm, actually both seem to have an offset of about 5-10ns from the true capture time.
+	// 'dt' is marginally better, but more in spread than in central value.
+	get_ok &= myTreeReader->Get("dt",times);
 	get_ok &= myTreeReader->Get("bse",bses);  // is this bonsai energy for the ncapture candidate?
 	
 	

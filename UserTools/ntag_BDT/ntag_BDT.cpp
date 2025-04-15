@@ -71,6 +71,7 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 	// So that downstream Tools can access our results without needing to run a second
 	// ToolChain that reads the results off disk, make a TreeReader that they can use to
 	// retrieve results as they're generated, equivalently to with an upstream TreeReader Tool
+	outTreeReader.SetVerbosity(10);
 	outTreeReader.Load(treeout);
 	m_data->RegisterReader("ntag_BDT_OutTree", &outTreeReader);
 	// inform the TreeReader not to close the file when the destructor is called.
@@ -82,12 +83,19 @@ bool ntag_BDT::Initialise(std::string configfile, DataModel &data){
 
 bool ntag_BDT::Execute(){
 	
-	Log(m_unique_name+": Getting branch values",v_debug,m_verbose);
-	get_ok = GetBranchValues();
-	if(not get_ok){
-		Log(m_unique_name+": Error getting branch values!",v_error,m_verbose);
-		//return false;
+	int n_in_entries = myTreeReader->GetEntries();
+	if(n_in_entries==last_in_entries){
+		np=0;
+	} else {
+		Log(m_unique_name+": Getting branch values",v_debug,m_verbose);
+		get_ok = GetBranchValues();
+		if(not get_ok){
+			Log(m_unique_name+": Error getting branch values!",v_error,m_verbose);
+			//return false;
+		}
 	}
+	last_in_entries = n_in_entries;
+	
 	Log(m_unique_name+": "+toString(np)+" candidates this entry",v_debug,m_verbose);
 	
 	// unlikely to have >500 neutron candidates in an event,
@@ -210,6 +218,8 @@ bool ntag_BDT::Execute(){
 	// fill output tree with BDT metrics
 	Log(m_unique_name+": Filling output branches",v_debug,m_verbose);
 	treeout->Fill();
+	// FIXME FIXME FIXME needed to do this to update pointers when a downstream Tool is reading the tree at the same time, or something....
+	outTreeReader.ParseBranches();
 	
 	unsigned long num_entries = treeout->GetEntries();
 	if(num_entries%WRITE_FREQUENCY){
