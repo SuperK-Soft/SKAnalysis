@@ -108,22 +108,25 @@ $(function() {
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    std::vector&lt;float&gt; MatchedTimeDiff;   <span class="comment">// [ns]</span></div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    std::vector&lt;float&gt; MatchedParticleE;  <span class="comment">// [MeV]</span></div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    std::vector&lt;bool&gt; MatchedHasAFTs;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    ULong64_t HwClockTicks;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    Long64_t HwClockTicks;</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> NumRollovers;</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">int</span> relics_to_write=0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">int</span> muons_to_write=0;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">int</span> relics_written=0;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">int</span> muons_written=0;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">int</span> muons_written_wmuboysplit=0;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">int</span> current_badch_masking;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    std::vector&lt;skroot_mu_common&gt; reco_muons;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::map&lt;int, int&gt; mu_nevsks;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    std::map&lt;int, int&gt; relic_nevsks;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">int</span> relics_to_write=0;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">int</span> muons_to_write=0;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">int</span> relics_written=0;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">int</span> muons_written=0;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordtype">int</span> muons_written_wmuboysplit=0;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;};</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">int</span> current_badch_masking;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    std::vector&lt;skroot_mu_common&gt; reco_muons;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;};</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:65</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
 <div class="ttc" id="aclassReconstructMatchedMuons_html"><div class="ttname"><a href="classReconstructMatchedMuons.html">ReconstructMatchedMuons</a></div><div class="ttdef"><b>Definition:</b> ReconstructMatchedMuons.h:11</div></div>

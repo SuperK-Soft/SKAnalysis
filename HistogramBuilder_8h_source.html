@@ -310,206 +310,207 @@ $(function() {
 <div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;            unique_name = histname+<span class="stringliteral">&quot;_&quot;</span>+std::to_string(hbuildercounter++);</div>
 <div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        } <span class="keywordflow">while</span>(gROOT-&gt;FindObject(unique_name.c_str())!=<span class="keyword">nullptr</span>);</div>
 <div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    }</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    histnames.emplace(histname,unique_name);</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    </div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    <span class="keywordflow">return</span> unique_name;</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;}</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="comment">//=========================================================================================//</span></div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160; </div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="comment">// Histogram factory. You know, we probably don&#39;t need all the types.</span></div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="comment">// In fact, honestly, TH*D would probably work for anything....</span></div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160; </div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">// float, double, long double -&gt; use TH1D</span></div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;TH1D* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,3&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_floating_point&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;        binning[0]=200;</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    }</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH1D(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2]);</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;}</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="comment">// bool, char, short, int, long, long long, and similar -&gt; use TH1I</span></div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;TH1I* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,3&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_integral&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;        binning[0]=200;</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    }</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH1I(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2]);</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;}</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160; </div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="comment">// float, double, long double -&gt; use TH2D</span></div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;TH2D* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,6&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_floating_point&lt;T&gt;::value,<span class="keywordtype">bool</span>&gt;::type potato){</div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;        binning[0]=200;</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        binning[3]=200;</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;    }</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH2D(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5]);</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;}</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">// bool, char, short, int, long, long long, and similar -&gt; use TH2I</span></div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;TH2I* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,6&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_integral&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        binning[0]=200;</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        binning[3]=200;</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    }</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH2I(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5]);</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;}</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160; </div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">// float, double, long double -&gt; use TH3D</span></div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;TH3D* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,9&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_floating_point&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        binning[0]=200;</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        binning[3]=200;</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        binning[6]=200;</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    }</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH3D(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5], binning[6], binning[7], binning[8]);</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;}</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">// bool, char, short, int, long, long long, and similar -&gt; use TH3I</span></div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;TH3I* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,9&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_integral&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;        binning[0]=200;</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        binning[3]=200;</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        binning[6]=200;</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    }</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH3I(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5], binning[6], binning[7], binning[8]);</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;}</div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160; </div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment">//=========================================================================================//</span></div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160; </div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">// 1D</span></div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, T val){</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;    </div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    <span class="comment">// ensure we have something to Fill</span></div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="keywordflow">if</span>(!notree &amp;&amp; branches.count(name)==0){</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        std::cout&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill making new branch with name &#39;&quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot;&#39;&quot;</span>&lt;&lt;std::endl;</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        <span class="keywordflow">if</span>(!AddBranch(name, val)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span>(notree &amp;&amp; hists.count(name)==0){</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;        <span class="keywordflow">if</span>(!AddHist(name, val)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    }</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    </div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    <span class="comment">// fill tree if we have one</span></div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    <span class="keywordflow">if</span>(branches.count(name)){</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        BranchFill(name, val);</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    }</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    </div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    <span class="comment">// fill hist if we have one</span></div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="keywordflow">if</span>(hists.count(name)){</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;        hists.at(name)-&gt;Fill(val);</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    }</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    </div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;}</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160; </div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment">// 2D</span></div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, T val1, T val2){</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    <span class="keywordflow">return</span> Fill(name, std::vector&lt;T&gt;{val1, val2});</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;}</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160; </div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">// 3D</span></div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, T val1, T val2, T val3){</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    <span class="keywordflow">return</span> Fill(name, std::vector&lt;T&gt;{val1, val2, val3});</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;}</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160; </div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment">// ND - maybe this should be private...?</span></div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, std::vector&lt;T&gt; vals){</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;    </div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    <span class="comment">// sanity check</span></div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    <span class="keywordflow">if</span>(vals.size()==0){</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;        std::cerr&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill called with name &quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot; but no values!&quot;</span>&lt;&lt;std::endl;</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;    }</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;    </div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;    <span class="comment">// ensure we have something to Fill</span></div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;    <span class="keywordflow">if</span>(!notree &amp;&amp; branches.count(name+<span class="stringliteral">&quot;_0&quot;</span>)==0){</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        std::cout&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill making new branches for name &#39;&quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot;&#39;&quot;</span>&lt;&lt;std::endl;</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        <span class="comment">// two values so we&#39;ll need two branches</span></div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;vals.size(); ++i){</div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;            std::string uniquebranchname = name+<span class="stringliteral">&quot;_&quot;</span>+std::to_string(i);</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;            <span class="keywordflow">if</span>(!AddBranch(uniquebranchname, vals[0])) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        }</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span>(notree &amp;&amp; hists.count(name)==0){</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;        <span class="comment">// only supported for up to 3D</span></div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        <span class="keywordflow">if</span>(!AddHist(name, vals)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;    }</div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;    </div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    <span class="comment">// fill tree if we have one</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    <span class="keywordflow">if</span>(!notree){</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;vals.size(); ++i){</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;            std::string uniquebranchname = name+<span class="stringliteral">&quot;_&quot;</span>+std::to_string(i);</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;            BranchFill(uniquebranchname, vals[i]);</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;        }</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    }</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;    </div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    <span class="comment">// fill hist if we have one</span></div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    <span class="keywordflow">if</span>(hists.count(name)){</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;        TH1* hist = hists.at(name);</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;        <span class="keywordflow">if</span>(hist-&gt;GetDimension()!=vals.size()){</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;            std::cerr&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill called for &quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot;, but &quot;</span>&lt;&lt;vals.size()</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;                     &lt;&lt;<span class="stringliteral">&quot; values given do not match dimensionality of histogram of &quot;</span>&lt;&lt;hist-&gt;GetDimension()</div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                     &lt;&lt;std::endl;</div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        }</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;             <span class="keywordflow">if</span>(vals.size()==1){ hist-&gt;Fill(vals[0]); }</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==2){ TH2* hist2 = (TH2*)(hist); hist2-&gt;Fill(vals[0],vals[1]); }</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==3){ TH3* hist3 = (TH3*)(hist); hist3-&gt;Fill(vals[0],vals[1],vals[2]); }</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;    }</div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    </div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;}</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160; </div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::BranchFill(std::string uniquebranchname, T val){</div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    </div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    TBranch* branchp = branches.at(uniquebranchname);</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    <span class="keywordtype">void</span>* branchval = branchvals.at(uniquebranchname);</div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    branchType branchtype = branchtypes.at(uniquebranchname);</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;    </div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    <span class="keywordtype">int</span> nbytes=0;</div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    </div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    <span class="comment">// copy passed value to our held branch variable and fill</span></div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    <span class="keywordflow">switch</span> (branchtype) {</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;        <span class="keywordflow">case</span> branchType::C: {</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;            <span class="keywordtype">char</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(branchval);</div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;            *valp = val;</div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;            nbytes = branchp-&gt;Fill();</div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;        }</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        <span class="keywordflow">case</span> branchType::S: {</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;            <span class="keywordtype">short</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">short</span>*<span class="keyword">&gt;</span>(branchval);</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;            *valp = val;</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;            nbytes = branchp-&gt;Fill();</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;        }</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        <span class="keywordflow">case</span> branchType::I: {</div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;            <span class="keywordtype">int</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span>*<span class="keyword">&gt;</span>(branchval);</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;            *valp = val;</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;            nbytes = branchp-&gt;Fill();</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;        }</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;        <span class="keywordflow">case</span> branchType::F: {</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;            <span class="keywordtype">float</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span>*<span class="keyword">&gt;</span>(branchval);</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;            *valp = val;</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;            nbytes = branchp-&gt;Fill();</div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;        }</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;        <span class="keywordflow">case</span> branchType::D: {</div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;            <span class="keywordtype">double</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span>*<span class="keyword">&gt;</span>(branchval);</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;            *valp = val;</div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;            nbytes = branchp-&gt;Fill();</div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;            <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;        }</div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;    }</div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;    <span class="keywordflow">return</span> nbytes;</div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;}</div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160; </div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;    std::cout&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::AddHist making new histogram with name &#39;&quot;</span>&lt;&lt;histname&lt;&lt;<span class="stringliteral">&quot;&#39;&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    histnames.emplace(histname,unique_name);</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;    </div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;    <span class="keywordflow">return</span> unique_name;</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;}</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;<span class="comment">//=========================================================================================//</span></div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160; </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="comment">// Histogram factory. You know, we probably don&#39;t need all the types.</span></div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment">// In fact, honestly, TH*D would probably work for anything....</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160; </div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment">// float, double, long double -&gt; use TH1D</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;TH1D* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,3&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_floating_point&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;        binning[0]=200;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    }</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH1D(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2]);</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;}</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="comment">// bool, char, short, int, long, long long, and similar -&gt; use TH1I</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;TH1I* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,3&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_integral&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;        binning[0]=200;</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    }</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH1I(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2]);</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;}</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160; </div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;<span class="comment">// float, double, long double -&gt; use TH2D</span></div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;TH2D* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,6&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_floating_point&lt;T&gt;::value,<span class="keywordtype">bool</span>&gt;::type potato){</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        binning[0]=200;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        binning[3]=200;</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;    }</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH2D(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5]);</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;}</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment">// bool, char, short, int, long, long long, and similar -&gt; use TH2I</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;TH2I* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,6&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_integral&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        binning[0]=200;</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        binning[3]=200;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;    }</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH2I(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5]);</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;}</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160; </div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">// float, double, long double -&gt; use TH3D</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;TH3D* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,9&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_floating_point&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        binning[0]=200;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        binning[3]=200;</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        binning[6]=200;</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    }</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH3D(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5], binning[6], binning[7], binning[8]);</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;}</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">// bool, char, short, int, long, long long, and similar -&gt; use TH3I</span></div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;TH3I* HistogramBuilder::NewHist(std::string name, std::string unique_name, T dummy, std::array&lt;double,9&gt; binning, <span class="keyword">typename</span> std::enable_if&lt;std::is_integral&lt;T&gt;::value, <span class="keywordtype">bool</span>&gt;::type potato){</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    <span class="keywordflow">if</span>(binning[0]==0){</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        binning[0]=200;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        binning[3]=200;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        binning[6]=200;</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    }</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">new</span> TH3I(unique_name.c_str(), name.c_str(), binning[0], binning[1], binning[2], binning[3], binning[4], binning[5], binning[6], binning[7], binning[8]);</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;}</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160; </div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">//=========================================================================================//</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160; </div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">// 1D</span></div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, T val){</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    </div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="comment">// ensure we have something to Fill</span></div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    <span class="keywordflow">if</span>(!notree &amp;&amp; branches.count(name)==0){</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        std::cout&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill making new branch with name &#39;&quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot;&#39;&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <span class="keywordflow">if</span>(!AddBranch(name, val)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span>(notree &amp;&amp; hists.count(name)==0){</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        <span class="keywordflow">if</span>(!AddHist(name, val)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    }</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;    </div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    <span class="comment">// fill tree if we have one</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;    <span class="keywordflow">if</span>(branches.count(name)){</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        BranchFill(name, val);</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    }</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    </div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="comment">// fill hist if we have one</span></div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    <span class="keywordflow">if</span>(hists.count(name)){</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        hists.at(name)-&gt;Fill(val);</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    }</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    </div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;}</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160; </div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">// 2D</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, T val1, T val2){</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="keywordflow">return</span> Fill(name, std::vector&lt;T&gt;{val1, val2});</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;}</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160; </div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="comment">// 3D</span></div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, T val1, T val2, T val3){</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    <span class="keywordflow">return</span> Fill(name, std::vector&lt;T&gt;{val1, val2, val3});</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;}</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160; </div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment">// ND - maybe this should be private...?</span></div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::Fill(std::string name, std::vector&lt;T&gt; vals){</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    </div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    <span class="comment">// sanity check</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    <span class="keywordflow">if</span>(vals.size()==0){</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;        std::cerr&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill called with name &quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot; but no values!&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;    }</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;    </div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;    <span class="comment">// ensure we have something to Fill</span></div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;    <span class="keywordflow">if</span>(!notree &amp;&amp; branches.count(name+<span class="stringliteral">&quot;_0&quot;</span>)==0){</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        std::cout&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill making new branches for name &#39;&quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot;&#39;&quot;</span>&lt;&lt;std::endl;</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;        <span class="comment">// two values so we&#39;ll need two branches</span></div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;vals.size(); ++i){</div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;            std::string uniquebranchname = name+<span class="stringliteral">&quot;_&quot;</span>+std::to_string(i);</div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;            <span class="keywordflow">if</span>(!AddBranch(uniquebranchname, vals[0])) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        }</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">if</span>(notree &amp;&amp; hists.count(name)==0){</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        <span class="comment">// only supported for up to 3D</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;        <span class="keywordflow">if</span>(!AddHist(name, vals)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;    }</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;    </div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;    <span class="comment">// fill tree if we have one</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    <span class="keywordflow">if</span>(!notree){</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;vals.size(); ++i){</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;            std::string uniquebranchname = name+<span class="stringliteral">&quot;_&quot;</span>+std::to_string(i);</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;            BranchFill(uniquebranchname, vals[i]);</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;        }</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;    }</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;    </div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    <span class="comment">// fill hist if we have one</span></div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;    <span class="keywordflow">if</span>(hists.count(name)){</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;        TH1* hist = hists.at(name);</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;        <span class="keywordflow">if</span>(hist-&gt;GetDimension()!=vals.size()){</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;            std::cerr&lt;&lt;<span class="stringliteral">&quot;HistogramBuilder::Fill called for &quot;</span>&lt;&lt;name&lt;&lt;<span class="stringliteral">&quot;, but &quot;</span>&lt;&lt;vals.size()</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                     &lt;&lt;<span class="stringliteral">&quot; values given do not match dimensionality of histogram of &quot;</span>&lt;&lt;hist-&gt;GetDimension()</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;                     &lt;&lt;std::endl;</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;        }</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;             <span class="keywordflow">if</span>(vals.size()==1){ hist-&gt;Fill(vals[0]); }</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==2){ TH2* hist2 = (TH2*)(hist); hist2-&gt;Fill(vals[0],vals[1]); }</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span>(vals.size()==3){ TH3* hist3 = (TH3*)(hist); hist3-&gt;Fill(vals[0],vals[1],vals[2]); }</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    }</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    </div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;}</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160; </div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;<span class="keywordtype">bool</span> HistogramBuilder::BranchFill(std::string uniquebranchname, T val){</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;    </div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    TBranch* branchp = branches.at(uniquebranchname);</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    <span class="keywordtype">void</span>* branchval = branchvals.at(uniquebranchname);</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;    branchType branchtype = branchtypes.at(uniquebranchname);</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    </div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    <span class="keywordtype">int</span> nbytes=0;</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    </div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    <span class="comment">// copy passed value to our held branch variable and fill</span></div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;    <span class="keywordflow">switch</span> (branchtype) {</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;        <span class="keywordflow">case</span> branchType::C: {</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;            <span class="keywordtype">char</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">char</span>*<span class="keyword">&gt;</span>(branchval);</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;            *valp = val;</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;            nbytes = branchp-&gt;Fill();</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;        }</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="keywordflow">case</span> branchType::S: {</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;            <span class="keywordtype">short</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">short</span>*<span class="keyword">&gt;</span>(branchval);</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;            *valp = val;</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;            nbytes = branchp-&gt;Fill();</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        }</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;        <span class="keywordflow">case</span> branchType::I: {</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;            <span class="keywordtype">int</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span>*<span class="keyword">&gt;</span>(branchval);</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;            *valp = val;</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;            nbytes = branchp-&gt;Fill();</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;        }</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;        <span class="keywordflow">case</span> branchType::F: {</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;            <span class="keywordtype">float</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">float</span>*<span class="keyword">&gt;</span>(branchval);</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;            *valp = val;</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;            nbytes = branchp-&gt;Fill();</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;        }</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;        <span class="keywordflow">case</span> branchType::D: {</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;            <span class="keywordtype">double</span>* valp = <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span>*<span class="keyword">&gt;</span>(branchval);</div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;            *valp = val;</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;            nbytes = branchp-&gt;Fill();</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;            <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;        }</div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;    }</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;    <span class="keywordflow">return</span> nbytes;</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;}</div>
 <div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160; </div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160; </div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassHistogramBuilder_html"><div class="ttname"><a href="classHistogramBuilder.html">HistogramBuilder</a></div><div class="ttdef"><b>Definition:</b> HistogramBuilder.h:14</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
