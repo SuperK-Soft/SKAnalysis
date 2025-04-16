@@ -3,6 +3,9 @@
 
 #include <string>
 #include <iostream>
+#include <map>
+#include <utility>
+#include <set>
 
 #include "Tool.h"
 #include "HistogramBuilder.h"
@@ -31,7 +34,7 @@ class RelicMuonPlots: public Tool {
 	bool MakeHists(int step);
 	bool MakePairVariables();
 	bool GetRelicEvt();
-	bool GetMuonEvt(int entrynum);
+	bool GetMuonEvt();
 	double CalculateTrackLen(float* muon_entrypoint, float* muon_direction, double* exitpt=nullptr);
 	bool GetPeTable();
 	
@@ -42,9 +45,15 @@ class RelicMuonPlots: public Tool {
 	std::string outputFile="relicmuplots.root";
 	std::string relicFile="relicplots.root";
 	std::string muFile="muonplots.root";
-	std::map<int,int> muon_plotted;
+	
+	// this shits all debugging
 	std::map<int,int> relic_nevsks; // FIXME this shouldn't be needed!
+	std::map<int,int> muon_nevsks;
+	std::set<std::pair<int,int>> pairs_compared;   // FIXME this shouldn't be needed!
+	std::set<std::pair<int,int>> pairs_compared2;   // FIXME this shouldn't be needed!
+	std::map<std::pair<int,int>,std::pair<int,int>> evmap;
 	std::map<std::pair<int,int>, int> muon_pair_plotted;
+	std::map<int,int> muon_plotted;
 	
 	// table that converts coulombs to photoelectrons
 	// normally in $SKOFL_ROOT/const/lowe/petable.dat
@@ -54,11 +63,15 @@ class RelicMuonPlots: public Tool {
 	std::vector<int> petable_startrun, petable_endrun;
 	
 	// for reading Trees
-	int relicentrynum=0;
 	std::string muReaderName="";
 	std::string relicReaderName="";
 	MTreeReader* relicReader=nullptr;
 	MTreeReader* muReader=nullptr;
+	
+	int relicEntryNum=0;
+	int muEntryNum=0;
+	int relicEvNum=0;
+	int muEvNum=0;
 	
 	// for getting branches
 	// relic:
@@ -66,7 +79,7 @@ class RelicMuonPlots: public Tool {
 	LoweInfo* relicLowe=nullptr;
 	TQReal* relicTQReal=nullptr;
 	TQReal* relicTQAReal=nullptr;
-	int64_t relicClockTicks=0;
+	ULong64_t relicClockTicks=0;
 	int relicRollovers=0;
 	std::vector<int>* relicMatchedEntryNums=nullptr;
 	std::vector<float>* relicTimeDiffs=nullptr;
@@ -74,7 +87,7 @@ class RelicMuonPlots: public Tool {
 	// muon:
 	Header* muHeader=nullptr;
 	MuInfo* muMu=nullptr;
-	int64_t muClockTicks=0;
+	ULong64_t muClockTicks=0;
 	int muRollovers=0;
 	TQReal* muTQReal=nullptr;
 	TQReal* muTQAReal=nullptr;
@@ -93,9 +106,13 @@ class RelicMuonPlots: public Tool {
 	int pe_table_index = 0;
 	
 	int mu_before_relic;
+	int mu_relic_evtnum_diff;
 	float dt;
 	float dll;
 	float dlt;
+	
+	int spall_count=0;
+	int rand_count=0;
 	
 };
 

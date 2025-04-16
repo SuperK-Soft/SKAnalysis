@@ -6,4 +6,4 @@ dataReaderName demoReader
 treeReaderName bdtReader
 outfilename ./bdt_match.root   # debug plots of capture matches
 #likelihood_threshold 0.9999
-likelihood_cut 0.9999
+likelihood_cut 0.999

@@ -43,7 +43,7 @@ KIRKLIB = -L $(Dependencies)/Kirk -lkirk
 #RELICSK4LIB = -L $(Dependencies)/relic_sk4 -lrelic_sk4_ana
 
 # debugging: find where a function name is defined. Veeery useful.
-#LDFLAGS += -Wl,--trace-symbol=makededx_
+#LDFLAGS += -Wl,--trace-symbol=skcoverage_
 
 # not all fortran routines are built into libraries as part of compiling SKOFL & ATMPD.
 # figure out why standalones don't need to specify a full path when listing in dependencies of a target....?
@@ -132,8 +132,7 @@ endif
 #CXXFLAGS += $(ZLIBFLAG) $(ZLIB)
 
 # Third Reduction Library (part of SRN analysis)
-#THIRDREDLIB = -L/disk02/usr6/moflaher/relic_sk4_ana/relic_work_dir/data_reduc/third/lib -lthirdredvars
-THIRDREDLIB = -L/disk03/lowe12/warwick/relic_sk4_ana/data_reduc/third/lib -lthirdredvars
+THIRDREDLIB = -L/disk2/disk03/lowe12/warwick/relic_sk4_ana/data_reduc/third/lib -lthirdredvars
 
 # SKG4 Library
 SKG4LIB = -L${SKG4Dir}/lib -lSKG4Root

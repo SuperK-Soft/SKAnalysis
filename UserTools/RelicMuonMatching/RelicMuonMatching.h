@@ -31,7 +31,7 @@ class RelicMuonMatching: public Tool {
 	std::string relicSelectorName;
 	MTreeReader* rfmReader = nullptr;
 	
-	bool RemoveFromDeque(std::vector<int>& particlesToRemove, std::deque<ParticleCand>& particleDeque);
+	bool RemoveFromDeque(std::deque<ParticleCand>& particleDeque);
 	bool RelicMuonMatch(bool loweEventFlag, int64_t currentTicks, int subtrg_num=0, int32_t it0xsk=0);
 	
 	EventType eventType;
@@ -42,8 +42,8 @@ class RelicMuonMatching: public Tool {
 	double match_window = 60; // [seconds]
 	int64_t match_window_ticks;
 	
-	std::vector<int> relicsToRemove;
-	std::vector<int> muonsToRemove;
+	bool relicsToRemove=false;
+	bool muonsToRemove=false;
 	
 	int32_t lastnevhwsk, lastit0sk, last_rollover_nevsk;
 	int64_t lasteventticks, lastmuticks, lastrelicticks;
@@ -60,6 +60,9 @@ class RelicMuonMatching: public Tool {
 	
 	HistogramBuilder hb;
 	std::string distros_file;
+	
+	std::map<int, int> relic_nevsks;
+	std::map<int, int> mu_nevsks;
 	
 	// defunct....
 	//unsigned long long int bitshiftTime(unsigned long long int t0Time, unsigned long long int hardwareTime);

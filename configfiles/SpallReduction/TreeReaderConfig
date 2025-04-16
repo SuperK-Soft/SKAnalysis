@@ -1,4 +1,4 @@
-verbosity 1
+verbosity 10
 FileListName MyFileList
 #inputFile ./rootFiles/data/sk4/061525/lowe_rfm_run061525.000002.root
 #inputFile /disk02/usr7/jfannon/data/lowe_rfm_run074558.000002.root << lfallfit doesn't like this file
@@ -6,6 +6,7 @@ FileListName MyFileList
 #inputFile /disk02/data7/sk6/run/0868/086831/rfm_run086831.000001.root  # works!
 #inputFile /disk02/data7/sk6/run/0866/086669/rfm_run086669.000061.root ## why now failing?
 #inputFile /disk02/data7/sk6/run/0870/087096/rfm_run087096.000282.root
+#inputFile /disk02/data7/sk6/run/0870/087096/rfm_run087096.000164.root  ## cosang at 36046
 
 #firstEntry 33000 # relic at 33162
 #firstEntry 7271  # relic at 7571

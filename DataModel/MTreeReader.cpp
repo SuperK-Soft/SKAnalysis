@@ -281,6 +281,9 @@ int MTreeReader::ParseBranches(){
 			branch_isobjectptr.emplace(branchname,false);
 			branch_isarray.emplace(branchname,false);
 			branch_istobject.emplace(branchname,false);
+			std::cout<<"Basic type branch "<<branchname<<", type "<<branch_types.at(branchname)
+			         <<", value pointer at "<<lf->GetValuePointer()<<", branch at "<<branch_pointers.at(branchname)
+			         <<", leaf at "<<leaf_pointers.at(branchname)<<std::endl;
 		}
 	}
 	
@@ -431,6 +434,9 @@ int MTreeReader::ParseBranchDims(std::string branchname){
 }
 
 std::vector<size_t> MTreeReader::GetBranchDims(std::string branchname){
+	
+	if(branch_isarray.count(branchname)==0) return std::vector<size_t>{};
+	
 	// get the dimensions of the array for this entry
 	// if all dimensions are constant we should have them cached
 	if(branch_dims_cache.count(branchname)) return branch_dims_cache.at(branchname);
@@ -650,20 +656,35 @@ std::map<std::string, intptr_t> MTreeReader::GetBranchAddresses(){
 TBranch* MTreeReader::GetBranch(std::string branchname){
 	if(branch_pointers.count(branchname)){
 		return branch_pointers.at(branchname);
-	} else {
-		std::cerr<<"No such branch "<<branchname<<std::endl;
-		return nullptr;
 	}
+	std::cerr<<"No such branch "<<branchname<<std::endl;
+	return nullptr;
 }
 
 std::string MTreeReader::GetBranchType(std::string branchname){
+	// n.b. for arrays this is the CONTAINED type: does not indicate if array or dimensions!
+	// use GetBranchIsArray and GetBranchDims for these
 	if(branch_types.count(branchname)){
 		return branch_types.at(branchname);
-	} else {
-		std::cerr<<"No such branch "<<branchname<<std::endl;
-		return "";
 	}
-	return ""; // dummy to silence warning
+	std::cerr<<"MTreeReader::GetBranchType - No such branch "<<branchname<<std::endl;
+	return "";
+}
+
+bool MTreeReader::GetBranchIsArray(std::string branchname){
+	if(branch_isarray.count(branchname)){
+		return branch_isarray.at(branchname);
+	}
+	std::cerr<<"MTreeReader::GetBranchIsArray - No such branch "<<branchname<<std::endl;
+	return false;
+}
+
+bool MTreeReader::GetBranchIsObject(std::string branchname){
+	if(branch_isobject.count(branchname)){
+		return (branch_isobject.at(branchname) || branch_istobject.at(branchname) || branch_isobjectptr.at(branchname));
+	}
+	std::cerr<<"MTreeReader::GetBranchIsObject - No such branch "<<branchname<<std::endl;
+	return false;
 }
 
 int MTreeReader::DisableBranches(std::vector<std::string> branchnames){

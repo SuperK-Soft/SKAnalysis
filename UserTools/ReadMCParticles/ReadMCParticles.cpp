@@ -355,6 +355,8 @@ bool ReadMCParticles::GetSecondaryVectors(){
 		MVertex& avertex = m_data->eventVertices.back();
 		
 		avertex.pos = TVector3{sec_info->vertex_pos.at(i).data()};
+		// FIXME HACKY WORKAROUND FOR SKG4 BUG REMOVE SOON
+		//if(i!=0) avertex.pos *= 0.1;
 		avertex.time = sec_info->vertex_time.at(i);
 		avertex.type = (sec_info->vertex_incident_particle.at(i) == -1) ? 1 : 2;   // 1=primary, 2=secondary
 		avertex.SetIncidentParticle(sec_info->vertex_incident_particle.at(i));

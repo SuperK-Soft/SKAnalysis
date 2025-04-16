@@ -1,0 +1,10 @@
+verbosity 1
+FileListName MyFileList                                                  # required argument
+#maxFiles 10
+
+fileList configfiles/MakeSpallVariables/list_of_files.txt
+
+#sk6
+#useRegex 0
+#inputDirectory /disk02/usr6/moflaher/SpallReduction
+#filePattern test_jacks.root

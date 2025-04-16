@@ -2,3 +2,5 @@
 myTreeReader TreeReader configfiles/PrintEvent/TreeReaderConfig
 myPrintEvent PrintEvent configfiles/PrintEvent/PrintEventConfig
 #myPlotHitTimes PlotHitTimes configfiles/PrintEvent/PlotHitTimesConfig
+#mySLESearch SLESearch configfiles/PrintEvent/SLESearchConfig
+#myLoadSubTrigger LoadSubTrigger configfiles/PrintEvent/LoadSubTriggerConfig

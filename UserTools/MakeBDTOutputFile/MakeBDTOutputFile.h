@@ -25,10 +25,9 @@ class MakeBDTOutputFile: public Tool {
 
   bool ok = false;
   bool carry_ibd_weights = false;
-  
   int entry_number_tmp = 0;
-
   std::string outfile_str = "";
+  
   TFile* output_file_ptr = nullptr;
   TTree* output_tree_ptr = nullptr;
   
@@ -74,7 +73,6 @@ class MakeBDTOutputFile: public Tool {
     {"weight_ando", nullptr},
     {"weight_li9", nullptr},
     {"weight_reactor", nullptr}};
-    
   
 };
 

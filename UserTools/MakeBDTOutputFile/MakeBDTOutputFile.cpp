@@ -33,8 +33,6 @@ bool MakeBDTOutputFile::Initialise(std::string configfile, DataModel &data){
 
   if (m_data->Trees.count("ntag_BDT_OutTree") == 0){throw std::runtime_error("MakeBDTOutputFile: couldn't get bdt tree");}
   reader_ntagbdt_ptr = m_data->Trees.at("ntag_BDT_OutTree");
-
-  
   
   std::string outfile_str = "";
   m_variables.Get("outfile", outfile_str);
@@ -102,7 +100,6 @@ bool MakeBDTOutputFile::Execute(){
 bool MakeBDTOutputFile::Finalise(){
 
   std::cout << "saving to output file: " << outfile_str << std::endl;
-  
   output_file_ptr->cd();
   output_tree_ptr->Write();
   
@@ -163,4 +160,4 @@ void MakeBDTOutputFile::SetOutputBranches(TTree* tree){
   }
   
   return;
-  }
+}

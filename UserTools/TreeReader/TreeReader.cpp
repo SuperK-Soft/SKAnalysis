@@ -364,8 +364,11 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			//zbsinit_();  THIS IS THE SAME ROUTINE AS KZINIT!!
 			
 			// Set rflist and open file
-			// '$SKOFL_ROOT/iolib/set_rflist.F' is used for setting the input file to open.
-			// (See also $RELICWORKDIR/mc_sim/inject_dummy/src/set_rflistC.F)
+			// '$SKOFL_ROOT/src/iolib/set_rflist.f' is used for setting the input file to open.
+			// (See also UserTools/vectgen/vectgen.cpp
+			//           $RELIC_WORK_DIR/mc_sim/ibd/skdetsim/make_lowmu.sh
+			//           $RELIC_WORK_DIR/data_reduc/third/src/fort_fopen.F
+			//           $RELIC_WORK_DIR/data_reduc/third/src/leaf.cc ...)
 			// This copies the input filename into the RFLIST common block.
 			// Despite the name i can't see how 'rflist' actually supports a list,
 			// (possibly as some environmental variable..????)

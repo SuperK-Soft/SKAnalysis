@@ -1,5 +1,5 @@
 #outfile /disk03/lowe12/warwick/mc/atmos/medium_tests/atmnu.lowfit.r90000.300.bdt_mod.root
-
+#outfile ./combined_test.root
 outfile /disk03/lowe12/warwick/mc/atmos/atmos_with_secondary.root
 
 reader_input reader_input

@@ -1,4 +1,4 @@
-verbosity 1
+verbosity 5
 TreeReaderName demoReader
 #debugEntryNum 96
-dataSrc 0  # read from stl vectors (better). src 0 = atmpd style arrays
+dataSrc 0  # 1 = read from stl vectors (better), 0 = atmpd style arrays (limited)

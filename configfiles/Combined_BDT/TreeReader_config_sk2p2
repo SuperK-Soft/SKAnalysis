@@ -1,5 +1,5 @@
 verbosity 10
-readerName reader_input
+readerName reader_sk2p2
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
 #inputFile $HOME/rfm_run074724.000001.root         # a full rfm data file, supported by NTag (no MC info though)
 #inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root # skdetsim gd water neutron gun sims
@@ -13,24 +13,13 @@ readerName reader_input
 #inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3141_skg4_bonsai.mcfit.root
 
 #inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3256_skg4_bonsai.mcfit.root
-#inputFile /disk03/lowe12/warwick/mc/atmos/harada_test.root
-#inputFile /disk03/lowe12/warwick/mc/ibd/reweight_out/IBD_MC_1.mcfit_reweight.root
-
-#inputFile /disk03/lowe12/warwick/mc/atmos/small_tests/bs.root
-#inputFile /disk03/lowe12/warwick/mc/atmos/medium_tests/atmnu.lowfit.r90000.300.root
-
-#inputFile /disk03/lowe12/warwick/mc/ibd/small_tests/anewhope.root
-
-#inputFile /disk03/lowe12/mharada/relic_skgd_ana/relic_mc/signal/srn/weighted_all/1_90/reweight_all.r90000.1.root
-#inputFile /home/mattnich/disk3stor/mc/atmos/bonsai_out/atmos_3256_skg4_bonsai.mcfit.root
-#inputFile /disk03/lowe12/warwick/mc/atmos/harada_test.root
+inputFile /disk03/lowe12/warwick/mc/atmos/harada_test.root
 
 #inputFile /disk03/lowe12/warwick/mc/ibd/bdt_out/test.root
 
 treeName data                                     # the name of the tree within the file
-#treeName sksrn
-maxEntries -1                                     # max num input entries to process
-#maxEntries 100
+#maxEntries -1                                     # max num input entries to process
+maxEntries 100
 skFile 1                                          # must populate common blocks to run lfallfit
 triggerMasks 28 29                                # only pass on SHE (28) and AFT (29) triggers
 SK_GEOMETRY 6

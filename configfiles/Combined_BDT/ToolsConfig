@@ -1,4 +1,6 @@
 my_input_TreeReader TreeReader configfiles/Combined_BDT/TreeReader_config_input
+# my_sk2p2mev_TreeReader configfiles/Combined_BDT/TreeReader_config_sk2p2
+# my_ntagbdt_TreeReader TreeReader configfiles/Combined_BDT/TreeReader_config_ntagbdt
 my_SK2p2MeV SK2p2MeV_ntag configfiles/Combined_BDT/SK2p2MeV_config
 my_ntag_BDT ntag_BDT configfiles/Combined_BDT/ntag_BDT_config
 my_MakeBDTOutputFile MakeBDTOutputFile configfiles/Combined_BDT/MakeBDTOutputFile_config

@@ -541,37 +541,37 @@ bool NCaptInfo::MakePlots(int step){
 		TH1D h_prompt_z("h_prompt_z","Prompt Z Position;Z;num events",100,0,0);
 		TH1D h_prompt_e("h_prompt_e","Prompt Energy;Energy [MeV];num events",100,0,0);
 		
-		TH1D h_n_travel_d("h_n_travel_d","Neutron Travel D;D;num events",100,0,0);
+		TH1D h_n_travel_d("h_n_travel_d","Neutron Travel D;D;num events",100,0,5000);
 		TH1D h_n_travel_t("h_n_travel_t","Neutron Travel T;T;num events",100,0,0);
 		
-		TH1D h_cap_terr("h_cap_terr","Capture Time Error;Terr;num events",100,0,0);
-		TH1D h_cap_xerr("h_cap_xerr","Capture X Position Error;Xerr;num events",100,0,0);
-		TH1D h_cap_yerr("h_cap_yerr","Capture Y Position Error;Yerr;num events",100,0,0);
-		TH1D h_cap_zerr("h_cap_zerr","Capture Z Position Error;Zerr;num events",100,0,0);
-		TH1D h_cap_derr("h_cap_derr","Capture Total Position Error;Rerr;num events",100,0,0);
+		TH1D h_cap_terr("h_cap_terr","Capture Time Error;Terr;num events",100,-100,100);
+		TH1D h_cap_xerr("h_cap_xerr","Capture X Position Error;Xerr;num events",100,-500,500);
+		TH1D h_cap_yerr("h_cap_yerr","Capture Y Position Error;Yerr;num events",100,-500,500);
+		TH1D h_cap_zerr("h_cap_zerr","Capture Z Position Error;Zerr;num events",100,-500,500);
+		TH1D h_cap_derr("h_cap_derr","Capture Total Position Error;Rerr;num events",100,0,500);
 		
-		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,0,0);
-		TH1D h_prompt_xerr("h_prompt_xerr","Prompt X Position Error;Xerr;num events",100,0,0);
-		TH1D h_prompt_yerr("h_prompt_yerr","Prompt Y Position Error;Yerr;num events",100,0,0);
-		TH1D h_prompt_zerr("h_prompt_zerr","Prompt Z Position Error;Zerr;num events",100,0,0);
-		TH1D h_prompt_derr("h_prompt_derr","Prompt Total Position Error;Rerr;num events",100,0,0);
+		TH1D h_prompt_terr("h_prompt_terr","Prompt Time Error;Terr;num events",100,-50,50);
+		TH1D h_prompt_xerr("h_prompt_xerr","Prompt X Position Error;Xerr;num events",100,-500,500);
+		TH1D h_prompt_yerr("h_prompt_yerr","Prompt Y Position Error;Yerr;num events",100,-500,500);
+		TH1D h_prompt_zerr("h_prompt_zerr","Prompt Z Position Error;Zerr;num events",100,-500,500);
+		TH1D h_prompt_derr("h_prompt_derr","Prompt Total Position Error;Rerr;num events",100,0,500);
 		TH1D h_prompt_eerr("h_prompt_eerr","Prompt Energy Error;Eerr;num events",100,0,0);
 		
-		TH2D h_capt_terr_vs_metric("h_capt_terr_vs_metric","Capture Terr vs Likelihood;cap_likelihood;Terr",100,0,0,100,0,0);
+		TH2D h_prompt_terr_vs_metric("h_prompt_terr_vs_metric","Prompt Terr vs Goodness;prompt_goodness;Terr",100,0,1,100,-100,100);
+		TH2D h_prompt_derr_vs_metric("h_prompt_derr_vs_metric","Prompt Rerr vs Goodness;prompt_goodness;Rerr",100,0,1,100,0,500);
+		
+		TH2D h_capt_terr_vs_metric("h_capt_terr_vs_metric","Capture Terr vs Likelihood;cap_likelihood;Terr",100,0,1,100,0,0);
 		TH2D h_capt_derr_vs_metric("h_capt_derr_vs_metric","Capture Rerr vs Likelihood;cap_likelihood;Rerr",100,0,1,100,0,0);
 		
-		TH2D h_prompt_terr_vs_metric("h_prompt_terr_vs_metric","Prompt Terr vs Goodness;prompt_goodness;Terr",100,0,1,100,0,0);
-		TH2D h_prompt_derr_vs_metric("h_prompt_derr_vs_metric","Prompt Rerr vs Goodness;prompt_goodness;Rerr",100,0,1,100,0,0);
-		
 		TH1D h_cap_likelihood_cut("h_cap_likelihood_cut","cap_likelihood;metric;num events",100,0,0);
-		TH1D h_cap_terr_cut("h_cap_terr_cut","Capture Time Error;Terr;num events",100,0,0);
-		TH1D h_cap_xerr_cut("h_cap_xerr_cut","Capture X Position Error;Xerr;num events",100,0,0);
-		TH1D h_cap_yerr_cut("h_cap_yerr_cut","Capture Y Position Error;Yerr;num events",100,0,0);
-		TH1D h_cap_zerr_cut("h_cap_zerr_cut","Capture Z Position Error;Zerr;num events",100,0,0);
-		TH1D h_cap_derr_cut("h_cap_derr_cut","Capture Total Position Error;Rerr;num events",100,0,0);
+		TH1D h_cap_terr_cut("h_cap_terr_cut","Capture Time Error;Terr;num events",100,-50,50);
+		TH1D h_cap_xerr_cut("h_cap_xerr_cut","Capture X Position Error;Xerr;num events",100,-1000,1000);
+		TH1D h_cap_yerr_cut("h_cap_yerr_cut","Capture Y Position Error;Yerr;num events",100,-1000,1000);
+		TH1D h_cap_zerr_cut("h_cap_zerr_cut","Capture Z Position Error;Zerr;num events",100,-1000,1000);
+		TH1D h_cap_derr_cut("h_cap_derr_cut","Capture Total Position Error;Rerr;num events",100,0,1000);
 		
-		TH2D h_capt_terr_vs_metric_cut("h_capt_terr_vs_metric_cut","Capture Terr vs Likelihood;cap_likelihood;Terr",100,0,0,100,0,0);
-		TH2D h_capt_derr_vs_metric_cut("h_capt_derr_vs_metric_cut","Capture Rerr vs Likelihood;cap_likelihood;Rerr",100,0,1,100,0,0);
+		TH2D h_capt_terr_vs_metric_cut("h_capt_terr_vs_metric_cut","Capture Terr vs Likelihood;cap_likelihood;Terr",100,likelihood_cut,1,100,-20,20);
+		TH2D h_capt_derr_vs_metric_cut("h_capt_derr_vs_metric_cut","Capture Rerr vs Likelihood;cap_likelihood;Rerr",100,likelihood_cut,1,100,0,200);
 		
 		// also plot against visible energy? need a suitable metric... N50? N200?
 		//TH2D h_capt_terr_vs_E("h_capt_terr_vs_E","Terr;Terr;cap_likelihood;N events",100,-10000,10000,100,0,1);
@@ -584,16 +584,10 @@ bool NCaptInfo::MakePlots(int step){
 		matchtree->Print();
 		*/
 		
-		// must have valid capture
-		std::string cutstring = "cap_t!=9999";
-		candtree->Draw("cap_likelihood>>h_cap_likelihood",cutstring.c_str());
-		candtree->Draw("cap_t>>h_cap_t",cutstring.c_str());
-		candtree->Draw("cap_x>>h_cap_x",cutstring.c_str());
-		candtree->Draw("cap_y>>h_cap_y",cutstring.c_str());
-		candtree->Draw("cap_z>>h_cap_z",cutstring.c_str());
+		candtree->AddFriend(matchtree);
 		
 		// must have valid prompt event
-		cutstring = "prompt_t!=9999";
+		std::string cutstring = "prompt_t!=9999";
 		candtree->Draw("prompt_goodness>>h_prompt_goodness",cutstring.c_str());
 		candtree->Draw("prompt_t>>h_prompt_t",cutstring.c_str());
 		candtree->Draw("prompt_x>>h_prompt_x",cutstring.c_str());
@@ -602,40 +596,42 @@ bool NCaptInfo::MakePlots(int step){
 		cutstring = "prompt_e!=9999";
 		candtree->Draw("prompt_e>>h_prompt_e",cutstring.c_str());
 		
-		// must have valid prompt and capture event
-		cutstring = "cap_t!=9999 && prompt_t!=9999";
-		candtree->Draw("n_travel_t>>h_n_travel_t",cutstring.c_str());
-		candtree->Draw("n_travel_d>>h_n_travel_d",cutstring.c_str());
-		
-		candtree->AddFriend(matchtree);
-		
-		// capture error requires valid capture and match
-		cutstring = "cap_terr!=9999 && cap_derr!=9999";
-		candtree->Draw("cap_terr>>h_cap_terr",cutstring.c_str());
-		candtree->Draw("cap_xerr>>h_cap_xerr",cutstring.c_str());
-		candtree->Draw("cap_yerr>>h_cap_yerr",cutstring.c_str());
-		candtree->Draw("cap_zerr>>h_cap_zerr",cutstring.c_str());
-		candtree->Draw("cap_derr>>h_cap_derr",cutstring.c_str());
-		
 		// prompt error requires valid prompt and match
-		cutstring = "prompt_terr!=9999 && prompt_derr!=9999";
+		cutstring = "prompt_terr!=9999 && prompt_derr!=9999 && prompt_eerr!=9999";
 		candtree->Draw("prompt_terr>>h_prompt_terr",cutstring.c_str());
 		candtree->Draw("prompt_xerr>>h_prompt_xerr",cutstring.c_str());
 		candtree->Draw("prompt_yerr>>h_prompt_yerr",cutstring.c_str());
 		candtree->Draw("prompt_zerr>>h_prompt_zerr",cutstring.c_str());
 		candtree->Draw("prompt_derr>>h_prompt_derr",cutstring.c_str());
 		// also need valid prompt energy reco, which is independent of position reco
-		cutstring = "prompt_terr!=9999 && prompt_eerr!=9999";
 		candtree->Draw("prompt_eerr>>h_prompt_eerr",cutstring.c_str());
 		
-		cutstring = "cap_terr!=9999";
-		candtree->Draw("cap_terr:cap_likelihood>>h_capt_terr_vs_metric",cutstring.c_str());
-		candtree->Draw("cap_derr:cap_likelihood>>h_capt_derr_vs_metric",cutstring.c_str());
-		cutstring = "prompt_terr!=9999 && prompt_derr!=9999";
 		candtree->Draw("prompt_terr:prompt_goodness>>h_prompt_terr_vs_metric",cutstring.c_str());
 		candtree->Draw("prompt_derr:prompt_goodness>>h_prompt_derr_vs_metric",cutstring.c_str());
 		
-		cutstring = "cap_terr!=9999 && cap_likelihood>" + std::to_string(likelihood_cut);
+		// must have valid capture and good prompt vertex
+		cutstring = "cap_t!=9999 && prompt_t!=9999 && prompt_goodness>0.65";
+		candtree->Draw("cap_likelihood>>h_cap_likelihood",cutstring.c_str());
+		candtree->Draw("cap_t>>h_cap_t",cutstring.c_str());
+		candtree->Draw("cap_x>>h_cap_x",cutstring.c_str());
+		candtree->Draw("cap_y>>h_cap_y",cutstring.c_str());
+		candtree->Draw("cap_z>>h_cap_z",cutstring.c_str());
+		
+		candtree->Draw("n_travel_t>>h_n_travel_t",cutstring.c_str());
+		candtree->Draw("n_travel_d>>h_n_travel_d",cutstring.c_str());
+		
+		// capture error also requires valid capture match
+		cutstring = "cap_t!=9999 && prompt_t!=9999 && prompt_goodness>0.65 && cap_terr!=9999 && cap_derr!=9999";
+		candtree->Draw("cap_terr>>h_cap_terr",cutstring.c_str());
+		candtree->Draw("cap_xerr>>h_cap_xerr",cutstring.c_str());
+		candtree->Draw("cap_yerr>>h_cap_yerr",cutstring.c_str());
+		candtree->Draw("cap_zerr>>h_cap_zerr",cutstring.c_str());
+		candtree->Draw("cap_derr>>h_cap_derr",cutstring.c_str());
+		
+		candtree->Draw("cap_terr:cap_likelihood>>h_capt_terr_vs_metric",cutstring.c_str());
+		candtree->Draw("cap_derr:cap_likelihood>>h_capt_derr_vs_metric",cutstring.c_str());
+		
+		cutstring = "cap_t!=9999 && prompt_t!=9999 && prompt_goodness>0.65 && cap_terr!=9999 && cap_derr!=9999 && cap_likelihood>" + std::to_string(likelihood_cut);
 		candtree->Draw("cap_likelihood>>h_cap_likelihood_cut",cutstring.c_str());
 		candtree->Draw("cap_terr>>h_cap_terr_cut",cutstring.c_str());
 		candtree->Draw("cap_xerr>>h_cap_xerr_cut",cutstring.c_str());
@@ -720,11 +716,11 @@ bool NCaptInfo::MakePlots(int step){
 		c1->cd(5);
 		h_prompt_terr.Draw(opt.c_str());
 		c1->cd(6);
-		h_prompt_terr_vs_metric.Draw("goff colz");
-		c1->cd(7);
-		h_prompt_derr_vs_metric.Draw("goff colz");
-		c1->cd(8);
 		h_prompt_goodness.Draw(opt.c_str());
+		c1->cd(7);
+		h_prompt_terr_vs_metric.Draw("goff colz");
+		c1->cd(8);
+		h_prompt_derr_vs_metric.Draw("goff colz");
 		savename = m_unique_name + "_prompt_errs.png";
 		c1->SaveAs(savename.c_str());
 		

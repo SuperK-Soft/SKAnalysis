@@ -79,7 +79,7 @@ bool RelicMuonPlots::Execute(){
 	// get next relic candidate
 	get_ok = GetRelicEvt();
 	if(!get_ok){
-		Log(m_unique_name+" Error getting relic entry "+toString(relicReader->GetEntryNumber()),
+		Log(m_unique_name+" Error getting relic entry "+toString(relicEntryNum),
 		    v_error,m_verbose);
 		return false;
 	}
@@ -102,27 +102,59 @@ bool RelicMuonPlots::Execute(){
 	std::cout<<"relicTimeDiffs is of size "<<relicTimeDiffs->size()<<" vs "
 	         <<relicMatchedEntryNums->size()<<" matches"<<std::endl;
 	
+	// scan for dups
+	std::set<int> unique_muon_entry_nums;
+	std::vector<int> unique_entry_posns;
 	for(size_t i=0; i<relicMatchedEntryNums->size(); ++i){
+		int next_mu_ent_num = relicMatchedEntryNums->at(i);
+		if(unique_muon_entry_nums.emplace(next_mu_ent_num).second==false){
+			Log(m_unique_name+" removing duplicate muon "+toString(next_mu_ent_num)
+			    +" in matches for relic "+toString(relicEntryNum),v_error,m_verbose);
+		} else {
+			unique_entry_posns.push_back(i);
+		}
+	}
+	
+	//for(size_t i=0; i<relicMatchedEntryNums->size(); ++i){
+	for(size_t u=0; u<unique_entry_posns.size(); ++u){
+		
+		int i=unique_entry_posns.at(u);
 		
 		// get the next matched muon entry number in muon tree
-		int muEntryNum = relicMatchedEntryNums->at(i);
+		muEntryNum = relicMatchedEntryNums->at(i);
+		
+		// sanity check that this pair is unique
+		std::pair<int,int> pair2{relicEntryNum,muEntryNum};
+		if(pairs_compared2.count(pair2)!=0){
+			Log(m_unique_name+" Error! Duplicate comparison between relic entry "+toString(relicEntryNum)
+			    +" and muon entry "+toString(muEntryNum),v_error,m_verbose);
+			return false;
+		}
+		pairs_compared2.emplace(pair2);
 		
 		// get the muon entry
-		get_ok = GetMuonEvt(muEntryNum);
+		get_ok = GetMuonEvt();
 		if(!get_ok){
 			Log(m_unique_name+" Error getting muon entry "+toString(muEntryNum),v_error,m_verbose);
 			continue;
 		}
-		if(muHeader->nrunsk==0 || muHeader->nevsk==0){
-			Log(m_unique_name+" Error! Muon entry "+toString(muEntryNum)+" has run "
-			    +toString(muHeader->nrunsk)+", event "+toString(muHeader->nevsk),v_error,m_verbose);
-			continue;
+		
+		// sanity check that this pair is unique
+		std::pair<int,int> pair{relicEvNum,muEvNum};
+		if(evmap.count(pair)!=0){
+			Log(m_unique_name+" Error! Duplicate comparison between relic "+toString(relicEvNum)
+			   +" and muon "+toString(muEvNum)+" for entries "+toString(relicEntryNum)
+			   +" and "+toString(muEntryNum),v_error,m_verbose);
+			std::cerr<<"previously seen with entries "<<evmap.at(pair).first
+			         <<" and "<<evmap.at(pair).second<<std::endl;
+			return false;
 		}
+		evmap.emplace(std::pair<std::pair<int,int>,std::pair<int,int>>{pair,pair2});
 		
 		dt = relicTimeDiffs->at(i);
 		
-		MakePairVariables();
-		MakeHists(1);
+		get_ok = MakePairVariables();
+		if(get_ok) MakeHists(1);
 		
 	}
 	
@@ -133,6 +165,9 @@ bool RelicMuonPlots::Execute(){
 bool RelicMuonPlots::Finalise(){
 	
 	MakeHists(2);
+	
+	std::cout<<"found "<<spall_count<<" spall candidates (muon before relic) "
+	         <<"and "<<rand_count<<" random candidates (muon after relic)"<<std::endl;
 	
 	return true;
 }
@@ -150,13 +185,28 @@ bool RelicMuonPlots::GetRelicEvt(){
 	get_ok &= relicReader->Get("TQREAL", relicTQReal);
 	get_ok &= relicReader->Get("TQAREAL", relicTQAReal);
 	
-	// check if we've seen this relic before
-	if(relic_nevsks.count(relicHeader->nevsk)!=0){
-		Log(m_unique_name+" ERROR! Repeated relic in relic tree "
-		     +toString(relicReader->GetEntryNumber()),v_error,m_verbose);
+	if(!get_ok){
+		Log(m_unique_name+" Error getting relic branches!",v_error,m_verbose);
 		return false;
 	}
-	relic_nevsks.emplace(relicHeader->nevsk,1);
+	
+	// get relic entry & event number
+	relicEntryNum = relicReader->GetEntryNumber();
+	relicEvNum = relicHeader->nevsk;
+	
+	if(relicEvNum==0){
+		Log(m_unique_name+" 0 relic nevsk for entry "+toString(relicEntryNum),
+		    v_error,m_verbose);
+		return false;
+	}
+	
+	// check if we've seen this relic before
+	if(relic_nevsks.count(relicEvNum)!=0){
+		Log(m_unique_name+" ERROR! Repeated nvesk in relic tree "+toString(relicEntryNum)
+		     +" == "+toString(relic_nevsks.at(relicEvNum)),v_error,m_verbose);
+		return false;
+	}
+	relic_nevsks.emplace(relicEvNum,relicEntryNum);
 	
 	std::cout<<"relicMatchedEntryNums size is "<<relicMatchedEntryNums->size()
 	         <<", relicTimeDiffs size is "<<relicTimeDiffs->size()<<std::endl;
@@ -213,7 +263,7 @@ bool RelicMuonPlots::GetRelicEvt(){
 	relic_hb.Fill("dist_to_wall",bsdwall);
 	relic_hb.Fill("bonsai_e",bonsai_e);
 	
-	relic_hb.Fill("nevsk",relicHeader->nevsk);
+	relic_hb.Fill("nevsk",relicEvNum);
 	relic_hb.Fill("NumIDhits", relicTQReal->nhits);
 	relic_hb.Fill("NumODhits", relicTQAReal->nhits);
 	relic_hb.Fill("qismsk", skq_.qismsk);  // FIXME this isn't going to be populated, see below
@@ -244,7 +294,7 @@ bool RelicMuonPlots::GetRelicEvt(){
 		int64_t ticksDiff = thiseventticks - lastrelicticks;
 		if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
 		if(ticksDiff==0){
-			std::cerr<<"relic entry "<<relicReader->GetEntryNumber()<<" ticksDiff is 0 from last!"<<std::endl;
+			std::cerr<<"relic entry "<<relicEntryNum<<" ticksDiff is 0 from last!"<<std::endl;
 			assert(false);
 			exit(-1);
 			return false;
@@ -276,17 +326,17 @@ bool RelicMuonPlots::GetRelicEvt(){
 	return get_ok;
 }
 
-bool RelicMuonPlots::GetMuonEvt(int entrynum){
+bool RelicMuonPlots::GetMuonEvt(){
 	
 	// read the requested muon entry from file using upstream TreeReader Tool
 	// we use this in SK mode to read the hits into the common blocks
 	// so we can (re-)do muon dedx calculations because they didn't work..??
-	get_ok = m_data->getTreeEntry(muReaderName, entrynum);
+	get_ok = m_data->getTreeEntry(muReaderName, muEntryNum);
 	if(!get_ok){
-		Log(m_unique_name+" Error reading Muon entry " +toString(entrynum),v_error,m_verbose);
+		Log(m_unique_name+" Error reading Muon entry " +toString(muEntryNum),v_error,m_verbose);
 		return false;
 	}
-	Log(m_unique_name+" Muon event is entry "+toString(entrynum)+" of file "
+	Log(m_unique_name+" Muon event is entry "+toString(muEntryNum)+" of file "
 	    +muReader->GetFile()->GetName(),v_debug,m_verbose);
 	
 	// otherwise read the entry ok; get branches
@@ -297,6 +347,26 @@ bool RelicMuonPlots::GetMuonEvt(int entrynum){
 	get_ok &= muReader->Get("TQREAL", muTQReal);
 	get_ok &= muReader->Get("TQAREAL", muTQAReal);
 	//get_ok &= muReader->Get("MatchedTimeDiff", muTimeDiffs);
+	
+	if(!get_ok){
+		Log(m_unique_name+" Error getting muon branches!",v_error,m_verbose);
+		return false;
+	}
+	
+	muEvNum = muHeader->nevsk;
+	
+	if(muEvNum==0){
+		Log(m_unique_name+" 0 muon nevsk for entry "+toString(muEntryNum),
+		    v_error,m_verbose);
+		return false;
+	}
+	
+	if(muon_nevsks.count(muEvNum)!=0 && muon_nevsks.at(muEvNum)!=muEntryNum){
+		Log(m_unique_name+" ERROR! Repeated nvesk in muon tree "+toString(muEntryNum)
+		     +" == "+toString(muon_nevsks.at(muEvNum)),v_error,m_verbose);
+		return false;
+	}
+	muon_nevsks.emplace(muEvNum,muEntryNum);
 	
 	basic_array<float> muff_dir(muMu->mudir);                     // direction from mfmuselect
 	basic_array<float> muboy_dir(muMu->muboy_dir);                // direction from muboy
@@ -351,6 +421,7 @@ bool RelicMuonPlots::GetMuonEvt(int entrynum){
 	}
 	
 	// Fill muon plots, but only the first time we read this muon
+	// (XXX don't treat muboy tracks as unique for this purpose)
 	if(muon_plotted.count(muHeader->nevsk)==0){
 		muon_plotted.emplace(muHeader->nevsk,1);
 	} else {
@@ -411,7 +482,7 @@ bool RelicMuonPlots::GetMuonEvt(int entrynum){
 		int64_t ticksDiff = thiseventticks - lastmuticks;
 		if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
 		if(ticksDiff==0){
-				std::cerr<<"mu entry "<<muReader->GetEntryNumber()<<" ticksDiff is 0 from last!"<<std::endl;
+				std::cerr<<"mu entry "<<muEntryNum<<" ticksDiff is 0 from last!"<<std::endl;
 				assert(false);
 				exit(-1);
 				return false;
@@ -533,11 +604,26 @@ bool RelicMuonPlots::MakePairVariables(){
 	
 	std::cout<<"making pair variables"<<std::endl;
 	
-	int32_t relicEvNum = relicHeader->nevsk;
-	int32_t muEvNum = muHeader->nevsk;
-	mu_before_relic = (relicEvNum > muEvNum);
-	std::cout<<"relic nevsk: "<<relicEvNum<<", muon nevsk: "<<muEvNum<<"; spall cand? "<<(mu_before_relic ? "Y" : "N")
-	         <<std::endl;
+	std::pair<int,int> pair{relicEvNum,muEvNum};
+	if(pairs_compared.count(pair)!=0){
+		Log(m_unique_name+" Error! Duplicate comparison between relic "+toString(relicEvNum)
+		   +" and muon "+toString(muEvNum)+" for entries "+toString(relicEntryNum)
+		   +" and "+toString(muEntryNum),v_error,m_verbose);
+		return false;
+	}
+	pairs_compared.emplace(pair);
+	
+	mu_before_relic = (muEvNum < relicEvNum);
+	mu_relic_evtnum_diff = relicEvNum - muEvNum;
+	if(std::abs(mu_relic_evtnum_diff)>1E6){
+		Log(m_unique_name+" Error! Abnormal event num difference of "+toString(mu_relic_evtnum_diff)
+		   +" for relic "+toString(relicEvNum)+" and muon "+toString(muEvNum)+" in entries "
+		   +toString(relicEntryNum)+" and "+toString(muEntryNum),v_error,m_verbose);
+		return false;
+	}
+	
+	std::cout<<"relic nevsk: "<<relicEvNum<<", muon nevsk: "<<muEvNum
+	         <<"; spall cand? "<<(mu_before_relic ? "Y" : "N")<<std::endl;
 	
 	basic_array<float> scott_dedx(muMu->muboy_dedx);
 	//float (*kirk_dedx_arr)[200] = (float(*)[200])(muMu->muinfo+10);
@@ -703,10 +789,16 @@ bool RelicMuonPlots::MakeHists(int step){
 		std::cout<<"Filling tree"<<std::endl;
 		// fill tree
 		hb.Fill("mu_before_relic", mu_before_relic);
-		hb.Fill("dt", std::abs(dt));         // time diff
+		hb.Fill("evtNumDiff",mu_relic_evtnum_diff);
+		hb.Fill("dt", dt);                   // time diff
 		hb.Fill("dll", dll);                 // longitudinal distance from relic to point of muon max dedx
 		hb.Fill("dlt", dlt);                 // transverse distance from relic to point of muon max dedx
 		
+		if(mu_before_relic==0){
+			spall_count++;
+		} else {
+			rand_count++;
+		}
 		
 	// step 2: Finalise
 	// ================
@@ -728,6 +820,10 @@ bool RelicMuonPlots::MakeHists(int step){
 		spall_dists.push_back(hb.GetHist("dlt","mu_before_relic==1"));
 		random_dists.push_back(hb.GetHist("dlt","mu_before_relic==0"));
 		
+		std::cout<<"making delta evnum hists"<<std::endl;
+		spall_dists.push_back(hb.GetHist("evtNumDiff","mu_before_relic==1"));
+		random_dists.push_back(hb.GetHist("evtNumDiff","mu_before_relic==0"));
+		
 		// draw and save distributions
 		std::cout<<"writing file"<<std::endl;
 		if(hb.GetFile()==nullptr){
@@ -746,6 +842,9 @@ bool RelicMuonPlots::MakeHists(int step){
 			paramname = paramname.substr(0,paramname.find('_'));
 			spall_dist->SetLineColor(kRed);
 			rand_dist->SetLineColor(kBlack);
+			
+			spall_dist->Write(std::string(paramname+"_spall").c_str());
+			rand_dist->Write(std::string(paramname+"_rand").c_str());
 			
 			c_spall->Clear();
 			// use a stack so axes ranges don't get clipped

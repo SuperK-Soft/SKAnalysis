@@ -92,6 +92,7 @@ if (tool=="CompareCommons") ret=new CompareCommons;
 // if (tool=="NTagAnalysis") ret=new NTagAnalysis;
 // if (tool=="MergeDipstickFiles") ret=new MergeDipstickFiles;
 if (tool=="GetSubTriggers") ret=new GetSubTriggers;
+
 return ret;
 }
 

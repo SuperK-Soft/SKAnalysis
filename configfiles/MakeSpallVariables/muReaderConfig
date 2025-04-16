@@ -1,8 +1,12 @@
 verbosity 1
-inputFile ~/disk02/test_jacks.root
-#FileListName MyFileList
+#inputFile /disk02/usr6/moflaher/run870/test_jacks.root
+FileListName MyFileList
 
 treeName mu
 readerName muReader
-skFile 0
+skFile 1         # we do need to read in sk mode to populate common blocks
+autoEntryRead 0  # but do not automatically read the next entry on each Execute loop
+skoptn 31,30,26,25
+skbadopt 23   # 55? we need to re-read with 0 for muons
+SK_GEOMETRY 6
 maxEntries -1                       # max num input entries to process

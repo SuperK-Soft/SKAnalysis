@@ -239,6 +239,7 @@ std::string HistogramBuilder::AddHist(std::string histname){
 			unique_name = histname+"_"+std::to_string(hbuildercounter++);
 		} while(gROOT->FindObject(unique_name.c_str())!=nullptr);
 	}
+	std::cout<<"HistogramBuilder::AddHist making new histogram with name '"<<histname<<"'"<<std::endl;
 	histnames.emplace(histname,unique_name);
 	
 	return unique_name;

@@ -37,8 +37,11 @@ class ReconstructMatchedMuons: public Tool {
 	std::vector<float> MatchedTimeDiff;   // [ns]
 	std::vector<float> MatchedParticleE;  // [MeV]
 	std::vector<bool> MatchedHasAFTs;
-	ULong64_t HwClockTicks;
+	Long64_t HwClockTicks;
 	int NumRollovers;
+	
+	std::map<int, int> mu_nevsks;
+	std::map<int, int> relic_nevsks;
 	
 	int relics_to_write=0;
 	int muons_to_write=0;
