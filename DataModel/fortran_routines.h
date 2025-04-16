@@ -32,6 +32,9 @@
 #include "vcvrtxC.h"
 #include "vcworkC.h"
 #include "apmueC.h"
+#include "apmringC.h"
+#include "apmsfitC.h"
+#include "appolfitC.h"
 #include "skpdstC.h"
 
 // flag_g4_wtpar
@@ -53,6 +56,7 @@ extern "C" void skcrawread_(int*, int*);
 extern "C" void skcread_(int*, int*);
 extern "C" void skroot_set_tree_(int*);
 extern "C" void skroot_get_entry_(int*);
+extern "C" void skroot_get_tqskz_(int*);
 
 // additional functions from lfallfit
 extern "C" void skatmmap2_(int*,int*,int*,int*,int*,int*);
@@ -166,6 +170,10 @@ extern "C" void mffastfast_(float (*)[3], float (*)[3], int*);
 extern "C" void muboy_zbs_(int*, int*, float (*)[4], float (*)[3], float*, float*, int*, float (*)[36], int*);
 
 //decay electron scaling
+extern "C" void apfit_(int*);
+extern "C" void apreset_();
+extern "C" void apclrall_();
+extern "C" void apclrsep_();
 extern "C" void muechk_(float*,  int*);
 
 // vectgen

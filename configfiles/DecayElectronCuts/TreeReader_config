@@ -1,0 +1,47 @@
+verbosity 10
+readerName reader
+
+#inputFile /home/moflaher/disk02/run868/run868.root
+#inputFile /home/moflaher/disk02/SpallReduction/086613.0/output/test_jacks.root
+#inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086614.0/output/test_jacks.root
+inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
+#inputFile /disk02/usr6/moflaher/addaft/test_spall.root
+
+#inputFile /disk02/data7/sk6/run/0866/086658/rfm_run086658.000012.root
+
+treeName relic                                   # the name of the tree within the file
+#treeName data
+# max num input entries to process
+#maxEntries 2
+maxEntries -1
+skFile 1                                          # do not call SKREAD/SKRAWREAD - no need.
+
+#skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)
+skoptn 31,30,29,27,26,25,24,23 # these are the options given in $ATMPD_ROOT/src/recon/aplib/apfit_sample.F 
+skbadopt 23
+
+skrootMode 0
+outputFile /home/mattnich/disk3stor/decay_electrons_test.root
+
+LUN 1
+LUN2 10
+LUN3 0
+SK_GEOMETRY 6
+
+# StartInputBranchList
+# ###############
+# EVENTHEADER
+# TQLIST
+# ODTQLIST
+# GPSLIST
+# PREVT0
+# HEADER
+# TQREAL
+# TQAREAL
+# LOWE
+# MU
+# SLE
+# IDODXTLK
+
+# #############
+# EndInputBranchList

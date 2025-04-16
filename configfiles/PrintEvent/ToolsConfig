@@ -1,7 +1,6 @@
 #myGracefulStop GracefulStop configfiles/PrintEvent/GracefulStopConfig
 myTreeReader TreeReader configfiles/PrintEvent/TreeReaderConfig
-#myDummy DummyTool configfiles/PrintEvent/DummyToolConfig
-#myPrintEvent PrintEvent configfiles/PrintEvent/PrintEventConfig
-mySLESearch SLESearch configfiles/PrintEvent/SLESearchConfig
-myPlotHitTimes PlotHitTimes configfiles/PrintEvent/PlotHitTimesConfig
+myPrintEvent PrintEvent configfiles/PrintEvent/PrintEventConfig
+#myPlotHitTimes PlotHitTimes configfiles/PrintEvent/PlotHitTimesConfig
+#mySLESearch SLESearch configfiles/PrintEvent/SLESearchConfig
 #myLoadSubTrigger LoadSubTrigger configfiles/PrintEvent/LoadSubTriggerConfig

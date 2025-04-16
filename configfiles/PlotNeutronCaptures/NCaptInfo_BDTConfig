@@ -4,6 +4,6 @@ dist_match_tolerance 500     # [cm] maybe 5m at least...
 match_mistags 0               # whether to look for non-neutron-capture true vertices that match
 dataReaderName demoReader
 treeReaderName bdtReader
-outfilename ~/disk02/ibd_bdt_eff/bdt_match.root   # debug plots of capture matches
+outfilename ./bdt_match.root   # debug plots of capture matches
 #likelihood_threshold 0.9999
 likelihood_cut 0.999

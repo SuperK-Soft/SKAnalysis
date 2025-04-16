@@ -1313,6 +1313,12 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 			if(bytesread>0 && skrootMode!=SKROOTMODE::ZEBRA){
 				Log(m_unique_name+" calling skroot_get_entry",v_debug,m_verbose);
 				skroot_get_entry_(&LUN);
+				//skroot_get_tqskz_(&LUN); // might want to fix this - god I hate it all so much
+			}
+			if(bytesread > 0 && skrootMode == SKROOTMODE::ZEBRA){
+			  Log(m_unique_name+" calling nerdnebk to retrieve NEUT bank", v_debug, m_verbose);
+			  std::array<float, 3> interaction_pos = {};
+			  nerdnebk_(interaction_pos.data());
 			}
 		}
 		
@@ -1673,10 +1679,12 @@ int TreeReader::LoadConfig(std::string configfile){
 		
 		// first check if we're entering or leaving the list of input or output branches to activate
 		if (thekey=="StartActiveInputBranches"){
+		  Log(m_unique_name+" starting active input branches list", v_debug, m_verbose);
 			settingActiveInputBranches = true;
 			push_variable=false;
 		}
 		else if(thekey=="EndActiveInputBranches"){
+		  Log(m_unique_name+" ending active input branches list", v_debug, m_verbose);
 			settingActiveInputBranches = false;
 			push_variable=false;
 		}
@@ -1697,7 +1705,7 @@ int TreeReader::LoadConfig(std::string configfile){
 			push_variable=false;
 		}
 		// or the list of input or output branches to skip
-		if (thekey=="StartSkippedInputBranches"){
+		else if (thekey=="StartSkippedInputBranches"){
 			settingSkippedInputBranches = true;
 			push_variable=false;
 		}

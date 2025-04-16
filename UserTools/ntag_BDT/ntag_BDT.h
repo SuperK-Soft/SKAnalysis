@@ -32,16 +32,6 @@ class ntag_BDT : public DummyTool{ public: ntag_BDT(){}; };
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-/**
- * \class ntag_BDT
- *
- * This is a balnk template for a Tool used by the script to generate a new custom tool. Please fill out the descripton and author information.
-*
-* $Author: B.Richards $
-* $Date: 2019/05/28 10:44:00 $
-* Contact: b.richards@qmul.ac.uk
-*/
-
 class ntag_BDT : public Tool {
 	
 	public:
@@ -52,7 +42,10 @@ class ntag_BDT : public Tool {
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
 	
 	private:
-	bool GetBranchValues();
+
+        int n_entries_tmp = 0;
+
+        bool GetBranchValues();
 	Int_t GetNlowIndex(Float_t rsqred, Float_t z, const Int_t init);
 	
 	MTreeReader* myTreeReader = nullptr;

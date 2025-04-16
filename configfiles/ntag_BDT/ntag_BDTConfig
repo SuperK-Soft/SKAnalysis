@@ -10,7 +10,8 @@ BDT_model /home/mattnich/disk3stor/mc/bdt22_skg4_0.013_10M.joblib
 #outfile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_bdt.root
 #outfile bdtOut_atmnu_2500_04.root
 #outfile bdtOut_SKG4_ngun.root
-outfile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_bdt.root
+#outfile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_bdt.root
+outfile /disk03/lowe12/warwick/mc/atmos/harada_test_sk2p2_bdt.root
 #outfile /disk02/usr6/moflaher/ibd_bdt_eff/geantino_wnoise_bdt.root
 #outfile /home/mattnich/disk3stor/prepared_data/bdt/rfm_run086613.001133_lowe_bdt.root
 #outfile /home/mattnich/disk3stor/prepared_data/bdt/rfm_run086613.001133_lowe_bdt.root

@@ -6,6 +6,8 @@
 
 #include "Tool.h"
 
+#include "TH1D.h"
+
 class muechk: public Tool {
 
  public:
@@ -18,6 +20,8 @@ class muechk: public Tool {
  private:
 
   MTreeReader* tree_reader_ptr = nullptr;
+
+  TH1D nmue_plot;
   
 };
 

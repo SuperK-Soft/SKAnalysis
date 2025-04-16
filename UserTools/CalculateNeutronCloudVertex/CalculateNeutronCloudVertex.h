@@ -10,6 +10,8 @@
 #include "MTreeReader.h"
 
 #include "TH1D.h"
+#include "TTree.h"
+#include "TFile.h"
 
 class CalculateNeutronCloudVertex: public Tool {
 
@@ -19,17 +21,24 @@ class CalculateNeutronCloudVertex: public Tool {
   bool Initialise(std::string configfile,DataModel &data);
   bool Execute();
   bool Finalise();
-
+  
  private:
 
   TH1D mult_plot;
   TH1D dist_to_mu_plot;
+  TH1D N_SLE_plot;
   
   int mult = 0;
-  MTreeReader* LOWE_tree_reader = nullptr;
+  std::vector<double> neutron_cloud_vertex = {};
+  std::vector<double> muon_dir = {};
+  MTreeReader* MU_tree_reader = nullptr;
+
+  TFile* nvc_file_ptr = nullptr;
+  TTree* nvc_tree_ptr = nullptr;
 
   void GetTreeReader();
-  double ClosestApproach(const std::vector<double>&) const;
+  void CreateOutputFile();
+  double ClosestApproach(const std::vector<double>&);
   
 };
 

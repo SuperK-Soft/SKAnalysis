@@ -35,7 +35,7 @@ int FindFilesInDirectory(std::string inputdir, std::string pattern, std::vector<
 	std::string depth_string = 
 		(max_subdir_depth>0) ? std::string("") : (std::string(" -maxdepth ")+std::to_string(max_subdir_depth));
 	if(!use_regex){
-		lscommand = "find " + absdir + depth_string + case_char +"name " + pattern;
+		lscommand = "find " + absdir + depth_string + case_char +"name '" + pattern + "'";
 	} else {
 		lscommand = std::string("find ") + absdir + depth_string + " -regextype egrep "
 		+ case_char + "regex '.*?/" + pattern + "'";

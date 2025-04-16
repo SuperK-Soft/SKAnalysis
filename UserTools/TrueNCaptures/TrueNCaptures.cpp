@@ -28,6 +28,8 @@ bool TrueNCaptures::Execute(){
 	
 	Log(m_unique_name+" executing...",v_debug,m_verbose);
 	m_data->NCapturesTrue.clear();
+
+	int n_true_neutrons = 0;
 	
 	// loop over true particles and pull out neutron capture events
 	Log(m_unique_name+" scanning "+toString(m_data->eventParticles.size())
@@ -37,6 +39,8 @@ bool TrueNCaptures::Execute(){
 		//std::cout<<"particle "<<i<<" has pdg "<<aparticle.pdg<<std::endl;
 		// check if it's a neutron
 		if(aparticle.pdg==2112){
+		  ++n_true_neutrons;
+			  
 			//std::cout<<"neutron at index "<<i<<std::endl;
 			bool captured=false;
 			// get termination processes
@@ -111,6 +115,8 @@ bool TrueNCaptures::Execute(){
 			m_data->NCapturesTrue.push_back(acapture);
 		}
 	}
+
+	m_data->CStore.Set("n_true_neutrons", n_true_neutrons);
 	
 	if(m_verbose>2) PrintCaptures();
 	if(plotsfile!="") MakePlots(1);

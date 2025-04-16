@@ -4,18 +4,17 @@ verbosity 1
 #inputFile ~/testfix.root
 #inputFile ~/skdetsim/skdetsimgd/vect.r77957_out.root
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise.root
-#inputFile /home/moflaher/disk02/ibd_bdt_eff/ibd_addnoise.root
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise.root
-inputFile /home/moflaher/disk02/ibd_bdt_eff/0.013pc_gd/ibd_wnoise.root
+inputFile /disk03/lowe12/warwick/mc/ibd/bdt_out/IBD_MC_597.mcfit_reweight.bdt.root
+
 treeName data
 readerName demoReader
 skFile 1                      # fill fortran common blocks
+maxEntries -1                # max num input entries to process
 skoptn 31,30,25
 skbadopt 23
 #skbadchrun 85609
 mcReferenceRun 85609
-maxEntries 3                 # max num input entries to process
-
 
 #StartInputBranchList
 ################

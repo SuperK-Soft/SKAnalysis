@@ -6,16 +6,7 @@
 
 #include "Tool.h"
 
-
-/**
-* \class SLESearch
-*
-* Please fill out the descripton and author information.
-*
-* $Author: ?.????? $
-* $Date: ????/??/?? $
-* $Contact: ???@km.icrr.u-tokyo.ac.jp
-*/
+#include "TH1D.h"
 
 class SLESearch: public Tool {
 
@@ -29,6 +20,17 @@ class SLESearch: public Tool {
  private:
 
   bool previous_entry_was_muon = false;
+
+  int max_triggers = -999;
+  
+  ConnectionTable* connection_table = nullptr;
+  bool include_offset = false;
+  const double SLE_t0_offset = -885.417;
+  
+  double TimeOfFlight(const float*, const float*) const;
+
+  TH1D hit_times_plot;
+  TH1D event_hit_times_plot;
   
 };
 

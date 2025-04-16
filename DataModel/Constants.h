@@ -15,7 +15,14 @@
 #include "fortran_routines.h"
 
 static const double SOL_IN_CM_PER_NS_IN_WATER = 22.484996; //speed of light in cm/ns
-static const double MC_TIME_OFFSET=1000; // SKG4 adds 1,000 to all hit times to shift t=0 away from 0.
+static const double MC_TIME_OFFSET = 1000; // SKG4 adds 1,000 to all hit times to shift t=0 away from 0.
+
+static const double one_p_three_gate_pre_t0 = SKGATE_START_COUNT;
+static const double one_p_three_gate_post_t0 = SKGATE_END_COUNT;
+// found in $SKOFL_ROOT/inc/sktq.h, these values are in ticks
+// may depend in run number! see $SKOFL_ROOT/src/skrd/set_timing_gate.F
+// note: SKGATE_START_COUNT is negative  
+  
 
 extern std::set<std::string> fundamental_types;
 extern std::set<std::string> container_types;
@@ -34,6 +41,9 @@ std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& ad
 std::string PdgToString(int code);
 int StringToPdg(std::string name);
 int PdgToG3ParticleCode(int code);
+std::string NEUTInteractionModeToString(const int&);
+std::string GetNEUTModeProcess(const int&);
+std::string GetNEUTModeCharge(const int&);
 int G3ParticleCodeToPdg(int code);
 int StringToG3ParticleCode(std::string name);
 std::string G3ParticleCodeToString(int code);
@@ -72,7 +82,6 @@ inline std::istream& operator>>(std::istream& str, EventType& eventType){
 	}
 	return str;
 }
-
 
 class TriggerType {
 	public:
@@ -193,7 +202,125 @@ namespace constants{
 	
 	// https://root.cern.ch/root/html532/src/TDatabasePDG.cxx.html
 	// https://root.cern/doc/v608/classTDatabasePDG.html
-	
+
+  static const std::map<int, std::string> Interaction_Mode_To_String{
+    // find more info at $ATMPD_ROOT/src/analysis/official_ntuple/description.ntuple
+    {0, "mode = 0"},
+    //  the NEUTRINO modes
+    {1,"CC : ELASTIC :  NEU,N --> LEPTON-,P"},
+
+
+
+    
+    {2, "MYSTERY MODE"},
+    {3, "MYSTERY MODE"},
+    {4, "MYSTERY MODE"},
+    {5, "MYSTERY MODE"},
+    {6, "MYSTERY MODE"},
+    {7, "MYSTERY MODE"},
+    {8, "MYSTERY MODE"},
+    {9, "MYSTERY MODE"},
+    {10, "MYSTERY MODE"},
+    {14, "MYSTERY MODE"},
+    {15, "MYSTERY MODE"},
+    {17, "MYSTERY MODE"},
+    {18, "MYSTERY MODE"},
+    {19, "MYSTERY MODE"},
+    {20, "MYSTERY MODE"},
+    {24, "MYSTERY MODE"},
+    {25, "MYSTERY MODE"},
+    {27, "MYSTERY MODE"},
+    {28, "MYSTERY MODE"},
+    {29, "MYSTERY MODE"},
+    {30, "MYSTERY MODE"},
+    {35, "MYSTERY MODE"},
+    {37, "MYSTERY MODE"},
+    {38, "MYSTERY MODE"},
+    {39, "MYSTERY MODE"},
+    {40, "MYSTERY MODE"},
+    {47, "MYSTERY MODE"},
+    {48, "MYSTERY MODE"},
+    {49, "MYSTERY MODE"},
+    {50, "MYSTERY MODE"},
+
+    {-2, "MYSTERY MODE"},
+    {-3, "MYSTERY MODE"},
+    {-4, "MYSTERY MODE"},
+    {-5, "MYSTERY MODE"},
+    {-6, "MYSTERY MODE"},
+    {-7, "MYSTERY MODE"},
+    {-8, "MYSTERY MODE"},
+    {-9, "MYSTERY MODE"},
+    {-10, "MYSTERY MODE"},
+    {-14, "MYSTERY MODE"},
+    {-15, "MYSTERY MODE"},
+    {-17, "MYSTERY MODE"},
+    {-18, "MYSTERY MODE"},
+    {-19, "MYSTERY MODE"},
+    {-20, "MYSTERY MODE"},
+    {-24, "MYSTERY MODE"},
+    {-25, "MYSTERY MODE"},
+    {-27, "MYSTERY MODE"},
+    {-28, "MYSTERY MODE"},
+    {-29, "MYSTERY MODE"},
+    {-30, "MYSTERY MODE"},
+    {-35, "MYSTERY MODE"},
+    {-37, "MYSTERY MODE"},
+    {-38, "MYSTERY MODE"},
+    {-39, "MYSTERY MODE"},
+    {-40, "MYSTERY MODE"},
+    {-47, "MYSTERY MODE"},
+    {-48, "MYSTERY MODE"},
+    {-49, "MYSTERY MODE"},
+    {-50, "MYSTERY MODE"},
+
+    
+    {11,"CC : SINGLE PI FROM DELTA RESONANCE : NEU,P --> LEPTON-,P,PI+"},
+    {12,"CC : SINGLE PI FROM DELTA RESONANCE : NEU,N --> LEPTON-,P,PI0"},
+    {13,"CC : SINGLE PI FROM DELTA RESONANCE : NEU,N --> LEPTON-,N,PI+"},
+    {16,"CC : SINGLE PI FROM DELTA RESONANCE : NEU,O(16) --> LEPTON-,O(16),PI+"},
+    {21, "CC : MULTI PI (1.3 < W < 2.0 GeV) : NEU,(N OR P) --> LEPTON-,(N OR P),MULTI PI"},
+    {22, "CC : SINGLE ETA FROM DELTA RESONANCE : NEU,N --> LEPTON-,P,ETA0"},
+    {23, "CC : SINGLE K FROM DELTA RESONANCE : NEU,N --> LEPTON-,LAMBDA,K+"},
+    {26, "CC : DEEP INELASTIC (2.0 GeV < W , JET set) : NEU,(N OR P) --> LEPTON-,(N OR P),MESONS"},
+    {31, "NC : SINGLE PI FROM DELTA RESONANCE : NEU,N --> NEU,N,PI0"},
+    {32, "NC : SINGLE PI FROM DELTA RESONANCE : NEU,P --> NEU,P,PI0"},
+    {33, "NC : SINGLE PI FROM DELTA RESONANCE : NEU,N --> NEU,P,PI-"},
+    {34, "NC : SINGLE PI FROM DELTA RESONANCE : NEU,P --> NEU,N,PI+"},
+    {36, "NC : SINGLE PI FROM DELTA RESONANCE : NEU,O(16) --> NEU,O(16), PI0"},
+    {41, "NC : MULTI PI (1.3 GeV < W < 2.0 GeV) : NEU,(N OR P) --> NEU,(N OR P),MULTI PI"},
+    {42, "NC : SINGLE ETA FROM DELTA RESONANCE : NEU,N --> NEU,N,ETA0"},
+    {43, "NC : SINGLE ETA FROM DELTA RESONANCE : NEU,P --> NEU,P,ETA0"},
+    {44, "NC : SINGLE  K  FROM DELTA RESONANCE : NEU,N --> NEU,LAMBDA,K0"},
+    {45, "NC : SINGLE  K  FROM DELTA RESONANCE : NEU,P --> NEU,LAMBDA,K+"},
+    {46, "NC : DEEP INELASTIC (2.0 GeV < W , JET set) : NEU,(N OR P) --> NEU,(N OR P),MESONS"},
+    {51, "NC : ELASTIC : NEU,P --> NEU,P"},
+    {52, "NC : ELASTIC : NEU,N --> NEU,N"},
+    // now the ANTI-NEUTRINO (NEUBAR)
+    {-1,"CC : ELASTIC :  NEUBAR,P --> LEPTON+,N"},
+    {-11,"CC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,N --> LEPTON+,N,PI-"},
+    {-12,"CC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,P --> LEPTON+,N,PI0"},
+    {-13,"CC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,P --> LEPTON+,P,PI-"},
+    {-16,"CC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,O(16) --> LEPTON+,O(16),PI-"},
+    {-21, "CC : MULTI PI (1.3 < W < 2.0 GeV) : NEUBAR,(N OR P) --> LEPTON+,(N OR P),MULTI PI"},
+    {-22, "CC : SINGLE ETA FROM DELTA RESONANCE : NEUBAR,N --> LEPTON+,N,ETA0"},
+    {-23, "CC : SINGLE K FROM DELTA RESONANCE : NEUBAR,N --> LEPTON+,LAMBDA,K0"},
+    {-26, "CC : DEEP INELASTIC (2.0 GeV < W , JET set) : NEUBAR,(N OR P) --> LEPTON+,(N OR P),MESONS"},
+    {-31, "NC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,N --> NEUBAR,N,PI0"},
+    {-32, "NC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,P --> NEUBAR,P,PI0"},
+    {-33, "NC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,N --> NEUBAR,P,PI-"},
+    {-34, "NC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,P --> NEUBAR,N,PI+"},
+    {-36, "NC : SINGLE PI FROM DELTA RESONANCE : NEUBAR,O(16) --> NEUBAR,O(16), PI0"},
+    {-41, "NC : MULTI PI (1.3 GeV < W < 2.0 GeV) : NEUBAR,(N OR P) --> NEUBAR,(N OR P),MULTI PI"},
+    {-42, "NC : SINGLE ETA FROM DELTA RESONANCE : NEUBAR,N --> NEUBAR,N,ETA0"},
+    {-43, "NC : SINGLE ETA FROM DELTA RESONANCE : NEUBAR,P --> NEUBAR,P,ETA0"},
+    {-44, "NC : SINGLE  K  FROM DELTA RESONANCE : NEUBAR,N --> NEUBAR,LAMBDA,K0"},
+    {-45, "NC : SINGLE  K  FROM DELTA RESONANCE : NEUBAR,P --> NEUBAR,LAMBDA,K+"},
+    {-46, "NC : DEEP INELASTIC (2.0 GeV < W , JET set) : NEUBAR,(N OR P) --> NEUBAR,(N OR P),MESONS"},
+    {-51, "NC : ELASTIC : NEUBAR,P --> NEUBAR,P"},
+    {-52, "NC : ELASTIC : NEUBAR,N --> NEUBAR,N"}    
+  };
+  
 	static const std::map<int,std::string> G3_process_code_to_string{
 		// full list from Geant3 manual page 445
 		// see p420+ for a full list of Geant3 common blocks and their parameters

@@ -1,0 +1,16 @@
+verbosity 10
+readerName reader_ROOT
+
+#inputFile /disk03/lowe12/warwick/mc/atmos/bonsai_out/3001_lowe.mcfit.root
+#inputFile /disk03/lowe12/warwick/mc/atmos/bdt_out/atmnu.skg4.r90017.300_bdt.root
+
+#inputFile /disk03/lowe12/warwick/mc/atmos/small_tests/bs_bdt.root
+
+inputFile /disk03/lowe12/warwick/mc/atmos/medium_tests/atmnu.lowfit.r90014.300.bdt.root	   
+
+treeName data                                    # the name of the tree within the file
+# max num input entries to process
+#maxEntries 8000
+#maxEntries 3
+maxEntries -1
+

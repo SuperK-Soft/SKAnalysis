@@ -7,6 +7,8 @@
 #include "ColourWheel.h"
 #include "Constants.h"
 
+extern "C" void set_timing_gate_proc_(int*);
+
 PlotHitTimes::PlotHitTimes():Tool(){}
 
 bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
@@ -36,6 +38,9 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 		c_subtriggers = new TCanvas("c_subtriggers","c_subtriggers",1024,800);
 		gDirectory->cd();
 	}
+
+        useSLESearchTool=false;
+        m_variables.Get("useSLESearchTool",useSLESearchTool);
 	
 	// how to find subtriggers - SLESearch Tool or get_sub_triggers
 	useSLESearchTool=false;
@@ -261,12 +266,12 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		for(int i=0; i<sle_times.size(); ++i) t0_sub.at(i)=sle_times.at(i)*COUNT_PER_NSEC;
 		ntrigsfound=sle_times.size();
 	} else {
-		std::cout<<"before get_sub_triggers nqiskz is "<<sktqz_.nqiskz<<" hits"<<std::endl;
+		// run subtrigger algorithm to search for subtriggers of this type
 		get_sub_triggers_(&subtrigtype, &ntrigsfound, t0_sub.data(), &MAX_SUBTRIGS);
 	}
 	
 	Log(m_unique_name+" found "+toString(ntrigsfound)+" subtriggers of type "
-	      +TriggerIDToName(subtrigtype),v_message,m_verbose);
+	    +TriggerIDToName(subtrigtype),v_message,m_verbose);
 	
 	// process the subtriggers
 	int nhiterrs=5;
@@ -287,6 +292,7 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		
 		// set IT0XSK to the position of the next subtrigger
 		set_timing_gate_(&it0xsk);
+		//set_timing_gate_proc_(&it0xsk);   // for post-processed files (with TQReal not TQLIST). Validation in progress...
 		
 		int n_in_gate_hits_this_subtrigger=0;
 		

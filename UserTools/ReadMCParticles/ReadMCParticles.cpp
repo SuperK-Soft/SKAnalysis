@@ -676,10 +676,11 @@ bool ReadMCParticles::GetSecondaryInfo(){
 			Log(m_unique_name+" Error! Parent index "+toString(aparent_index)+" not yet "
 			     "in event particles!",v_error,m_verbose);
 			// FIXME remove if we're confident this isn't our problem
-			std::cerr<<"\nDumping event "<<myTreeReader->GetEntryNumber()<<" info for debug\n";
-			PrintSecondaryInfo();
-			PrintSecondaryVectors(true);
-			m_data->vars.Set("StopLoop",1);
+			// Well, I am not confident but I am eager to no longer have this problem
+			// std::cerr<<"\nDumping event "<<myTreeReader->GetEntryNumber()<<" info for debug\n";
+			// PrintSecondaryInfo();
+			// PrintSecondaryVectors(true);
+			// m_data->vars.Set("StopLoop",1);
 			return false;
 		}
 		

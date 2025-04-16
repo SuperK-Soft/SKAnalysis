@@ -8,6 +8,8 @@
 #include <pybind11/numpy.h>
 #endif
 
+#include "fortran_routines.h"
+
 #include <map>
 #include <unordered_map>
 #include <string>
@@ -75,6 +77,11 @@ class DataModel {
   static DataModel* GetInstance(){ return thisptr; }
   static DataModel* thisptr;
 
+  skq_common skq_common_dupl;
+  skt_common skt_common_dupl;
+  skchnl_common skchnl_common_dupl;
+  sktqz_common sktqz_common_dupl;
+  
   //TTree* GetTTree(std::string name);
   //void AddTTree(std::string name,TTree *tree);
   //void DeleteTTree(std::string name,TTree *tree);

@@ -185,6 +185,48 @@ int TriggerNameToID(std::string trigname){
 	return -1;
 }
 
+std::string NEUTInteractionModeToString(const int& mode){
+  if (constants::Interaction_Mode_To_String.count(mode)){
+    return constants::Interaction_Mode_To_String.at(mode);
+  }
+  throw std::invalid_argument("BAD NEUT INTERACTION MODE");  
+}
+
+std::string GetNEUTModeCharge(const int& mode){
+  const int abs_mode = abs(mode);
+  if (abs_mode == 0){return "mode = 0";}
+  if (abs_mode >= 1 && abs_mode <= 27){
+    return "CC";
+  }
+  else if (abs_mode >= 27 && abs_mode <= 52){
+    return "NC";
+  }
+  throw std::invalid_argument("BAD NEUT INTERACTION MODE");
+}
+
+std::string GetNEUTModeProcess(const int& mode){
+  const int abs_mode = abs(mode);
+  if (abs_mode == 0){return "mode = 0";}
+  if (abs_mode == 1){return "CCQE";}
+  if (abs_mode >= 11 && abs_mode <= 13){return "CC Single Pi From Delta Resonance";}
+  if (abs_mode == 16){return "CC Coherent Pion Production";}
+  if (abs_mode == 21){return "CC Multi-Pion Production";}
+  if (abs_mode == 22){return "CC Single Eta From Delta Resonance";}
+  if (abs_mode ==23){return "CC Single K From Delta Resonance";}
+  if (abs_mode == 26){return "CC Deep Inelastic";}
+  if (abs_mode == 27){return "CC Diffractive Pion Production";}
+  if (abs_mode >= 31 && abs_mode <= 34){return "NC Single Pi From Delta Resonance";}
+  if (abs_mode == 36){return "NC Coherent Pion Production";}
+  if (abs_mode == 41){return "NC Multi-Pion Production";}
+  if (abs_mode == 42 || abs_mode == 43){return "NC Single Eta From Delta Resonance";}
+  if (abs_mode == 44 || abs_mode == 45){return "NC Single K From Delta Resonance";}
+  if (abs_mode == 46){return "NC Deep Inelastic";}
+  if (abs_mode == 47){return "NC Diffractive Pion Production";}
+  if (abs_mode == 51 || abs_mode == 52){return "NCQE";}
+  if (abs_mode <= 52 && abs_mode >= 0){return "MYSTERY MODE";} //yeah... not ideal - need to figure out what these are.
+  throw std::invalid_argument("BAD NEUT INTERACTION MODE");
+}
+
 std::string GetTriggerNames(int32_t trigid){
 	std::bitset<32> triggerID(trigid);
 	std::string Trigs="";

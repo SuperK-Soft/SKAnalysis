@@ -1,0 +1,4 @@
+myTreeReader_ZBS TreeReader configfiles/Atmos_MC_Chain/TreeReader_config_ZBS
+myTreeReader_ROOT TreeReader configfiles/Atmos_MC_Chain/TreeReader_config_ROOT
+#myMCCuts MCCuts configfiles/Atmos_MC_Chain/MCCuts_config
+mySplitAtmosInteractions SplitAtmosInteractions configfiles/Atmos_MC_Chain/SplitAtmosInteractions_config

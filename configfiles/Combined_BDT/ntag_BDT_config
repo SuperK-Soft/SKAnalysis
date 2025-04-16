@@ -6,4 +6,4 @@ NLOWINDEX 0             # unused; which Nlow branch to propagate
 #BDT_model /HOME/relic_sk4_ana/relic_work_dir/data_reduc/neutron_tagging/src/sk4_full_1500.joblib
 #BDT_model /host/SK_shared/bdt22_skg4_0.013_10M.joblib
 BDT_model /home/mattnich/disk3stor/mc/bdt22_skg4_0.013_10M.joblib
-outfile ./harada_test_sk2p2_bdt.root
+outfile /disk03/lowe12/warwick/mc/atmos/harada_test_sk2p2_bdt.root

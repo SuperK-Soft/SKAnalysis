@@ -1,5 +1,5 @@
 verbosity 1
-inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wnoise_bdt.root
+inputFile /home/mattnich/software/SKAnalysis/IBD_MC_597.mcfit_reweight_ntagbdt.root
 #inputFile /disk02/usr6/moflaher/ibd_bdt_eff/ibd_wonoise_bdt.root
 treeName sk2p2
 readerName bdtReader

@@ -33,7 +33,7 @@ BINLIB = -L ${RFA_ROOT} -lrfa
 # Atmospheric, Muon and Proton Decay libraries (ATMPD) Headers & Libraries
 OLD_NTAG_GD_ROOT = $(ATMPD_ROOT)/src/analysis/neutron/ntag_gd
 ATMPDINCLUDE = -I $(ATMPD_ROOT)/include -I $(OLD_NTAG_GD_ROOT) -I $(ATMPD_ROOT)/src/recon/fitqun
-ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k -lska
+ATMPDLIB = -L $(ATMPD_ROOT)/lib -lapdrlib -laplib -lringlib -ltp -ltf -lringlib -laplib -lmsfit -lmslib -lseplib -lmsfit -lprtlib -lmuelib -lffit -lodlib -lstmu -laplowe -laplib -lfiTQun -ltf -lmslib -llelib -lntuple_t2k -lska -lpolfit -lprotonid -lexpq
 
 # functions from kirk bays. BFF (aka newmufit), getdl, ...
 KIRKLIB = -L $(Dependencies)/Kirk -lkirk
