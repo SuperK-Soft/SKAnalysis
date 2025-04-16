@@ -66,10 +66,10 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>This tool applies a series of selection cuts on muon-lowe pair events to produce a sample of spallation events, which will be analysed by subsequent tools to produce distributions of spallation observables, and ultimately to measure the rate of production of different spallation isotopes. This is working toward a reproduction of the results from the 2015 paper on measuring cosmic spallation isotope yields.</p>
-<h1><a class="anchor" id="autotoc_md67"></a>
+<h1><a class="anchor" id="autotoc_md73"></a>
 Data</h1>
 <p>The tool accepts its data from an <a class="el" href="classMTreeReader.html">MTreeReader</a> accessing ROOT files containing muon-lowe event pairs, produced during the 2020 SRN analysis chain. The output is stored as a ROOT file describing the cuts applied in this tool and which TTree entry numbers (and branch indices, where branches store arrays) of those events that passed each cut. Downstream tools may also access this information during the toolchain by accessing the 'SpallAbundanceSelection' <a class="el" href="classMTreeSelection.html">MTreeSelection</a> in the datamodel CStore.</p>
-<h1><a class="anchor" id="autotoc_md68"></a>
+<h1><a class="anchor" id="autotoc_md74"></a>
 Configuration</h1>
 <p>Configuration variables include various cut criteria applied during selection. </p><div class="fragment"><div class="line"># Tool use</div>
 <div class="line"># --------</div>
