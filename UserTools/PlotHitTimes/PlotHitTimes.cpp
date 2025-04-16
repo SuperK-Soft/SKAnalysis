@@ -291,7 +291,8 @@ int PlotHitTimes::GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32
 		float subtr_end_t = it0xsk + post_t0;
 		
 		// set IT0XSK to the position of the next subtrigger
-		//set_timing_gate_proc_(&it0xsk);
+		set_timing_gate_(&it0xsk);
+		//set_timing_gate_proc_(&it0xsk);   // for post-processed files (with TQReal not TQLIST). Validation in progress...
 		
 		int n_in_gate_hits_this_subtrigger=0;
 		
