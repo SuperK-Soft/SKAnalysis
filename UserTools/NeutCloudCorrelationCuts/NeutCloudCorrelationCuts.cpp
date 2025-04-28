@@ -75,9 +75,9 @@ bool NeutCloudCorrelationCuts::Execute(){
     std::vector<double> neutron_cloud_vertex = {};
     int* multiplicity = nullptr;
 
-    cloud_tree_reader->Get("neutron_cloud_vertex", neutron_cloud_vertex);
-    cloud_tree_reader->Get("neutron_cloud_multiplicity", *multiplicity);
-    cloud_tree_reader->Get("muon_dir", muon_dir);
+    // cloud_tree_reader->Get("neutron_cloud_vertex", neutron_cloud_vertex);
+    // cloud_tree_reader->Get("neutron_cloud_multiplicity", *multiplicity);
+    // cloud_tree_reader->Get("muon_dir", muon_dir);
   
     std::vector<TVector3> coord_change_tensor = GetTensor(muon_dir, neutron_cloud_vertex);
      

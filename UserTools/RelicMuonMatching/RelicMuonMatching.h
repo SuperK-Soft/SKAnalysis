@@ -31,7 +31,7 @@ class RelicMuonMatching: public Tool {
 	std::string relicSelectorName;
 	MTreeReader* rfmReader = nullptr;
 	
-	bool RemoveFromDeque(std::deque<ParticleCand>& particleDeque);
+  bool RemoveFromDeque(std::vector<int>&, std::deque<ParticleCand>& particleDeque);
 	bool RelicMuonMatch(bool loweEventFlag, int64_t currentTicks, int subtrg_num=0, int32_t it0xsk=0);
 	
 	EventType eventType;
@@ -42,9 +42,12 @@ class RelicMuonMatching: public Tool {
 	double match_window = 60; // [seconds]
 	int64_t match_window_ticks;
 	
-	bool relicsToRemove=false;
-	bool muonsToRemove=false;
-	
+	// bool relicsToRemove=false;
+	// bool muonsToRemove=false;
+
+  std::vector<int> relicsToRemove = {};
+  std::vector<int> muonsToRemove = {};
+  
 	int32_t lastnevhwsk, lastit0sk, last_rollover_nevsk;
 	int64_t lasteventticks, lastmuticks, lastrelicticks;
 	
