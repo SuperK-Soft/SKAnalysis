@@ -364,7 +364,7 @@ int DataModel::GetNextLUN(std::string reader, int lun){
 	std::map<int,std::string> revlist;
 	for(auto&& apair : lunlist){ revlist.emplace(apair.second,apair.first); }
 	int reqLUN=(lun==0) ? 10 : lun;
-	if(revlist.count(lun)){
+	if(revlist.count(reqLUN)){
 		lun = revlist.rbegin()->first; // get the last assigned LUN
 		++lun;                         // we'll use the next one
 		std::cerr<<"DataModel::GetNextLUN Warning! Cannot assign LUN "<<reqLUN

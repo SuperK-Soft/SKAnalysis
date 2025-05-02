@@ -189,7 +189,7 @@ std::string NEUTInteractionModeToString(const int& mode){
   if (constants::Interaction_Mode_To_String.count(mode)){
     return constants::Interaction_Mode_To_String.at(mode);
   }
-  throw std::invalid_argument("BAD NEUT INTERACTION MODE");  
+  throw std::invalid_argument("BAD NEUT INTERACTION MODE");
 }
 
 std::string GetNEUTModeCharge(const int& mode){

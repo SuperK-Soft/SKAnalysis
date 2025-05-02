@@ -79,6 +79,7 @@
 #include "MakeSpectralFitHistos.h"
 #include "SpectralFit.h"
 #include "SplitAtmosInteractions.h"
+#include "LoadSubTrigger.h"
 #include "CopyHits.h"
 #include "MakeBDTOutputFile.h"
 #include "GetSubTrg_SetTimingGate.h"
