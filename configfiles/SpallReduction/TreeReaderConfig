@@ -1,4 +1,4 @@
-verbosity 10
+verbosity 1
 FileListName MyFileList
 #inputFile ./rootFiles/data/sk4/061525/lowe_rfm_run061525.000002.root
 #inputFile /disk02/usr7/jfannon/data/lowe_rfm_run074558.000002.root << lfallfit doesn't like this file

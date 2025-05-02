@@ -209,6 +209,32 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			continue;
 		}
 		
+		/* ~~~~~~~~~~~ sanity checks
+		if(skhead_.nevsk!=eventsToWrite[i].EventNumber){
+			Log(m_unique_name+" Error! nevsk "+toString(skhead_.nevsk)+" after reading "+toString(eventType)
+			    +" differs from EventNumber of this ParticleCand "+toString(eventsToWrite[i].EventNumber),
+			    v_error,m_verbose);
+			continue;
+		}
+		if(eventType==EventType::LowE){
+			if(relic_nevsks.count(skhead_.nevsk)!=0){
+				Log(m_unique_name+" Error! relic event "+toString(skhead_.nevsk)
+				   +" entry "+toString(eventsToWrite[i].InEntryNumber)+" already seen at entry "
+				   +toString(relic_nevsks.at(skhead_.nevsk)),v_error,m_verbose);
+				continue;
+			}
+			relic_nevsks.emplace(skhead_.nevsk, eventsToWrite[i].InEntryNumber);
+		} else {
+			if(mu_nevsks.count(skhead_.nevsk)!=0){
+				Log(m_unique_name+" Error! muon event "+toString(skhead_.nevsk)
+				   +" entry "+toString(eventsToWrite[i].InEntryNumber)+" already seen at entry "
+				   +toString(mu_nevsks.at(skhead_.nevsk)),v_error,m_verbose);
+				continue;
+			}
+			mu_nevsks.emplace(skhead_.nevsk, eventsToWrite[i].InEntryNumber);
+		}
+		~~~~~~~~~~~~~ */
+		
 		// if this was a subtrigger we should also shift the time window accordingly
 		if(eventsToWrite[i].SubTriggerNumber!=0){
 			set_timing_gate_(&eventsToWrite[i].it0xsk);
@@ -714,10 +740,10 @@ bool ReconstructMatchedMuons::ReconstructNextMuon(){
 			skroot_mu_.muboy_entpos[track][2] = muentry[2];
 			skroot_mu_.muboy_entpos[track][3] = muentry[3];
 		}else{
-			skroot_mu_.muboy_entpos[track][0] = muboy_otherentry[4*track - 7];
-			skroot_mu_.muboy_entpos[track][1] = muboy_otherentry[4*track - 6];
-			skroot_mu_.muboy_entpos[track][2] = muboy_otherentry[4*track - 5];
-			skroot_mu_.muboy_entpos[track][3] = muboy_otherentry[4*track - 4];
+			skroot_mu_.muboy_entpos[track][0] = muboy_otherentry[4*track - 4];
+			skroot_mu_.muboy_entpos[track][1] = muboy_otherentry[4*track - 3];
+			skroot_mu_.muboy_entpos[track][2] = muboy_otherentry[4*track - 2];
+			skroot_mu_.muboy_entpos[track][3] = muboy_otherentry[4*track - 1];
 		}
 	}
 	

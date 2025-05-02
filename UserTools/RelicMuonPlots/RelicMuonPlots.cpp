@@ -616,10 +616,10 @@ bool RelicMuonPlots::MakePairVariables(){
 	mu_before_relic = (muEvNum < relicEvNum);
 	mu_relic_evtnum_diff = relicEvNum - muEvNum;
 	if(std::abs(mu_relic_evtnum_diff)>1E6){
-		Log(m_unique_name+" Error! Abnormal event num difference of "+toString(mu_relic_evtnum_diff)
+		Log(m_unique_name+" Warning! Large event num difference of "+toString(mu_relic_evtnum_diff)
 		   +" for relic "+toString(relicEvNum)+" and muon "+toString(muEvNum)+" in entries "
 		   +toString(relicEntryNum)+" and "+toString(muEntryNum),v_error,m_verbose);
-		return false;
+		//return false;
 	}
 	
 	std::cout<<"relic nevsk: "<<relicEvNum<<", muon nevsk: "<<muEvNum
