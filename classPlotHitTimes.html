@@ -86,23 +86,45 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a12b83b376eea8d96fce7812040389e46"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlotHitTimes.html#a12b83b376eea8d96fce7812040389e46">Initialise</a> (std::string configfile, <a class="el" href="classDataModel.html">DataModel</a> &amp;data)</td></tr>
 <tr class="memdesc:a12b83b376eea8d96fce7812040389e46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialise Function for setting up Tool resorces.  <a href="classPlotHitTimes.html#a12b83b376eea8d96fce7812040389e46">More...</a><br /></td></tr>
 <tr class="separator:a12b83b376eea8d96fce7812040389e46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a68c44df79ede202c125d688d8da8aba2"><td class="memItemLeft" align="right" valign="top"><a id="a68c44df79ede202c125d688d8da8aba2"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlotHitTimes.html#a68c44df79ede202c125d688d8da8aba2">Execute</a> ()</td></tr>
-<tr class="memdesc:a68c44df79ede202c125d688d8da8aba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executre function used to perform Tool perpose. <br /></td></tr>
+<tr class="memitem:a68c44df79ede202c125d688d8da8aba2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlotHitTimes.html#a68c44df79ede202c125d688d8da8aba2">Execute</a> ()</td></tr>
+<tr class="memdesc:a68c44df79ede202c125d688d8da8aba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executre function used to perform Tool perpose.  <a href="classPlotHitTimes.html#a68c44df79ede202c125d688d8da8aba2">More...</a><br /></td></tr>
 <tr class="separator:a68c44df79ede202c125d688d8da8aba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22b39684c67c5ac8647a5925999540d5"><td class="memItemLeft" align="right" valign="top"><a id="a22b39684c67c5ac8647a5925999540d5"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlotHitTimes.html#a22b39684c67c5ac8647a5925999540d5">Finalise</a> ()</td></tr>
 <tr class="memdesc:a22b39684c67c5ac8647a5925999540d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finalise funciton used to clean up resorces. <br /></td></tr>
 <tr class="separator:a22b39684c67c5ac8647a5925999540d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab35fc4b50ba7cdceb1b2035b76f2263f"><td class="memItemLeft" align="right" valign="top"><a id="ab35fc4b50ba7cdceb1b2035b76f2263f"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>GetSubtriggerFlags</b> (int subtrigtype, std::vector&lt; std::bitset&lt; 32 &gt;&gt; &amp;in_subtrigger_flags, int n_triggers)</td></tr>
-<tr class="separator:ab35fc4b50ba7cdceb1b2035b76f2263f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ea684cf7208a6b3d43a98a687dab3fa"><td class="memItemLeft" align="right" valign="top"><a id="a9ea684cf7208a6b3d43a98a687dab3fa"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>GetSubtriggers</b> (int subtrigtype, std::vector&lt; int &gt; &amp;subtrigger_times)</td></tr>
+<tr class="separator:a9ea684cf7208a6b3d43a98a687dab3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4ee188b9b9c25eafc6f5dd62f0886d5"><td class="memItemLeft" align="right" valign="top"><a id="ac4ee188b9b9c25eafc6f5dd62f0886d5"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>GetSubtriggerFlags</b> (const std::vector&lt; int &gt; &amp;subtrigger_times, std::vector&lt; std::bitset&lt; 32 &gt;&gt; &amp;in_subtrigger_flags)</td></tr>
+<tr class="separator:ac4ee188b9b9c25eafc6f5dd62f0886d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This Tool plots the times of hits, highlighting in-gate and out-of-gate hits, along with hits in the main and subtriggers</p>
 <dl class="section rcs"><dt>Author</dt><dd>M.O'Flaherty </dd></dl>
 <dl class="section rcs"><dt>Date</dt><dd>2023/08/01 </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a68c44df79ede202c125d688d8da8aba2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a68c44df79ede202c125d688d8da8aba2">&#9670;&nbsp;</a></span>Execute()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool PlotHitTimes::Execute </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Executre function used to perform Tool perpose. </p>
+<p>std::vector&lt;float&gt; times_wrt_primary_trigger(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz);</p>
+
+</div>
+</div>
 <a id="a12b83b376eea8d96fce7812040389e46"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a12b83b376eea8d96fce7812040389e46">&#9670;&nbsp;</a></span>Initialise()</h2>
 
