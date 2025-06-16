@@ -1,5 +1,4 @@
 verbosity 1
-#inputFile /disk02/usr6/moflaher/run870/test_jacks.root
 FileListName MyFileList
 
 treeName relic

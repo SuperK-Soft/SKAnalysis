@@ -98,9 +98,9 @@ bool RelicMuonPlots::Execute(){
 	lastmu_nevsk=0;
 	
 	// loop over muons matched to this relic
-	std::cout<<"looping over "<<relicMatchedEntryNums->size()<<" muons for this relic"<<std::endl;
-	std::cout<<"relicTimeDiffs is of size "<<relicTimeDiffs->size()<<" vs "
-	         <<relicMatchedEntryNums->size()<<" matches"<<std::endl;
+	Log(m_unique_name+"looping over "+std::to_string(relicMatchedEntryNums->size())+" muons for this relic",v_debug,m_verbose);
+	//std::cout<<"relicTimeDiffs is of size "<<relicTimeDiffs->size()<<" vs "
+	//         <<relicMatchedEntryNums->size()<<" matches"<<std::endl;
 	
 	// scan for dups
 	std::set<int> unique_muon_entry_nums;
@@ -158,6 +158,13 @@ bool RelicMuonPlots::Execute(){
 		
 	}
 	
+	// write to file every so often so we don't lose everything if toolchain crashes
+	if((++loopnum%100)==0){
+		hb.Save();
+		mu_hb.Save();
+		relic_hb.Save();
+	}
+	
 	return true;
 }
 
@@ -208,10 +215,10 @@ bool RelicMuonPlots::GetRelicEvt(){
 	}
 	relic_nevsks.emplace(relicEvNum,relicEntryNum);
 	
-	std::cout<<"relicMatchedEntryNums size is "<<relicMatchedEntryNums->size()
-	         <<", relicTimeDiffs size is "<<relicTimeDiffs->size()<<std::endl;
 	if(relicMatchedEntryNums->size()!=relicTimeDiffs->size()){
-		std::cerr<<"ERROR should be same size"<<std::endl;
+		Log(m_unique_name+ "ERROR! relicMatchedEntryNums and relicTimeDiffs should be same size but aren't! ("
+		     + std::to_string(relicMatchedEntryNums->size())+" vs "
+		     + std::to_string(relicTimeDiffs->size()) +")",v_error,m_verbose);
 		
 		std::vector<int>* MatchedEvNums_vec_p = nullptr;
 		std::vector<int>* MatchedInEntryNums_vec_p = nullptr;
@@ -274,19 +281,21 @@ bool RelicMuonPlots::GetRelicEvt(){
 	thiseventticks = (thiseventticks << 15);
 	int64_t it0sk = (int64_t(relicHeader->t0) & 0xFFFFFFFF);
 	thiseventticks += it0sk;
-	std::cout<<"this event at time "<<double(thiseventticks/COUNT_PER_NSEC)<<" ns since last rollover"<<std::endl;
+	Log(m_unique_name+"this event at time "+std::to_string(double(thiseventticks/COUNT_PER_NSEC))
+	      +" ns since last rollover",v_debug,m_verbose);
 	if(thiseventticks==0){
-		std::cerr<<"RELIC EVENT AT 0 TICKS"<<std::endl
-		         <<"counter_32: "<<relicHeader->counter_32<<"; header dump: ";
+		Log(m_unique_name+" RELIC EVENT AT 0 TICKS! counter_32: "
+		   +std::to_string(relicHeader->counter_32)+"; header dump: ",v_error,m_verbose);
 		relicHeader->Dump();
 	}
 	
 	int64_t rolloverticks = relicRollovers * (int64_t(1) << 47);
-	std::cout<<"adding "<<double(rolloverticks/COUNT_PER_NSEC)<<" ns for "<<relicRollovers<<" rollovers"<<std::endl;
+	Log(m_unique_name+"adding "+std::to_string(double(rolloverticks/COUNT_PER_NSEC))+" ns for "
+	   +std::to_string(relicRollovers)+" rollovers",v_debug,m_verbose);
 	double totalticks = thiseventticks + rolloverticks;
-	std::cout<<"total ticks: "<<totalticks<<" or "<<double(totalticks/COUNT_PER_NSEC)<<" ns"<<std::endl;
-	std::cout<<"c.f. EventTicks: "<<relicClockTicks<<" or "
-	         <<double(relicClockTicks/COUNT_PER_NSEC)<<" ns"<<std::endl;
+	Log(m_unique_name+"total ticks: "+std::to_string(totalticks)+" or "+std::to_string(double(totalticks/COUNT_PER_NSEC))
+	   +" ns \n c.f. EventTicks: "+std::to_string(relicClockTicks)+" or "+std::to_string(double(relicClockTicks/COUNT_PER_NSEC))
+	   +" ns",v_debug,m_verbose);
 	thiseventticks += relicRollovers * (int64_t(1) << 47);
 	relic_hb.Fill("event_time_secs",double(thiseventticks/COUNT_PER_NSEC)/1.E9);
 	
@@ -458,7 +467,7 @@ bool RelicMuonPlots::GetMuonEvt(){
 	thiseventticks = (thiseventticks << 15);
 	int64_t it0sk = (int64_t(muHeader->t0) & 0xFFFFFFFF);
 	thiseventticks += it0sk;
-	std::cout<<"this event at time "<<double(thiseventticks/COUNT_PER_NSEC)<<" ns since last rollover"<<std::endl;
+	Log(m_unique_name+" this event at time "+std::to_string(double(thiseventticks/COUNT_PER_NSEC))+" ns since last rollover",v_debug,m_verbose);
 	if(thiseventticks==0){
 		std::cerr<<"MU EVENT AT 0 TICKS"<<std::endl
 		         <<"counter_32: "<<muHeader->counter_32<<"; header dump: ";
@@ -466,10 +475,10 @@ bool RelicMuonPlots::GetMuonEvt(){
 	}
 	
 	int64_t rolloverticks = muRollovers * (int64_t(1) << 47);
-	std::cout<<"adding "<<double(rolloverticks/COUNT_PER_NSEC)<<" ns for "<<muRollovers<<" rollovers"<<std::endl;
+	Log(m_unique_name+" adding "+std::to_string(double(rolloverticks/COUNT_PER_NSEC))+" ns for "+std::to_string(muRollovers)+" rollovers",v_debug,m_verbose);
 	double totalticks = thiseventticks + rolloverticks;
-	std::cout<<"total ticks: "<<totalticks<<" or "<<double(totalticks/COUNT_PER_NSEC)<<" ns"<<std::endl;
-	std::cout<<"c.f. EventTicks: "<<muClockTicks<<" or "<<double(muClockTicks/COUNT_PER_NSEC)<<" ns"<<std::endl;
+	Log(m_unique_name+" total ticks: "+std::to_string(totalticks)+" or "+std::to_string(double(totalticks/COUNT_PER_NSEC))+" ns",v_debug,m_verbose);
+	Log(m_unique_name+" c.f. EventTicks: "+std::to_string(muClockTicks)+" or "+std::to_string(double(muClockTicks/COUNT_PER_NSEC))+" ns",v_debug,m_verbose);
 	thiseventticks += muRollovers * (int64_t(1) << 47);
 	mu_hb.Fill("event_time_secs",double(thiseventticks/COUNT_PER_NSEC)/1.E9);
 	
@@ -490,7 +499,8 @@ bool RelicMuonPlots::GetMuonEvt(){
 		double ns_since_last = double(ticksDiff)/COUNT_PER_NSEC;
 		if(ns_since_last<120E9){
 			mu_hb.Fill("mu_to_mu_secs", ns_since_last/1E9);
-			std::cout<<"mu_to_mu nanoseconds: "<<ns_since_last<<" from nevsk "<<muHeader->nevsk<<" to "<<lastmu_nevsk<<std::endl;
+			Log(m_unique_name+"mu_to_mu nanoseconds: "+std::to_string(ns_since_last)+" from nevsk "+std::to_string(muHeader->nevsk)
+			   +" to "+std::to_string(lastmu_nevsk),v_debug,m_verbose);
 			if((ns_since_last/1E9)>70E3){
 				std::cerr<<"TOO MUCH!!"<<std::endl;
 				assert(false);
@@ -602,7 +612,7 @@ double RelicMuonPlots::CalculateTrackLen(float* muon_entrypoint, float* muon_dir
 
 bool RelicMuonPlots::MakePairVariables(){
 	
-	std::cout<<"making pair variables"<<std::endl;
+	Log(m_unique_name+"making pair variables",v_debug,m_verbose);
 	
 	std::pair<int,int> pair{relicEvNum,muEvNum};
 	if(pairs_compared.count(pair)!=0){
@@ -622,8 +632,8 @@ bool RelicMuonPlots::MakePairVariables(){
 		//return false;
 	}
 	
-	std::cout<<"relic nevsk: "<<relicEvNum<<", muon nevsk: "<<muEvNum
-	         <<"; spall cand? "<<(mu_before_relic ? "Y" : "N")<<std::endl;
+	Log(m_unique_name+"relic nevsk: "+std::to_string(relicEvNum)+", muon nevsk: "+std::to_string(muEvNum)
+	         +"; spall cand? "+(mu_before_relic ? "Y" : "N"),v_debug,m_verbose);
 	
 	basic_array<float> scott_dedx(muMu->muboy_dedx);
 	//float (*kirk_dedx_arr)[200] = (float(*)[200])(muMu->muinfo+10);
@@ -676,9 +686,9 @@ bool RelicMuonPlots::MakePairVariables(){
 	// re-check the coulomb-to-photoelectron conversion factor (petable entry)
 	double pe_per_coulomb = 0;
 	// scan through pe table for this run, and get corresponding pe_per_coulomb
-	std::cout<<"scanning petable for pe_to_coulombs conversion"<<std::endl;
+	Log(m_unique_name+"scanning petable for pe_to_coulombs conversion",v_debug,m_verbose);
 	while(pe_per_coulomb == 0 && pe_table_index < petable_startrun.size()){
-		std::cout<<"entry "<<pe_table_index<<std::endl;
+		Log(m_unique_name+"entry "+std::to_string(pe_table_index),v_debug,m_verbose);
 		if(petable_startrun[pe_table_index] <= muHeader->nrunsk && petable_endrun[pe_table_index] >= muHeader->nrunsk){
 		    pe_per_coulomb = pe_to_coulombs[pe_table_index][1];
 		    break;
@@ -692,14 +702,15 @@ bool RelicMuonPlots::MakePairVariables(){
 	}
 	
 	// XXX not sure why pe_per_cm is in this formula?
-	std::cout<<"calculating observed pe from this muon"<<std::endl;
+	Log(m_unique_name+" calculating observed pe from this muon",v_debug,m_verbose);
 	double pe_from_muon = muMu->muqismsk * (pe_per_cm / pe_per_coulomb);  // pe*cm^-1 / pe*C^-1 = C/cm
 	// mu_info.C calculates this based on tracklen from muboy (resq_tmp), tracklen calculated
 	// based on muboy secondary track entry point and muboy dir (resq_sprt_tmp, for mutiple muons)
 	// and calculated tracklen BFF track (resq_sprt_tmp_bff)
 	double pe_from_MIP = muon_tracklen * pe_per_cm;
 	double residual_q_over_MIP = pe_from_muon - pe_from_MIP;
-	std::cout<<"pe from MIP: "<<pe_from_MIP<<", pe from muon: "<<pe_from_muon<<", residual: "<<residual_q_over_MIP<<std::endl;
+	Log(m_unique_name+" pe from MIP: "+std::to_string(pe_from_MIP)+", pe from muon: "+std::to_string(pe_from_muon)
+	    +", residual: "+std::to_string(residual_q_over_MIP),v_debug,m_verbose);
 	
 	// calculate footpoint and transverse distance
 	// find transverse distance from relic to muon
@@ -715,7 +726,8 @@ bool RelicMuonPlots::MakePairVariables(){
 	
 	getdl_(muon_direction, &relic_vertex[0], &relic_vertex[1], &relic_vertex[2], muon_entrypoint, &dlt, &appr);
 	
-	std::cout<<"transverse distance: "<<dlt<<", with foot point at "<<appr<<" cm along muon track"<<std::endl;
+	Log(m_unique_name+" transverse distance: "+std::to_string(dlt)+", with foot point at "+std::to_string(appr)
+	    +" cm along muon track",v_debug,m_verbose);
 	// XXX sometimes, but not always, appr is negative. Might be fine. Might want to check.
 	
 	// XXX warning: see Shinoki-san's talk from lowe meeting ~06/05/21:
@@ -726,7 +738,7 @@ bool RelicMuonPlots::MakePairVariables(){
 	
 	// calculate longitudinal distance from point of peak energy deposition
 	dll = max_edep_pos - appr;
-	std::cout<<"longitudinal distance: "<<dll<<std::endl;
+	Log(m_unique_name+" longitudinal distance: "+std::to_string(dll),v_debug,m_verbose);
 	
 	
 	return true;
@@ -783,10 +795,15 @@ bool RelicMuonPlots::MakeHists(int step){
 		relic_hb.MakeFile(relicFile);
 		relic_hb.SaveHists(false);
 		
+		// sanity check?
+		if(hb.GetFile()==nullptr){
+			Log(m_unique_name+" histogram builder 'hb' has no output file!", v_error,m_verbose);
+			return false;
+		}
+		
 	// step 1: Fill
 	// ============
 	} else if(step==1){
-		std::cout<<"Filling tree"<<std::endl;
 		// fill tree
 		hb.Fill("mu_before_relic", mu_before_relic);
 		hb.Fill("evtNumDiff",mu_relic_evtnum_diff);
@@ -808,36 +825,25 @@ bool RelicMuonPlots::MakeHists(int step){
 		std::vector<TH1*> random_dists;
 		
 		// make/get histograms
-		std::cout<<"making dt hists"<<std::endl;
 		spall_dists.push_back(hb.GetHist("dt","mu_before_relic==1"));
 		random_dists.push_back(hb.GetHist("dt","mu_before_relic==0"));
 		
-		std::cout<<"making dll hists"<<std::endl;
 		spall_dists.push_back(hb.GetHist("dll","mu_before_relic==1"));
 		random_dists.push_back(hb.GetHist("dll","mu_before_relic==0"));
 		
-		std::cout<<"making dlt hists"<<std::endl;
 		spall_dists.push_back(hb.GetHist("dlt","mu_before_relic==1"));
 		random_dists.push_back(hb.GetHist("dlt","mu_before_relic==0"));
 		
-		std::cout<<"making delta evnum hists"<<std::endl;
 		spall_dists.push_back(hb.GetHist("evtNumDiff","mu_before_relic==1"));
 		random_dists.push_back(hb.GetHist("evtNumDiff","mu_before_relic==0"));
 		
 		// draw and save distributions
-		std::cout<<"writing file"<<std::endl;
-		if(hb.GetFile()==nullptr){
-			Log(m_unique_name+" histogram builder 'hb' has no output file!", v_error,m_verbose);
-			return false;
-		}
 		hb.GetFile()->cd();
 		TCanvas* c_spall = new TCanvas("c_spall","c_spall",1280,1024);
 		c_spall->cd();
-		std::cout<<"saving "<<spall_dists.size()<<" hists"<<std::endl;
 		for(int i=0; i<spall_dists.size(); ++i){
 			TH1* spall_dist = spall_dists.at(i);
 			TH1* rand_dist = random_dists.at(i);
-			std::cout<<"hists: "<<spall_dist<<", "<<rand_dist<<std::endl;
 			std::string paramname = spall_dist->GetName();
 			paramname = paramname.substr(0,paramname.find('_'));
 			spall_dist->SetLineColor(kRed);
@@ -857,7 +863,6 @@ bool RelicMuonPlots::MakeHists(int step){
 			c_spall->BuildLegend();
 			c_spall->Write(paramname.c_str());
 		}
-		std::cout<<"histograms written"<<std::endl;
 		
 	}
 	

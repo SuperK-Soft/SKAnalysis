@@ -261,11 +261,9 @@ bool SLESearch::Execute(){
   
   int N_SLE = SLE_times.size();
   std::cout << "SLESearch found " << N_SLE << " SLE times, they are:" << std::endl;
-  for (const auto& time : SLE_times){std::cout << "time in ns: " << time << std::endl;}
-  std::cout << "then" << std::endl;
-  for (const auto& time : SLE_times){std::cout << std::setprecision(9) <<  "time in ticks: " << (time * COUNT_PER_NSEC) + skheadqb_.it0sk << std::endl;}
-  std::cout << "where skheadqb_.it0sk = " << skheadqb_.it0sk << std::endl;
-
+  for (const auto& time : SLE_times){
+  	std::cout << time << " ns or " << std::setprecision(9) << (time * COUNT_PER_NSEC) <<" ticks from primary trigger" << std::endl;
+  }
   // we do this again in Pre recon cuts
   m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
 

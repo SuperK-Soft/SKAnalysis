@@ -93,6 +93,7 @@ extern "C" void get_sub_triggers_(int*, int*, int*, int*);
 extern "C" void get_sub_triggers_add_(int*, int*, int*, int*, int*);
 extern "C" void get_sub_triggers2_(int*, int*, int*, int*, int*);
 extern "C" void set_timing_gate_(int*);
+extern "C" void set_timing_gate_m_(int*); // version that applies hit timing check on hits from TQREAL instead of TQLIST
 extern "C" void set_timing_gate_nsec_(float*);
 extern "C" int make_swtrg_list(int*,int*);
 extern "C" void softtrg_get_cond_(int*, int*, int*, int*, int*);

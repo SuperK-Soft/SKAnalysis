@@ -68,6 +68,7 @@ class RelicMuonPlots: public Tool {
 	MTreeReader* relicReader=nullptr;
 	MTreeReader* muReader=nullptr;
 	
+	long loopnum=0;
 	int relicEntryNum=0;
 	int muEntryNum=0;
 	int relicEvNum=0;

@@ -70,7 +70,6 @@ class MTreeReader {
 	// get the object itself - valid for primitives only (could add objects if we made copies)
 	template<typename T>
 	int GetBranchValue(std::string branchname, T& ref_in){
-		std::cout<<"getting branch "<<branchname<<" by reference"<<std::endl;
 		// check we know this branch
 		if(branch_value_pointers.count(branchname)==0){
 			std::cerr<<"No such branch '"<<branchname<<"'"<<std::endl;
@@ -88,9 +87,7 @@ class MTreeReader {
 		}
 		// else for primitives, de-reference the pointer to allow the user a copy
 		T* objp = reinterpret_cast<T*>(branch_value_pointers.at(branchname));
-		std::cout<<"getting via branch value pointers: "<<objp<<std::endl;
 		ref_in = *objp;
-		std::cout<<"value is "<<ref_in<<std::endl;
 		return 1;
 	}
 	

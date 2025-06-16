@@ -17,7 +17,8 @@ verbosity 3
 #inputFile ~/standalones/filltqreal/conv2.root # converted rfm_run087096.000001.root with filltqreal
 #inputFile ~/disk02/test_jacks.root
 #inputFile /disk02/usr6/moflaher/run870/test_jacks.root
-inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
+#inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
+inputFile /disk03/lowe12/warwick/data/sk6/rfm_run087008.000296.match.root
 
 #treeName data                                  # the name of the tree within the file
 treeName mu
@@ -30,5 +31,5 @@ skoptn 31,30,25,26 # use 26 for data           # options describing what to load
 skbadopt 23
 #skbadchrun 85609 # for mc when 26 is not given above
 SK_GEOMETRY 6                                  # which SK geometry this file relates to (4)
-#allowedTriggers 28                            # only pass SHE
+allowedTriggers 28                            # only pass SHE
 #skipPedestals 0

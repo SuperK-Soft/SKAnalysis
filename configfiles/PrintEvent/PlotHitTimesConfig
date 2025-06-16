@@ -1,5 +1,5 @@
 verbosity 10
 treeReaderName demoReader
 outputfile subtrigger_hits.root
-onlyWriteSubtriggers 0
 useSLESearchTool 1
+onlyWriteSubtriggers 0

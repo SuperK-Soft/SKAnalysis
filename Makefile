@@ -288,8 +288,9 @@ DataModel/%.o: DataModel/%.F lib/libLogging.so lib/libStore.so include/dummy
 	gfortran $(FCFLAGS) -c -o $@ $< -I include -L lib -lStore -lLogging  $(DataModelInclude) $(DataModelLib)
 
 include/dummy: DataModel/*.h
-	 cp $(shell dirname $<)/*.h include
-	 touch include/dummy
+	@echo -e "\e[38;5;214m\n*************** Copying DataModel headers ****************\e[0m"
+	cp $(shell dirname $<)/*.h include
+	touch include/dummy
 
 Docs:
 	doxygen Doxyfile

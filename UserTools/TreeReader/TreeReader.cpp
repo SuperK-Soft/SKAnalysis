@@ -193,7 +193,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		
 		// slight change in initialization depending on SK root vs zebra
 		if(not (skrootMode==SKROOTMODE::ZEBRA)){
-			Log(m_unique_name+": callling skroot_open_*",v_debug,m_verbose);
+			Log(m_unique_name+": calling skroot_open_*",v_debug,m_verbose);
 			
 			// There are 3 modes to the TreeManager:
 			// skroot_open_read_ calls the TreeManager constructor with mode = 2;

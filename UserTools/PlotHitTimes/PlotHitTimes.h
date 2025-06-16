@@ -31,7 +31,8 @@ class PlotHitTimes: public Tool {
 	bool Initialise(std::string configfile,DataModel &data); ///< Initialise Function for setting up Tool resorces. @param configfile The path and name of the dynamic configuration file to read in. @param data A reference to the transient data class used to pass information between Tools.
 	bool Execute(); ///< Executre function used to perform Tool perpose. 
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
-	int GetSubtriggerFlags(int subtrigtype, std::vector<std::bitset<32>>& in_subtrigger_flags, int n_triggers);
+	int GetSubtriggers(int subtrigtype, std::vector<int>& subtrigger_times);
+	int GetSubtriggerFlags(const std::vector<int>& subtrigger_times, std::vector<std::bitset<32>>& in_subtrigger_flags);
 	
 	private:
 	

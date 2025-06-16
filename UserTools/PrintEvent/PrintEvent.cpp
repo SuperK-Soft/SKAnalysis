@@ -261,9 +261,9 @@ bool PrintEvent::PrintTQRealInfo(bool ID, bool verbose){
 	         <<"\t\tOD Hits: "<<hit_counts.at("OD")<<" of which "<<hit_counts.at("OD_in_gate")
 	                        <<" were in-gate and "<<hit_counts.at("OD_in_13")<<" were in a 1.3us window\n"
 	         <<"\t\tVeto Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\t\tCalibration Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\t\tTrigger Hits: "<<hit_counts.at("Veto")<<"\n"
-	         <<"\t\tUnknown Hits: "<<hit_counts.at("Veto")<<std::endl;
+	         <<"\t\tCalibration Hits: "<<hit_counts.at("Calibration")<<"\n"
+	         <<"\t\tTrigger Hits: "<<hit_counts.at("Trigger")<<"\n"
+	         <<"\t\tUnknown Hits: "<<hit_counts.at("Unknown")<<std::endl;
 	
 	return true;
 }
@@ -836,8 +836,11 @@ bool PrintEvent::PrintTriggerInfo(){
 	runinfsk_(); // think this reads from RUNINF branch. it prints an error if not present
 	
 	std::cout<<"\tskheadqb_.it0sk: "<<skheadqb_.it0sk<<"\n"
-	         <<"\tskheadqb_.nevswsk: "<<skheadqb_.nevswsk<<"\n"
-	         // FIXME nevswsk is maybe the same as idtgsk, so is not an element index....
+	         <<"\tskheadqb_.nevswsk: "<<skheadqb_.nevswsk<<"\n" // nevswsk is just time /10, see above
+	         // pre- and post-trigger durations are arrays per trigger type
+	         // skhead_.idtgsk contains flags of current trigger type, but may have several bits set
+	         // (e.g. HE & LE & SLE), so we need to extract just the relevant one (somehow?)
+	         // and can use that to look up the used pre- and post-trigger window sizes, i guess. TODO
 	         <<"\tskruninf_.softtrg_pre_t0: "<<"???\n" // skruninf_.softtrg_pre_t0[???]<<"\n"
 	         <<"\tskruninf_.softtrg_post_t0: "<<"???\n" // skruninf_.softtrg_post_t0[???]<<"\n"
 	         <<"\tskruninf_.softtrg_t0_offset: "<<"???\n"; // skruninf_.softtrg_t0_offset[???]<<"\n";
@@ -845,6 +848,7 @@ bool PrintEvent::PrintTriggerInfo(){
 	// FIXME this is printing ... maybe garbage? probably because it0sk is some huge negative number....
 	// think hit times are already relative to IT0SK so no need to add it anyway...?
 	// but how do we put times into an absolute measure to compare hit times in different subtriggers?
+	// are counters relative to start of run? do we need to work from there?
 	std::cout<<"\tTrigger gate spanned: "
 	         <<"???" //((skheadqb_.it0sk-skruninf_.softtrg_pre_t0[???])/COUNT_PER_NSEC)
 	         <<" ns to "
@@ -948,7 +952,7 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	for(int i=0; i < triggers_of_interest.size(); i++){
 		auto trigit = std::find(triggers_of_interest.begin(), triggers_of_interest.end(), TriggerType(i));
 		if(trigit==triggers_of_interest.end()) continue;
-		std::cout<<"\tTrigger "<<i << " = " << TriggerType(i)<<"\n"
+		std::cout<<"\tTrigger "<<i << " = " << TriggerIDToName(i)<<"\n"
 		         << "\t\tthreshold: " << skruninf_.softtrg_thr[i]<<"\n";
 		if(skruninf_.softtrg_thr[i]==0){
 			int default_thresh = GetTriggerThreshold(i);
@@ -975,8 +979,7 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	// (not clear if this is required if we don't want to change the default settings) TODO find out
 	softtrg_set_cond_(skruninf_.softtrg_detector, skruninf_.softtrg_thr, skruninf_.softtrg_t0_offset, skruninf_.softtrg_pre_t0, skruninf_.softtrg_post_t0);
 	
-	// when getting subtriggers we call skcread to update the common block contents,
-	// recalculate hit counts, hit flags, first/last hit times etc etc.
+	// when getting subtriggers we call skcread to recalculate hit counts in 1.3us, first/last hit times etc etc.
 	// for this we will need the file LUN
 	int lun = m_data->GetLUN(myTreeReader->GetName());
 	lun = -std::abs(lun);  // IMPORTANT: make it negative to ensure skcread does not advance TTree
