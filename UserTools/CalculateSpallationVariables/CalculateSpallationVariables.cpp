@@ -16,9 +16,13 @@ bool CalculateSpallationVariables::Initialise(std::string configfile, DataModel 
   m_log= m_data->Log;
 
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
-
-  GetReaders();
   
+  GetReaders();
+
+  m_variables.Get("run_type", run_type_str);
+  if (run_type_str != "cut" && run_type_str != "calculate"){
+    throw std::runtime_error("CalculateSpallationVariables::Initialise - no valid run type (calculate / cut) specified in the config file!");
+  }
   return true;
 }
 
@@ -27,17 +31,28 @@ bool CalculateSpallationVariables::Execute(){
 
   GetMuonBranchValues();
 
+  // do I need to return for badly reconstructed muons? yeah, probably - only when we use `all'
+  if (MU_ptr->muboy_status == 0){
+    return true;
+  }
+  
   // "pre" means dt > 0, "post" is opposite - remember these are the times from the muon to the relic, so it's the opposite to the white paper.
   
   std::cout << "CalculateSpallationVariables: looping through " << MatchedTimeDiff_ptr->size() << " matched relics" << std::endl;
   for (int relic_idx = 0; relic_idx < MatchedTimeDiff_ptr->size(); ++relic_idx){
-
+    
     /* dt - time difference between muon and relic candidate */
+    /* mu - relic */
     float dt = MatchedTimeDiff_ptr->at(relic_idx)/pow(10,9);
     dt > 0 ? pre_dt_hist.Fill(abs(dt)) : post_dt_hist.Fill(abs(dt));
     
     relic_tree_ptr->GetEntry(MatchedOutEntryNums_ptr->at(relic_idx));
     GetRelicBranchValues();
+
+    if (LOWE_ptr->bsenergy > 1000){
+      //bad reconstruction, skipping
+      continue;
+    }
 
     /* dlt - transverse distance between muon and relic candidate */
     float dlt = 0, appr = 0;
@@ -69,11 +84,6 @@ bool CalculateSpallationVariables::Execute(){
     }
     
     float* relic_pos = const_cast<float*>(LOWE_ptr->bsvertex);
-
-    // std::cout<<"calling getdl_ with:\n"
-    // 	     <<"\trelic po: ("<<relic_pos[0]<<", "<<relic_pos[1]<<", "<<relic_pos[2]<<")\n"
-    // 	     <<"\tmuon entry point: ("<<muon_entrypoint[0]<<", "<<muon_entrypoint[1]<<", "<<muon_entrypoint[2]<<")\n"
-    // 	     <<"\tmuon entry dir: ("<<muon_direction[0]<<", "<<muon_direction[1]<<", "<<muon_direction[2]<<")"<<std::endl;
     
     getdl_(muon_direction,
 	   &relic_pos[0],
@@ -83,6 +93,15 @@ bool CalculateSpallationVariables::Execute(){
 	   &dlt,
 	   &appr);
 
+    if (dlt == 0.0){
+      std::cout << "CalculateSpallationVariables::Execute - dlt = 0, dumping args of getdl_" << std::endl;
+      std::cout<<"calling getdl_ with:\n"
+	       <<"\trelic po: ("<<relic_pos[0]<<", "<<relic_pos[1]<<", "<<relic_pos[2]<<")\n"
+	       <<"\tmuon entry point: ("<<muon_entrypoint[0]<<", "<<muon_entrypoint[1]<<", "<<muon_entrypoint[2]<<")\n"
+	       <<"\tmuon entry dir: ("<<muon_direction[0]<<", "<<muon_direction[1]<<", "<<muon_direction[2]<<")"<<std::endl;
+      throw std::runtime_error("CalculateSpallationVariables:: bad dlt");
+    }
+    
     dt > 0 ? pre_dlt_hist.Fill(dlt) : post_dlt_hist.Fill(dlt);
     
     /* dll - longitudinal distance between the muon and relic candidate*/
@@ -103,6 +122,18 @@ bool CalculateSpallationVariables::Execute(){
     }
     double max_energy_dep_pos = 50.*max_edep_bin;
     float dll = max_energy_dep_pos - appr;
+
+    if (dll == 0.0){
+      std::cout << "CalculateSpallationVariables::Execute - dll = 0, dumping args of getdl_" << std::endl;
+      std::cout<<"calling getdl_ with:\n"
+	       <<"\trelic po: ("<<relic_pos[0]<<", "<<relic_pos[1]<<", "<<relic_pos[2]<<")\n"
+	       <<"\tmuon entry point: ("<<muon_entrypoint[0]<<", "<<muon_entrypoint[1]<<", "<<muon_entrypoint[2]<<")\n"
+	       <<"\tmuon entry dir: ("<<muon_direction[0]<<", "<<muon_direction[1]<<", "<<muon_direction[2]<<")"<<")\n"
+	       <<"\tmax_energy_dp_pos: "<< max_energy_dep_pos<< ", appr: "<<appr<<std::endl;
+      throw std::runtime_error("CalculateSpallationVariables:: bad dll");
+    }
+
+
     dt > 0 ? pre_dll_hist.Fill(dll) : post_dll_hist.Fill(dll);
 
     /* muqismsk - max charge deposited in the detector by the muon*/
@@ -211,7 +242,7 @@ void CalculateSpallationVariables::GetRelicBranchValues(){
 std::string CalculateSpallationVariables::GetPairingString(PairingInfo p) const {
   std::string hist_str = "";
 
-  //return "all";
+  return "all";
   
   const std::vector<std::string> type_strs = {"misfit", "singlethru", "singlestop", "multi", "multi", "corner"};
   hist_str+=type_strs.at(p.muon_type);
@@ -268,7 +299,7 @@ void CalculateSpallationVariables::CreateLikelihood(const std::string& name, con
   TH1D dt_spall(("dt_spall_"+name).c_str(), "dt_spall;dt", nbins, 0, 60);
   TH1D dt_rand(("dt_rand_"+name).c_str(), "dt_rand;dt", nbins, 0, 60);
   for (int i = 0; i <= nbins; ++i){
-    dt_spall.SetBinContent(i, std::max(0., pre_dt.GetBinContent(i) - post_dt.GetBinContent(i)));
+    dt_spall.SetBinContent(i,  pre_dt.GetBinContent(i) - post_dt.GetBinContent(i));
     dt_rand.SetBinContent(i, post_dt.GetBinContent(i));
   }
 
@@ -281,7 +312,7 @@ void CalculateSpallationVariables::CreateLikelihood(const std::string& name, con
   TH1D dlt_spall(("dlt_spall_"+name).c_str(), "dlt_spall;dlt", nbins, 0, 5000);
   TH1D dlt_rand(("dlt_rand_"+name).c_str(), "dlt_rand;dlt", nbins, 0, 5000);
   for (int i = 0; i <= nbins; ++i){
-    dlt_spall.SetBinContent(i, std::max(0.,pre_dlt.GetBinContent(i) - post_dlt.GetBinContent(i)));
+    dlt_spall.SetBinContent(i, pre_dlt.GetBinContent(i) - post_dlt.GetBinContent(i));
     dlt_rand.SetBinContent(i, post_dlt.GetBinContent(i));
   }
 
@@ -294,7 +325,7 @@ void CalculateSpallationVariables::CreateLikelihood(const std::string& name, con
   TH1D dll_spall(("dll_spall_"+name).c_str(), "dll_spall;dll", nbins, -5000, 5000);
   TH1D dll_rand(("dll_rand_"+name).c_str(), "dll_rand;dll", nbins, -5000, 5000);
   for (int i = 0; i <= nbins; ++i){
-    dll_spall.SetBinContent(i, std::max(0.,pre_dll.GetBinContent(i) - post_dll.GetBinContent(i)));
+    dll_spall.SetBinContent(i, pre_dll.GetBinContent(i) - post_dll.GetBinContent(i));
     dll_rand.SetBinContent(i, post_dll.GetBinContent(i));
   }
 
@@ -307,7 +338,7 @@ void CalculateSpallationVariables::CreateLikelihood(const std::string& name, con
   TH1D muqismsk_spall(("muqismsk_spall_"+name).c_str(), "muqismsk_spall;muqismsk", nbins, 0, 250000);
   TH1D muqismsk_rand(("muqismsk_rand_"+name).c_str(), "muqismsk_rand;muqismsk", nbins, 0, 250000);
   for (int i = 0; i <= nbins; ++i){
-    muqismsk_spall.SetBinContent(i, std::max(0.,pre_muqismsk.GetBinContent(i) - post_muqismsk.GetBinContent(i)));
+    muqismsk_spall.SetBinContent(i, pre_muqismsk.GetBinContent(i) - post_muqismsk.GetBinContent(i));
     muqismsk_rand.SetBinContent(i, post_muqismsk.GetBinContent(i));
   }
 
@@ -320,7 +351,7 @@ void CalculateSpallationVariables::CreateLikelihood(const std::string& name, con
   TH1D resQ_spall(("resQ_spall_"+name).c_str(), "resQ_spall;resQ", nbins, -100000, 100000 );
   TH1D resQ_rand(("resQ_rand_"+name).c_str(), "resQ_rand;resQ", nbins, -100000, 100000);
   for (int i = 0; i <= nbins; ++i){
-    resQ_spall.SetBinContent(i, std::max(0.,pre_resQ.GetBinContent(i) - post_resQ.GetBinContent(i)));
+    resQ_spall.SetBinContent(i, pre_resQ.GetBinContent(i) - post_resQ.GetBinContent(i));
     resQ_rand.SetBinContent(i, post_resQ.GetBinContent(i));
   }
 
@@ -340,7 +371,9 @@ void CalculateSpallationVariables::CreateLikelihood(const std::string& name, con
     const int dll_bin = nbins * ((p.dll + 5000)/(10000));
     const int muqismsk_bin = nbins * (p.muqismsk / 250000);
     const int resQ_bin = nbins * ((p.resQ + 100000)/(200000));
-        
+
+    //std::cout << dt_bin << dlt_bin << dll_bin << muqismsk_bin << resQ_bin << std::endl;
+    
     double likelihood = std::log10(
 				   dt_spall.GetBinContent(dt_bin) / dt_rand.GetBinContent(dt_bin) *
 				   dlt_spall.GetBinContent(dlt_bin) / dlt_rand.GetBinContent(dlt_bin) *

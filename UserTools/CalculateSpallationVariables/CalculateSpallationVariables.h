@@ -35,7 +35,9 @@ private:
   std::string GetPairingString(PairingInfo) const;
   double CalculateTrackLen(float*, float*, double* exit=nullptr);
   void CreateLikelihood(const std::string&, const std::vector<PairingInfo>&) const;
-    
+
+  std::string run_type_str = "";
+  
   const std::vector<float>* MatchedTimeDiff_ptr = nullptr;
   const std::vector<int>* MatchedOutEntryNums_ptr = nullptr;
 
@@ -45,7 +47,7 @@ private:
   MTreeReader* muon_tree_ptr = nullptr;
   MTreeReader* relic_tree_ptr = nullptr;
 
-  const int nbins = 50;
+  int nbins = 50000;
   
   void GetReaders();
 

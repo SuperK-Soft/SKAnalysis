@@ -1,0 +1,22 @@
+verbosity 1
+readerName relic_reader
+
+#inputFile  /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
+#inputFile  /disk03/lowe12/warwick/run870/test_matthew.root
+
+#inputFile /disk02/usr6/moflaher/run870_apr/test_jacks.root
+
+#inputFile /disk03/lowe12/warwick/run870/test_matthew.root
+
+FileListName myFileList_relic
+
+treeName relic                                    # the name of the tree within the file
+#treeName data
+# max num input entries to process
+#maxEntries 1
+maxEntries -1
+skFile 0                                          # do not call SKREAD/SKRAWREAD - no need.
+
+SK_GEOMETRY 6
+
+autoEntryRead 0 # this is the slave treereader, muon reader is the master - no, I don't support slavery calm it right down buddy all I'm saying is us muons need to look out for ourselves yknow... a few years ago there weren't any relic candidates, now look at em! won't be long before there are more relics than muons but you didn't hear that from me, you get locked up for that sort of thing these days don't you
