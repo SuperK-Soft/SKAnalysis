@@ -3,4 +3,6 @@ myTreeReader TreeReader configfiles/PrintEvent/TreeReaderConfig
 myPrintEvent PrintEvent configfiles/PrintEvent/PrintEventConfig
 mySLESearch SLESearch configfiles/PrintEvent/SLESearchConfig
 myPlotHitTimes PlotHitTimes configfiles/PrintEvent/PlotHitTimesConfig
-#myLoadSubTrigger LoadSubTrigger configfiles/PrintEvent/LoadSubTriggerConfig
+
+# test subtriggers can be reconstructed
+mySubToolChain SubToolChain configfiles/PrintEvent/SubToolChainConfig

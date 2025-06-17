@@ -39,6 +39,8 @@ bool PrintEvent::Execute(){
 	std::cout<<"\n\nReading "<<(file_format ? "ROOT" : "ZBS")<<" file "
 	         << myTreeReader->GetFile()->GetName()<<std::endl;
 	
+	// FIXME add config variables to control what gets printed
+	
 	PrintHeaderInfo();
 	
 	runinfsk_();
@@ -112,7 +114,9 @@ bool PrintEvent::Execute(){
 	         <<"\tod_mask_nhits: "<<odmaskflag_.od_mask_nhits<<"\n"
 	         <<"\tod_mask_nhits: "<<odmaskflag_.od_mask_nhits<<"\n";
 	}
+	
 	*/
+	PrintLowEInfo();
 	
 	return true;
 }

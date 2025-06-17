@@ -1,0 +1,3 @@
+verbosity 6
+readerName demoReader
+#hitLimitForClusfit -1 ## crashes womp womp

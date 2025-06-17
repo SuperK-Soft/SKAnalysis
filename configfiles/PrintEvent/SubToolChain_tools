@@ -1,0 +1,2 @@
+myLoadSubTrigger LoadSubTrigger configfiles/PrintEvent/LoadSubTriggerConfig
+mylfallfit lfallfit configfiles/PrintEvent/lfallfitConfig

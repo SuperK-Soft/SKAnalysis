@@ -1,4 +1,4 @@
-verbosity 3
+verbosity 1
 #inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
 #inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086614.0/output/test_jacks.root
 #inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root

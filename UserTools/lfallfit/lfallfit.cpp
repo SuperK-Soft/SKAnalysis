@@ -208,6 +208,20 @@ bool lfallfit::Execute(){
 		//return true;
 	}
 	
+	// salient bits:
+	if(m_verbose>4){
+		printf("based on %d ToF subtracted hits, this event had:\n"
+		       "vertex (x,y,z,t) = (%f,%f,%f,%f) [cm]\n"
+		       "direction (x,y,z) = (%f,%f,%f)\n"
+		       "energy %f [MeV]\n"
+		       "goodness %f, ovaq %f\n",
+		       skroot_lowe_.bsn50,
+		       skroot_lowe_.bsvertex[0],skroot_lowe_.bsvertex[1],skroot_lowe_.bsvertex[2],skroot_lowe_.bsvertex[3],
+		       skroot_lowe_.bsdir[0],skroot_lowe_.bsdir[1],skroot_lowe_.bsdir[2],
+		       skroot_lowe_.bsenergy,
+		       skroot_lowe_.bsgood[1],skroot_lowe_bsovaq);
+	}
+	
 	Log(m_unique_name+" setting results into lowe branch",v_debug,m_verbose);
 	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
 	skroot_set_lowe_(&lun,                      &skroot_lowe_.bsvertex[0], &skroot_lowe_.bsresult[0],
@@ -235,4 +249,5 @@ bool lfallfit::Finalise(){
 	
 	return true;
 }
+
 
