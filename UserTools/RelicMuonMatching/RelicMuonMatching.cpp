@@ -289,8 +289,14 @@ bool RelicMuonMatching::Execute(){
 	}
 	
 	// prune any match candidates that have dropped off our window of interest
-	if(muonsToRemove) RemoveFromDeque(m_data->muonCandDeque);
-	if(relicsToRemove) RemoveFromDeque(m_data->relicCandDeque);
+	Log(m_unique_name+" Relics to prune: "+toString(relicsToRemove.size())+
+	                  ", muons to prune: "+toString(muonsToRemove.size()),v_debug,m_verbose);
+	if(muonsToRemove.size() > 0){
+		RemoveFromDeque(muonsToRemove, m_data->muonCandDeque);
+	}
+	if(relicsToRemove.size() > 0){
+		RemoveFromDeque(relicsToRemove, m_data->relicCandDeque);
+	}
 	
 	Log(m_unique_name+" Relics to Write out: "+toString(m_data->writeOutRelics.size())+
 	                  ", muons to write out: "+toString(m_data->muonsToRec.size()),v_debug,m_verbose);
