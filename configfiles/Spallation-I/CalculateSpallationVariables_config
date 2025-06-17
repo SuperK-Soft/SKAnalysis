@@ -1,0 +1,5 @@
+relic_reader_name relic_reader
+muon_reader_name muon_reader
+outputfile_str spall_test.root
+
+run_type calculate

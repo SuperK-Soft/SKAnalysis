@@ -1,0 +1,5 @@
+verbosity 10
+FileListName myFileList_muon                                                  # required argument
+
+inputDirectory /disk03/lowe12/warwick/data/sk6/
+filePattern rfm_run*.match.root

@@ -88,3 +88,4 @@
 //#include "NTagAnalysis.h"
 //#include "MergeDipstickFiles.h"
 #include "GetSubTriggers.h"
+#include "CalculateSpallationVariables.h"
