@@ -1,8 +1,0 @@
-verbosity 10
-FileListName myFileList_relic                                                  # required argument
-
-useRegex 0
-
-inputDirectory /disk03/lowe12/warwick/data/sk6/
-filePattern rfm_run*.match.root
-

@@ -53,10 +53,10 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
   
   
   std::cout << "this neutron candidate has:" << std::endl;
+  std::cout << "skroot_lowe_.bsenergy: " << skroot_lowe_.bsenergy << std::endl;
   std::cout << "skroot_lowe_.bsgood[1]: " << skroot_lowe_.bsgood[1] << std::endl;
   std::cout << "skroot_lowe_.bsdirks: " << skroot_lowe_.bsdirks << std::endl;
   std::cout << "skroot_lowe_.bsn50: " << skroot_lowe_.bsn50 << std::endl;
-  std::cout << "skroot_lowe_.bsgood[1]: " << skroot_lowe_.bsgood[1] << std::endl; 
 
   // MuInfo* my_muinfo = new MuInfo();
   // tree_reader_ptr->Get("MU", my_muinfo);

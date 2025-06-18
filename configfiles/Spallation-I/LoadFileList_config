@@ -1,0 +1,7 @@
+verbosity 1
+FileListName myFileList                                                  # required argument
+
+#inputDirectory /disk03/lowe12/warwick/data/sk6/
+#filePattern rfm_run*.match.root
+#inputFile /disk02/usr6/moflaher/run870_apr/test_jacks.root
+inputFile /disk02/usr6/moflaher/run870_jun25/test_jacks.root

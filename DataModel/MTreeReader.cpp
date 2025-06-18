@@ -281,9 +281,11 @@ int MTreeReader::ParseBranches(){
 			branch_isobjectptr.emplace(branchname,false);
 			branch_isarray.emplace(branchname,false);
 			branch_istobject.emplace(branchname,false);
-			std::cout<<"Basic type branch "<<branchname<<", type "<<branch_types.at(branchname)
-			         <<", value pointer at "<<lf->GetValuePointer()<<", branch at "<<branch_pointers.at(branchname)
-			         <<", leaf at "<<leaf_pointers.at(branchname)<<std::endl;
+			if(verbosity){
+				std::cout<<"Basic type branch "<<branchname<<", type "<<branch_types.at(branchname)
+				         <<", value pointer at "<<lf->GetValuePointer()<<", branch at "<<branch_pointers.at(branchname)
+				         <<", leaf at "<<leaf_pointers.at(branchname)<<std::endl;
+			}
 		}
 	}
 	

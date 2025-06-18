@@ -147,18 +147,7 @@ cc      print *, 'set_timing_gate: ',it0sk,it0,id_start,id_end,od_start,od_end
 #include "sktq.h"
 
       integer it0, id_start, id_end, i
-      integer p0,p1,p2,p3,p4,p5
-      real tlowest, thighest
 
-      p0=0
-      p1=0
-      p2=0
-      p3=0
-      p4=0
-      p5=0
-      tlowest=999999999
-      thighest=-99999999
-      
 c*** For ID (moved from tqskz.F)
       if (nrunsk.lt.50791) then
          id_start =  1424 + it0 - it0sk
@@ -173,7 +162,7 @@ c*** For ID (moved from tqskz.F)
       ! convert to nsec since we don't have itiskz
       id_start = id_start/COUNT_PER_NSEC
       id_end = id_end/COUNT_PER_NSEC
-      print *, "gate: ",id_start," -> ",id_end
+c***  print *, "gate: ",id_start," -> ",id_end
 
       if (nqisk_raw.gt.0) then
 c*** clear iab(1:MAXPM) to choose only the earliest hits
@@ -186,36 +175,20 @@ c*** bad channel mask will be removed
          do i = 1, nqisk_raw
             !itiskz(i)  = itiskz_raw(i)   ! not available
             !iqiskz(i)  = iqiskz_raw(i)   ! not available
-            ! for processed files itiskz_raw is not available, but then
-            ! itiskz is also not normally populated, so this seems unneeded
+            ! for processed files itiskz_raw is not available, but itiskz
+            ! is not normally populated for such files anyway
             tiskz(i)   = tbuf_raw(i) -(it0-it0sk)/count_per_nsec ! ok
-            if(tiskz(i).lt.tlowest) tlowest = tiskz(i)
-            if(tiskz(i).gt.thighest) thighest = tiskz(i)
             qiskz(i)   = qbuf_raw(i) ! ok
             ICABIZ(i)  = iand(icabbf_raw(i), 2**16-1) ! ok
             IHTIFLZ(i) = ishft(icabbf_raw(i), -16) ! ok
             if (icabiz(i).ge.1.and.icabiz(i).le.MAXPM) then
                IHTIFLZ(i) = iand(IHTIFLZ(i),2**16-2) ! make 0bit = 0
-               p0 = p0+1
-	           if (iand(ihtiflz(i),2).eq.2) then
-	           		p1 = p1+1
-	           		if(iab(icabiz(i)).eq.0) then
-	           			p2 = p2+1
-	           			if(tbuf_raw(i).ge. id_start) then
-	           				p3 = p3+1
-	           				if(tbuf_raw(i).le.id_end) then
-	           					p4 = p4+1
-	           				endif
-	           			endif
-	           		endif
-	           endif
                if(iand(IHTIFLZ(i),2).eq.2 .and.
      $              iab(icabiz(i)).eq.0.and.
      $              tbuf_raw(i) .ge. id_start .and.   ! changed itiskz -> tbuf_raw
      $              tbuf_raw(i) .le. id_end) then     ! (tiskz is shifted by t0_sub)
 c***  In 1.3usec & in-gate
                   IHTIFLZ(i) = IHTIFLZ(i) + 1 ! 0bit
-                  p5 = p5+1
                   iab(icabiz(i)) = 1
                endif
                icabbf_raw(i) = ICABIZ(i) + (IHTIFLZ(i) * 2**16)
@@ -223,9 +196,7 @@ c***  In 1.3usec & in-gate
          enddo
       endif
 
-      print *, 'set_timing_gate_id: ',it0sk,it0,id_start,id_end
-      print *, 'tlowest,highest:',tlowest,thighest
-      print *,'passing hits:',p0,p1,p2,p3,p4,p5
+cc    print *, 'set_timing_gate_id: ',it0sk,it0,id_start,id_end
 
       return
       end

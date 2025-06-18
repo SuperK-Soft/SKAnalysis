@@ -8,13 +8,12 @@ readerName relic_reader
 
 #inputFile /disk03/lowe12/warwick/run870/test_matthew.root
 
-FileListName myFileList_relic
+FileListName myFileList
 
 treeName relic                                    # the name of the tree within the file
 #treeName data
 # max num input entries to process
 #maxEntries 1
-maxEntries -1
 skFile 0                                          # do not call SKREAD/SKRAWREAD - no need.
 
 SK_GEOMETRY 6

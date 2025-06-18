@@ -82,7 +82,7 @@ bool MuonSearch::Execute(){
 	// search for pairs of HE+OD within a 100ns window - consider these muons
 	for(int i = 0; i < ntrg; i++){                                                   // loop over triggers found
 		Log(m_unique_name+" trigger "+toString(i)+" is of type "
-		    +toString(swtrgtbl_.swtrgtype[i]),v_debug,m_verbose);
+		    +toString(swtrgtbl_.swtrgtype[i])+" at time "+toString(swtrgtbl_.swtrgt0ctr[i]),v_debug,m_verbose);
 		if(swtrgtbl_.swtrgtype[i] == 1){                                             // for each HE trigger...
 			Log(m_unique_name+" found HE trigger, looking for coincident OD trigger",v_debug,m_verbose);
 			for(int j = 0; j < ntrg; j++){                                           // loop over triggers again

@@ -1,5 +1,0 @@
-verbosity 1
-treeReaderName relicWriter
-deleteOutsideHits 0
-requireSaveFlag 1
-treeReaderName cstore

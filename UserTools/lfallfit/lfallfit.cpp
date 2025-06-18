@@ -25,7 +25,7 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	
 	// Get the Tool configuration variables
 	// ------------------------------------
-	m_variables.Get("verbosity",m_verbose);
+	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	m_variables.Get("readerName",readerName);
 	m_variables.Get("StepsToPerform",flag_skip);
 	m_variables.Get("checkEventType",checkEventType);
