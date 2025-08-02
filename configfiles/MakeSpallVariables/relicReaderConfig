@@ -9,3 +9,11 @@ skoptn 31,30,26,25
 skbadopt 23   # 55? we need to re-read with 0 for muons
 SK_GEOMETRY 6
 
+StartSkippedInputBranches
+#MatchedTimeDiff
+#MatchedOutEntryNums
+MatchedEvNums
+MatchedInEntryNums
+MatchedEntryHasAFT
+MatchedParticleE
+EndSkippedInputBranches

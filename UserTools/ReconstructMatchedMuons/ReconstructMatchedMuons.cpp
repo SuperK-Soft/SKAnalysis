@@ -82,6 +82,19 @@ bool ReconstructMatchedMuons::Initialise(std::string configfile, DataModel &data
 	relicTree->Branch("MatchedTimeDiff", &MatchedTimeDiff);
 	relicTree->Branch("MatchedParticleE", &MatchedParticleE);
 	
+	// copy over the UserInfo (RunInfo) from the input tree to both output trees
+	Log(m_unique_name+" copying UserInfo to output trees",v_debug,m_verbose);
+	TTree* rfmTree = rfmReader->GetTree();
+	// actually this may be a TChain, but the UserInfo is not in the TChain, we need to get a specific tree
+	if(rfmTree->InheritsFrom(TChain::Class())){
+		rfmTree = rfmTree->GetTree();
+	}
+	TList* tl = rfmTree->GetUserInfo();
+	muTree->GetCurrentFile()->cd();
+	for(int i=0; i<tl->GetEntries(); ++i){ muTree->GetUserInfo()->Add(tl->At(i)->Clone()); }
+	relicTree->GetCurrentFile()->cd();
+	for(int i=0; i<tl->GetEntries(); ++i){ relicTree->GetUserInfo()->Add(tl->At(i)->Clone()); }
+	
 	return true;
 }
 
@@ -133,6 +146,11 @@ bool ReconstructMatchedMuons::Finalise(){
 		WriteEventsOut(m_data->muonsToRec, muWriterLUN, EventType::Muon);
 		m_data->muonsToRec.clear();
 	}
+	// ensure things are written to file
+	TreeManager* muMgr = skroot_get_mgr(&muWriterLUN);
+	TTree* muTree = muMgr->GetOTree();
+	// call write on the file so both Trees get written
+	muTree->GetCurrentFile()->Write("",TObject::kOverwrite);
 	
 	Log(m_unique_name+" Wrote "+toString(relics_written)+" of "+toString(relics_to_write)
 	    +" relic events to file",v_warning,m_verbose);

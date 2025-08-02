@@ -48,7 +48,7 @@ class MTreeReader {
 			std::cerr<<"known branches: "<<branchnamestring<<std::endl;
 			return 0;
 		}
-		if(branch_isobjectptr.at(branchname)){
+		if(branch_isobjectptr.at(branchname) || branch_isobject.at(branchname)){
 			const T** tmp = reinterpret_cast<const T**>(branch_value_pointers.at(branchname));
 			pointer_in = *tmp;
 		} else {
@@ -270,14 +270,13 @@ class MTreeReader {
 	int ParseBranches();
 	int ParseBranchDims(std::string branchname);
 	int UpdateBranchPointer(std::string branchname);
-	int UpdateBranchPointers(bool all=false);
+	int UpdateBranchPointers();
 	
-	private:
+	protected:
 	
 	// variables
 	std::map<std::string,TBranch*> branch_pointers;  // branch name to TBranch*
 	std::map<std::string,bool> branch_istobject;     // branch inherits from TObject so has Clear method
-	std::map<std::string,TLeaf*> leaf_pointers;      // branch name to TLeaf*
 	std::map<std::string,std::string> branch_titles; // branch name to title (including type string)
 	std::map<std::string,intptr_t> branch_value_pointers; // branch name to pointer to value, cast to intptr_t
 	std::map<std::string,std::string> branch_types;  // branch name to string describing type - not good for arrays

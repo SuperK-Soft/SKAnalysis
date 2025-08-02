@@ -5,6 +5,7 @@
 #include "SK2p2MeV_mc.h"
 #include "SK2p2MeV_relic.h"
 #include "SK2p2MeV_t2k.h"
+#include "SK2p2MeV_merged.h"
 
 #include "type_name_as_string.h"
 
@@ -61,6 +62,8 @@ bool SK2p2MeV_ntag::Initialise(std::string configfile, DataModel &data){
 		get_ok = InitT2k();
 	} else if(derived_classname == "ambe"){
 		get_ok = InitAmBe();
+	} else if(derived_classname == "merged"){
+		get_ok = InitMerged();
 	} else {
 		Log(m_unique_name+" Unrecognised derived class "+derived_classname,v_error,m_verbose);
 		return false;
@@ -344,4 +347,30 @@ bool SK2p2MeV_ntag::InitAmBe(){
 	ntagger = the_ntagger;
 	
 	return get_ok;
+}
+
+// =============================
+// -----------------------------
+// =============================
+
+bool SK2p2MeV_ntag::InitMerged(){
+	
+	// make the tagger
+	std::cout<<"Constructing SK2p2MeV_merged"<<std::endl;
+	SK2p2MeV_merged* the_ntagger = new SK2p2MeV_merged(geopmt_.xyzpm);
+	std::cout<<"Constructed!"<<std::endl;
+	
+	// make output TTree
+	theOTree = the_ntagger->MakeOutputTree(isWIT);
+	
+	// get additional config variables
+	float AFTGate = 1000000.;
+	m_variables.Get("AFTGate",  AFTGate);
+	the_ntagger->SetAFTGate(AFTGate);
+	
+	the_ntagger->Initialise(myTreeReader);
+	
+	ntagger = the_ntagger;
+	
+	return true;
 }

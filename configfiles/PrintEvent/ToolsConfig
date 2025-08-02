@@ -2,7 +2,8 @@
 myTreeReader TreeReader configfiles/PrintEvent/TreeReaderConfig
 myPrintEvent PrintEvent configfiles/PrintEvent/PrintEventConfig
 mySLESearch SLESearch configfiles/PrintEvent/SLESearchConfig
-myPlotHitTimes PlotHitTimes configfiles/PrintEvent/PlotHitTimesConfig
+#myPlotHitTimes PlotHitTimes configfiles/PrintEvent/PlotHitTimesConfig
+#myMuonSearch MuonSearch configfiles/PrintEvent/MuonSearchConfig
 
 # test subtriggers can be reconstructed
-mySubToolChain SubToolChain configfiles/PrintEvent/SubToolChainConfig
+#mySubToolChain SubToolChain configfiles/PrintEvent/SubToolChainConfig

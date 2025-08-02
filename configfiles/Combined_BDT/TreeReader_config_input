@@ -1,5 +1,7 @@
-verbosity 10
+verbosity 1
 readerName reader_input
+FileListName MyFileList
+
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
 #inputFile $HOME/rfm_run074724.000001.root         # a full rfm data file, supported by NTag (no MC info though)
 #inputFile $HOME/skdetsim/skdetsimgd/outputs/skdetsimgd_r77597.root # skdetsim gd water neutron gun sims
@@ -26,14 +28,17 @@ readerName reader_input
 #inputFile /disk03/lowe12/warwick/mc/atmos/harada_test.root
 
 #inputFile /disk03/lowe12/warwick/mc/ibd/bdt_out/test.root
+#inputFile /disk02/usr6/moflaher/run870_jun25/test_jacks.root
+#inputFile /disk03/lowe12/warwick/data/sk6_new/spall_086721_match.root ## must stop at entry 532!!
+#inputFile /disk03/lowe12/warwick/trash2/test_jacks_086613.root
 
-treeName data                                     # the name of the tree within the file
+treeName relic                                     # the name of the tree within the file
 #treeName sksrn
-maxEntries -1                                     # max num input entries to process
+#maxEntries -1                                     # max num input entries to process
 #maxEntries 100
 skFile 1                                          # must populate common blocks to run lfallfit
 triggerMasks 28 29                                # only pass on SHE (28) and AFT (29) triggers
 SK_GEOMETRY 6
-skoptn 31,30,25                                   # add 26 to read bad ch from data file
-skbadchrun 85609                                  # reference run for SK6 from SKG4 template macro
-referenceWaterRun 85609                           # reference run for water transparency
+skoptn 31,30,25,26                                   # add 26 to read bad ch from data file
+#skbadchrun 85609                                  # reference run for SK6 from SKG4 template macro
+#referenceWaterRun 85609                           # reference run for water transparency

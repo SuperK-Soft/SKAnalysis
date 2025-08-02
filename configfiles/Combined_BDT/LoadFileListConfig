@@ -1,0 +1,12 @@
+verbosity 1
+FileListName MyFileList                                                  # required argument
+#outFile ./files_processed.txt                                            # save the generated set of files
+
+useRegex 0
+#fileList configfiles/Combined_BDT/list_of_files.txt
+maxFiles 2
+
+#sk6
+inputDirectory /disk03/lowe12/warwick/sk6_marcus/
+
+filePattern test_jacks*.root

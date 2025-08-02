@@ -34,7 +34,6 @@ bool MakeBDTOutputFile::Initialise(std::string configfile, DataModel &data){
   if (m_data->Trees.count("ntag_BDT_OutTree") == 0){throw std::runtime_error("MakeBDTOutputFile: couldn't get bdt tree");}
   reader_ntagbdt_ptr = m_data->Trees.at("ntag_BDT_OutTree");
   
-  std::string outfile_str = "";
   m_variables.Get("outfile", outfile_str);
   if (outfile_str.empty()){throw std::runtime_error("MakeBDTOutputFile: no output file specified!");}
 

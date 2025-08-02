@@ -96,6 +96,7 @@ class RelicMuonPlots: public Tool {
 	// for tracking rates:
 	int64_t lastmuticks=0;
 	int lastmu_nevsk=0;
+	int lastrelic_nevsk=0;
 	int64_t lastrelicticks=0;
 	
 	// for making spallation observables

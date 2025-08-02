@@ -42,6 +42,20 @@ bool LoadFileList::Initialise(std::string configfile, DataModel &data){
 	// set the files into the CStore
 	m_data->CStore.Set(FileListName, list_of_files);
 	
+	// mostly for debug, if given a file to write to, write out set of files
+	std::string outFile;
+	if(m_variables.Get("outFile",outFile)){
+		std::ofstream of(outFile);
+		if(!of.is_open()){
+			Log(m_unique_name+": Error! could not open output file '"+outFile+"'",v_error,m_verbose);
+		} else {
+			for(auto&& afile : list_of_files){
+				of << afile << "\n";
+			}
+			of.close();
+		}
+	}
+	
 	return true;
 }
 

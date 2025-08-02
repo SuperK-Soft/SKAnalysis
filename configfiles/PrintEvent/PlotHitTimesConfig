@@ -1,4 +1,4 @@
-verbosity 10
+verbosity 1
 treeReaderName demoReader
 outputfile subtrigger_hits.root
 useSLESearchTool 1

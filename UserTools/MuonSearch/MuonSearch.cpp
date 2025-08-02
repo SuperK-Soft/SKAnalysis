@@ -53,87 +53,93 @@ bool MuonSearch::Execute(){
 	}
 	*/
 	
-	// get trigger settings from file (why bother?)
-	int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
-	softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
-	
-	// disable all triggers except 1 (HE) and 3 (OD) by setting threshold to 100k and window size to 0
-	for(int i = 0; i < 32; i++){
-		if(i != 1 && i != 3){
-			ithr[i] = 100000;
-			it0_offset[i]=0;
-			ipret0[i]=0;
-			ipostt0[i]=0;
-		}
-	}
-	// pass to the software trigger algorithm
-	softtrg_set_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
-	
-	// call softtrg_inittrgtbl_ to populate the swtrgtbl_ common block.
-	int max_qb = 1280;
-	int one = 1;
-	int zero = 0;
-	int ntrg = softtrg_inittrgtbl_(&skhead_.nrunsk, &zero, &one, &max_qb);
-	
-	Log(m_unique_name+" found "+toString(ntrg)+" software triggers...",v_debug,m_verbose);
-	
+	// times of muons (HE+OD occurrances) in this event
 	std::vector<int> untaggedMuonTime;
+	bool prim_mu=false;
 	
-	// search for pairs of HE+OD within a 100ns window - consider these muons
-	for(int i = 0; i < ntrg; i++){                                                   // loop over triggers found
-		Log(m_unique_name+" trigger "+toString(i)+" is of type "
-		    +toString(swtrgtbl_.swtrgtype[i])+" at time "+toString(swtrgtbl_.swtrgt0ctr[i]),v_debug,m_verbose);
-		if(swtrgtbl_.swtrgtype[i] == 1){                                             // for each HE trigger...
-			Log(m_unique_name+" found HE trigger, looking for coincident OD trigger",v_debug,m_verbose);
-			for(int j = 0; j < ntrg; j++){                                           // loop over triggers again
-				Log("\t"+m_unique_name+" trigger "+toString(i)+" is of type "
-				    +toString(swtrgtbl_.swtrgtype[i]),v_debug,m_verbose);
-				if(swtrgtbl_.swtrgtype[j] == 3){                                     // looking for OD triggers...
-					Log(m_unique_name+" SHE+OD pair with Δt="                        // in time coincidence
-					    +toString(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i]),v_debug,m_verbose);
-					if(abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])< coincidence_threshold){
-						// swtrgt0ctr is t0_sub, so time from it0sk. We would need to add it0sk to get it0xsk.
-						untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
-					}
-				}
-			}
-		}
-	}
-	
-	// seems redundant, but we can also check the primary trigger
+	// check the primary trigger bits for HE+OD first, since we already have them
 	std::bitset<sizeof(int)*8> triggerID = skhead_.idtgsk;
 	if(triggerID.test(1) && triggerID.test(3)){
-		if(untaggedMuonTime.empty()){
-			// worrying if we did not find it...
-			Log(m_unique_name+" Warning! software trigger scan did not pick up primary muon event!",
-			    v_error,m_verbose);
-			Log(m_unique_name+" Trigger bits in this event were: "+GetTriggerNames(skhead_.idtgsk),
-			    v_error,m_verbose);
-			untaggedMuonTime.push_back(0);
-		} else {
-			// this is probably the first entry from our scan
-			if(std::abs(untaggedMuonTime.front()) > coincidence_threshold){
-				// time difference of >100ns from the primary trigger??
-				Log(m_unique_name+" Warning! software trigger scan first HE+OD event at "
-				   +toString(untaggedMuonTime.front())+" does not line up with primary trigger HE+OD event?"
-				   " (why was this not picked up by online trigger?)",v_warning,m_verbose);
-				// i guess we can scan for a more robust check...?
-				// see if another match lines up with the primary trigger
-				bool foundit=false;
-				for(auto&& atime : untaggedMuonTime){
-					if(std::abs(atime) < coincidence_threshold){
-						foundit=true;
-						Log(m_unique_name+" found match (Δt="+toString(std::abs(atime - skheadqb_.it0sk))
-						    +") in later subtrigger",v_warning,m_verbose);
-					}
-				}
-				// add it to our list i guess
-				if(!foundit) untaggedMuonTime.push_back(0);
+		untaggedMuonTime.push_back(0);
+		prim_mu=true;
+	}
+	
+	// FIXME - for now downstream toolchain can only pair a relic to one muon per event
+	// with 2Hz of muons and a -+60s matching window, it's probably sufficient just to match
+	// to any muon on the event...? So don't bother searching for more if we already have one
+	// TODO switch to config variable to optionally do this search anyway when we support >1 muon per relic
+	else {
+		
+		// get trigger settings from file (get those we're interested in - HE, OD thresholds for this run)
+		int idetector [32], ithr [32], it0_offset [32],ipret0 [32],ipostt0 [32];
+		softtrg_get_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
+		
+		// disable all triggers except 1 (HE) and 3 (OD) by setting threshold to 100k and window size to 0
+		for(int i = 0; i < 32; i++){
+			if(i != 1 && i != 3){
+				ithr[i] = 100000;
+				it0_offset[i]=0;
+				ipret0[i]=0;
+				ipostt0[i]=0;
 			}
 		}
-	} else if(!untaggedMuonTime.empty()){
-		// primary trigger says not a muon event, but we found one in subtriggers
-		Log(m_unique_name+": Untagged muon found!",v_debug,m_verbose);
+		// pass to the software trigger algorithm
+		softtrg_set_cond_(idetector,ithr,it0_offset,ipret0,ipostt0);
+		
+		// call softtrg_inittrgtbl_ to populate the swtrgtbl_ common block.
+		int max_qb = 1280;
+		int one = 1;
+		int zero = 0;
+		int ntrg = softtrg_inittrgtbl_(&skhead_.nrunsk, &zero, &one, &max_qb);
+		
+		Log(m_unique_name+" found "+toString(ntrg)+" software triggers...",v_debug,m_verbose);
+		
+		// search for pairs of HE+OD within a 100ns window - consider these muons
+		int untagged_count=0;
+		bool found_prim=false;
+		for(int i = 0; i < ntrg; i++){                                                   // loop over triggers found
+			Log(m_unique_name+" trigger "+toString(i)+" is of type "
+			    +toString(swtrgtbl_.swtrgtype[i])+" at time "+toString(swtrgtbl_.swtrgt0ctr[i]),v_debug,m_verbose);
+			if(swtrgtbl_.swtrgtype[i] == 1){                                             // for each HE trigger...
+				Log(m_unique_name+" found HE trigger, looking for coincident OD trigger",v_debug,m_verbose);
+				for(int j = 0; j < ntrg; j++){                                           // loop over triggers again
+					Log("\t"+m_unique_name+" trigger "+toString(i)+" is of type "
+					    +toString(swtrgtbl_.swtrgtype[i]),v_debug,m_verbose);
+					if(swtrgtbl_.swtrgtype[j] == 3){                                     // looking for OD triggers...
+						Log(m_unique_name+" SHE+OD pair with Δt="                        // in time coincidence
+						    +toString(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i]),v_debug,m_verbose);
+						if(std::abs(swtrgtbl_.swtrgt0ctr[j] - swtrgtbl_.swtrgt0ctr[i])< coincidence_threshold){
+							// skip it if this is the primary trigger
+							// assumes primary trigger time is matched to SHE time not OD time...?
+							if( prim_mu && (swtrgtbl_.swtrgt0ctr[i]< coincidence_threshold) ){
+								found_prim=true;
+							} else {
+								// n.b. swtrgt0ctr is t0_sub, so time from it0sk. We would need to add it0sk to get it0xsk.
+								untaggedMuonTime.push_back(swtrgtbl_.swtrgt0ctr[i]);
+								++untagged_count;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		// if the primary trigger had HE+OD bits set, we would expect to have found the primary trigger in our scan
+		if(prim_mu && !found_prim){
+			// is 100ns a tighter window than used by the normal trigger algorithm perhaps?
+			// we haven't accounted for trigger offsets either...
+			Log(m_unique_name+" Warning! software trigger scan did not pick up primary muon event!",
+			    v_error,m_verbose);
+			//Log(m_unique_name+" Trigger bits in this event were: "+GetTriggerNames(skhead_.idtgsk),
+			//    v_error,m_verbose);
+		}
+		
+		if(untagged_count!=0){
+			// primary trigger says not a muon event, but we found one in subtriggers
+			Log(m_unique_name+": "+std::to_string(untagged_count)+" Untagged muons found!",v_debug,m_verbose);
+		}
+		
 	}
 	
 	// if we found any muons

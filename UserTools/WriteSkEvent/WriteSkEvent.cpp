@@ -12,6 +12,11 @@ bool WriteSkEvent::Initialise(std::string configfile, DataModel &data){
 	m_log= m_data->Log;
 	if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
 	get_ok = m_variables.Get("treeReaderName", treeReaderName);
+	if(!get_ok){
+		Log(m_unique_name+" Error! No treeReaderName given!",v_error,m_verbose);
+		m_data->vars.Set("StopLoop",1); // fatal error
+		return false;
+	}
 	m_variables.Get("deleteOutsideHits", delete_outside_hits);
 	m_variables.Get("requireSaveFlag", require_save_flag);
 	
@@ -58,13 +63,12 @@ bool WriteSkEvent::Execute(){
 	if(treeReaderName=="cstore"){
 		LUN=0;
 		get_ok = m_data->vars.Get("WriteSkEventLUN", LUN);
-		if(!get_ok){
+		if(!get_ok || LUN==0){
 			Log(m_unique_name+" Error! TreeReaderName given was 'cstore', but no 'WriteSkEventFile' "
 			    "in m_data->vars!",v_error,m_verbose);
 			m_data->vars.Set("StopLoop",1); // fatal error
 			return false;
 		}
-		
 	}
 	
 	// remove hits outside 1.3 microsec window from primary trigger

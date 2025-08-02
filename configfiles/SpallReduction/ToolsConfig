@@ -16,11 +16,17 @@ relicCutRecorder CutRecorder configfiles/SpallReduction/relicCutRecorderConfig
 # also sets the save flag for AFT triggers
 DataQualityCuts DataQualityCuts configfiles/SpallReduction/DataQualityCutsConfig
 
-# identify AFT triggers, mark them for saving and set the appropriate output tree to save to
-# depending on whether the preceding event contained a muon (HE+OD trigger)
+# identify AFT triggers
+# previously this was used with WriteSkEvent Tool and would flag the AFT entry for writing,
+# as well as setting the output tree based on whether the preceding event was a relic or muon candidate.
+# Later the WriteSkEvent tool was replaced by the ReconstructMatchedMuons, as we buffer events while matching
+# and then write them all out in a loop. Now all this Tool does is use the AFT trigger bits
+# to set the CStore 'EventType' flag.
 FlagAFTs FlagAFTs configfiles/SpallReduction/FlagAFTsConfig
 
 # apply software trigger to search for HE+OD events within 100ns, and flag such events as containing a muon
+# for now this is only done when those bits aren't both set in the primary event, i.e. locating
+# 'untagged' muons in other trigger types. For the moment this only records at most one muon per event.
 MuonSearch MuonSearch configfiles/SpallReduction/MuSearchConfig
 
 # pre-reconstruction lowe event cuts for events without a moun

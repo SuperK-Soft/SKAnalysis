@@ -10,8 +10,8 @@ FileListName MyFileList
 
 #firstEntry 33000 # relic at 33162
 #firstEntry 7271  # relic at 7571
-#firstEntry 13475403
-#maxEntries 10000                       # max num input entries to process
+#firstEntry 10715
+#maxEntries 3                       # max num input entries to process
 
 treeName data
 readerName spallReader

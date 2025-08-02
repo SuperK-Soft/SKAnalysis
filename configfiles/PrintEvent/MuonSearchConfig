@@ -1,0 +1,2 @@
+verbosity 10
+coincidence_threshold 100    # [ns]

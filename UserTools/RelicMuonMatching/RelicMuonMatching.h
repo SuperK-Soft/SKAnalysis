@@ -41,15 +41,18 @@ class RelicMuonMatching: public Tool {
 	int num_rollovers=0;
 	double match_window = 60; // [seconds]
 	int64_t match_window_ticks;
+	bool check_in_60s=true;
 	
 	bool relicsToRemove=false;
 	bool muonsToRemove=false;
 	
 	int32_t lastnevhwsk, lastit0sk, last_rollover_nevsk;
-	int64_t lasteventticks, lastmuticks, lastrelicticks;
+	int64_t firsteventticks, lasteventticks, lastmuticks, lastrelicticks;
 	
 	int nextmuentry=0;
 	int nextrelicentry=0;
+	
+	int64_t lastrelicticksdiff=0;
 	
 	uint64_t muoncount=0;
 	uint64_t reliccount=0;

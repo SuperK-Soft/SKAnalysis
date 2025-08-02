@@ -60,6 +60,9 @@ bool RelicMuonMatching::Initialise(std::string configfile, DataModel &data){
 		hb.SaveHists(false);
 	}
 	
+	// get time of first event
+	m_data->CStore.Get("firsteventticks",firsteventticks);
+	
 	return true;
 }
 
@@ -68,7 +71,7 @@ bool RelicMuonMatching::Execute(){
 	
 	if(skhead_.nsubsk != currentSubRun){
 		currentSubRun = skhead_.nsubsk;
-		std::cout << "Subrun number:            " << skhead_.nsubsk << std::endl;
+		//std::cout << "Subrun number:            " << skhead_.nsubsk << std::endl;
 	}
 	
 	// if the toolchain made it here, the current rfm file entry is either a muon, a relic candidate,
@@ -102,10 +105,8 @@ bool RelicMuonMatching::Execute(){
 	if(skhead_.idtgsk & (1<<29)){
 		std::deque<ParticleCand>* thedeque=nullptr;
 		if(lastEventType==EventType::Muon){
-			Log(m_unique_name+" found AFT after muon",v_debug,m_verbose);
 			thedeque = &m_data->muonCandDeque;
 		} else if(lastEventType==EventType::LowE){
-			Log(m_unique_name+" found AFT after relic",v_debug,m_verbose);
 			thedeque = &m_data->relicCandDeque;
 		}
 		if(thedeque!=nullptr && thedeque->size() && thedeque->back().EventNumber==(skhead_.nevsk-1)){
@@ -138,24 +139,75 @@ bool RelicMuonMatching::Execute(){
 		m_data->vars.Set("StopLoop",1);
 		return false;
 	}
+	
+	// for every relic we need to scan -+60s for muons.
+	// But for relics within 60s of the start of the first file or end of the last file, we do not have access to that data.
+	// relics in the last 60s of the last file may be missing some following muons, but pairs where the muon
+	// follows the relic are just for reference accidental distributions - losing a few such paired muons is fine.
+	// but relics within the first 60s of the first file may be missing some preceding muons, which may result in that
+	// relic candidate falsely passing the spallation cut, polluting the relic sample.
+	// To account for this, we skip relic candidates within the first 60s of the analysed dataset.
+	// This may lose us some stats (which we could feasibly recouperate by passing the last 60s of the previous run to this run's job)
+	// but for now we'll leave that as TODO, as the resulting check is trickier...
+	
+	// get timestamp of this event
+	//int64_t thiseventticks = ((skheadqb_.nevhwsk & ~0x1FFFF) << 15) + (int64_t(skheadqb_.it0sk) & 0xFFFFFFFF); // doesn't work?
+	uint64_t thiseventticks = (skheadqb_.nevhwsk & ~0x1FFFF);
+	thiseventticks = thiseventticks << 15;
+	uint64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
+	thiseventticks += iticks;
+	
+	if(check_in_60s && eventType==EventType::LowE){
+		// calculate time since the first event in this run
+		int64_t ticksDiff;
+		// thisevent should always be later than previous events; if not, a rollover happened
+		// note first event is not at 0 ticks, so we may have rollover before first lowe candidate
+		if(thiseventticks < firsteventticks){
+			// n.b. it's only a 48 bit counter, rollover is not at full 64-bit
+			ticksDiff = (int64_t(1) << 47) - firsteventticks + thiseventticks;
+			last_rollover_nevsk = skhead_.nevsk;
+			++num_rollovers;
+		} else {
+			ticksDiff = (thiseventticks - firsteventticks);
+		}
+		double secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+		if(secs_since_last<60){
+			return true;
+		} else {
+			check_in_60s=false;
+		}
+	}
+	
 	if(eventType==EventType::LowE) ++reliccount;
 	if(eventType==EventType::Muon) ++muoncount;
 	
 	// *************************** //
 	// *** START SANITY CHECKS *** //
 	// *************************** //
-	
-	// sanity check; calculate time since last readout
-	//int64_t thiseventticks = ((skheadqb_.nevhwsk & ~0x1FFFF) << 15) + (int64_t(skheadqb_.it0sk) & 0xFFFFFFFF); // doesn't work?
-	int64_t thiseventticks = (skheadqb_.nevhwsk & ~0x1FFFF);
-	thiseventticks = thiseventticks << 15;
-	int64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
-	//std::cout<<"upticks:   "<<std::bitset<64>(thiseventticks)<<"\nlowticks:  "<<std::bitset<64>(iticks & 0xFFFFFFFF)<<std::endl;
-	thiseventticks += iticks & 0xFFFFFFFF;
+	if(thiseventticks < lasteventticks) ++num_rollovers;
+	/*
+	{
+	int64_t ticksDiff;
+	if(thiseventticks < lasteventticks){
+		ticksDiff = (int64_t(1) << 47) - lasteventticks + thiseventticks;
+		std::cerr<<"!!! ROLLOVER "<<num_rollovers<<" !!! at "<<skhead_.nevsk<<"\n\tthis evt nevhwsk: "<<skheadqb_.nevhwsk<<", it0sk: "
+		         <<(skheadqb_.it0sk & 0xFFFFFFFF)<<", total ticks: "<<thiseventticks<<"\n\tlast evt nevhwsk: "
+		         <<lastnevhwsk<<", it0sk: "<<(lastit0sk & 0xFFFFFFFF)<<", total ticks: "<<lasteventticks<<"\n\tdiff: "<<ticksDiff;
+		std::cerr<<"\n\tevts since last rollover: "<<(skhead_.nevsk-last_rollover_nevsk)<<std::endl;
+		last_rollover_nevsk = skhead_.nevsk;
+		//++num_rollovers; done above, as we write it to file.
+		double secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+		std::cout<<m_unique_name<<" secs to last event: "<<secs_since_last<<std::endl;
+	} else {
+		ticksDiff = (thiseventticks - lasteventticks);
+	}
 	//std::cout<<"thisticks: "<<std::bitset<64>(thiseventticks)<<std::endl;
-	//std::cout<<"lastticks: "<<std::bitset<64>(lasteventticks)<<std::endl;
-	int64_t ticksDiff = (thiseventticks - lasteventticks);
 	//std::cout<<"diffticks: "<<std::bitset<64>(ticksDiff)<<std::endl;
+	//std::cout<<"lastticks: "<<std::bitset<64>(lasteventticks)<<std::endl;
+	//double secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+	//std::cout<<m_unique_name<<" secs to last event: "<<secs_since_last<<std::endl;
+	}
+	*/
 	
 	/*
 	// insanity check -- doesn't trigger, we're good.
@@ -170,23 +222,6 @@ bool RelicMuonMatching::Execute(){
 	}
 	*/
 	
-	//if(skheadqb_.nevhwsk < lastnevhwsk){
-	//	std::cout<<"nevhwsk rollover at event "<<skhead_.nevsk<<std::endl;
-	//}
-	//if(skheadqb_.it0sk < lastit0sk){
-	//	std::cout<<"it0sk rollover at event "<<skhead_.nevsk<<std::endl;
-	//}
-	
-	if(ticksDiff<0){
-		++num_rollovers;
-		std::cerr<<"!!! ROLLOVER !!! at "<<skhead_.nevsk<<"\n\tthis evt nevhwsk: "<<skheadqb_.nevhwsk<<", it0sk: "<<skheadqb_.it0sk
-			     <<", total ticks: "<<thiseventticks<<"\n\tlast evt nevhwsk: "<<lastnevhwsk<<", it0sk: "<<lastit0sk
-			     <<", total ticks: "<<lasteventticks<<"\n\tdiff: "<<ticksDiff;
-			ticksDiff += (int64_t(1) << 47);
-		std::cerr<<", corrected ticks diff: "<<ticksDiff
-			     <<"\n\tevts since last rollover: "<<(skhead_.nevsk-last_rollover_nevsk)<<std::endl;
-		last_rollover_nevsk = skhead_.nevsk;
-	}
 	/*
 	// as commented below, this sometimes triggers but the ticks difference is the same
 	if((tdiff_ns-double(ticksDiff/COUNT_PER_NSEC)>10)){
@@ -195,36 +230,7 @@ bool RelicMuonMatching::Execute(){
 		std::cerr<<"***TDIFF ERROR: "<<bitsdiff<<" vs ref: "<<bitsdiff2<<std::endl;
 	}
 	*/
-	double secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
-	//std::cout<<m_unique_name<<" secs to last event: "<<secs_since_last<<std::endl;
 	
-	if(!distros_file.empty()){
-		if(eventType==EventType::Muon){
-			ticksDiff = (thiseventticks - lastmuticks);
-			if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
-			secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
-			hb.Fill("mu_to_mu_secs", secs_since_last);
-			lastmuticks = thiseventticks;
-			
-			ticksDiff = (thiseventticks - lastrelicticks);
-			if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
-			secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
-			hb.Fill("mu_to_relic_secs", secs_since_last);
-			
-		} else if(eventType==EventType::LowE){
-			ticksDiff = (thiseventticks - lastrelicticks);
-			if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
-			secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
-			hb.Fill("relic_to_relic_secs", secs_since_last);
-			lastrelicticks = thiseventticks;
-			
-			ticksDiff = (thiseventticks - lastmuticks);
-			if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
-			secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
-			hb.Fill("relic_to_mu_secs", secs_since_last);
-			
-		}
-	}
 	lastnevhwsk = skheadqb_.nevhwsk;
 	lastit0sk = skheadqb_.it0sk;
 	lasteventticks = thiseventticks;
@@ -232,6 +238,68 @@ bool RelicMuonMatching::Execute(){
 	// ************************* //
 	// *** END SANITY CHECKS *** //
 	// ************************* //
+	
+	// this isn't of much use in some ways; these don't get updated and we don't have all the matches yet
+	// so the distros are incomplete - just generate them afterwards with RelicMuonPlots
+	// if you DO look at these, each TTree branch has a different number of entries, so use
+	// int n_to_plot = tree->GetBranch("whatever")->GetEntries();
+	// tree->Draw("whatever","Entry$<n_to_plot");
+	if(!distros_file.empty()){
+		int64_t ticksDiff;
+		double secs_since_last;
+		if(eventType==EventType::Muon){
+			// can't calculate time since last if this is the first
+			if(lastmuticks!=0){
+				ticksDiff = (thiseventticks - lastmuticks);
+				if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
+				secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+				hb.Fill("mu_to_mu_secs", secs_since_last);
+				if(secs_since_last>3000){
+					std::cerr<<"!!!! ERROR: MU TIME TO LAST MU > 3000: THIS MU AT "<<thiseventticks<<", last: "<<lastmuticks
+					         <<" tick diff: "<<ticksDiff<<", secs "<<secs_since_last<<std::endl;
+					exit(-1);
+					m_data->vars.Set("StopLoop",1);
+				}
+			}
+			lastmuticks = thiseventticks;
+			
+			if(lastrelicticks!=0){
+				ticksDiff = (thiseventticks - lastrelicticks);
+				if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
+				secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+				hb.Fill("mu_to_relic_secs", secs_since_last);
+			}
+			
+		} else if(eventType==EventType::LowE){
+			if(lastrelicticks!=0){
+				ticksDiff = (thiseventticks - lastrelicticks);
+				if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
+				if(ticksDiff==lastrelicticksdiff){
+					std::cerr<<"!!! ERROR: REPEEEEAT!"<<std::endl;
+					m_data->vars.Set("StopLoop",1);
+					exit(-1);
+				}
+				lastrelicticksdiff=ticksDiff;
+				secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+				hb.Fill("relic_to_relic_secs", secs_since_last);
+			}
+			lastrelicticks = thiseventticks;
+			
+			if(lastmuticks!=0){
+				ticksDiff = (thiseventticks - lastmuticks);
+				if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
+				secs_since_last = double(ticksDiff/COUNT_PER_NSEC)/1.E9;
+				hb.Fill("relic_to_mu_secs", secs_since_last);
+				if(secs_since_last>120){
+					std::cerr<<"!!! ERROR: RELIC TO MU: "<<secs_since_last<<" SECS; RELIC AT "<<thiseventticks
+					         <<", MU AT "<<lastmuticks<<", ticksdiff: "<<ticksDiff<<std::endl;
+					exit(-1);
+					m_data->vars.Set("StopLoop",1);
+				}
+			}
+			
+		}
+	}
 	
 	
 	// for long-scale times we have a 47-bit clock that runs at 1.92 ticks per ns (#defined as COUNT_PER_NSEC)
@@ -256,6 +324,7 @@ bool RelicMuonMatching::Execute(){
 		// will be filled with 1's not 0's, so converting it to a 64-bit number
 		// can result in the insertion of 1's in the upper 32 bits, which then screw up the result.
 		// in c++ we can just interpret it as uint so it fills with 0's!
+		// so either mask the upper 32 bits, or in c++, interpret as unsigned
 		currentTicks += *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
 		
 		Log(m_unique_name+" !!!NEW RELIC!!!",v_warning,m_verbose);

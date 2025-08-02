@@ -1,16 +1,20 @@
 verbosity 1
 FileListName MyFileList                                                  # required argument
+#outFile ./files_processed.txt                                            # save the generated set of files
 
 useRegex 0
-fileList configfiles/SpallReduction/list_of_files.txt
-#maxFiles
+#fileList configfiles/SpallReduction/list_of_files.txt
+#fileList configfiles/SpallReduction/segtest.txt
+#maxFiles 200
 
 #sk6
+inputDirectory /disk02/data7/sk6/run/
 #inputDirectory /disk02/data7/sk6/run/0868/   # ok
 #inputDirectory /disk02/data7/sk6/run/0869/   # bad run according to jack
 #inputDirectory /disk02/data7/sk6/run/0870
 #inputDirectory /disk02/data7/sk6/run/0871    # segfault when loading all files, but fixed number ok?
 #inputDirectory /disk02/data7/sk6/run/0872
+#inputDirectory /disk02/data7/sk6/run/0867/086721/
 
 #sk7
 #inputDirectory /disk02/data7/sk7/run/0901/
@@ -18,6 +22,7 @@ fileList configfiles/SpallReduction/list_of_files.txt
 #inputDirectory /disk03/lowe10/sk7/rfm/0912/   # whats the difference to above?
 
 #filePattern rfm_run*.root
+filePattern *.root
 
 #inputDirectory /disk02/usr7/jfannon/data/recon
 #inputDirectory /disk02/data7/sk6/run/0869/086933                         # BAD RUN AVOID FOR NOW

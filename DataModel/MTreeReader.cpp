@@ -18,6 +18,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm> // std::find
+#include <cassert>
 
 #include "Algorithms.h"  // CheckPath
 
@@ -26,8 +27,29 @@ bool Notifier::Notify(){
 	//treeReader->GetTree()->Show();
 	treeReader->GetTree()->GetTree()->GetEntry(0);
 	//treeReader->GetTree()->Show();
-	//return treeReader->UpdateBranchPointers(true);  // not sufficient!
-	return treeReader->ParseBranches();               // probably overkill - TODO happy medium
+	return treeReader->UpdateBranchPointers();          // maybe now sufficient
+	
+	/*
+	// validation check
+	auto branches = treeReader->branch_pointers;
+	treeReader->ParseBranches();               // probably overkill
+	bool die=false;
+	for(auto&& abranch : treeReader->branch_pointers){
+		if(branches.count(abranch.first) && branches.at(abranch.first)!=abranch.second){
+			std::cerr<<"!!! UpdateBranchPointers error!!!"<<std::endl;
+			std::cerr<<"branch "<<abranch.first<<" at "<<branches.at(abranch.first)
+			         <<" after UpdateBranchPointers does not match "<<abranch.second
+			         <<" after ParseBranches!!"<<std::endl;
+			die=true;
+		}
+	}
+	if(die){
+		exit(-1);
+		assert(false);
+		return false;
+	}
+	return true;
+	*/
 }
 
 // TODO constructor/loader for tchains or tree pointers
@@ -176,7 +198,6 @@ int MTreeReader::ParseBranches(){
 	
 	branch_pointers.clear();
 	branch_istobject.clear();
-	leaf_pointers.clear();
 	branch_titles.clear();
 	branch_value_pointers.clear();
 	branch_types.clear();
@@ -186,27 +207,31 @@ int MTreeReader::ParseBranches(){
 	branch_dimensions.clear();
 	branch_dims_cache.clear();
 	
-	if(verbosity) std::cout<<name<<" updating branch addresses"<<std::endl;
+	if(verbosity) std::cout<<name<<" parsing branch addresses"<<std::endl;
 	//for(int i=0; i<thetree->GetListOfLeaves()->GetEntriesFast(); ++i){
 	for(int i=0; i<thetree->GetListOfBranches()->GetEntriesFast(); ++i){
+		
 		//TLeaf* lf=(TLeaf*)thetree->GetListOfLeaves()->At(i);
-		TBranch* br=(TBranch*)thetree->GetListOfBranches()->At(i);
 		// trying to work around splitting of branches here, so that we parse
 		// the list of branches, but without processing branches that represent
 		// members of a split class. In a split branch, the branch from
 		// 'TTree->GetListOfBranches()' has itself 'TBranch->GetListOfBranches > 0'
 		// whereas non-split branches have ==0. But, both seem to have
 		// 'TBranch->GetListOfLeaves()==1'. .. are we safe to assume always 1?
+		TBranch* br=(TBranch*)thetree->GetListOfBranches()->At(i);
 		TLeaf* lf = (TLeaf*)br->GetListOfLeaves()->At(0);
 		std::string branchname = lf->GetName();
-		leaf_pointers.emplace(branchname,lf);
-		branch_pointers.emplace(branchname,lf->GetBranch());
+		bool enabled=thetree->GetBranchStatus(branchname.c_str());
+		if(verbosity) std::cout<<"branch "<<branchname<<" status "<<enabled<<std::endl;
+		if(!enabled) continue; // don't note disabled branches
+		
+		branch_pointers.emplace(branchname,br); // br is equitvalent to lf->GetBranch()
 		// the following is fine for objects, primitives or containers
 		// but only returns the primitive type for c-style arrays
 		branch_types.emplace(branchname,lf->GetTypeName());
 		// the branch title includes dimensionality for c-style arrays
 		// e.g. "mybranchname     int[nparts][3]/F"
-		std::string branchtitle=lf->GetBranch()->GetTitle();
+		std::string branchtitle=br->GetTitle();
 		branch_titles.emplace(branchname,branchtitle);
 		
 		// handle object pointers
@@ -214,8 +239,15 @@ int MTreeReader::ParseBranches(){
 			// could be TObjects, or could be stl containers
 			// is intptr_t any better than (void*)? probably not.
 			// note that 'lf->GetValuePointer()' returns 0 for objects!
-			TBranchElement* bev = (TBranchElement*)lf->GetBranch();
-			intptr_t objpp=reinterpret_cast<intptr_t>(bev->GetObject());
+			TBranchElement* bev = (TBranchElement*)br;
+			//intptr_t objp=reinterpret_cast<intptr_t>(bev->GetObject());
+			//branch_value_pointers.emplace(branchname,objp);
+			intptr_t objpp = reinterpret_cast<intptr_t>(bev->GetAddress());
+			//std::cout<<"branch at "<<br<<", branchelement at "<<bev
+			//         <<", object "<<(void*)bev->GetObject()<<" and address "
+			//         <<(void*)bev->GetAddress()<<std::endl;
+			void** vpp=(void**)bev->GetAddress();
+			//std::cout<<"GetAddress points to "<<*vpp<<std::endl;
 			branch_value_pointers.emplace(branchname,objpp);
 			branch_isobject.emplace(branchname,true);
 			branch_isobjectptr.emplace(branchname,false);
@@ -245,10 +277,13 @@ int MTreeReader::ParseBranches(){
 			// pointer to the object directly, but is not a method for TBranchObjects)
 			// The handling of TClonesArrays is the same; although they identify as TBranchElements,
 			// TBranchElement::GetObject returns nullptr
-			void** ptrptr=reinterpret_cast<void**>(lf->GetValuePointer());
-			//intptr_t objpp = reinterpret_cast<intptr_t>(*ptrptr);
-			// don't dereference it: it seems like this can change from entry to entry!
-			intptr_t objpp = reinterpret_cast<intptr_t>(ptrptr);
+			
+			//void** ptrptr=reinterpret_cast<void**>(lf->GetValuePointer());
+			//intptr_t objp = reinterpret_cast<intptr_t>(*ptrptr);
+			// actually don't dereference it: it seems like this can change from entry to entry!
+			intptr_t objpp = reinterpret_cast<intptr_t>(lf->GetValuePointer());
+			//std::cout<<"branch at "<<br<<" (from leaf: "<<(void*)lf->GetBranch()
+			//         <<"), value pointer at "<<(void*)objpp<<std::endl;
 			// n.b. we can use TClonesArray->GetClass()->GetName() to get the class name of held elements
 			branch_value_pointers.emplace(branchname,objpp);
 			branch_isobject.emplace(branchname,false);
@@ -284,7 +319,7 @@ int MTreeReader::ParseBranches(){
 			if(verbosity){
 				std::cout<<"Basic type branch "<<branchname<<", type "<<branch_types.at(branchname)
 				         <<", value pointer at "<<lf->GetValuePointer()<<", branch at "<<branch_pointers.at(branchname)
-				         <<", leaf at "<<leaf_pointers.at(branchname)<<std::endl;
+				         <<", leaf at "<<lf<<std::endl;
 			}
 		}
 	}
@@ -306,43 +341,51 @@ int MTreeReader::ParseBranches(){
 }
 
 int MTreeReader::UpdateBranchPointer(std::string branchname){
-	if(leaf_pointers.count(branchname)==0) return 0;
-	TLeaf* lf = leaf_pointers.at(branchname);
+	//std::cout<<"updating branch pointer for "<<branchname<<std::endl;
+	if(branch_pointers.count(branchname)==0) return 0;
+	TBranch* br = thetree->GetBranch(branchname.c_str()); // these do change on file change
+	branch_pointers[branchname]=br; // we use these for some functions so keep them updated
+	TLeaf* lf = (TLeaf*)br->GetListOfLeaves()->At(0); // these also change
+	//std::cout<<"branch from tree at "<<br<<", leaf at "<<lf<<std::endl;
 	intptr_t objpp;
 	if(branch_isobject.at(branchname)){
 		// for objects TLeaf::GetValuePointer returns a pointer to a pointer
 		// to the held object. We can remove the additional level of indirection
 		// by calling TBranchElement::GetObject instead
-		TBranchElement* bev = (TBranchElement*)lf->GetBranch();
-		objpp=reinterpret_cast<intptr_t>(bev->GetObject());
+		TBranchElement* bev = (TBranchElement*)br;
+		void** vpp=(void**)bev->GetAddress();
+		//objpp=reinterpret_cast<intptr_t>(bev->GetObject()); // object pointer
+		objpp=reinterpret_cast<intptr_t>(bev->GetAddress());   // pointer to object pointer
+		//std::cout<<"branch isobject so objpp set to GetAddress "<<vpp<<std::endl;
 	} else if(branch_isobjectptr.at(branchname)){
 		// for some classes such as TClonesArrays and TVector3s,
 		// TLeafElement::GetValuePointer returns a pointer to a pointer,
 		// but the parent branch is a TBranchObject not TBranchElement
 		// and does not support a GetObject method.
 		// In such cases we need to do the additional dereference ourselves
-		void** ptrptr=reinterpret_cast<void**>(lf->GetValuePointer());
-		objpp = reinterpret_cast<intptr_t>(*ptrptr);
+		// (this is done in GetBranchValue as the pointed-to address may vary entry by entry)
+		objpp = reinterpret_cast<intptr_t>(lf->GetValuePointer());
+		//std::cout<<"branch isobjecptr so objpp set to GetValuePointer "<<(void*)(objpp)<<std::endl;
 	} else {
 		// for simple types TLeaf::GetValuePointer returns
 		// a pointer to the object itself.
 		objpp=reinterpret_cast<intptr_t>(lf->GetValuePointer());
+		//std::cout<<"branch is simple so branch set to GetValuePointer "<<(void*)(objpp)<<std::endl;
 	}
 	branch_value_pointers.at(branchname)=objpp;
 	return 1;
 }
 
-int MTreeReader::UpdateBranchPointers(bool all){
-	// dynamic arrays and/or objects may move when switching files in a TChain
+int MTreeReader::UpdateBranchPointers(){
+	// dynamic arrays and/or objects may move when switching files in a TChain...
+	// ahh apparently integers may do too when switching files!? i dunno man...
 	for(auto&& abranch : branch_isarray){
-		if(all || abranch.second){
-			// fixed sized arrays won't need to be reallocated
-			// so only update pointers if we don't have a cached (constant) size
-			if(all || branch_dims_cache.count(abranch.first)==0){
-				int ok = UpdateBranchPointer(abranch.first);
-				if(not ok) return ok;
-			}
-		}
+		std::string bname = abranch.first;
+		//if( (abranch.second && branch_dims_cache.count(bname)==0)
+		//    || branch_isobject.at(bname) || branch_isobjectptr.at(bname)){
+			int ok = UpdateBranchPointer(bname);
+			if(not ok) return ok;
+		//}
 	}
 	return 1;
 }

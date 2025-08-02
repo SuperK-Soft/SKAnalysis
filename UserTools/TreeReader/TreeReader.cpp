@@ -291,15 +291,18 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 					}
 				}
 				
+				/*
 				// lastly, the TreeManager attempts to read data from a standard set of branches,
 				// and segfaults if they don't exist... SO let's explicitly disable everything standard
-				// if it's not actually present
+				// if it's not actually present ...
+				// i dunno if this seeemed to work at the time, but i'm not sure it can do anything
 				for(auto&& abranch : default_branches){
 					if(std::find(present_branches.begin(), present_branches.end(), abranch)==present_branches.end()){
 						Log(m_unique_name+": disabling absent input branch "+abranch,v_debug,m_verbose);
 						skroot_zero_branch_(&LUN, &io_dir, abranch.c_str(), abranch.size());
 					}
 				}
+				*/
 				
 				Log(m_unique_name+": done disabling unused branches",v_debug,m_verbose);
 			}
@@ -355,6 +358,34 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				TTree* otree = mgr->GetOTree();
 				otree->SetName(treeName.c_str());
 			}
+			
+			// if using root-to-root copy, this doesn't copy the UserInfo, which includes the RunInfo.
+			// we should probably do that.
+			if(skrootMode==SKROOTMODE::COPY){
+				TreeManager* mgr = skroot_get_mgr(&LUN);
+				TTree* itree = mgr->GetTree();
+				// if TreeManager input is a chain, the UserInfo list is stored in the TTrees,
+				// not the TChain. Technically it could change from TTree to TTree
+				// so if we chain together multiple runs into one output tree,
+				// a single RunInfo entry in the UserInfo list would not be correct for all entries...
+				// we'll assume we don't need to worry about that i guess!
+				// so take the UserInfo from just the first tree
+				if(itree->InheritsFrom(TChain::Class())){
+					itree->LoadTree(0);
+					itree = itree->GetTree();
+				}
+				TTree* otree = mgr->GetOTree();
+				TList* user_info = itree->GetUserInfo();
+				// from TObject::Clone manual:
+				// "If the object class has a DirectoryAutoAdd function, it will be called
+				// at the end of the function with the parameter gDirectory"
+				// so we probably want the active directory to be the output file...
+				otree->GetCurrentFile()->cd();
+				for(int i=0; i<user_info->GetEntries(); ++i){
+					otree->GetUserInfo()->Add(user_info->At(i)->Clone());
+				}
+			}
+			
 			
 		} else {
 			// else input files are ZEBRA files
@@ -415,7 +446,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// This does rely on repeated calls to skoptn_ being handled correctly.
 		bool use_runwise_bad_ch_masking = skroot_options.find("26")!=std::string::npos;
 		if(use_runwise_bad_ch_masking) skroot_options.erase(skroot_options.find("26"),2);
-		bool isMC=false;
+		isMC=false;
 		
 		if(skrootMode!=SKROOTMODE::WRITE){
 			// need to set skgeometry in skheadg common block
@@ -482,6 +513,21 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				if(get_ok==0){
 					// physics entry!
 					isMC = (header->mdrnsk==0 || header->mdrnsk==999999);
+					
+					if(!isMC){
+						// get time of first event
+						uint64_t firsteventticks = (header->counter_32 & ~0x1FFFF);
+						firsteventticks = firsteventticks << 15;
+						uint64_t iticks = *reinterpret_cast<const uint32_t*>(&header->t0) & 0xFFFFFFFF;
+						firsteventticks += iticks;
+						std::cout<<"first event, run "<<header->nrunsk<<", subrun "<<header->nsubsk<<", event "<<header->nevsk
+						         <<" has nevhwsk "<<header->counter_32<<" ("<<std::bitset<64>(header->counter_32)
+						         <<") and it0sk "<<header->t0<<" ("<<std::bitset<64>(header->t0 & 0xFFFFFFFF)
+						         <<") for total ticks "<<firsteventticks<<" ("<<std::bitset<64>(firsteventticks)<<")"<<std::endl; 
+						thiseventticks = firsteventticks;
+						m_data->CStore.Set("firsteventticks",firsteventticks);
+					}
+					
 					break;
 				}
 				++tmp_entry;
@@ -496,10 +542,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			// so that's not perfect either.
 			isMC = (intree->FindBranch("MC")!=nullptr);
 			*/
-			
-			// put this MC flag into the MTreeReader
-			myTreeReader.SetMCFlag(isMC);
-			m_data->vars.Set("inputIsMC",isMC);
 			
 			// XXX assume that if we're processing MC ROOT files, it's SKG4
 			// set to 0 for skdetsim (according to lowfit_sk6_mc_badrun)
@@ -537,7 +579,6 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			}
 			// extract isMC
 			isMC = (skhead_.mdrnsk==0 || skhead_.mdrnsk==999999);
-			m_data->vars.Set("inputIsMC",isMC);
 			
 			// XXX assume that if we're processing MC ZBS files, it's skdetsim
 			// set to 0 for skdetsim (according to lowfit_sk6_mc_badrun)
@@ -556,10 +597,26 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 				int LUN2 = -LUN;
 				skcrawread_(&LUN2, &get_ok);
 			}
+			
+			// get time of first event
+			uint64_t firsteventticks = (skheadqb_.nevhwsk & ~0x1FFFF);
+			firsteventticks = firsteventticks << 15;
+			uint64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk) & 0xFFFFFFFF;
+			firsteventticks += iticks;
+			std::cout<<"first event, run "<<skhead_.nrunsk<<", subrun "<<skhead_.nsubsk<<", event "<<skhead_.nevsk
+			         <<" has nevhwsk "<<skheadqb_.nevhwsk<<" ("<<std::bitset<64>(skheadqb_.nevhwsk)
+			         <<") and it0sk "<<skheadqb_.it0sk<<" ("<<std::bitset<64>(skheadqb_.it0sk & 0xFFFFFFFF)
+			         <<") for total ticks "<<firsteventticks<<" ("<<std::bitset<64>(firsteventticks)<<")"<<std::endl; 
+			thiseventticks = firsteventticks;
+			m_data->CStore.Set("firsteventticks",firsteventticks);
+			
 		} // else SKROOT::Write mode, cannot check whether it's MC or not.
 		
 		// make a note of is_mc in m_variables so it gets saved in m_data->tool_configs
 		m_variables.Set("is_mc",isMC);
+		myTreeReader.SetMCFlag(isMC);
+		m_data->vars.Set("inputIsMC",isMC);  // FIXME obsolete this and remove it from Tools that use it
+		                                     // should use treereader version as this is specific to the file
 		
 		// now we know if our file is MC or not, set the appropriate runwise bad channel masking if required
 		if(skrootMode!=SKROOTMODE::WRITE && skroot_options.find("25")!=std::string::npos && use_runwise_bad_ch_masking){
@@ -609,7 +666,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 			
 			// update water transparency
 			Log(m_unique_name+" using reference run "+toString(skhead_.nrunsk)
-				+" for water transparency",v_warning,m_verbose);
+			    +" for water transparency",v_warning,m_verbose);
 			float watert;
 			int days_to_run_start = skday_data_.relapse[skhead_.nrunsk]; // defined in skdayC.h
 			lfwater_(&days_to_run_start, &watert);
@@ -646,7 +703,7 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// for efficiency of reading, only enable used branches
 		Log(m_unique_name+" activating branches",v_debug,m_verbose);
 		if(SkippedInputBranches.size()){
-			get_ok = myTreeReader.OnlyDisableBranches(SkippedInputBranches);
+			get_ok = myTreeReader.DisableBranches(SkippedInputBranches);
 			if(!get_ok){
 				Log(m_unique_name+" Did not recognise some branches in skipped branches list!",
 				    v_error,m_verbose);
@@ -780,6 +837,32 @@ bool TreeReader::Execute(){
 				}
 			}
 			
+			// debug
+			/*
+			if(get_ok>0){
+				uint64_t lasteventticks = thiseventticks;
+				thiseventticks = (skheadqb_.nevhwsk & ~0x1FFFF);
+				thiseventticks = thiseventticks << 15;
+				uint64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk) & 0xFFFFFFFF;
+				thiseventticks += iticks;
+				//std::cout<<"next event, run "<<skhead_.nrunsk<<", subrun "<<skhead_.nsubsk<<", event "<<skhead_.nevsk
+				//         <<" has nevhwsk "<<skheadqb_.nevhwsk<<" ("<<std::bitset<64>(skheadqb_.nevhwsk)
+				//         <<") and it0sk "<<skheadqb_.it0sk<<" ("<<std::bitset<64>(skheadqb_.it0sk)
+				//         <<") for total ticks "<<thiseventticks<<" ("<<std::bitset<64>(thiseventticks)<<")"<<std::endl;
+				// calculate time since last readout
+				int64_t ticksDiff;
+				if(thiseventticks<lasteventticks){
+					ticksDiff = (int64_t(1) << 47) - lasteventticks + thiseventticks;
+					std::cerr<<"OVERFLOW: lasteventticks: "<<lasteventticks<<", thiseventticks: "<<thiseventticks
+					         <<", ticksDiff: "<<ticksDiff<<std::endl;
+				} else {
+					ticksDiff = (thiseventticks - lasteventticks);
+				}
+				//std::cout<<"ticks since last event: "<<ticksDiff<<std::endl;
+			}
+			*/
+			// end debug
+			
 			// trigger type checks - get the trigger bits
 			if(get_ok>0 && skrootMode!=SKROOTMODE::NONE){
 				
@@ -867,11 +950,17 @@ bool TreeReader::Execute(){
 		if(get_ok==0) break;  // end of file
 	} // read and buffer loop
 	
+	// 'aft_loaded' indicates whether common blocks currently hold SHE or AFT when reading both together.
+	// in above code we start with SHE loaded; user then calls LoadAFT to swap AFT in (setting this flag)
+	aft_loaded = false;
+	
 	if(get_ok<0){
-		// FIXME uhm, not sure waht this represents tbh.
-		Log(m_unique_name+" get_ok returned "+toString(get_ok),v_error,m_verbose);
-		assert(false);
-		exit(-1);
+		// FIXME IO error. I think we're likely to segfault if we continue, so finalise
+		Log(m_unique_name+" ERROR! get_ok returned "+toString(get_ok)+" (IO error?)",v_error,m_verbose);
+		std::cerr<<"IO error attempting to read entry "<<entrynum<<" from file "
+		         <<myTreeReader.GetFile()->GetName()<<std::endl;
+		m_data->vars.Set("StopLoop",true);
+		m_data->vars.Set("Skip",true);
 		return false;
 	}
 	
@@ -888,11 +977,13 @@ bool TreeReader::Execute(){
 		// check if we've changed run or subrun, and if so, update things like
 		// water transparency and bad channel masking
 		if(skrootMode!=SKROOTMODE::NONE && skhead_.nrunsk != last_nrunsk){
+			Log(m_unique_name+": Run change "+toString(last_nrunsk)+" -> "+toString(skhead_.nrunsk),v_warning,m_verbose);
 			RunChange();
 			SubrunChange();
 			last_nrunsk=skhead_.nrunsk;
 			last_nsubsk=skhead_.nsubsk;
 		} else if(skrootMode!=SKROOTMODE::NONE && skhead_.nsubsk != last_nsubsk){
+			Log(m_unique_name+": SubRun change "+toString(last_nsubsk)+" -> "+toString(skhead_.nsubsk),v_warning,m_verbose);
 			SubrunChange();
 			last_nsubsk=skhead_.nsubsk;
 		}
@@ -908,7 +999,6 @@ bool TreeReader::Execute(){
 			Write();
 		}
 	}
-	aft_loaded = false; // whether common blocks currently hold SHE or AFT; reset this on every execution
 	
 	// check if we've hit the user-requested limit on number of entries to read
 	if( ((maxEntries>0)&&(readEntries>=maxEntries)) ||
@@ -934,6 +1024,7 @@ bool TreeReader::Execute(){
 	if(skrootMode!=::SKROOTMODE::NONE){
 		Log(m_unique_name+" Returning entry skhead_.nevsk " + toString(skhead_.nevsk),v_debug,m_verbose);
 		//std::cout<<"entry "<<entrynum<<", nevsk "<<skhead_.nevsk<<std::endl;
+		//std::cout<<skhead_.nevsk<<"\tthis evt nevhwsk: "<<skheadqb_.nevhwsk<<", it0sk: "<<skheadqb_.it0sk<<std::endl;
 	} else {
 		Log(m_unique_name+" Returning entry "+toString(entrynum),v_debug,m_verbose);
 	}
@@ -1154,6 +1245,7 @@ bool TreeReader::Finalise(){
 
 TreeReader::~TreeReader(){
 	
+	/*
 	// FIXME this shouldn't be needed? is AddTree messing it up?
 	// do we also need to do this in copy mode now? if we're adding a tree?
 	if(skrootMode==SKROOTMODE::WRITE){
@@ -1163,6 +1255,7 @@ TreeReader::~TreeReader(){
 		std::cout<<m_unique_name<<" calling Write() on output file"<<std::endl;
 		mgr->write();
 	}
+	*/
 }
 
 int TreeReader::ReadEntry(long entry_number, bool use_buffered){
@@ -2018,6 +2111,7 @@ int TreeReader::PopCommons(){
 int TreeReader::FlushCommons(){
 	// drop all entries from the buffered common blocks
 	// TODO remove any that are not set by skread and used by reco algorithms
+	if(skhead_vec.size()==0) return 1;
 	
 	skhead_vec.clear();
 	skheada_vec.clear();

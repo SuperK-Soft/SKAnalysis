@@ -1,4 +1,4 @@
-verbosity 10
+verbosity 1
 readerName reader_ntagbdt
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName
 #inputFile $HOME/rfm_run074724.000001.root         # a full rfm data file, supported by NTag (no MC info though)

@@ -22,8 +22,8 @@ bool FlagAFTs::Execute(){
 	
 	std::bitset<32> triggerID(skhead_.idtgsk);
 	
-	// get the eventType from the end of the last loop execution
 	/*
+	// get the eventType from the end of the last loop execution
 	EventType lastEventType;
 	get_ok = m_data->vars.Get("eventType", lastEventType);
 	if(!get_ok){
@@ -36,11 +36,11 @@ bool FlagAFTs::Execute(){
 	if(triggerID.test(TriggerType::AFT_or_Cal) || triggerID.test(TriggerType::AFT)){
 		m_data->vars.Set("eventType", EventType::AFT);
 		//std::cout<<m_unique_name<<" flagging event "<<skhead_.nevsk<<" as AFT"<<std::endl;
-//		std::cout<<" -- last event type was "<<lastEventType<<std::endl;
+		//std::cout<<" -- last event type was "<<lastEventType<<std::endl;
 	} else {
 		m_data->vars.Set("eventType", EventType::Unknown);
 		//std::cout<<m_unique_name<<" flagging event "<<skhead_.nevsk<<" as unknown"<<std::endl;
-//		std::cout<<" -- last event type was "<<lastEventType<<std::endl;
+		//std::cout<<" -- last event type was "<<lastEventType<<std::endl;
 	}
 	
 	

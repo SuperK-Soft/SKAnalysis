@@ -472,6 +472,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
           wt[i] = GetWeight(xyz[i], v);
         }
         catch (const std::exception& e){
+          std::cerr << "SK2p2MeV::GetWeight exception!"<<std::endl;
           std::cout << e.what() << "\n";
           std::cout << "pmt: " << i << "\n";
           for (int j = -5; j < 5; ++j){ 
@@ -491,6 +492,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
     
     //
     //const Int_t MAXHITS = 100000;
+    // FIXME yo this is crazy inefficient, we should not be invoking new for every call
     Int_t   nhits;
     Int_t *cabiz = new Int_t[MAXHITS];
     Int_t *cabiz2 = new Int_t[MAXHITS];
@@ -516,8 +518,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
         if (i > MAXHITS) break;
         // Exclude non-ingate hit
         // Exclude bad ch.
-        // Although bad & missing ch are masked in extract.cc, it's
-        // needed here for MC
+        // Although bad & missing ch are masked in extract.cc, it's needed here for MC
         int cb = TQI->cables[i]&0xFFFF;
         if (cb < 0 || cb > MAXPM) continue;
         if ( ! ((TQI->cables[i]&0xFFFF0000)&0x20000 ) ) continue;
@@ -532,7 +533,11 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
         tiskz3[nhits] = TQI->T[i];
         qiskz2[nhits] = TQI->Q[i];
         is_signal2[nhits] = is_signal[i];
+        
         // Look for continuous dark noise
+        // this scans through preceding SHE hits, looking for another hit on the same PMT within a given time window.
+        // The scan is performed with two window sizes, setting the dark_flag0 to 1 if a hit is found in the first window,
+        // then setting (potentially overriding) it to 2 if a hit is found in the second window.
         int tmpl=nhits;
         // First, for AFT in data look in previous SHE
         if (res.shet.size() > 0 && res.shecab.size() > 0 && tiskz2[nhits] < cut_window){
@@ -554,7 +559,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
             }
         }
         
-        // Now perform regular search
+        // Now perform regular search (hits in the same trigger window)
         tmpl = nhits;
         while(TMath::Abs((tiskz2[nhits]-tiskz2[tmpl]))<cut_window && tmpl>=0){
             if(cabiz2[nhits]==cabiz2[tmpl]&&tmpl!=nhits&&(TMath::Abs(tiskz2[tmpl])>primary_window&&TMath::Abs(tiskz2[nhits])>primary_window)){
@@ -575,7 +580,7 @@ void SK2p2MeV::NeutronSearch (Float_t tstart, Float_t tend, Float_t TOFFSET)
             tmpl--;
         }
         
-        // Finally, for aft in data look in next AFT
+        // Finally, for SHE in data look in following AFT
         if (res.aftt.size() > 0 && res.aftcab.size() > 0 && tiskz2[nhits] > she_tmax - cut_window){
             tmpl = 0;
             while(TMath::Abs((tiskz2[nhits]-res.aftt[tmpl]))<cut_window && tmpl < res.aftt.size()){

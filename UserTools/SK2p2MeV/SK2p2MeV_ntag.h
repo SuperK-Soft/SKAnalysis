@@ -36,6 +36,7 @@ class SK2p2MeV_ntag: public Tool {
 	bool InitMC();
 	bool InitT2k();
 	bool InitAmBe();
+	bool InitMerged();
 	
 	// tool variables
 	// ==============

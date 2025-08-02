@@ -1,12 +1,17 @@
 verbosity 1
 FileListName MyFileList                                                  # required argument
-maxFiles 1000
+#maxFiles 1000
 
 #sk6
 useRegex 0
 #inputDirectory /disk02/usr6/moflaher/SpallReduction
 #filePattern test_jacks.root
 
-inputFile /disk02/usr6/moflaher/run870_apr/test_jacks.root
+#inputDirectory /disk03/lowe12/warwick/data/sk6_new/
+#filePattern *.root
+
+#inputFile /disk02/usr6/moflaher/matt1h/test_jacks.root
 #fileList configfiles/MakeSpallVariables/list_of_files.txt
-fileList configfiles/MakeSpallVariables/file_list_matthew1.txt
+#fileList configfiles/MakeSpallVariables/file_list_matthew1.txt
+#inputFile /disk03/lowe12/warwick/data/sk6_new/spall_086721_match.root
+inputFile /disk03/lowe12/warwick/trash2/test_jacks_086613.root

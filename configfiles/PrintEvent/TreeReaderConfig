@@ -1,5 +1,5 @@
 verbosity 1
-#inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
+inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
 #inputFile /disk1/disk02/usr6/moflaher/SpallReduction/086614.0/output/test_jacks.root
 #inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
 #inputFile /disk02/data7/sk6/run/0866/086613/rfm_run086613.001138.root
@@ -18,13 +18,13 @@ verbosity 1
 #inputFile ~/disk02/test_jacks.root
 #inputFile /disk02/usr6/moflaher/run870/test_jacks.root
 #inputFile /home/moflaher/disk02/SpallReduction/087008.2/output/test_jacks.root
-inputFile /disk03/lowe12/warwick/data/sk6/rfm_run087008.000296.match.root
+#inputFile /disk03/lowe12/warwick/data/sk6/rfm_run087008.000296.match.root
 
-#treeName data                                  # the name of the tree within the file
-treeName mu
+treeName data                                  # the name of the tree within the file
+#treeName mu
 readerName demoReader                          # the name to give the MTreeReader in the DataModel
 #firstEntry 352   # for conv.root
-maxEntries 1     # for conv.root               # max number of entries to process before stopping the ToolChain (-1)
+maxEntries 10     # for conv.root               # max number of entries to process before stopping the ToolChain (-1)
 #maxEntries 1644   # for rfm_run087096.000001.root
 skFile 1                                       # whether to enable additional functionality (1)
 skoptn 31,30,25,26 # use 26 for data           # options describing what to load via skread/skrawread (31)

@@ -93,10 +93,6 @@ bool RelicMuonPlots::Execute(){
 		return true;
 	}
 	
-	// reset last muon event number so that mu_to_mu time matching is only recorded
-	// for muons associated to the same relic
-	lastmu_nevsk=0;
-	
 	// loop over muons matched to this relic
 	Log(m_unique_name+"looping over "+std::to_string(relicMatchedEntryNums->size())+" muons for this relic",v_debug,m_verbose);
 	//std::cout<<"relicTimeDiffs is of size "<<relicTimeDiffs->size()<<" vs "
@@ -139,7 +135,8 @@ bool RelicMuonPlots::Execute(){
 			continue;
 		}
 		
-		// sanity check that this pair is unique
+		// second sanity check that this pair is unique based on nevsk numbers
+		// rather than just Tree entry numbers
 		std::pair<int,int> pair{relicEvNum,muEvNum};
 		if(evmap.count(pair)!=0){
 			Log(m_unique_name+" Error! Duplicate comparison between relic "+toString(relicEvNum)
@@ -155,6 +152,7 @@ bool RelicMuonPlots::Execute(){
 		
 		get_ok = MakePairVariables();
 		if(get_ok) MakeHists(1);
+		else std::cerr<<"error making pair variables!"<<std::endl;
 		
 	}
 	
@@ -429,13 +427,10 @@ bool RelicMuonPlots::GetMuonEvt(){
 		}
 	}
 	
-	// Fill muon plots, but only the first time we read this muon
-	// (XXX don't treat muboy tracks as unique for this purpose)
-	if(muon_plotted.count(muHeader->nevsk)==0){
-		muon_plotted.emplace(muHeader->nevsk,1);
-	} else {
-		return true;
-	}
+	// Fill muon plots, but only the first time we see this muon
+	if(muEvNum <= lastmu_nevsk) return true;
+	lastmu_nevsk = muEvNum;
+	
 	mu_hb.Fill("mfmuselect_dir",muff_dir[0],muff_dir[1],muff_dir[2]);
 	mu_hb.Fill("mfmuselect_entrypos", muff_entrypoint[0], muff_entrypoint[1], muff_entrypoint[2]);
 	
@@ -451,12 +446,12 @@ bool RelicMuonPlots::GetMuonEvt(){
 	if(didbff){
 		mu_hb.Fill("bff_dir", bff_dir[0], bff_dir[1], bff_dir[2]);
 		mu_hb.Fill("bff_entrypos", bff_entrypoint[0],
-	                               bff_entrypoint[1],
-	                               bff_entrypoint[2]);
+		                           bff_entrypoint[1],
+		                           bff_entrypoint[2]);
 		mu_hb.Fill("bff_dir", bff_goodness);
 	}
 	
-	mu_hb.Fill("nevsk",muHeader->nevsk);
+	mu_hb.Fill("nevsk",muEvNum);
 	mu_hb.Fill("qismsk", mu_qismsk);
 	mu_hb.Fill("qismsk_corr", mu_qismsk_corr);
 	mu_hb.Fill("NumIDhits", muTQReal->nhits);
@@ -482,12 +477,13 @@ bool RelicMuonPlots::GetMuonEvt(){
 	thiseventticks += muRollovers * (int64_t(1) << 47);
 	mu_hb.Fill("event_time_secs",double(thiseventticks/COUNT_PER_NSEC)/1.E9);
 	
-	// record time between distinct muons
-	// (not multiple muboy tracks or multiple muon subtriggers in the same readout)
-	if(lastmu_nevsk==0){
-		lastmu_nevsk = muHeader->nevsk;
-		lastmuticks = thiseventticks;
-	} else if(muHeader->nevsk != lastmu_nevsk){
+	// record time between muons
+	if(relicEvNum!=lastrelic_nevsk){
+		// don't record time difference between muons associated to different relics
+		// as there will probably have been unrecorded muons in between
+		// so the time difference will be large and not representative of muon rate
+		lastrelic_nevsk = relicEvNum;
+	} else {
 		int64_t ticksDiff = thiseventticks - lastmuticks;
 		if(ticksDiff<0) ticksDiff += (int64_t(1) << 47);
 		if(ticksDiff==0){
@@ -511,9 +507,8 @@ bool RelicMuonPlots::GetMuonEvt(){
 			Log(m_unique_name+" Error! Muon to muon time of "+toString(ns_since_last/1E9)
 			   +">120 seconds!",v_error,m_verbose);
 		}
-		lastmu_nevsk = muHeader->nevsk;
-		lastmuticks = thiseventticks;
 	}
+	lastmuticks = thiseventticks;
 	
 	return get_ok;
 }
@@ -612,7 +607,7 @@ double RelicMuonPlots::CalculateTrackLen(float* muon_entrypoint, float* muon_dir
 
 bool RelicMuonPlots::MakePairVariables(){
 	
-	Log(m_unique_name+"making pair variables",v_debug,m_verbose);
+	Log(m_unique_name+" making pair variables",v_debug,m_verbose);
 	
 	std::pair<int,int> pair{relicEvNum,muEvNum};
 	if(pairs_compared.count(pair)!=0){
@@ -632,7 +627,7 @@ bool RelicMuonPlots::MakePairVariables(){
 		//return false;
 	}
 	
-	Log(m_unique_name+"relic nevsk: "+std::to_string(relicEvNum)+", muon nevsk: "+std::to_string(muEvNum)
+	Log(m_unique_name+" relic nevsk: "+std::to_string(relicEvNum)+", muon nevsk: "+std::to_string(muEvNum)
 	         +"; spall cand? "+(mu_before_relic ? "Y" : "N"),v_debug,m_verbose);
 	
 	basic_array<float> scott_dedx(muMu->muboy_dedx);
@@ -680,13 +675,13 @@ bool RelicMuonPlots::MakePairVariables(){
 		}
 	}
 	double max_edep_pos = 50.*max_edep_bin;
-	Log(m_unique_name+"muon track max dE/dx: "+toString(max_edep)+" at "+toString(max_edep_pos)+" cm "
+	Log(m_unique_name+" muon track max dE/dx: "+toString(max_edep)+" at "+toString(max_edep_pos)+" cm "
 	         +"(bin "+toString(max_edep_bin)+"/115) along the track",v_debug,m_verbose);
 	
 	// re-check the coulomb-to-photoelectron conversion factor (petable entry)
 	double pe_per_coulomb = 0;
 	// scan through pe table for this run, and get corresponding pe_per_coulomb
-	Log(m_unique_name+"scanning petable for pe_to_coulombs conversion",v_debug,m_verbose);
+	Log(m_unique_name+" scanning petable for pe_to_coulombs conversion",v_debug,m_verbose);
 	while(pe_per_coulomb == 0 && pe_table_index < petable_startrun.size()){
 		Log(m_unique_name+"entry "+std::to_string(pe_table_index),v_debug,m_verbose);
 		if(petable_startrun[pe_table_index] <= muHeader->nrunsk && petable_endrun[pe_table_index] >= muHeader->nrunsk){
@@ -696,7 +691,7 @@ bool RelicMuonPlots::MakePairVariables(){
 		pe_table_index++;
 	}
 	if(pe_table_index==petable_startrun.size()){
-		Log(m_unique_name+" Error! Did not find run "+toString(muHeader->nrunsk)+" in petable!",v_error,m_verbose);
+		Log(m_unique_name+" Error! Did not find run "+toString(muHeader->nrunsk)+" in petable!",v_warning,m_verbose); // FIXME make error
 		// use a nominal value?
 		pe_per_coulomb = 30;
 	}

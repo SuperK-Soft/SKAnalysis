@@ -85,8 +85,8 @@ bool AddTree::Initialise(std::string configfile, DataModel &data){
 		return false;
 	}
 	thistree->SetName(newTreeName.c_str());
-	// don't think this is actually needed
-	//thistree->SetDirectory(ofile);
+	// don't think this is actually needed, but it can't hurt
+	thistree->SetDirectory(ofile);
 	
 	return true;
 }
@@ -115,12 +115,18 @@ AddTree::~AddTree(){
 	// ...
 	// unless we close it manually! Whoops! CloseLUN now commented out in TreeReader::Finalise...
 	// FIXME find a better solution?
+	/*
 	std::string newTreeName;
 	m_variables.Get("newTreeName", newTreeName);
-	//std::cout<<m_unique_name<<" Destructor: writing out tree "<<newTreeName<<" which has "<<thistree->GetEntries()
-	//         <<" entries to file "<<ofile->GetName()<<" which is zombie: "<<ofile->IsZombie()<<std::endl;
+	std::cout<<m_unique_name<<" Destructor: writing out tree "<<newTreeName<<" which has "<<thistree->GetEntries()
+	         <<" entries to file "<<ofile->GetName()<<" which is zombie: "<<ofile->IsZombie()<<std::endl;
+	*/
 	
-	ofile->cd();
-	int nbytes = thistree->Write("",TObject::kOverwrite);
+	// nice idea and seems to work most of the time, but we can't guarantee
+	// the order of destruction (unless we put the ToolChain on the heap and delete it manually in main.cpp)
+	// so the SuperManager may end up triggering the file to close while we're still writing to it?
+	// think we can just do it in ReconstructMatchedMuons (or some suitable tool Finalise after all Fill calls are done)
+	//ofile->cd();
+	//int nbytes = thistree->Write("",TObject::kOverwrite);
 	//std::cout<<"wrote "<<nbytes<<" bytes"<<std::endl;
 }
