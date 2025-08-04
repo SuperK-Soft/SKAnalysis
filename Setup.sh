@@ -15,3 +15,6 @@ export SEGFAULT_SIGNALS="all"
 
 # new location of secret sauce on new sukap
 export RFA_ROOT='/opt/FJSVrdass/lib'
+
+# we had to add this after switching to the warwick ATMPD...
+export SKPATH=${SKOFL_ROOT}/const:${SKOFL_ROOT}/const/lowe:${ATMPD_ROOT}/const
