@@ -63,6 +63,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classMTreeReader-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -230,9 +231,75 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>ParseBranchDims</b> (s
 <tr class="memitem:a139f4e7d8a6cca4d64d0ed03ad490500"><td class="memItemLeft" align="right" valign="top"><a id="a139f4e7d8a6cca4d64d0ed03ad490500"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateBranchPointer</b> (std::string branchname)</td></tr>
 <tr class="separator:a139f4e7d8a6cca4d64d0ed03ad490500"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6bdcdaa2d2406e385348ba313cd757d2"><td class="memItemLeft" align="right" valign="top"><a id="a6bdcdaa2d2406e385348ba313cd757d2"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateBranchPointers</b> (bool all=false)</td></tr>
-<tr class="separator:a6bdcdaa2d2406e385348ba313cd757d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15fd3080752a1d8a017a4ff96c206f8a"><td class="memItemLeft" align="right" valign="top"><a id="a15fd3080752a1d8a017a4ff96c206f8a"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>UpdateBranchPointers</b> ()</td></tr>
+<tr class="separator:a15fd3080752a1d8a017a4ff96c206f8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a68ad2e39545687cae4940fbbcce2544c"><td class="memItemLeft" align="right" valign="top"><a id="a68ad2e39545687cae4940fbbcce2544c"></a>
+std::map&lt; std::string, TBranch * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_pointers</b></td></tr>
+<tr class="separator:a68ad2e39545687cae4940fbbcce2544c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad31d65a903833a7d622385be8829e22"><td class="memItemLeft" align="right" valign="top"><a id="aad31d65a903833a7d622385be8829e22"></a>
+std::map&lt; std::string, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_istobject</b></td></tr>
+<tr class="separator:aad31d65a903833a7d622385be8829e22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2e1134b6d0a3d8d990f0e100acdaf6f"><td class="memItemLeft" align="right" valign="top"><a id="aa2e1134b6d0a3d8d990f0e100acdaf6f"></a>
+std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_titles</b></td></tr>
+<tr class="separator:aa2e1134b6d0a3d8d990f0e100acdaf6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a600a5cfd1c12e5bbfe5cfd05c0d9c415"><td class="memItemLeft" align="right" valign="top"><a id="a600a5cfd1c12e5bbfe5cfd05c0d9c415"></a>
+std::map&lt; std::string, intptr_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_value_pointers</b></td></tr>
+<tr class="separator:a600a5cfd1c12e5bbfe5cfd05c0d9c415"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf2783d1be048bff7fb086e8c3853aea"><td class="memItemLeft" align="right" valign="top"><a id="aaf2783d1be048bff7fb086e8c3853aea"></a>
+std::map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_types</b></td></tr>
+<tr class="separator:aaf2783d1be048bff7fb086e8c3853aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8542e94f2803dcbae00e0c06359ac9b8"><td class="memItemLeft" align="right" valign="top"><a id="a8542e94f2803dcbae00e0c06359ac9b8"></a>
+std::map&lt; std::string, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_isobject</b></td></tr>
+<tr class="separator:a8542e94f2803dcbae00e0c06359ac9b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb1f6247f7f1a71b59afb87e1f1ef8f3"><td class="memItemLeft" align="right" valign="top"><a id="aeb1f6247f7f1a71b59afb87e1f1ef8f3"></a>
+std::map&lt; std::string, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_isobjectptr</b></td></tr>
+<tr class="separator:aeb1f6247f7f1a71b59afb87e1f1ef8f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2765192ab8c4b821b2f1150b5198f005"><td class="memItemLeft" align="right" valign="top"><a id="a2765192ab8c4b821b2f1150b5198f005"></a>
+std::map&lt; std::string, bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_isarray</b></td></tr>
+<tr class="separator:a2765192ab8c4b821b2f1150b5198f005"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed8b922ac7b59bbb267bd5c1e700a9c3"><td class="memItemLeft" align="right" valign="top"><a id="aed8b922ac7b59bbb267bd5c1e700a9c3"></a>
+std::map&lt; std::string, std::vector&lt; std::pair&lt; std::string, int &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_dimensions</b></td></tr>
+<tr class="separator:aed8b922ac7b59bbb267bd5c1e700a9c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa550d4e447e9b2282c973aa00f1f4497"><td class="memItemLeft" align="right" valign="top"><a id="aa550d4e447e9b2282c973aa00f1f4497"></a>
+std::map&lt; std::string, std::vector&lt; size_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>branch_dims_cache</b></td></tr>
+<tr class="separator:aa550d4e447e9b2282c973aa00f1f4497"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d6649a02a5940ea4261490255d13a14"><td class="memItemLeft" align="right" valign="top"><a id="a3d6649a02a5940ea4261490255d13a14"></a>
+TFile *&#160;</td><td class="memItemRight" valign="bottom"><b>thefile</b> =nullptr</td></tr>
+<tr class="separator:a3d6649a02a5940ea4261490255d13a14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84088ef27c24f6eb441be2a14d87b816"><td class="memItemLeft" align="right" valign="top"><a id="a84088ef27c24f6eb441be2a14d87b816"></a>
+TTree *&#160;</td><td class="memItemRight" valign="bottom"><b>thetree</b> =nullptr</td></tr>
+<tr class="separator:a84088ef27c24f6eb441be2a14d87b816"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85038b10ee7d84fd91449aa27674f9b7"><td class="memItemLeft" align="right" valign="top"><a id="a85038b10ee7d84fd91449aa27674f9b7"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>iownthisfile</b> =true</td></tr>
+<tr class="separator:a85038b10ee7d84fd91449aa27674f9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab18b3bcea2ea218a786374a1a9c52154"><td class="memItemLeft" align="right" valign="top"><a id="ab18b3bcea2ea218a786374a1a9c52154"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>autoclear</b> =false</td></tr>
+<tr class="separator:ab18b3bcea2ea218a786374a1a9c52154"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed378a9f3f223a7ebe3227ae3f15f09e"><td class="memItemLeft" align="right" valign="top"><a id="aed378a9f3f223a7ebe3227ae3f15f09e"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>verbosity</b> =1</td></tr>
+<tr class="separator:aed378a9f3f223a7ebe3227ae3f15f09e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34a5a54d074141ba682e277f9b152f82"><td class="memItemLeft" align="right" valign="top"><a id="a34a5a54d074141ba682e277f9b152f82"></a>
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>currentEntryNumber</b> =0</td></tr>
+<tr class="separator:a34a5a54d074141ba682e277f9b152f82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab71a22f313f4e8a4754b917e8f8bf652"><td class="memItemLeft" align="right" valign="top"><a id="ab71a22f313f4e8a4754b917e8f8bf652"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>currentTreeNumber</b> =0</td></tr>
+<tr class="separator:ab71a22f313f4e8a4754b917e8f8bf652"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae51f20ce8174752c2ea7433aa13efd8a"><td class="memItemLeft" align="right" valign="top"><a id="ae51f20ce8174752c2ea7433aa13efd8a"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isMC</b> =false</td></tr>
+<tr class="separator:ae51f20ce8174752c2ea7433aa13efd8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af21c99a92a8d7ec0bccc3e316415792f"><td class="memItemLeft" align="right" valign="top"><a id="af21c99a92a8d7ec0bccc3e316415792f"></a>
+<a class="el" href="classNotifier.html">Notifier</a>&#160;</td><td class="memItemRight" valign="bottom"><b>notifier</b></td></tr>
+<tr class="separator:af21c99a92a8d7ec0bccc3e316415792f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16c050a902c6f484a9cc13835e3259c3"><td class="memItemLeft" align="right" valign="top"><a id="a16c050a902c6f484a9cc13835e3259c3"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> =&quot;&quot;</td></tr>
+<tr class="separator:a16c050a902c6f484a9cc13835e3259c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8274590009dab5baa9462554fa5c4620"><td class="memItemLeft" align="right" valign="top"><a id="a8274590009dab5baa9462554fa5c4620"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>branchnamestring</b> =&quot;{}&quot;</td></tr>
+<tr class="separator:a8274590009dab5baa9462554fa5c4620"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>

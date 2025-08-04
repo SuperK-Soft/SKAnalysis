@@ -157,29 +157,30 @@ $(function() {
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="comment">// for tracking rates:</span></div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    int64_t lastmuticks=0;</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keywordtype">int</span> lastmu_nevsk=0;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    int64_t lastrelicticks=0;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    </div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="comment">// for making spallation observables</span></div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">float</span>* muon_dedx;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">float</span>* muon_entrypoint;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">float</span>* muon_direction;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">double</span> muon_tracklen;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordtype">int</span> pe_table_index = 0;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keywordtype">int</span> mu_before_relic;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">int</span> mu_relic_evtnum_diff;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keywordtype">float</span> dt;</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keywordtype">float</span> dll;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">float</span> dlt;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keywordtype">int</span> spall_count=0;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordtype">int</span> rand_count=0;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    </div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;};</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">int</span> lastrelic_nevsk=0;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    int64_t lastrelicticks=0;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="comment">// for making spallation observables</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keywordtype">float</span>* muon_dedx;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">float</span>* muon_entrypoint;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">float</span>* muon_direction;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">double</span> muon_tracklen;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordtype">int</span> pe_table_index = 0;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    </div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">int</span> mu_before_relic;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keywordtype">int</span> mu_relic_evtnum_diff;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keywordtype">float</span> dt;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">float</span> dll;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordtype">float</span> dlt;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordtype">int</span> spall_count=0;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordtype">int</span> rand_count=0;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;};</div>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:67</div></div>
 <div class="ttc" id="aclassHistogramBuilder_html"><div class="ttname"><a href="classHistogramBuilder.html">HistogramBuilder</a></div><div class="ttdef"><b>Definition:</b> HistogramBuilder.h:14</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>

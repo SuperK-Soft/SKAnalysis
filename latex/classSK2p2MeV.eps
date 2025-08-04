@@ -5,7 +5,7 @@
 %%For: 
 %Magnification: 1.00
 %%Orientation: Portrait
-%%BoundingBox: 0 0 500 123.966942
+%%BoundingBox: 0 0 500 90.225563
 %%Pages: 0
 %%BeginSetup
 %%EndSetup
@@ -19,13 +19,13 @@
 /marginwidth 10 def
 /distx 20 def
 /disty 40 def
-/boundaspect 4.033333 def  % aspect ratio of the BoundingBox (width/height)
+/boundaspect 5.541667 def  % aspect ratio of the BoundingBox (width/height)
 /boundx 500 def
 /boundy boundx boundaspect div def
 /xspacing 0 def
 /yspacing 0 def
 /rows 3 def
-/cols 4 def
+/cols 5 def
 /scalefactor 0 def
 /boxfont /Times-Roman findfont fontheight scalefont def
 
@@ -177,6 +177,7 @@ boxfont setfont
 (TObject) cw
 (SK2p2MeV_ambe) cw
 (SK2p2MeV_mc) cw
+(SK2p2MeV_merged) cw
 (SK2p2MeV_relic) cw
 (SK2p2MeV_t2k) cw
 /boxwidth boxwidth marginwidth 2 mul add def
@@ -190,23 +191,24 @@ boundx scalefactor div boundy scalefactor div scale
 
 % ----- classes -----
 
- (SK2p2MeV) 1.500000 1.000000 box
- (TObject) 1.500000 2.000000 box
+ (SK2p2MeV) 2.000000 1.000000 box
+ (TObject) 2.000000 2.000000 box
  (SK2p2MeV_ambe) 0.000000 0.000000 box
  (SK2p2MeV_mc) 1.000000 0.000000 box
- (SK2p2MeV_relic) 2.000000 0.000000 box
- (SK2p2MeV_t2k) 3.000000 0.000000 box
+ (SK2p2MeV_merged) 2.000000 0.000000 box
+ (SK2p2MeV_relic) 3.000000 0.000000 box
+ (SK2p2MeV_t2k) 4.000000 0.000000 box
 
 % ----- relations -----
 
 solid
-0 1.500000 1.000000 out
+0 2.000000 1.000000 out
 solid
-1 1.500000 2.000000 in
+1 2.000000 2.000000 in
 solid
-1 1.500000 0.250000 out
+1 2.000000 0.250000 out
 solid
-0.000000 3.000000 1.000000 conn
+0.000000 4.000000 1.000000 conn
 solid
 0 0.000000 0.750000 in
 solid
@@ -215,3 +217,5 @@ solid
 0 2.000000 0.750000 in
 solid
 0 3.000000 0.750000 in
+solid
+0 4.000000 0.750000 in

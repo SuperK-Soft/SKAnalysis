@@ -97,27 +97,28 @@ $(function() {
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keywordtype">bool</span> InitMC();</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keywordtype">bool</span> InitT2k();</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">bool</span> InitAmBe();</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="comment">// tool variables</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// ==============</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a> outTreeReader{<span class="stringliteral">&quot;SK2p2MeV_OutTree&quot;</span>};</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <a class="code" href="classSK2p2MeV.html">SK2p2MeV</a>* ntagger = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    TFile* fout = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    TTree* theOTree = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">bool</span> isWIT = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;};</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">bool</span> InitMerged();</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="comment">// tool variables</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="comment">// ==============</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a>* myTreeReader = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <a class="code" href="classMTreeReader.html">MTreeReader</a> outTreeReader{<span class="stringliteral">&quot;SK2p2MeV_OutTree&quot;</span>};</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <a class="code" href="classSK2p2MeV.html">SK2p2MeV</a>* ntagger = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    TFile* fout = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    TTree* theOTree = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">bool</span> isWIT = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;};</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:67</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
 <div class="ttc" id="aclassSK2p2MeV__ntag_html"><div class="ttname"><a href="classSK2p2MeV__ntag.html">SK2p2MeV_ntag</a></div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.h:24</div></div>
-<div class="ttc" id="aclassSK2p2MeV__ntag_html_ab33070efb2b4b26eb613f2264ceacd12"><div class="ttname"><a href="classSK2p2MeV__ntag.html#ab33070efb2b4b26eb613f2264ceacd12">SK2p2MeV_ntag::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:23</div></div>
-<div class="ttc" id="aclassSK2p2MeV__ntag_html_ad1244c091de07f3759db646bd1a8e376"><div class="ttname"><a href="classSK2p2MeV__ntag.html#ad1244c091de07f3759db646bd1a8e376">SK2p2MeV_ntag::SK2p2MeV_ntag</a></div><div class="ttdeci">SK2p2MeV_ntag()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:11</div></div>
-<div class="ttc" id="aclassSK2p2MeV__ntag_html_ad2b8509e6fa9d9e9d8fe3fec258a2a6c"><div class="ttname"><a href="classSK2p2MeV__ntag.html#ad2b8509e6fa9d9e9d8fe3fec258a2a6c">SK2p2MeV_ntag::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:106</div></div>
-<div class="ttc" id="aclassSK2p2MeV__ntag_html_af4b3f15cbce521cb421920515b00b844"><div class="ttname"><a href="classSK2p2MeV__ntag.html#af4b3f15cbce521cb421920515b00b844">SK2p2MeV_ntag::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:137</div></div>
+<div class="ttc" id="aclassSK2p2MeV__ntag_html_ab33070efb2b4b26eb613f2264ceacd12"><div class="ttname"><a href="classSK2p2MeV__ntag.html#ab33070efb2b4b26eb613f2264ceacd12">SK2p2MeV_ntag::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise function for setting up Tool resources.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:24</div></div>
+<div class="ttc" id="aclassSK2p2MeV__ntag_html_ad1244c091de07f3759db646bd1a8e376"><div class="ttname"><a href="classSK2p2MeV__ntag.html#ad1244c091de07f3759db646bd1a8e376">SK2p2MeV_ntag::SK2p2MeV_ntag</a></div><div class="ttdeci">SK2p2MeV_ntag()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:12</div></div>
+<div class="ttc" id="aclassSK2p2MeV__ntag_html_ad2b8509e6fa9d9e9d8fe3fec258a2a6c"><div class="ttname"><a href="classSK2p2MeV__ntag.html#ad2b8509e6fa9d9e9d8fe3fec258a2a6c">SK2p2MeV_ntag::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool purpose.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:109</div></div>
+<div class="ttc" id="aclassSK2p2MeV__ntag_html_af4b3f15cbce521cb421920515b00b844"><div class="ttname"><a href="classSK2p2MeV__ntag.html#af4b3f15cbce521cb421920515b00b844">SK2p2MeV_ntag::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resources.</div><div class="ttdef"><b>Definition:</b> SK2p2MeV_ntag.cpp:140</div></div>
 <div class="ttc" id="aclassSK2p2MeV_html"><div class="ttname"><a href="classSK2p2MeV.html">SK2p2MeV</a></div><div class="ttdef"><b>Definition:</b> SK2p2MeV.h:207</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

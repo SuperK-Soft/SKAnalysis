@@ -150,8 +150,74 @@ int {\bfseries Parse\+Branch\+Dims} (std\+::string branchname)
 \mbox{\Hypertarget{classMTreeReader_a139f4e7d8a6cca4d64d0ed03ad490500}\label{classMTreeReader_a139f4e7d8a6cca4d64d0ed03ad490500}} 
 int {\bfseries Update\+Branch\+Pointer} (std\+::string branchname)
 \item 
-\mbox{\Hypertarget{classMTreeReader_a6bdcdaa2d2406e385348ba313cd757d2}\label{classMTreeReader_a6bdcdaa2d2406e385348ba313cd757d2}} 
-int {\bfseries Update\+Branch\+Pointers} (bool all=false)
+\mbox{\Hypertarget{classMTreeReader_a15fd3080752a1d8a017a4ff96c206f8a}\label{classMTreeReader_a15fd3080752a1d8a017a4ff96c206f8a}} 
+int {\bfseries Update\+Branch\+Pointers} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a68ad2e39545687cae4940fbbcce2544c}\label{classMTreeReader_a68ad2e39545687cae4940fbbcce2544c}} 
+std\+::map$<$ std\+::string, TBranch $\ast$ $>$ {\bfseries branch\+\_\+pointers}
+\item 
+\mbox{\Hypertarget{classMTreeReader_aad31d65a903833a7d622385be8829e22}\label{classMTreeReader_aad31d65a903833a7d622385be8829e22}} 
+std\+::map$<$ std\+::string, bool $>$ {\bfseries branch\+\_\+istobject}
+\item 
+\mbox{\Hypertarget{classMTreeReader_aa2e1134b6d0a3d8d990f0e100acdaf6f}\label{classMTreeReader_aa2e1134b6d0a3d8d990f0e100acdaf6f}} 
+std\+::map$<$ std\+::string, std\+::string $>$ {\bfseries branch\+\_\+titles}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a600a5cfd1c12e5bbfe5cfd05c0d9c415}\label{classMTreeReader_a600a5cfd1c12e5bbfe5cfd05c0d9c415}} 
+std\+::map$<$ std\+::string, intptr\+\_\+t $>$ {\bfseries branch\+\_\+value\+\_\+pointers}
+\item 
+\mbox{\Hypertarget{classMTreeReader_aaf2783d1be048bff7fb086e8c3853aea}\label{classMTreeReader_aaf2783d1be048bff7fb086e8c3853aea}} 
+std\+::map$<$ std\+::string, std\+::string $>$ {\bfseries branch\+\_\+types}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a8542e94f2803dcbae00e0c06359ac9b8}\label{classMTreeReader_a8542e94f2803dcbae00e0c06359ac9b8}} 
+std\+::map$<$ std\+::string, bool $>$ {\bfseries branch\+\_\+isobject}
+\item 
+\mbox{\Hypertarget{classMTreeReader_aeb1f6247f7f1a71b59afb87e1f1ef8f3}\label{classMTreeReader_aeb1f6247f7f1a71b59afb87e1f1ef8f3}} 
+std\+::map$<$ std\+::string, bool $>$ {\bfseries branch\+\_\+isobjectptr}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a2765192ab8c4b821b2f1150b5198f005}\label{classMTreeReader_a2765192ab8c4b821b2f1150b5198f005}} 
+std\+::map$<$ std\+::string, bool $>$ {\bfseries branch\+\_\+isarray}
+\item 
+\mbox{\Hypertarget{classMTreeReader_aed8b922ac7b59bbb267bd5c1e700a9c3}\label{classMTreeReader_aed8b922ac7b59bbb267bd5c1e700a9c3}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ std\+::pair$<$ std\+::string, int $>$ $>$ $>$ {\bfseries branch\+\_\+dimensions}
+\item 
+\mbox{\Hypertarget{classMTreeReader_aa550d4e447e9b2282c973aa00f1f4497}\label{classMTreeReader_aa550d4e447e9b2282c973aa00f1f4497}} 
+std\+::map$<$ std\+::string, std\+::vector$<$ size\+\_\+t $>$ $>$ {\bfseries branch\+\_\+dims\+\_\+cache}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a3d6649a02a5940ea4261490255d13a14}\label{classMTreeReader_a3d6649a02a5940ea4261490255d13a14}} 
+TFile $\ast$ {\bfseries thefile} =nullptr
+\item 
+\mbox{\Hypertarget{classMTreeReader_a84088ef27c24f6eb441be2a14d87b816}\label{classMTreeReader_a84088ef27c24f6eb441be2a14d87b816}} 
+TTree $\ast$ {\bfseries thetree} =nullptr
+\item 
+\mbox{\Hypertarget{classMTreeReader_a85038b10ee7d84fd91449aa27674f9b7}\label{classMTreeReader_a85038b10ee7d84fd91449aa27674f9b7}} 
+bool {\bfseries iownthisfile} =true
+\item 
+\mbox{\Hypertarget{classMTreeReader_ab18b3bcea2ea218a786374a1a9c52154}\label{classMTreeReader_ab18b3bcea2ea218a786374a1a9c52154}} 
+bool {\bfseries autoclear} =false
+\item 
+\mbox{\Hypertarget{classMTreeReader_aed378a9f3f223a7ebe3227ae3f15f09e}\label{classMTreeReader_aed378a9f3f223a7ebe3227ae3f15f09e}} 
+int {\bfseries verbosity} =1
+\item 
+\mbox{\Hypertarget{classMTreeReader_a34a5a54d074141ba682e277f9b152f82}\label{classMTreeReader_a34a5a54d074141ba682e277f9b152f82}} 
+uint64\+\_\+t {\bfseries current\+Entry\+Number} =0
+\item 
+\mbox{\Hypertarget{classMTreeReader_ab71a22f313f4e8a4754b917e8f8bf652}\label{classMTreeReader_ab71a22f313f4e8a4754b917e8f8bf652}} 
+int {\bfseries current\+Tree\+Number} =0
+\item 
+\mbox{\Hypertarget{classMTreeReader_ae51f20ce8174752c2ea7433aa13efd8a}\label{classMTreeReader_ae51f20ce8174752c2ea7433aa13efd8a}} 
+bool {\bfseries is\+MC} =false
+\item 
+\mbox{\Hypertarget{classMTreeReader_af21c99a92a8d7ec0bccc3e316415792f}\label{classMTreeReader_af21c99a92a8d7ec0bccc3e316415792f}} 
+\mbox{\hyperlink{classNotifier}{Notifier}} {\bfseries notifier}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a16c050a902c6f484a9cc13835e3259c3}\label{classMTreeReader_a16c050a902c6f484a9cc13835e3259c3}} 
+std\+::string {\bfseries name} =\char`\"{}\char`\"{}
+\item 
+\mbox{\Hypertarget{classMTreeReader_a8274590009dab5baa9462554fa5c4620}\label{classMTreeReader_a8274590009dab5baa9462554fa5c4620}} 
+std\+::string {\bfseries branchnamestring} =\char`\"{}\{\}\char`\"{}
 \end{DoxyCompactItemize}
 \doxysubsection*{Friends}
 \begin{DoxyCompactItemize}

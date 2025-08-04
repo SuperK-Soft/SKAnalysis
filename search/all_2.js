@@ -14,12 +14,13 @@ var searchData=
   ['combinedgrid_30',['combinedgrid',['../classcombinedgrid.html',1,'']]],
   ['comparecommons_31',['CompareCommons',['../classCompareCommons.html',1,'']]],
   ['comparerootfiles_32',['CompareRootFiles',['../classCompareRootFiles.html',1,'CompareRootFiles'],['../classCompareRootFiles.html#af9456208b0503b0988eed685173836a7',1,'CompareRootFiles::CompareRootFiles()']]],
-  ['copyhits_33',['CopyHits',['../classCopyHits.html',1,'']]],
-  ['createthread_34',['CreateThread',['../classUtilities.html#ae52d1dd16b34518b2ef4de01660cb8b2',1,'Utilities']]],
-  ['cstdoutredirector_35',['CStdoutRedirector',['../classCStdoutRedirector.html',1,'']]],
-  ['cstore_36',['CStore',['../classDataModel.html#aaaeb97ea84c890b10a40bf353f722e4e',1,'DataModel']]],
-  ['custom_5fdelims_37',['custom_delims',['../structpretty__print_1_1custom__delims.html',1,'pretty_print']]],
-  ['custom_5fdelims_5fbase_38',['custom_delims_base',['../structpretty__print_1_1custom__delims__base.html',1,'pretty_print']]],
-  ['custom_5fdelims_5fwrapper_39',['custom_delims_wrapper',['../structpretty__print_1_1custom__delims__wrapper.html',1,'pretty_print']]],
-  ['cutrecorder_40',['CutRecorder',['../classCutRecorder.html',1,'CutRecorder'],['../classCutRecorder.html#a7b94ca56dc075f5d9fa498a0b78d933f',1,'CutRecorder::CutRecorder()']]]
+  ['comparesubtriggers_33',['CompareSubtriggers',['../classCompareSubtriggers.html',1,'']]],
+  ['copyhits_34',['CopyHits',['../classCopyHits.html',1,'']]],
+  ['createthread_35',['CreateThread',['../classUtilities.html#ae52d1dd16b34518b2ef4de01660cb8b2',1,'Utilities']]],
+  ['cstdoutredirector_36',['CStdoutRedirector',['../classCStdoutRedirector.html',1,'']]],
+  ['cstore_37',['CStore',['../classDataModel.html#aaaeb97ea84c890b10a40bf353f722e4e',1,'DataModel']]],
+  ['custom_5fdelims_38',['custom_delims',['../structpretty__print_1_1custom__delims.html',1,'pretty_print']]],
+  ['custom_5fdelims_5fbase_39',['custom_delims_base',['../structpretty__print_1_1custom__delims__base.html',1,'pretty_print']]],
+  ['custom_5fdelims_5fwrapper_40',['custom_delims_wrapper',['../structpretty__print_1_1custom__delims__wrapper.html',1,'pretty_print']]],
+  ['cutrecorder_41',['CutRecorder',['../classCutRecorder.html',1,'CutRecorder'],['../classCutRecorder.html#a7b94ca56dc075f5d9fa498a0b78d933f',1,'CutRecorder::CutRecorder()']]]
 ];
