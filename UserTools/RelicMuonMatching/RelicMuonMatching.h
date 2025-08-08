@@ -35,7 +35,7 @@ class RelicMuonMatching: public Tool {
 	bool RelicMuonMatch(bool loweEventFlag, int64_t currentTicks, int subtrg_num=0, int32_t it0xsk=0);
 	
 	EventType eventType;
-	int currentSubRun;
+	int currentSubRun=999;
 	int lastRun = 0;
 	int last_nevsk=0;
 	int num_rollovers=0;
@@ -47,7 +47,7 @@ class RelicMuonMatching: public Tool {
 	bool muonsToRemove=false;
 	
 	int32_t lastnevhwsk, lastit0sk, last_rollover_nevsk;
-	int64_t firsteventticks, lasteventticks, lastmuticks, lastrelicticks;
+	int64_t firsteventticks, lasteventticks=0, lastmuticks, lastrelicticks;
 	
 	int nextmuentry=0;
 	int nextrelicentry=0;

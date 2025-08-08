@@ -79,10 +79,12 @@ void MTreeCut::SetBranchAddresses(){
 
 MTreeCut::~MTreeCut(){
 	if(mode=="write"){
-		if(additional_indices){ delete additional_indices; additional_indices=nullptr; }
-		if(ttree_entries){ delete ttree_entries; ttree_entries = nullptr; }
 		if(values_branch){ values_branch->ResetAddress(); values_branch=nullptr; }
 		if(pass_branch){ pass_branch->ResetAddress(); pass_branch=nullptr; }
+		/* - deleted when file is closed
+		if(additional_indices){ delete additional_indices; additional_indices=nullptr; }
+		if(ttree_entries){ delete ttree_entries; ttree_entries = nullptr; }
+		*/
 	}
 }
 

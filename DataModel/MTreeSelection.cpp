@@ -28,11 +28,11 @@ MTreeSelection::MTreeSelection(std::string cutFilein){
 
 MTreeSelection::~MTreeSelection(){
 	if(outfile){
+		for(auto&& acut : cut_pass_entries){
+			delete acut.second;
+			acut.second=nullptr;
+		}
 		outfile->Close();
-//		for(auto&& acut : cut_pass_entries){   // gets cleaned up byTFile::Close
-//			delete acut.second;
-//			acut.second=nullptr;
-//		}
 		delete outfile;
 	}
 	if(cutfile){

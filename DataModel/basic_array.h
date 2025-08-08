@@ -319,6 +319,38 @@ class basic_array<T,true> /*: public generic_array*/ {
 
 #endif // define BasicArray_H
 
+// tester
+// g++ -g -std=c++11 -I ./ test.cpp -o test
+/*
+int main(){
+	
+	int anarray[4][3] = {{5,6,7},{55,66,77},{555,666,777},{5555,6666,7777}};
+	
+	//auto myarray(&anarray[0]); /// NOPE this won't make a basic_array
+	basic_array<std::remove_extent<decltype(anarray)>::type> myarray(&anarray);
+	//basic_array<int(*)[3][4]> myarray(&anarray);
+	//basic_array<std::remove_extent<decltype(anarray)>::type> myarray(static_cast<int*>(&anarray[0]), 4, 3);
+	//basic_array<int**> myarray(static_cast<int*>(&anarray[0]), 4, 3);
+	
+	std::cout<<"myarray is of type "<<type_name<decltype(myarray)>()<<std::endl;
+	std::cout<<"first element is of type "<<type_name<decltype(myarray[0])>()<<std::endl;
+	std::cout<<"first element has size "<<myarray.front().size()<<std::endl;
+	
+	for(auto it = myarray.begin(); it!=myarray.end(); ++it){
+		size_t row = std::distance(myarray.begin(),it);
+		std::cout<<"row "<<row<<" is at "<<it->data();
+		int* mem = &(anarray[row][0]);
+		std::cout<<" or "<<mem<<std::endl;
+		for(size_t i=0; i<it->size(); ++i){
+			std::cout<<"element ["<<row<<"]["<<i<<"] is "<<((*it)[i])<<" or "<<myarray[row][i]<<std::endl;
+		}
+	}
+	
+	
+	return 0;
+}
+*/
+
 /* Usage:
 	// STATICALLY SIZED ARRAYS
 	// =======================
