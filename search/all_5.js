@@ -6,6 +6,5 @@ var searchData=
   ['fitpurewaterli9ncapturedt_78',['FitPurewaterLi9NcaptureDt',['../classFitPurewaterLi9NcaptureDt.html#a65802ddf6671d2af104703c56e711d92',1,'FitPurewaterLi9NcaptureDt::FitPurewaterLi9NcaptureDt()'],['../classFitPurewaterLi9NcaptureDt.html',1,'FitPurewaterLi9NcaptureDt'],['../md_UserTools_FitPurewaterLi9NcaptureDt_README.html',1,'(Global Namespace)']]],
   ['fitspallationdt_79',['FitSpallationDt',['../classFitSpallationDt.html#a4663f5bed5dd2c3657df3ee12914563a',1,'FitSpallationDt::FitSpallationDt()'],['../classFitSpallationDt.html',1,'FitSpallationDt'],['../md_UserTools_FitSpallationDt_README.html',1,'(Global Namespace)']]],
   ['flagafts_80',['FlagAFTs',['../classFlagAFTs.html',1,'']]],
-  ['framework_81',['Framework',['../md_UserTools_ImportedTools_README.html',1,'']]],
-  ['func_82',['func',['../structThread__args.html#ad5950e8a9a345f012c6b11a8d9dc7cc2',1,'Thread_args']]]
+  ['func_81',['func',['../structThread__args.html#ad5950e8a9a345f012c6b11a8d9dc7cc2',1,'Thread_args']]]
 ];

@@ -102,7 +102,7 @@ $(function() {
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">bool</span> RelicMuonMatch(<span class="keywordtype">bool</span> loweEventFlag, int64_t currentTicks, <span class="keywordtype">int</span> subtrg_num=0, int32_t it0xsk=0);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    </div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    EventType eventType;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">int</span> currentSubRun;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">int</span> currentSubRun=999;</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">int</span> lastRun = 0;</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">int</span> last_nevsk=0;</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> num_rollovers=0;</div>
@@ -114,7 +114,7 @@ $(function() {
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">bool</span> muonsToRemove=<span class="keyword">false</span>;</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    </div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    int32_t lastnevhwsk, lastit0sk, last_rollover_nevsk;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    int64_t firsteventticks, lasteventticks, lastmuticks, lastrelicticks;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    int64_t firsteventticks, lasteventticks=0, lastmuticks, lastrelicticks;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    </div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">int</span> nextmuentry=0;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">int</span> nextrelicentry=0;</div>

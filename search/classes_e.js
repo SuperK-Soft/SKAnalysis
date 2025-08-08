@@ -9,5 +9,6 @@ var searchData=
   ['results_5ft_398',['results_t',['../structresults__t.html',1,'']]],
   ['rob_399',['Rob',['../structRob.html',1,'']]],
   ['rootreadtest_400',['RootReadTest',['../classRootReadTest.html',1,'']]],
-  ['runwiseenergycut_401',['RunwiseEnergyCut',['../classRunwiseEnergyCut.html',1,'']]]
+  ['runinfostealer_401',['RunInfoStealer',['../classRunInfoStealer.html',1,'']]],
+  ['runwiseenergycut_402',['RunwiseEnergyCut',['../classRunwiseEnergyCut.html',1,'']]]
 ];
