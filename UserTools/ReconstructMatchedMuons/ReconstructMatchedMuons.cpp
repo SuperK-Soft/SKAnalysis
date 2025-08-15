@@ -283,19 +283,22 @@ bool ReconstructMatchedMuons::WriteEventsOut(std::vector<ParticleCand>& eventsTo
 			}
 		}
 		
-		// get time of prompt readout
-		int64_t prompt_trigticks = (skheadqb_.nevhwsk & ~0x1FFFF);
-		prompt_trigticks = prompt_trigticks << 15;
-		int64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
-		prompt_trigticks += iticks & 0xFFFFFFFF;
-		
-		// calculate ticks difference between the two
-		int64_t ticksDiff = (aft_trigticks - prompt_trigticks);
-		if(ticksDiff<0) ticksDiff += (int64_t(1) << 47); // rollover correction
-		Log(m_unique_name+" ticks between SHE and AFT trigger: "+toString(ticksDiff),v_debug,m_verbose);
-		
-		// add those hits from the AFT to the primary event
-		AddAftHits(rawtqinfo_aft, double(ticksDiff)/COUNT_PER_NSEC);
+		// merge AFT hits if required
+		if(eventsToWrite[i].hasAFT){
+			// get time of prompt readout
+			int64_t prompt_trigticks = (skheadqb_.nevhwsk & ~0x1FFFF);
+			prompt_trigticks = prompt_trigticks << 15;
+			int64_t iticks = *reinterpret_cast<uint32_t*>(&skheadqb_.it0sk);
+			prompt_trigticks += iticks & 0xFFFFFFFF;
+			
+			// calculate ticks difference between prompt and AFT trigger
+			int64_t ticksDiff = (aft_trigticks - prompt_trigticks);
+			if(ticksDiff<0) ticksDiff += (int64_t(1) << 47); // rollover correction
+			Log(m_unique_name+" ticks between SHE and AFT trigger: "+toString(ticksDiff),v_debug,m_verbose);
+			
+			// add those hits from the AFT to the primary event
+			AddAftHits(rawtqinfo_aft, double(ticksDiff)/COUNT_PER_NSEC);
+		}
 		
 		// set header and tq info
 		// HEAD branch from assorted skhead_* common blocks,
