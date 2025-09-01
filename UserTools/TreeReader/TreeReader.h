@@ -50,7 +50,7 @@ class TreeReader: public Tool {
 	// triggered on detection of a change in run/subrun numbers
 	bool RunChange();
 	bool SubrunChange();
-	bool SkipThisRun(); // skip the current run (called if bad)
+	bool SkipThisRun(int subrun); // skip the current run (if subrun=0) or subrun (called if lfbadrun)
 	bool Write(); // update output files if in write/copy mode
 	
 	void PrintSubTriggers();

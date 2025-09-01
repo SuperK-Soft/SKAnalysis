@@ -11,7 +11,13 @@ CXXFLAGS += -Wno-reorder -Wno-misleading-indentation -Wno-sign-compare -Wno-unus
 # debug mode: disable the try{}-catch{} around all Tool methods.
 # Combine with -lSegFault to cause exceptions to invoke a segfault, printing a backtrace.
 ifeq ($(MAKECMDGOALS),debug)
-CXXFLAGS+= -O0 -g -lSegFault -rdynamic -DDEBUG
+#https://blogs.oracle.com/linux/post/improving-application-security-with-undefinedbehaviorsanitizer-ubsan-and-gcc
+#SANITIZEFLAGS= -fno-omit-frame-pointer -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
+#CFLAGS+= $(SANITIZEFLAGS)
+CXXFLAGS+= -O1 -g -lSegFault -rdynamic -DDEBUG $(SANITIZEFLAGS)
+# note -O1 is better than -O0 as some errors do not manifest without optimisation!
+# Make sure to specify -fsanitize=undefined to BOTH the compile and the link line.
+#LDFLAGS+= -fsanitize=address -fsanitize=undefined
 endif
 
 # flags required for gprof profiling

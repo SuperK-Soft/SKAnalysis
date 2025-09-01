@@ -1047,11 +1047,12 @@ bool TreeReader::RunChange(){
 	
 	// check if this run is bad
 	Log(m_unique_name+": Checking bad run flag for run "+toString(skhead_.nrunsk),v_debug,m_verbose);
-	int isbad = lfbadrun_(&skhead_.nrunsk, &skhead_.nsubsk);
+	int nsub=0; // if subrun 0 is set bad, the whole run is bad
+	int isbad = lfbadrun_(&skhead_.nrunsk, &nsub);
 	if(isbad){
 		Log(m_unique_name+" run "+toString(skhead_.nrunsk)+" flagged as a bad run by lfbadrun!",
 		    v_warning,m_verbose);
-		if(skipbadruns) SkipThisRun();
+		if(skipbadruns) SkipThisRun(0);
 	}
 	
 	// update water transparency
@@ -1092,6 +1093,15 @@ bool TreeReader::SubrunChange(){
 	m_data->vars.Set("newSubrun",true);
 	get_ok = true;
 	
+	// check if this subrun is bad
+	Log(m_unique_name+": Checking bad run flag for run "+toString(skhead_.nrunsk)+", subrun "+toString(skhead_.nsubsk),v_debug,m_verbose);
+	int isbad = lfbadrun_(&skhead_.nrunsk, &skhead_.nsubsk);
+	if(isbad){
+		Log(m_unique_name+" run "+toString(skhead_.nrunsk)+", subrun "+toString(skhead_.nsubsk)+" flagged as a bad run by lfbadrun!",
+		    v_warning,m_verbose);
+		if(skipbadruns) SkipThisRun(skhead_.nsubsk);
+	}
+	
 	// update bad channels
 	// read badch info & puts it into combad_ common block
 	Log(m_unique_name+" Updating bad channel list for run "+toString(skhead_.nrunsk)
@@ -1109,18 +1119,21 @@ bool TreeReader::SubrunChange(){
 	return get_ok;
 }
 
-bool TreeReader::SkipThisRun(){
-	Log(m_unique_name+" SkipThisRun called for run "+toString(skhead_.nrunsk)+", scanning for next run...",v_error,m_verbose);
+bool TreeReader::SkipThisRun(int subrun){
+	Log(m_unique_name+" SkipThisRun called for run "+toString(skhead_.nrunsk)+", subrun "+toString(subrun)+
+	    ", scanning for next run...",v_error,m_verbose);
 	
-	// probably the most efficient way would be to scan the set of filenames in the TChain,
-	// (i.e. the list_of_files vector), parsing the run number from the filename
-	// until we find the next file with a different run number.
-	// how we then jump to that file though...? dunno. What's its correspoding TChain entry number?
-	// It also requires on knowing the filename format and how to parse it.
+	// probably the most efficient way for rfm files would be to scan the set of filenames in the TChain,
+	// (i.e. perhaps from TChain::GetListOfFiles or the list_of_files vector),
+	// parsing the run number from the filename until we find the next file with a different run number.
+	// However this requires knowing the filename format and how to parse it to obtain the run/subrun number
+	// (works for rfm files, but not general), and how do we then jump to the right TChain entry...?
 	
-	// the next best thing is just to keep jumping to the next file,
-	// until we find one that has a new run number
+	// The next best thing is just to keep jumping to the next file, and getting the run and subrun from the header or RunInfo.
+	// We can use the number of entries in this TTree to then jump straight to the next file.
+	// XXX Note this still assumes each run/subrun is in a new file - true for rfm files, but perhaps not generally.... XXX
 	int next_run_num = skhead_.nrunsk;
+	int next_sub_num = skhead_.nsubsk;
 	do {
 		// get the number of entries in this file (TTree)
 		int entry_in_current_file = myTreeReader.GetTree()->LoadTree(entrynum);
@@ -1131,15 +1144,15 @@ bool TreeReader::SkipThisRun(){
 		entrynum += (entries_in_current_file - entry_in_current_file);
 		Log(m_unique_name+" Jumping forward to entry "+toString(entrynum),v_debug,m_verbose);
 		
-		// read that entry (should be first entry of next file), and get run number from the Header
+		// read that entry (should be first entry of next file), and get (sub)run number from the Header
 		//  - ah, but this is only populated in some entries! so we need to scan until one is populated.
+		const Header* header = nullptr;
 		while(true){
 			get_ok = myTreeReader.GetEntry(entrynum);
 			if(get_ok<=0){
 				Log(m_unique_name+" Hit end of tree while looking for next good run!",v_warning,m_verbose);
 				return false;
 			}
-			const Header* header = nullptr;
 			get_ok = myTreeReader.Get("HEADER", header);
 			if(!get_ok){
 				Log(m_unique_name+" Error getting HEADER while scanning for good run",v_error,m_verbose);
@@ -1152,10 +1165,15 @@ bool TreeReader::SkipThisRun(){
 			}
 			++entrynum;
 		}
+		next_sub_num = header->nsubsk;
 		
 		Log(m_unique_name+" Next file "+myTreeReader.GetFile()->GetName()
-		    +" is from run "+toString(next_run_num),v_debug,m_verbose);
-	} while (next_run_num==skhead_.nrunsk);
+		    +" is from run "+toString(next_run_num)+", subrun "+toString(next_sub_num),v_debug,m_verbose);
+		
+		if(next_run_num!=skhead_.nrunsk) break;
+		if(subrun!=0 && next_sub_num!=skhead_.nsubsk) break;
+		
+	} while (true);
 	
 	
 	/*
