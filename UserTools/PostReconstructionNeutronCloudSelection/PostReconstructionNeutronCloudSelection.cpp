@@ -35,7 +35,12 @@ bool PostReconstructionNeutronCloudSelection::Initialise(std::string configfile,
   // add a cut to the selector if being used
   get_ok = m_variables.Get("selectorName", selectorName);
   if(get_ok){
-    m_data->AddCut(selectorName, "bsvertex", "bsvertex[0] != 9999",true);
+    // n.b. if you use PrintMTreeSelections on the cuts file the printed number of 'passing events'
+    // only accounts for *unique input Tree entries*. Since each entry has many SLE triggers
+    // this is not the number of passing neutrons. The entry count of the distros is, though.
+    // type 1/2 cuts aren't quite right as we have in input branch to use as an index.
+    // honestly this is redundant with the histograms below.
+    m_data->AddCut(selectorName, "bsvertex", "bsvertex[0] != 9999",false);
     m_data->AddCut(selectorName, "bsgood", "bsgood > 0.4",true,0.4,1.0);
     m_data->AddCut(selectorName, "bsdirks", "bsdirks < 0.4",true,0,0.4);
     m_data->AddCut(selectorName, "bsn50", "24 > bsn50 > 50",true,24,50);
@@ -49,7 +54,7 @@ bool PostReconstructionNeutronCloudSelection::Initialise(std::string configfile,
   
   outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
   if (outfile == nullptr){
-    throw std::runtime_error("PostReconstructionNeutronCloudSelection::Finalise - Couldn't open output file");
+    throw std::runtime_error("PostReconstructionNeutronCloudSelection::Initialise - Couldn't open output file");
   }
   
   bsenergy_plot = TH1D("bonsai_energy", "bonsai_energy;bsenergy", 100, 0, 0);
@@ -84,11 +89,17 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
   */
   
   if(N==0){
+    // new event from parent toolchain
     std::vector<int> SLE_times;
     m_data->CStore.Get("SLE_times", SLE_times);
     N = SLE_times.size();
     Log(m_unique_name+": next event had "+toString(N)+" subtriggers",v_debug,m_verbose);
-    if(N==0) return true;
+    if(N==0){
+      // prevent carry-over of previous event neutrons
+      // this might happen if pre-reconstruction selection nukes all SLE triggers
+      m_data->CStore.Set("event_neutrons", neutrons);
+      return true;
+    }
   }
   
   try {
@@ -193,6 +204,7 @@ bool PostReconstructionNeutronCloudSelection::Execute(){
 bool PostReconstructionNeutronCloudSelection::Finalise(){
   
   outfile->cd();
+  
   bsenergy_plot.Write();
   h_n_neutrons.Write();
   
@@ -206,6 +218,8 @@ bool PostReconstructionNeutronCloudSelection::Finalise(){
   post_bsdirks_cut.Write();
   post_bsn50_cut.Write();
   post_ldt_cut.Write();
+  
+  outfile->Close();
   
   return true;
 }

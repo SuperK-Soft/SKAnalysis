@@ -29,27 +29,25 @@ bool CalculateNeutronCloudVertex::Initialise(std::string configfile, DataModel &
 }
 
 bool CalculateNeutronCloudVertex::Execute(){
-
+  
+  int N_SLE = 0;
+  m_data->CStore.Get("N_SLE", N_SLE);
+  // just for record keeping, number of SLE triggers (before neutron reconstruction and cuts)
+  N_SLE_plot.Fill(N_SLE);
+  
   std::vector<NeutronInfo> neutrons = {};
   m_data->CStore.Get("event_neutrons", neutrons);
-
-  if (neutrons.empty()){
+  if (N_SLE==0 || neutrons.empty()){
+    // note that if SLE_Search Tool finds no triggers, the subtoolchain won't have run,
+    // so neutrons will not have been cleared by PostReconstructionNeutronCloudSelection.
+    // so it's ok if neutrons is not empty but N_SLE=0
+    
     // multiplicity 0, set neutron cloud vertex to (0,0,0)
     mult = 0;
     mult_plot.Fill(mult);
     std::fill(neutron_cloud_vertex.begin(), neutron_cloud_vertex.end(), 0);
     nvc_tree_ptr->Fill();
     return true;
-  }
-  
-  // just for record keeping, number of SLE triggers (before neutron reconstruction and cuts)
-  int N_SLE = 0;
-  m_data->CStore.Get("N_SLE", N_SLE);
-  N_SLE_plot.Fill(N_SLE);
-  if(N_SLE==0){
-  	std::cerr<<"HOLD UP, N_SLE=0 but neutrons is not empty?!"<<std::endl;
-  	exit(1);
-  	return false;
   }
   
   // record number of reconstructed neutrons after cuts

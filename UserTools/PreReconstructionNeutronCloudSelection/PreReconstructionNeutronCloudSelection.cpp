@@ -57,7 +57,7 @@ bool PreReconstructionNeutronCloudSelection::Execute(){
   
   m_data->CStore.Set("SLE_times", post_cut_SLE_times);
   const int N_SLE = post_cut_SLE_times.size();
-  m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain                                                                                      
+  m_data->CStore.Set("N_SLE", N_SLE); // need this for the subtoolchain
 
   
   return true;
