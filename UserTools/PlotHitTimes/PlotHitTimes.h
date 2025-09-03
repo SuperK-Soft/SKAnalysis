@@ -32,7 +32,7 @@ class PlotHitTimes: public Tool {
 	bool Execute(); ///< Executre function used to perform Tool perpose. 
 	bool Finalise(); ///< Finalise funciton used to clean up resorces.
 	int GetSubtriggers(int subtrigtype, std::vector<int>& subtrigger_times);
-	int GetSubtriggerFlags(const std::vector<int>& subtrigger_times, std::vector<std::bitset<32>>& in_subtrigger_flags);
+	int GetSubtriggerFlags(const std::vector<int>& subtrigger_times, std::vector<std::bitset<64>>& in_subtrigger_flags);
 	
 	private:
 	
@@ -41,7 +41,8 @@ class PlotHitTimes: public Tool {
 	TCanvas* c_subtriggers = nullptr;
 	ColourWheel colourwheel;
 	int onlyWriteSubtriggers=0;
-  bool useSLESearchTool = false;
+	bool useSLESearchTool = false;
+	bool useSetTimingGateM = false;
   
 };
 

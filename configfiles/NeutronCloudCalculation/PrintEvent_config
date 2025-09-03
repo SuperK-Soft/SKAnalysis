@@ -1,0 +1,16 @@
+# print event config file
+verbosity 1
+treeReaderName reader
+printCommons 0
+printRunInfo 1
+printHeader 0
+printTriggers 1
+printMCInfo 0
+printPrevT0 0
+printBadChannels 0
+printDarkInfo 0
+printTQREAL 0
+printTQAREAL 0
+printHits 1
+printSubTriggers 0
+printLoweInfo 1

@@ -1,0 +1,3 @@
+# print event config file
+verbosity 3
+treeReaderName reader

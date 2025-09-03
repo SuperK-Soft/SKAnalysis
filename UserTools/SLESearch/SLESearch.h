@@ -25,7 +25,10 @@ class SLESearch: public Tool {
   
   ConnectionTable* connection_table = nullptr;
   bool include_offset = false;
-  const double SLE_t0_offset = -885.417;
+  int SLE_threshold=0;
+  double SLE_readout_length=0;
+  double SLE_deadtime=0;
+  double SLE_t0_offset=0; //-885.417;
   
   double TimeOfFlight(const float*, const float*) const;
 

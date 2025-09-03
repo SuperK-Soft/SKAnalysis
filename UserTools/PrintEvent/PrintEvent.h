@@ -52,6 +52,19 @@ class PrintEvent: public Tool {
 	bool DeleteOutsideHits(int outLUN);
 	
 	MTreeReader* myTreeReader=nullptr;
+	bool printCommons=true;
+	bool printRunInfo=true;
+	bool printHeader=true;
+	bool printTriggers=true;
+	bool printMCInfo=false;
+	bool printPrevT0=false;
+	bool printBadChannels=false;
+	bool printDarkInfo=false;
+	bool printTQREAL=false;
+	bool printTQAREAL=false;
+	bool printHits=true;
+	bool printSubTriggers=false;
+	bool printLoweInfo=false;
 	
 };
 

@@ -26,13 +26,17 @@ public:
   std::vector<double> interaction_ratios = std::vector<double>(104);
   
   int N = 0;
+  std::string selectorName;
   
+  TFile* outfile = nullptr;
   TH1D bsenergy_plot;
+  TH1D h_n_neutrons;
   
   TH1D pre_bsgood_cut;
   TH1D pre_bsdirks_cut;
   TH1D pre_bsn50_cut;
   TH1D pre_ldt_cut;
+  TH1D pre_ldt_cut2; // debug
 
   TH1D post_bsgood_cut;
   TH1D post_bsdirks_cut;
@@ -44,7 +48,7 @@ public:
   
   std::vector<NeutronInfo> neutrons = {}; //make struct
   
-  float CalculateLongitudinalDistance(float*, float*, float*) const;
+  float CalculateDistanceToMuon(float*, float*, float*, float*);
 };
 
 #endif

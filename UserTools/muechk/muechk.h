@@ -20,8 +20,10 @@ class muechk: public Tool {
  private:
 
   MTreeReader* tree_reader_ptr = nullptr;
+  int lun=0;
 
   TH1D nmue_plot;
+  TH1D nmue_times;
   
 };
 

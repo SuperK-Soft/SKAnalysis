@@ -24,7 +24,9 @@ bool RunwiseEnergyCut::Initialise(std::string configfile, DataModel &data){
 	if(get_ok){
 		std::stringstream description{"runwise energy cuts:\n"};
 		for(auto&& acut : cuts){
+		                 // for runs spanning this range
 			description<<"{"<<acut.first.first<<" < Run < "<<acut.first.second
+			         // only accept energies in this range
 			         <<" : "<<acut.second.first<<" < bsenergy < "<<acut.second.second<<"}\n";
 		}
 		m_data->AddCut(selectorName, m_unique_name, description.str(),true);
@@ -48,19 +50,19 @@ bool RunwiseEnergyCut::Execute(){
 	for(auto&& acut : cuts){
 		int runmin = acut.first.first;
 		int runmax = acut.first.second;
-		if(runmin>0 && runmin <= skhead_.nrunsk) continue;
-		if(runmax>0 && runmax >= skhead_.nrunsk) continue;
+		if(runmin>0 && skhead_.nrunsk < runmin) continue;
+		if(runmax>0 && skhead_.nrunsk > runmax) continue;
 		if(reconEnergy < acut.second.first){  rejected=true; break; }
 		if(reconEnergy > acut.second.second){ rejected=true; break; }
 	}
 	
-	if(!rejected){
+	if(!selectorName.empty()) m_data->ApplyCut(selectorName, m_unique_name, reconEnergy);
+	
+	if(rejected){
 		Nskipped++;
 		m_data->vars.Set("Skip", true);
 		return true;
 	}
-	
-	if(!selectorName.empty() && !rejected) m_data->ApplyCut(selectorName, m_unique_name, reconEnergy);
 	
 	Log(m_unique_name+" Event passed with energy: "+toString(skroot_lowe_.bsenergy),v_debug,m_verbose);
 	

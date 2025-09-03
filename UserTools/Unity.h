@@ -89,3 +89,4 @@
 //#include "MergeDipstickFiles.h"
 #include "GetSubTriggers.h"
 #include "CalculateSpallationVariables.h"
+#include "RemoveBadHits.h"

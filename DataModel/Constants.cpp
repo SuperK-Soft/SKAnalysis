@@ -341,9 +341,31 @@ std::unordered_map<std::string,int> GetHitChargeAndFlags(int32_t iqiskz, int& ad
 	return labels;
 }
 
+// is returning 0 from these sensible?
 int GetTriggerThreshold(int trigbit){
-	if(constants::default_trig_thresholds.count(trigbit)){
-		return constants::default_trig_thresholds.at(trigbit);
+	if(constants::default_trg_thresholds.count(trigbit)){
+		return constants::default_trg_thresholds.at(trigbit);
+	}
+	return 0;
+}
+
+int GetTriggerPreTrgTicks(int trigbit){
+	if(constants::default_pretrg_ticks.count(trigbit)){
+		return constants::default_pretrg_ticks.at(trigbit);
+	}
+	return 0;
+}
+
+int GetTriggerPostTrgTicks(int trigbit){
+	if(constants::default_posttrg_ticks.count(trigbit)){
+		return constants::default_posttrg_ticks.at(trigbit);
+	}
+	return 0;
+}
+
+int GetTriggerT0OffsetTicks(int trigbit){
+	if(constants::default_trg_t0s.count(trigbit)){
+		return constants::default_trg_t0s.at(trigbit);
 	}
 	return 0;
 }

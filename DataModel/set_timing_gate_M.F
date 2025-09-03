@@ -147,6 +147,7 @@ cc      print *, 'set_timing_gate: ',it0sk,it0,id_start,id_end,od_start,od_end
 #include "sktq.h"
 
       integer it0, id_start, id_end, i
+      real id_start_ns, id_end_ns
 
 c*** For ID (moved from tqskz.F)
       if (nrunsk.lt.50791) then
@@ -159,10 +160,18 @@ c*** For ID (moved from tqskz.F)
          id_start = SKGATE_START_COUNT + it0 - it0sk
          id_end   = SKGATE_END_COUNT   + it0 - it0sk
       endif
-      ! convert to nsec since we don't have itiskz
-      id_start = id_start/COUNT_PER_NSEC
-      id_end = id_end/COUNT_PER_NSEC
-c***  print *, "gate: ",id_start," -> ",id_end
+      ! convert to nsec since we don't have itiskz.
+      ! But the difference here is not only units...
+      ! For some reason the 1.3us hit flagging is done based on hit times
+      ! in TDC counts *before calibration*, which we lose when moving to TQREAL.
+      ! the conversion is done by $SKOFL_ROOT/src/skrd/sktqconv_qb.F and appears
+      ! non-trivial to invert to recover itiskz from tiskz (or raw equivalents).
+      ! the shift is significant - around 1800 ticks, so we need to account
+      ! for it to put timing gates even vaguely where they should be.
+      ! best we can do is guess - 980 ns ¯\_(ツ)_/¯
+      id_start_ns = id_start/COUNT_PER_NSEC + 980
+      id_end_ns = id_end/COUNT_PER_NSEC + 980
+      !print *, "gate: ",id_start_ns," -> ",id_end_ns
 
       if (nqisk_raw.gt.0) then
 c*** clear iab(1:MAXPM) to choose only the earliest hits
@@ -185,8 +194,8 @@ c*** bad channel mask will be removed
                IHTIFLZ(i) = iand(IHTIFLZ(i),2**16-2) ! make 0bit = 0
                if(iand(IHTIFLZ(i),2).eq.2 .and.
      $              iab(icabiz(i)).eq.0.and.
-     $              tbuf_raw(i) .ge. id_start .and.   ! changed itiskz -> tbuf_raw
-     $              tbuf_raw(i) .le. id_end) then     ! (tiskz is shifted by t0_sub)
+     $              tbuf_raw(i) .ge. id_start_ns .and.   ! changed itiskz -> tbuf_raw
+     $              tbuf_raw(i) .le. id_end_ns) then     ! (tiskz is shifted by t0_sub)
 c***  In 1.3usec & in-gate
                   IHTIFLZ(i) = IHTIFLZ(i) + 1 ! 0bit
                   iab(icabiz(i)) = 1
@@ -230,6 +239,7 @@ cc    print *, 'set_timing_gate_id: ',it0sk,it0,id_start,id_end
 #include "skbadc.h"
 
       integer it0, od_start, od_end, i
+      real od_start_ns, od_end_ns
       integer nhitaztmp, icaba, j
       INTEGER ISKBIT
       COMMON /SKOPT/ISKBIT
@@ -250,8 +260,8 @@ c*** For OD (copied from ID)
          od_end   = SKGATE_END_COUNT   + it0 - it0sk
       endif
       ! convert to nsec since we don't have itiskz
-      od_start = od_start/COUNT_PER_NSEC
-      od_end = od_end/COUNT_PER_NSEC
+      od_start_ns = od_start/COUNT_PER_NSEC + 980
+      od_end_ns = od_end/COUNT_PER_NSEC + 980
 
 c*** bad channel mask will be removed         
       NHITAZ = nhitaz_raw
@@ -265,8 +275,8 @@ c*** bad channel mask will be removed
 
          IHTFLZ(i) = iand(IHTFLZ(i),2**16-2) ! make 0bit = 0
          if (iand(IHTFLZ(i),2).eq.2 .and.
-     $        TASKZ(i).ge.od_start .and. 
-     $        TASKZ(i).le.od_end) then
+     $        taskz_raw(i).ge.od_start_ns .and. 
+     $        taskz_raw(i).le.od_end_ns) then
 c***  In 1.3usec & in-gate
             IHTFLZ(i) = IHTFLZ(i) + 1 ! 0bit
 c            nqask = nqask + 1   ! in gate & 1.3usec
@@ -309,6 +319,7 @@ cc      print *, 'set_timing_gate_od: ',it0sk,it0,od_start,od_end
 #include "skveto.h"
 
       integer it0, id_start, id_end, i
+      real id_start_ns, id_end_ns
 
 c*** For ID (moved from tqskz.F)
       if (nrunsk.lt.50791) then
@@ -322,8 +333,8 @@ c*** For ID (moved from tqskz.F)
          id_end   = SKGATE_END_COUNT   + it0 - it0sk
       endif
       ! convert to nsec since we don't have itiskz
-      id_start = id_start/COUNT_PER_NSEC
-      id_end = id_end/COUNT_PER_NSEC
+      id_start_ns = id_start/COUNT_PER_NSEC + 980
+      id_end_ns = id_end/COUNT_PER_NSEC + 980
 
       if (nqiskz.gt.0) then
 c*** clear iabv(MAXPM+1,MAXPMV) to choose only the earliest hits
@@ -336,8 +347,8 @@ c*** clear iabv(MAXPM+1,MAXPMV) to choose only the earliest hits
                IHTIFLZ(i) = iand(IHTIFLZ(i),2**16-2) ! make 0bit = 0
                if(iand(IHTIFLZ(i),2).eq.2 .and.
      $              iabv(icabiz(i)).eq.0.and.
-     $              TISKZ(i).ge.id_start .and. 
-     $              TISKZ(i).le.id_end) then
+     $              tbuf_raw(i).ge.id_start_ns .and. 
+     $              tbuf_raw(i).le.id_end_ns) then
 c***  In 1.3usec & in-gate
                   IHTIFLZ(i) = IHTIFLZ(i) + 1 ! 0bit
                   iabv(icabiz(i)) = 1

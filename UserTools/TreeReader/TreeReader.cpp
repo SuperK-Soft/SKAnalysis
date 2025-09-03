@@ -1036,6 +1036,8 @@ bool TreeReader::Execute(){
 // either for MC or for data
 bool TreeReader::RunChange(){
 	
+	runinfsk_();
+	
 	// skip for invalid MC run numbers.
 	if(skhead_.nrunsk==999999 || skhead_.nrunsk<=0){
 		return true;
@@ -1354,7 +1356,7 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 			Log(m_unique_name+" reading next entry from file",v_debug,m_verbose);
 			// use skread / skrawread to get the next TTree entry and populate Fortran common blocks
 			// skreadMode: 0=skread only, 1=skrawread only, 2=both
-			if(bytesread>0 && skreadMode>0){
+			if(bytesread>0 && skreadMode!=0){
 				Log(m_unique_name+" calling SKRAWREAD",v_debug,m_verbose);
 				skcrawread_(&LUN, &get_ok); // N.B. positive LUN (see above)
 				// for ZBS this doesn't seem to flag non-physics events as per for SKROOT...?
@@ -1424,7 +1426,6 @@ int TreeReader::ReadEntry(long entry_number, bool use_buffered){
 			if(bytesread>0 && skrootMode!=SKROOTMODE::ZEBRA){
 				Log(m_unique_name+" calling skroot_get_entry",v_debug,m_verbose);
 				skroot_get_entry_(&LUN);
-				//skroot_get_tqskz_(&LUN); // might want to fix this - god I hate it all so much
 			}
 			if(bytesread > 0 && skrootMode == SKROOTMODE::ZEBRA){
 			  Log(m_unique_name+" calling nerdnebk to retrieve NEUT bank", v_debug, m_verbose);
@@ -1681,8 +1682,6 @@ void TreeReader::PrintTriggerBits(){
 }
 
 void TreeReader::PrintSubTriggers(){
-	printf("calling runinf\n");
-	runinfsk_();  // gets run info from SKROOT or ZBS file, populates /RUNINF/
 	// is this already called as part of skread?
 	// get trigger configuration for this run
 	printf("This was event %d and had %d hardware triggers that were...{ ",skhead_.nevsk, skheadqb_.numhwsk);

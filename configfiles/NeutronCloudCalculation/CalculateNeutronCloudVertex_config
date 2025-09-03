@@ -1,4 +1,6 @@
 verbosity 1
 MU_TreeReader reader
-nvc_file_str /home/mattnich/disk3stor/neutron_cloud_out_test.root
-outfile_name /home/mattnich/disk3stor/neutron_cloud_plots_calcvertex.root
+#nvc_file_str /home/mattnich/disk3stor/neutron_cloud_out_test.root
+#plotfile_name /home/mattnich/disk3stor/neutron_cloud_plots_calcvertex.root
+nvc_file_str /disk02/usr6/moflaher/run870_apr/neutron_cloud_out_test.root
+plotfile_name /disk02/usr6/moflaher/run870_apr/neutron_cloud_plots_calcvertex.root

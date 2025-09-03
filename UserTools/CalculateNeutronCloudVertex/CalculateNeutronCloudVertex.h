@@ -29,12 +29,12 @@ class CalculateNeutronCloudVertex: public Tool {
   TH1D N_SLE_plot;
   
   int mult = 0;
-  std::vector<double> neutron_cloud_vertex = {};
-  std::vector<double> muon_dir = {};
+  std::vector<double> neutron_cloud_vertex{0,0,0};
   MTreeReader* MU_tree_reader = nullptr;
 
   TFile* nvc_file_ptr = nullptr;
   TTree* nvc_tree_ptr = nullptr;
+  TFile* plotfile = nullptr;
 
   void GetTreeReader();
   void CreateOutputFile();

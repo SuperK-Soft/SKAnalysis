@@ -1,0 +1,6 @@
+verbosity 1
+treeReaderName reader
+outputfile subtrigger_hits.root
+useSLESearchTool 1
+useSetTimingGateM 1 # only for forcing when TQLIST is available
+onlyWriteSubtriggers 0

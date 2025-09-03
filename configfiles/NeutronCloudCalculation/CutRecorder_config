@@ -1,0 +1,5 @@
+verbosity 1
+treeReaderName reader
+selectorName CloudCuts
+selectionsFile ./cloud_cuts.root
+distributionsFile ./cloud_distros.root

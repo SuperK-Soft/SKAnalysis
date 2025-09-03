@@ -1,0 +1,4 @@
+verbosity 1
+readerName reader
+StepsToPerform 0 # everything
+checkEventType 0

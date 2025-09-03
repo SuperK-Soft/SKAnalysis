@@ -51,6 +51,9 @@ std::string TriggerIDToName(int code);
 std::string GetTriggerNames(int32_t trigid);
 int TriggerNameToID(std::string trigname);
 int GetTriggerThreshold(int trigbit);
+int GetTriggerPreTrgTicks(int trigbit);
+int GetTriggerPostTrgTicks(int trigbit);
+int GetTriggerT0OffsetTicks(int trigbit);
 const std::unordered_map<int,std::string>* const GetParticleNameMap();
 
 enum class SKROOTMODE : int { NONE = 4, ZEBRA = 3, READ = 2, WRITE = 1, COPY = 0 };
@@ -918,17 +921,153 @@ namespace constants{
 	};
 	
 	// obviously the following is only relevant for nhits based thresholds
-	static const std::map<int, int> default_trig_thresholds{
+	static const std::map<int, int> default_trg_thresholds{
 		// note these are run-dependent, roughly based on the majority of SK-VI
-		{TriggerType::LE, 49},
-		{TriggerType::LE_hitsum, 49},
-		{TriggerType::HE, 52},
-		{TriggerType::HE_hitsum, 52},
-		{TriggerType::SLE, 34},
-		{TriggerType::SLE_hitsum, 34},
-		{TriggerType::SHE, 60},
-		{TriggerType::OD_or_Fission, 0},  // TODO look these up
-		{TriggerType::OD_hitsum, 0}       // TODO look these up
+		{TriggerType::LE,49},
+		{TriggerType::HE,52},
+		{TriggerType::SLE,34},  // varies per run...
+		{TriggerType::OD_or_Fission,22},
+		{TriggerType::Periodic,65536},
+		{TriggerType::AFT_or_Cal,65536},
+		{TriggerType::Veto_Start,65536},
+		{TriggerType::Veto_Stop,65536},
+		{TriggerType::unknown_8,65536},
+		{TriggerType::unknown_9,65536},
+		{TriggerType::unknown_10,65536},
+		{TriggerType::Random_Wide,65536},
+		{TriggerType::ID_Laser,65536},
+		{TriggerType::LED,65536},
+		{TriggerType::Ni,65536},
+		{TriggerType::OD_Laser,65536},
+		// in the reference SK6 run the _hitsum thresholds were actually 65536
+		// but since users may not know whether to be using 'SLE' or 'SLE_hitsum' etc
+		// use the one with a normal value
+		{TriggerType::LE_hitsum,49},    // *
+		{TriggerType::HE_hitsum,52},    // *
+		{TriggerType::SLE_hitsum,34},   // * varies per run...
+		{TriggerType::OD_hitsum,22},    // *
+		{TriggerType::unknown_20,65536},
+		{TriggerType::unknown_21,65536},
+		{TriggerType::SN_Burst,65536},
+		{TriggerType::mue_Decay,65536},
+		{TriggerType::LINAC,65536},
+		{TriggerType::LINAC_RF,65536},
+		{TriggerType::unknown_26,65536},
+		{TriggerType::Periodic_simple,65536},
+		{TriggerType::SHE,60},
+		{TriggerType::AFT,65536},
+		{TriggerType::Pedestal,65536},
+		{TriggerType::T2K,65536}
+	};
+	
+	static const std::map<int,int> default_pretrg_ticks{
+		// taken from a random SK6 run
+		// note that both SLE/LE/HE and SLE_hitsum/LE_hitsum/HE_hitsum have pre- post and t0 offset values
+		// and that they are different!
+		// based on the fact that SK6 run had SLE_hitsum thresholds of 65536,
+		// do we suppose we should be using the non-hitsum versions...?
+		{TriggerType::LE,9600},
+		{TriggerType::HE,9600},
+		{TriggerType::SLE,960},
+		{TriggerType::OD_or_Fission,9600},
+		{TriggerType::Periodic,9600},
+		{TriggerType::AFT_or_Cal,9600},
+		{TriggerType::Veto_Start,86400},
+		{TriggerType::Veto_Stop,86400},
+		{TriggerType::unknown_8,0},
+		{TriggerType::unknown_9,0},
+		{TriggerType::unknown_10,0},
+		{TriggerType::Random_Wide,960000},
+		{TriggerType::ID_Laser,9600},
+		{TriggerType::LED,9600},
+		{TriggerType::Ni,9600},
+		{TriggerType::OD_Laser,9600},
+		{TriggerType::LE_hitsum,7000},
+		{TriggerType::HE_hitsum,7000},
+		{TriggerType::SLE_hitsum,900},
+		{TriggerType::OD_hitsum,6800},
+		{TriggerType::unknown_20,9600},
+		{TriggerType::unknown_21,0},
+		{TriggerType::SN_Burst,0},
+		{TriggerType::mue_Decay,0},
+		{TriggerType::LINAC,9600},
+		{TriggerType::LINAC_RF,9600},
+		{TriggerType::unknown_26,0},
+		{TriggerType::Periodic_simple,576},
+		{TriggerType::SHE,9600},
+		{TriggerType::AFT,10560},
+		{TriggerType::Pedestal,0},
+		{TriggerType::T2K,983040}
+	};
+	
+	static const std::map<int,int> default_posttrg_ticks{
+		{TriggerType::LE,67200},
+		{TriggerType::HE,67200},
+		{TriggerType::SLE,1923},
+		{TriggerType::OD_or_Fission,67200},
+		{TriggerType::Periodic,124800},
+		{TriggerType::AFT_or_Cal,67200},
+		{TriggerType::Veto_Start,96},
+		{TriggerType::Veto_Stop,96},
+		{TriggerType::unknown_8,0},
+		{TriggerType::unknown_9,0},
+		{TriggerType::unknown_10,0},
+		{TriggerType::Random_Wide,960000},
+		{TriggerType::ID_Laser,67200},
+		{TriggerType::LED,67200},
+		{TriggerType::Ni,960000},
+		{TriggerType::OD_Laser,67200},
+		{TriggerType::LE_hitsum,67200},
+		{TriggerType::HE_hitsum,67200},
+		{TriggerType::SLE_hitsum,1923},
+		{TriggerType::OD_hitsum,67200},
+		{TriggerType::unknown_20,67200},
+		{TriggerType::unknown_21,0},
+		{TriggerType::SN_Burst,0},
+		{TriggerType::mue_Decay,0},
+		{TriggerType::LINAC,67200},
+		{TriggerType::LINAC_RF,67200},
+		{TriggerType::unknown_26,0},
+		{TriggerType::Periodic_simple,2307},
+		{TriggerType::SHE,67200},
+		{TriggerType::AFT,960000},
+		{TriggerType::Pedestal,0},
+		{TriggerType::T2K,983040}
+	};
+	
+	static const std::map<int,int> default_trg_t0s{
+		{TriggerType::LE,0},
+		{TriggerType::HE,0},
+		{TriggerType::SLE,0},
+		{TriggerType::OD_or_Fission,100},
+		{TriggerType::Periodic,0},
+		{TriggerType::AFT_or_Cal,0},
+		{TriggerType::Veto_Start,0},
+		{TriggerType::Veto_Stop,0},
+		{TriggerType::unknown_8,0},
+		{TriggerType::unknown_9,0},
+		{TriggerType::unknown_10,0},
+		{TriggerType::Random_Wide,0},
+		{TriggerType::ID_Laser,0},
+		{TriggerType::LED,0},
+		{TriggerType::Ni,0},
+		{TriggerType::OD_Laser,0},
+		{TriggerType::LE_hitsum,-2000},
+		{TriggerType::HE_hitsum,-2000},
+		{TriggerType::SLE_hitsum,-1700},
+		{TriggerType::OD_hitsum,-2100},
+		{TriggerType::unknown_20,0},
+		{TriggerType::unknown_21,0},
+		{TriggerType::SN_Burst,0},
+		{TriggerType::mue_Decay,0},
+		{TriggerType::LINAC,-2000},
+		{TriggerType::LINAC_RF,-2000},
+		{TriggerType::unknown_26,0},
+		{TriggerType::Periodic_simple,0},
+		{TriggerType::SHE,0},
+		{TriggerType::AFT,192},
+		{TriggerType::Pedestal,0},
+		{TriggerType::T2K,0}
 	};
 	
 	static const std::map<int, std::string> flag_to_string_SKI_III{

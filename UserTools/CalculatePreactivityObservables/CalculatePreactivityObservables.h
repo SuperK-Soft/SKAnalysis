@@ -6,6 +6,7 @@
 
 #include "Tool.h"
 #include "MTreeReader.h"
+#include "TH1.h"
 
 struct Hit {
   double time = 0;
@@ -29,10 +30,14 @@ class CalculatePreactivityObservables: public Tool {
   double fraction = 0.4;
   ConnectionTable* connection_table = nullptr;
   MTreeReader* LOWE_tree_reader;
+  TH1F h_maxpre;
+  TH1F h_maxpregate;
+  TH1F h_bsvertex_t;
+  TH1F h_q50n50;
 
   void GetTreeReader();
   double TimeOfFlight(const float*, const float*) const;
-  bool CalculateGoodness(const double&, const double&) const;
+  double CalculateGoodness(const double&, const double&) const;
   
 };
 

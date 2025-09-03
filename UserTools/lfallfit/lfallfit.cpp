@@ -40,6 +40,14 @@ bool lfallfit::Initialise(std::string configfile, DataModel &data){
 	// and to check if this file is MC or not, so we can use the appropriate lf_allfit version
 	MC = m_data->Trees.at(readerName)->GetMCFlag();
 	
+	// we'll call skroot_set_lowe to update the LOWE object in the input TTree
+	// if the input file is ROOT; otherwise the results will just be in the common blocks
+	// and you should probably call skroot_set_lowe at some point yourself.
+	// note that this check is a bit crude as it's not specific to the requested TreeReader
+	// (in fact, there may not even be one if reading a zbs file...)
+	// (don't try to check skroot_get_mgr for returning nullptr - it never does!)
+	update_lowe_branch = (skheadf_.sk_file_format==1);
+	
 	// skip clusfit if we have too many hits. get the limit for 'too many hits'
 	get_ok = m_variables.Get("hitLimitForClusfit",max_nqisk_for_clusfit);
 	if(!get_ok){
@@ -152,6 +160,7 @@ bool lfallfit::Execute(){
 			}
 		}
 	} else {
+		// FIXME these seem to attempt to fetch the PrevT0 branch: maybe we should keep it!
 		switch (skheadg_.sk_geometry) {
 			case 1: {
 				lfallfit_sk1_data_(&watert, &max_nqisk_for_clusfit, &lfflag);
@@ -222,23 +231,28 @@ bool lfallfit::Execute(){
 		       skroot_lowe_.bsgood[1],skroot_lowe_bsovaq);
 	}
 	
-	Log(m_unique_name+" setting results into lowe branch",v_debug,m_verbose);
-	// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
-	skroot_set_lowe_(&lun,                      &skroot_lowe_.bsvertex[0], &skroot_lowe_.bsresult[0],
-	                 &skroot_lowe_.bsdir[0],    &skroot_lowe_.bsgood[0],   &skroot_lowe_.bsdirks,
-	                 &skroot_lowe_.bseffhit[0], &skroot_lowe_.bsenergy,    &skroot_lowe_.bsn50,
-	                 &skroot_lowe_.bscossun,    &skroot_lowe_.clvertex[0], &skroot_lowe_.clresult[0],
-	                 &skroot_lowe_.cldir[0],    &skroot_lowe_.clgoodness,  &skroot_lowe_.cldirks,
-	                 &skroot_lowe_.cleffhit[0], &skroot_lowe_.clenergy,    &skroot_lowe_.cln50,
-	                 &skroot_lowe_.clcossun,    &skroot_lowe_.latmnum,     &skroot_lowe_.latmh,
-	                 &skroot_lowe_.lmx24,       &skroot_lowe_.ltimediff,   &skroot_lowe_.lnsratio,
-	                 &skroot_lowe_.lsdir[0],    &skroot_lowe_.spaevnum,    &skroot_lowe_.spaloglike,
-	                 &skroot_lowe_.sparesq,     &skroot_lowe_.spadt,       &skroot_lowe_.spadll,
-	                 &skroot_lowe_.spadlt,      &skroot_lowe_.spamuyn,     &skroot_lowe_.spamugdn,
-	                 &skroot_lowe_.posmc[0],    &skroot_lowe_.dirmc[0],    &skroot_lowe_.pabsmc[0],
-	                 &skroot_lowe_.energymc[0], &skroot_lowe_.darkmc,      &skroot_lowe_.islekeep,
-	                 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
-	                 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
+	if(update_lowe_branch){
+		Log(m_unique_name+" setting results into lowe branch",v_debug,m_verbose);
+		// pass reconstructed variables from skroot_lowe_ common block (populated by lfallfit) to skroot file
+		skroot_set_lowe_(&lun,                      &skroot_lowe_.bsvertex[0], &skroot_lowe_.bsresult[0],
+		                 &skroot_lowe_.bsdir[0],    &skroot_lowe_.bsgood[0],   &skroot_lowe_.bsdirks,
+		                 &skroot_lowe_.bseffhit[0], &skroot_lowe_.bsenergy,    &skroot_lowe_.bsn50,
+		                 &skroot_lowe_.bscossun,    &skroot_lowe_.clvertex[0], &skroot_lowe_.clresult[0],
+		                 &skroot_lowe_.cldir[0],    &skroot_lowe_.clgoodness,  &skroot_lowe_.cldirks,
+		                 &skroot_lowe_.cleffhit[0], &skroot_lowe_.clenergy,    &skroot_lowe_.cln50,
+		                 &skroot_lowe_.clcossun,    &skroot_lowe_.latmnum,     &skroot_lowe_.latmh,
+		                 &skroot_lowe_.lmx24,       &skroot_lowe_.ltimediff,   &skroot_lowe_.lnsratio,
+		                 &skroot_lowe_.lsdir[0],    &skroot_lowe_.spaevnum,    &skroot_lowe_.spaloglike,
+		                 &skroot_lowe_.sparesq,     &skroot_lowe_.spadt,       &skroot_lowe_.spadll,
+		                 &skroot_lowe_.spadlt,      &skroot_lowe_.spamuyn,     &skroot_lowe_.spamugdn,
+		                 &skroot_lowe_.posmc[0],    &skroot_lowe_.dirmc[0],    &skroot_lowe_.pabsmc[0],
+		                 &skroot_lowe_.energymc[0], &skroot_lowe_.darkmc,      &skroot_lowe_.islekeep,
+		                 &skroot_lowe_.bspatlik,    &skroot_lowe_.clpatlik,    &skroot_lowe_.lwatert,
+		                 &skroot_lowe_.lninfo,      &skroot_lowe_.linfo[0]);
+	} else {
+		Log(m_unique_name+" no TreeManager for ID "+std::to_string(lun)+" found, results only in common blocks\n"
+		   "Call skroot_set_lowe to populate LOWE branch",v_warning,m_verbose);
+	}
 	
 	return true;
 	

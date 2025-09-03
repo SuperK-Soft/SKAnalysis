@@ -1,2 +1,3 @@
- readerName reader
+verbosity 1
+readerName reader
 #hitLimitForClusfit -1 ## crashes womp womp

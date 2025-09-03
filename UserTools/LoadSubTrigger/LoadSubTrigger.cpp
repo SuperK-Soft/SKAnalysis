@@ -33,12 +33,14 @@ bool LoadSubTrigger::Execute(){
   bool ok = m_data->CStore.Get(trigger_time_names, SLE_times); // ns
   if(!ok){throw std::runtime_error("LoadSubTrigger::Execute couldn't retrieve trigger times");}
   
-  double this_subtrigger_ticks_dbl = (SLE_times.at(trigger_idx) * COUNT_PER_NSEC) + skheadqb_.it0sk; // ticks
-  int this_subtrigger_ticks = int(this_subtrigger_ticks_dbl);
-  skheadqb_.it0xsk = this_subtrigger_ticks;
-  std::cout << "this_subtrigger ticks:  " << this_subtrigger_ticks << std::endl;
+  unsigned int this_subtrigger_ticks = (SLE_times.at(trigger_idx) * COUNT_PER_NSEC);
+  skheadqb_.it0xsk = this_subtrigger_ticks + skheadqb_.it0sk;
+  Log(m_unique_name+": subtrigger "+toString(trigger_idx)+"/"+toString(SLE_times.size())
+      +" is at "+toString(SLE_times.at(trigger_idx))+" ns, or "+toString(this_subtrigger_ticks)
+      +" ticks from primary trigger at "+toString(skheadqb_.it0sk)+", giving it0xsk: "+toString(skheadqb_.it0xsk),
+      v_debug,m_verbose);
   
-  set_timing_gate_m_(&this_subtrigger_ticks); // ticks
+  set_timing_gate_m_(&skheadqb_.it0xsk); // n.b. internally it sets it0xsk to the passed value.
 
   // call `skcread` to re-calculate charge in 1.3us, min and max hit time and charges and their PMTs
   int get_ok = 0;
@@ -48,7 +50,7 @@ bool LoadSubTrigger::Execute(){
   // get_ok = 0 (physics entry), 1 (error), 2 (EOF), other (non-physics)
   if(get_ok!=0){
     Log("LoadSubTrigger::Execute:: Error! skcread returned "+std::to_string(get_ok)
-	+ " when reloading SLE subtrigger!\n", 0, 0);
+      + " when reloading SLE subtrigger!\n", 0, 0);
     return false;
   }
   

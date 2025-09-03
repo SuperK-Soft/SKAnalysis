@@ -26,6 +26,21 @@ bool PrintEvent::Initialise(std::string configfile, DataModel &data){
 	}
 	myTreeReader = m_data->Trees.at(treeReaderName);
 	
+	// configure what gets printed
+	m_variables.Get("printCommons",printCommons);
+	m_variables.Get("printRunInfo",printRunInfo);
+	m_variables.Get("printHeader",printHeader);
+	m_variables.Get("printTriggers",printTriggers);
+	m_variables.Get("printMCInfo",printMCInfo);
+	m_variables.Get("printPrevT0",printPrevT0);
+	m_variables.Get("printBadChannels",printBadChannels);
+	m_variables.Get("printDarkInfo",printDarkInfo);
+	m_variables.Get("printTQREAL",printTQREAL);
+	m_variables.Get("printTQAREAL",printTQAREAL);
+	m_variables.Get("printHits",printHits);
+	m_variables.Get("printSubTriggers",printSubTriggers);
+	m_variables.Get("printLoweInfo",printLoweInfo);
+	
 	return true;
 }
 
@@ -41,68 +56,80 @@ bool PrintEvent::Execute(){
 	
 	// FIXME add config variables to control what gets printed
 	
-	PrintHeaderInfo();
-	
-	runinfsk_();
-	PrintRunInfo();
-	
-	PrintTriggerInfo(); // from commons... not sure this is all available from a single class.
-	
-	if(myTreeReader->GetMCFlag()){
-		PrintMCInfo();
-	} else {
-		// HWTRGLIST and SOFTWARETRG branches aren't in MC files
-		PrintHWTriggerInfo();
-		PrintSWTriggerInfo();
+	// basic info from commons
+	if(printCommons){
+		std::cout<<"\n ==== COMMONS ====\n"<<std::endl;
+		
+		std::cout<<"SKHEADQB:\n"
+		         <<"\tnevhwsk: "<<skheadqb_.nevhwsk<<"\n"    // "TRG EVENT COUNTER (where T0 have)"? == Header::counter_32
+		         <<"\tnevswsk: "<<skheadqb_.nevswsk<<"\n"    // software trigger id - small, != nevsk; is it a triggerID?
+		         <<"\tntrigsk: "<<skheadqb_.ntrigsk<<"\n"    // sub-trigger # (=(it0xsk-it0sk)/count_per_nsec/10).
+		         //<<"\t\t( == "<<(((skheadqb_.it0xsk-skheadqb_.it0sk)/COUNT_PER_NSEC)/10)<<")\n" // confirmed this is same
+		         <<"\tnumhwsk: "<<skheadqb_.numhwsk<<"\n";   // == SoftwareTrigger::nhwtrgs == HWTRGLIST->GetEntries()?
+		         // FIXME what sets ntrigsk; is it set_timing_gate? maybe it has to be?
+		for(int i=0; i<skheadqb_.numhwsk; ++i){
+			std::cout<<"\t\thwsk["<<i<<"]: "<<skheadqb_.hwsk[i]<<"\n"; // TRG EVENT COUNTER
+		}
+		
+		std::cout<<"SKHEADC:\n"
+		         <<"\tsk_condition: "<<skheadc_.sk_condition<<"\n"   // see sk_condition.dat
+		         <<"\tsk_gd_concentration: "<<skheadc_.sk_gd_concentration<<"\n";  // Gd2(SO4)3 8H2O by weight
+		
+		std::cout<<"SKWATERLEN:\n"
+		         <<"\tskwaterlen: "<<skwaterlen_.skwaterlen<<"\n"      // attenuation length from water job
+		         <<"\tskwatergain: "<<skwaterlen_.skwatergain<<"\n";  // relative global PMT gain from water job
 	}
 	
-	Print_sktrg();
+	if(printRunInfo) PrintRunInfo();
+	
+	if(printHeader) PrintHeaderInfo();
+	
+	// uhh, break this up?
+	if(printTriggers){
+		PrintTriggerInfo(); // from commons... not sure this is all available from a single class.
+		if(!myTreeReader->GetMCFlag()){
+			// HWTRGLIST and SOFTWARETRG branches aren't in MC files
+			PrintHWTriggerInfo();
+			PrintSWTriggerInfo();
+		}
+		if(printTriggers) Print_sktrg(); // how is this different to PrintTriggerInfo?
+	}
+	
+	if(printMCInfo && myTreeReader->GetMCFlag()){
+		PrintMCInfo();
+	}
 	
 	// PREVT0 also not present for MC... not sure it would makes sense for it to be
-	if(!myTreeReader->GetMCFlag()) PrintPrevT0();
+	if(printPrevT0 && !myTreeReader->GetMCFlag()) PrintPrevT0();
 	
-	PrintBadChannels();
+	if(printBadChannels) PrintBadChannels();
 	
-	PrintDarkInfo();
+	if(printDarkInfo) PrintDarkInfo();
 	
 	// from Reformatter.h, apparently there is a branch:
 	// TClonesArray*      TRGList;   // ??? where is this? how relates to SWTRGLIST and HWTRGLIST?
 	
+	// meta info about TQReal and hit count summary
+	if(printTQREAL)  PrintTQRealInfo(true);   // ID
+	if(printTQAREAL) PrintTQRealInfo(false);  // OD
 	// N.B. as of f204293d6370d7e89bba0623e79fa65822668643 SKG4 does not include OD: no OD hits
-	PrintTQRealInfo(true);  // ID
-	PrintTQRealInfo(false);  // OD
 	
-	PrintHits();   // compare various sources: TQReal, commons, TODO TQLIST, TQRAWSK?
+	// hit counts and subset of hit cable/time/charges
+	if(printHits) PrintHits();   // compare various sources: TQReal, commons, TODO TQLIST, TQRAWSK?
 	
 	//TClonesArray*       TQList;   // TODO
 	//TClonesArray*     ODTQList;   // TODO
 	
-	if(!myTreeReader->GetMCFlag()){
-		PrintSubTriggers();
-	} else {
-		PrintSubTriggersMC();
+	if(printSubTriggers){
+		Log(m_unique_name+" Warning! Printing subtriggers will reset to subtrigger 0!",v_warning,m_verbose);
+		if(!myTreeReader->GetMCFlag()){
+			PrintSubTriggers();
+		} else {
+			PrintSubTriggersMC();
+		}
 	}
 	
-	std::cout<<"\n ==== COMMONS ====\n"<<std::endl;
-	
-	std::cout<<"SKHEADQB:\n"
-	         <<"\tnevhwsk: "<<skheadqb_.nevhwsk<<"\n"    // "TRG EVENT COUNTER (where T0 have)"? == Header::counter_32
-	         <<"\tnevswsk: "<<skheadqb_.nevswsk<<"\n"    // software trigger id - small, != nevsk; is it a triggerID?
-	         <<"\tntrigsk: "<<skheadqb_.ntrigsk<<"\n"    // sub-trigger # (=(it0xsk-it0sk)/count_per_nsec/10).
-	         //<<"\t\t( == "<<(((skheadqb_.it0xsk-skheadqb_.it0sk)/COUNT_PER_NSEC)/10)<<")\n" // confirmed this is same
-	         <<"\tnumhwsk: "<<skheadqb_.numhwsk<<"\n";   // == SoftwareTrigger::nhwtrgs == HWTRGLIST->GetEntries()?
-	         // FIXME what sets ntrigsk; is it set_timing_gate? maybe it has to be?
-	for(int i=0; i<skheadqb_.numhwsk; ++i){
-		std::cout<<"\t\thwsk["<<i<<"]: "<<skheadqb_.hwsk[i]<<"\n"; // TRG EVENT COUNTER
-	}
-	
-	std::cout<<"SKHEADC:\n"
-	         <<"\tsk_condition: "<<skheadc_.sk_condition<<"\n"   // see sk_condition.dat
-	         <<"\tsk_gd_concentration: "<<skheadc_.sk_gd_concentration<<"\n";  // Gd2(SO4)3 8H2O by weight
-	
-	std::cout<<"SKWATERLEN:\n"
-	         <<"\tskwaterlen: "<<skwaterlen_.skwaterlen<<"\n"      // attenuation length from water job
-	         <<"\tskwatergain: "<<skwaterlen_.skwatergain<<"\n";  // relative global PMT gain from water job
+	if(printLoweInfo) PrintLowEInfo();
 	
 	/*
 	std::cout<<"odmaskflag:\n"  // what are these? masked (bad) OD PMTs?
@@ -114,9 +141,7 @@ bool PrintEvent::Execute(){
 	         <<"\tod_mask_nhits: "<<odmaskflag_.od_mask_nhits<<"\n"
 	         <<"\tod_mask_nhits: "<<odmaskflag_.od_mask_nhits<<"\n";
 	}
-	
 	*/
-	PrintLowEInfo();
 	
 	return true;
 }
@@ -567,8 +592,8 @@ bool PrintEvent::PrintTQRealHits(bool ID, int nhits){
 				GetHitFlagNames(hitflags, &hitflagstring);
 				std::cout<<"ID Hit "<<j<<"\n"
 				         <<"\tPMT: "<<cableNumber<<"\n"
-				         <<"\tT: TQReal.T: "<<myTQReal->T.at(j)<<" [ns]\n"
-				         <<"\tQ: TQReal.Q: "<<myTQReal->Q.at(j)<<" [p.e.]\n"
+				         <<"\tT: TQReal.T: "<<myTQReal->T.at(i)<<" [ns]\n"
+				         <<"\tQ: TQReal.Q: "<<myTQReal->Q.at(i)<<" [p.e.]\n"
 				         <<"\thit flags: "<<hitflagstring<<"\n";
 				++j;
 				if(j>=nhits) break;
@@ -943,7 +968,8 @@ bool PrintEvent::PrintSubTriggers(bool verbose){
 	//    although mue_decay.F example does exactly this!
 	
 	// retrieve trigger settings used by the current run
-	runinfsk_();
+	// (redundant, done by TreeReader)
+	//runinfsk_();
 	
 	std::cout << "software trigger settings from file:" << std::endl;
 	// XXX for MC these seem to be empty?
@@ -1292,13 +1318,13 @@ bool PrintEvent::PrintLowEInfo(){
 	
 	std::cout<<"\nPrinting LOWE Branch\n"<<std::endl;
 	
-	if(lowe->bsenergy != 0){ // reconstruction not done
+	if(lowe->bsenergy == 0){ // reconstruction not done
 		std::cout<<"LOWE::bsenergy==0, appears LOWE branch is not populated"<<std::endl;
 	}
 	else if(lowe->bsenergy == 9999){
 		std::cout<<"LOWE::bsenergy==9999, appears bonsai energy reconstruction failed"<<std::endl;
 	}
-	if(lowe->bsenergy!=0 && lowe->bsvertex[0] == 9999){
+	if(lowe->bsvertex[0] == 9999){
 		// vertex and energy are reconstructed independently, both can succeed/fail independently
 		std::cout<<"LOWE::bsvertex[0]==9999, appears bonsai position reconstruction failed"<<std::endl;
 	}

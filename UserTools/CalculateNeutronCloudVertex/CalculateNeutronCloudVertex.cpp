@@ -24,10 +24,6 @@ bool CalculateNeutronCloudVertex::Initialise(std::string configfile, DataModel &
   GetTreeReader();
 
   CreateOutputFile();
-
-  N_SLE_plot = TH1D("N_SLE_plot", "number of SLE triggers after muon", 20, 0, 20);
-  mult_plot = TH1D("mult_plot", "multiplcity of neutron cloud;multiplcity", 20, 0, 20);
-  dist_to_mu_plot = TH1D("dist_to_mu_plot", "distance to muon plot; distance [cm]", 100, 100, 100);
   
   return true;
 }
@@ -38,32 +34,48 @@ bool CalculateNeutronCloudVertex::Execute(){
   m_data->CStore.Get("event_neutrons", neutrons);
 
   if (neutrons.empty()){
+    // multiplicity 0, set neutron cloud vertex to (0,0,0)
     mult = 0;
+    mult_plot.Fill(mult);
     std::fill(neutron_cloud_vertex.begin(), neutron_cloud_vertex.end(), 0);
     nvc_tree_ptr->Fill();
     return true;
   }
   
+  // just for record keeping, number of SLE triggers (before neutron reconstruction and cuts)
+  int N_SLE = 0;
+  m_data->CStore.Get("N_SLE", N_SLE);
+  N_SLE_plot.Fill(N_SLE);
+  if(N_SLE==0){
+  	std::cerr<<"HOLD UP, N_SLE=0 but neutrons is not empty?!"<<std::endl;
+  	exit(1);
+  	return false;
+  }
+  
+  // record number of reconstructed neutrons after cuts
+  mult = neutrons.size();
+  mult_plot.Fill(mult);
+  
+  // calculate mean position of all neutron vertices
   for (const auto& neutron : neutrons){
     for (int dim = 0; dim < 3; ++dim){
       neutron_cloud_vertex.at(dim) += neutron.bs_vertex.at(dim) / neutrons.size();
     }
   }
   
-  mult = neutrons.size();
-  mult_plot.Fill(mult);
-
-  dist_to_mu_plot.Fill(ClosestApproach(neutron_cloud_vertex));
-
-  int N_SLE = 0;
-  m_data->CStore.Get("N_SLE", N_SLE);
-  N_SLE_plot.Fill(N_SLE);
+  // distance from neutron cloud to ... muon?
+  // i suppose this could be interesting...
+  double closestappr=ClosestApproach(neutron_cloud_vertex);
+  dist_to_mu_plot.Fill(closestappr);
+  //std::cout<<"distance muon to neutron cloud: "<<closestappr<<std::endl;
   
+  // fill output tree
   nvc_tree_ptr->Fill();
 
+  // intermittent write so we don't lose everything if toolchain crashes
   if (MU_tree_reader->GetEntryNumber() % 1000 == 0){
     nvc_file_ptr->cd();
-    nvc_tree_ptr->Write();
+    nvc_tree_ptr->Write("*",TObject::kOverwrite);
   }
   
   return true;
@@ -71,22 +83,13 @@ bool CalculateNeutronCloudVertex::Execute(){
 
 bool CalculateNeutronCloudVertex::Finalise(){
 
-  std::string outfile_name = "";
-  bool ok = m_variables.Get("outfile_name", outfile_name);
-  if (!ok || outfile_name.empty()){ outfile_name = "calculateneutroncloudvertex_out.root";}
-
-  TFile* outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
-  if (outfile == nullptr){
-    throw std::runtime_error("CalculateNeutronCloudVertex::Finalise - Couldn't open output file");
-  }
-
-  outfile->cd();
+  plotfile->cd();
   mult_plot.Write();
   N_SLE_plot.Write();
   dist_to_mu_plot.Write();
 
   nvc_file_ptr->cd();
-  nvc_tree_ptr->Write();
+  nvc_tree_ptr->Write("*",TObject::kOverwrite);
   
   return true;
 }
@@ -102,8 +105,20 @@ void CalculateNeutronCloudVertex::GetTreeReader(){
 
 
 double CalculateNeutronCloudVertex::ClosestApproach(const std::vector<double>& vertex) {
-  const std::vector<double> muon_ent = std::vector<double>(skroot_mu_.muentpoint, skroot_mu_.muentpoint + 3);
-  muon_dir = std::vector<double>(skroot_mu_.mudir, skroot_mu_.mudir + 3);
+  // skroot_mu_ not populated unless we do so, just use MU branch
+  //const std::vector<double> muon_ent(skroot_mu_.muentpoint, skroot_mu_.muentpoint + 3);
+  //const std::vector<double> muon_dir(skroot_mu_.mudir, skroot_mu_.mudir + 3);
+  
+  MuInfo* MU_ptr = nullptr;
+  MU_tree_reader->Get("MU", MU_ptr);
+  if(MU_ptr == nullptr){
+    throw std::runtime_error("CalculateNeutronCloudVertex::Execute: failed to get MU branch from tree reader");
+  }
+  const int muboy_idx = MU_ptr->muinfo[7];
+  const std::vector<double> muon_dir(MU_ptr->muboy_dir, MU_ptr->muboy_dir+3);
+  const std::vector<double> muon_ent(MU_ptr->muboy_entpos[muboy_idx],MU_ptr->muboy_entpos[muboy_idx]+3);
+  //std::cout<<"muon enters at "<<muon_ent[0]<<", "<<muon_ent[1]<<", "<<muon_ent[2]
+  //         <<" with direction "<<muon_dir[0]<<", "<<muon_dir[1]<<", "<<muon_dir[2]<<std::endl;
 
   std::vector<double> diff = std::vector<double>(3, 0);
   for (int i = 0; i < 3; ++i){diff.at(i) = vertex.at(i) - muon_ent.at(i);}
@@ -112,27 +127,47 @@ double CalculateNeutronCloudVertex::ClosestApproach(const std::vector<double>& v
   std::vector<double> dist_vec = std::vector<double>(3, 0);
 
   const double diff_mudir_ip = std::inner_product(diff.begin(), diff.end(), muon_dir.begin(), 0);
-  const double mudir_muent_ip = std::inner_product(muon_dir.begin(), muon_dir.end(), muon_dir.end(), 0);
+  const double mudir_muent_ip = std::inner_product(muon_dir.begin(), muon_dir.end(), muon_ent.begin(), 0);
   
   for (int i = 0; i < 3; ++i){
     proj.at(i) = (diff_mudir_ip / mudir_muent_ip) * muon_dir.at(i);
     dist_vec.at(i) = vertex.at(i) - proj.at(i) - muon_ent.at(i);
   }
   
-  return sqrt(std::inner_product(dist_vec.begin(), dist_vec.begin(), dist_vec.end(), 0));
+  return sqrt(std::inner_product(dist_vec.begin(), dist_vec.end(), dist_vec.begin(), 0));
 }
 
 void CalculateNeutronCloudVertex::CreateOutputFile(){
+  
+  // output tree of results - one neutron cloud vertex for each muon tree entry
+  // we will leave applying cuts to the relic tree for a subsequent toolchain
+  // which will process the relic tree and for each relic, check the distance
+  // to each matched muon's neutron cloud vertex.
   std::string nvc_file_str = "";
   m_variables.Get("nvc_file_str", nvc_file_str);
   if (nvc_file_str.empty()){
     throw std::runtime_error("CalculateNeutronCloudVertex::CreateOutputFile - no output file specified!");
   }
-  nvc_file_ptr = TFile::Open(nvc_file_str.c_str(), "UPDATE");
+  nvc_file_ptr = TFile::Open(nvc_file_str.c_str(), "RECREATE");
+  
   nvc_tree_ptr = new TTree("neutron_cloud_info", "neutron_cloud_info");
-
   nvc_tree_ptr->Branch("neutron_cloud_multiplicity", &mult);
   nvc_tree_ptr->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
-  nvc_tree_ptr->Branch("muon_dir", &muon_dir);
+  
+  
+  // for plots
+  std::string plotfile_name = "";
+  bool ok = m_variables.Get("plotfile_name", plotfile_name);
+  if (!ok || plotfile_name.empty()){ plotfile_name = "calculateneutroncloudvertex_out.root";}
+
+  plotfile = TFile::Open(plotfile_name.c_str(), "RECREATE");
+  if (plotfile == nullptr){
+    throw std::runtime_error("CalculateNeutronCloudVertex::Finalise - Couldn't open output file");
+  }
+  
+  N_SLE_plot = TH1D("N_SLE_plot", "number of SLE triggers after muon", 20, 0, 20);
+  mult_plot = TH1D("mult_plot", "multiplcity of neutron cloud;multiplcity", 20, 0, 20);
+  dist_to_mu_plot = TH1D("dist_to_mu_plot", "distance to muon plot; distance [cm]", 100, 100, 100);
+  
   return;
 }

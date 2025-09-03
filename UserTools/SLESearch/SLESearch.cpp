@@ -36,37 +36,41 @@ bool SLESearch::Initialise(std::string configfile, DataModel &data){
   max_triggers = -999;
   m_variables.Get("max_triggers", max_triggers);
   
+  // uh, do we use SLE or SLE_hitsum for trigger window parameters??
+  // they have same post-trigger length, slightly differnt pre- trigger length,
+  // but very different t0 offset (0 vs -1700 ticks!)
+  // i think with the way matthew's trigger works we may need the t0 offset?
+  // but bear in mind we're fudging this in set_timing_gate_M_ anyway, so....
+  TriggerType trig_type = TriggerType::SLE_hitsum;  
+  
+  SLE_threshold = skruninf_.softtrg_thr[trig_type];
+  if(SLE_threshold==0) SLE_threshold = GetTriggerThreshold(trig_type);
+  
+  int sle_pretrg_ticks = skruninf_.softtrg_pre_t0[trig_type];
+  if(sle_pretrg_ticks==0) sle_pretrg_ticks = GetTriggerPreTrgTicks(trig_type);
+  int sle_posttrg_ticks = skruninf_.softtrg_post_t0[trig_type];
+  if(sle_posttrg_ticks==0) sle_posttrg_ticks = GetTriggerPreTrgTicks(trig_type);
+  SLE_readout_length = double(sle_pretrg_ticks+sle_posttrg_ticks)/COUNT_PER_NSEC;
+  
+  int SLE_t0_offset_ticks = skruninf_.softtrg_t0_offset[trig_type];
+  if(SLE_t0_offset_ticks==0) SLE_t0_offset_ticks = GetTriggerT0OffsetTicks(trig_type);
+  SLE_t0_offset = double(SLE_t0_offset_ticks)/COUNT_PER_NSEC;
+  
+  std::cout<<"SLE threshold: "<<SLE_threshold<<", trigger spans "<<SLE_readout_length<<" ns with t0 offset "<<SLE_t0_offset<<std::endl;
+  
+  SLE_deadtime = 0; // assume no deadtime?
+  
   return true;
 }
 
 
 bool SLESearch::Execute(){
 
-  /*
-    First for testing/validating the neutron cloud cut, we need to copy the skt_, skq_ commons into the datamodel for later comparisons. 
-   */
-
   //////// CHCKING HITS \\\\\\\\\\
-  std::cout << "nrunsk: "  << skhead_.nrunsk << std::endl;
-  std::cout << "SKGATE_START_COUNT: " << SKGATE_START_COUNT << std::endl;
-  std::cout << "SKGATE_END_COUNT: " << SKGATE_END_COUNT << std::endl;
-
-  std::cout << "sktqz_.nqiskz: " << sktqz_.nqiskz << std::endl;
-  for (int i = 0; i < 5; ++i){
-    std::cout << "sktqz_.iqiskz["<<i<<"]: " << sktqz_.iqiskz[i] << std::endl;
-    std::cout << "sktqz_.itiskz["<<i<<"]: " << sktqz_.itiskz[i] << std::endl;
-    std::cout << "rawtqinfo_.itiskz_raw["<<i<<"]: " << rawtqinfo_.itiskz_raw[i] << std::endl;
-    std::cout << "rawtqinfo_.iqiskz_raw["<<i<<"]: " << rawtqinfo_.iqiskz_raw[i] << std::endl;
-  }
+  //std::cout << "SKGATE_START_COUNT: " << SKGATE_START_COUNT << std::endl;
+  //std::cout << "SKGATE_END_COUNT: " << SKGATE_END_COUNT << std::endl;
+  //std::cout << "sktqz_.nqiskz: " << sktqz_.nqiskz << std::endl;
   //////// DONE \\\\\\\\\\
-
-
-  
-  m_data->skq_common_dupl = skq_;
-  m_data->skt_common_dupl = skt_;
-  m_data->skchnl_common_dupl = skchnl_;
-  m_data->sktqz_common_dupl = sktqz_;
-  
   
   std::bitset<32> trigger_id{skhead_.idtgsk};
 
@@ -84,13 +88,23 @@ bool SLESearch::Execute(){
      10. Loop steps 4 to 9 until all last hit in window == last hit in event
 
   */
+  // we don't want the primary trigger - aka muon not the neutrons
   std::vector<double> SLE_times;
   double current_SLE_time = 0;
       
   // 1. Construct vector of hits from event
   // std::cout << "constructing vector of hits from event" << std::endl;
-  std::vector<double> hits = std::vector<double>(sktqz_.tiskz, sktqz_.tiskz + sktqz_.nqiskz);
-  std::vector<double> first_hit_times;
+  std::vector<double> hits = std::vector<double>(sktqz_.nqiskz);
+  for(int i=0, j=0; i<sktqz_.nqiskz; ++i){
+    const int cable_number = sktqz_.icabiz[i]; // n.b. no need for bitmask here
+    if(cable_number>MAXPM || cable_number<=0) continue;
+    // skip out-of-gate hits (i.e. not within trigger window at all)
+    if((sktqz_.ihtiflz[i] & 0x02)==0) continue;
+    hits[j]=sktqz_.tiskz[i];
+    ++j;
+  }
+  
+  std::vector<double> first_hit_times; // unused
 
   //event_hit_times_plot = TH1D("event_hit_times_plot", "event_hit_times_plot", 200, hits.front(), hits.back());
   
@@ -119,10 +133,6 @@ bool SLESearch::Execute(){
       break;
     }
   }
-
-  const int SLE_threshold = 34;
-  const double SLE_deadtime = 0; // assume no deadtime?
-  const double SLE_readout_length = 1501.56; //nope
 
   // std::cout<<"initial hits window had "<<window.size()<<" hits vs threshold "<<SLE_threshold<<std::endl;
 
@@ -156,7 +166,7 @@ bool SLESearch::Execute(){
       //std::cout << "estimated SLE time: " << current_SLE_time << std::endl;
       if (current_SLE_time > 0){
 	hit_times_plot.Fill(current_SLE_time);
-	SLE_times.push_back(current_SLE_time);
+	SLE_times.push_back(current_SLE_time + SLE_t0_offset);
       } else {
 	//std::cout << "SLE time was before primary trigger - so we ignore" << std::endl; 
       }
@@ -169,7 +179,7 @@ bool SLESearch::Execute(){
       // 6. move start of trigger search to start of trigger window + trigger window length + trigger deadtime
 
       // 6a. add on SLE_deadtime worth of hits
-      double new_start_time = window.front() + SLE_readout_length + SLE_deadtime;
+      double new_start_time = window.front() + SLE_readout_length + SLE_t0_offset + SLE_deadtime;
       //std::cout << "last_hit_in_window_time: " << last_hit_in_window_time << std::endl;
       //std::cout << "last hit in event time " << hits.back() << std::endl;
       //std::cout<<"scanning forward by readout lenght "<<SLE_readout_length<<" + deadtime "<<SLE_deadtime
@@ -250,22 +260,22 @@ bool SLESearch::Execute(){
     }
   }
 
-  // we don't want the primary trigger either - aka muon not the neutrons
-
   if (max_triggers != -999){
     SLE_times.resize(max_triggers);
   }
   
   if (!SLE_times.empty()){SLE_times.erase(SLE_times.begin());}
-  m_data->CStore.Set("SLE_times", SLE_times);
   
   int N_SLE = SLE_times.size();
-  std::cout << "SLESearch found " << N_SLE << " SLE times, they are:" << std::endl;
+  Log("SLESearch found "+toString(N_SLE)+" SLE times",v_message,m_verbose);
+  Log("they are:",v_debug,m_verbose);
   for (const auto& time : SLE_times){
-  	std::cout << time << " ns or " << std::setprecision(9) << (time * COUNT_PER_NSEC) <<" ticks from primary trigger" << std::endl;
+  	Log(toString(time)+" ns or "+toString(time * COUNT_PER_NSEC)+" ticks from primary trigger",v_debug,m_verbose);
   }
-  // we do this again in Pre recon cuts
-  m_data->CStore.Set("N_SLE", N_SLE); //need this for the subtoolchain
+  
+  // n.b. we update these entries in Pre recon cuts
+  m_data->CStore.Set("N_SLE", N_SLE);  // need this for the subtoolchain
+  m_data->CStore.Set("SLE_times", SLE_times);
 
   //  hit_times_plot.SaveAs("hit_times.root");
   //event_hit_times_plot.SaveAs("event_hit_times_plot.root");

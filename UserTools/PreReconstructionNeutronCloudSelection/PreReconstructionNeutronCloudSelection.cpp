@@ -32,30 +32,28 @@ bool PreReconstructionNeutronCloudSelection::Execute(){
      We can cut on time difference between muon and SLE before we go through reconstruction:
      Cut all SLE events where dt is < 35us or > 535us;
   */
-  Log("PreReconstructionNeutronCloudSelection: cut out all SLE triggers that have dt < 35us || dt > 535us", 0, 0);
+  Log("PreReconstructionNeutronCloudSelection: cut out all SLE triggers that have dt < 35us || dt > 535us", v_debug, m_verbose);
   
   std::vector<double> SLE_times;
   m_data->CStore.Get("SLE_times", SLE_times); // in nsec remember
 
-  std::cout << "SLE times pre cut:" << std::endl;
+  Log(m_unique_name+": SLE times pre cut:",v_debug,m_verbose);
   for (const auto& dt : SLE_times){
-    //std::cout << dt << ", " << dt / (COUNT_PER_NSEC * 1000) << "us" << std::endl;
-    std::cout << dt << ", " << dt / 1000 << "us" << std::endl; // check this
+    Log(toString(dt)+"ns or , "+toString(dt / 1000)+"us",v_debug,m_verbose);
     pre_dt_cut.Fill(dt);
   }
 
   std::vector<double> post_cut_SLE_times = {};
   std::copy_if(SLE_times.begin(), SLE_times.end(), std::back_inserter(post_cut_SLE_times),
-	       [](double i){
-		 //int time_us = i / (COUNT_PER_NSEC * 1000);
-		 double time_us = i / 1000; //again check this
-		 return (time_us >= 35 && time_us <= 535);});
+	       [](double time_ns){
+		 return (time_ns >= 35E3 && time_ns <= 535E3);});
 
   for (const auto& dt: post_cut_SLE_times){
     post_dt_cut.Fill(dt);
+    Log(m_unique_name+" trigger making the cut at "+toString(dt),v_debug,m_verbose);
   }
   
-  std::cout << "PreReconstructionNeutronCloudSelection: number of SLE triggers making the dt cut: " << post_cut_SLE_times.size() << std::endl;
+  Log(m_unique_name+": number of SLE triggers making the dt cut: "+toString(post_cut_SLE_times.size()),v_debug,m_verbose);
   
   m_data->CStore.Set("SLE_times", post_cut_SLE_times);
   const int N_SLE = post_cut_SLE_times.size();

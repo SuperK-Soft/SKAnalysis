@@ -36,13 +36,15 @@ bool PlotHitTimes::Initialise(std::string configfile, DataModel &data){
 		c_subtriggers = new TCanvas("c_subtriggers","c_subtriggers",1024,800);
 		gDirectory->cd();
 	}
-
-        useSLESearchTool=false;
-        m_variables.Get("useSLESearchTool",useSLESearchTool);
 	
 	// how to find subtriggers - SLESearch Tool or get_sub_triggers
 	useSLESearchTool=false;
 	m_variables.Get("useSLESearchTool",useSLESearchTool);
+	
+	// mostly debug, whether to use SKOFL set_timing_gate, or our modified version
+	// modified version must be used for files with TQREAL (not TQLIST)
+	useSetTimingGateM=false;
+	m_variables.Get("useSetTimingGateM",useSetTimingGateM);
 	
 	return true;
 }
@@ -57,23 +59,26 @@ bool PlotHitTimes::Execute(){
 		return true;
 	}
 	
-	std::cout<<"Primary trigger was of type "<<GetTriggerNames(skhead_.idtgsk)<<std::endl;
+	Log(m_unique_name+" Primary trigger was of type "+toString(GetTriggerNames(skhead_.idtgsk)),v_debug,m_verbose);
+	Log(m_unique_name+" readout has "+toString(sktqz_.nqiskz)+" hits",v_debug,m_verbose);
 	
 	// use sktqz as it seems to be populated either from TQReal or TQList,
 	// covering frm file data, processed data, and MC files
 	// debug print that we do indeed have hits
+	/*
 	std::cout<<"nqiskz: "<<sktqz_.nqiskz<<std::endl;
 	int pnhits=std::min(5,sktqz_.nqiskz);
 	for(int i=0; i<pnhits; ++i) std::cout<<"\thit at "<<sktqz_.tiskz[i]<<std::endl;
+	*/
 	
 	// since set_timing_gate (called by GetSubtriggerFlags) updates the times in sktqz_
 	// to be relative to the new t0 for each subtrigger, we'll need to make a note of those
 	// times now (or we could call set_timing_gate_(t0sk) again before filling the histograms) << we do this, verfieid its ok
-	///std::vector<float> times_wrt_primary_trigger(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz);
+	//std::vector<float> times_wrt_primary_trigger(sktqz_.tiskz, sktqz_.tiskz+sktqz_.nqiskz);
 	
 	// use a bitset for each hit to record which subtrigger 1.3us gate (if any) that hit is in
-	// a 32-bit bitset allows us to note up to 31 subtriggers - should be plenty
-	std::vector<std::bitset<32>> in_subtrigger_flags(sktqz_.nqiskz);
+	// a 64-bit bitset allows us to note up to 64 subtriggers - should be plenty
+	std::vector<std::bitset<64>> in_subtrigger_flags(sktqz_.nqiskz);
 	
 	// first note which hits are in the primary trigger 1.3us window
 	int n_hits_in_prim_13=0;
@@ -91,12 +96,12 @@ bool PlotHitTimes::Execute(){
 	std::vector<int> t0_sub(1,0);  // times of subtriggers
 	std::vector<TriggerType> triggers_of_interest{TriggerType::SLE}; //,LE,HE,SHE,AFT,OD};
 	for(TriggerType atrigtype : triggers_of_interest){
-		std::cout<<"\tSearching for " << TriggerIDToName(atrigtype)<<" triggers\n"
-		         << "\t\tthreshold from runinfo: " << skruninf_.softtrg_thr[atrigtype]<<"\n";
+		Log(m_unique_name+"Searching for "+TriggerIDToName(atrigtype)+" triggers\n"
+		    "\tthreshold from runinfo: "+toString(skruninf_.softtrg_thr[atrigtype]),v_debug,m_verbose);
 		// check we have a threshold set for this trigger type
 		if(skruninf_.softtrg_thr[atrigtype]==0){
 			int default_thresh = GetTriggerThreshold(atrigtype);
-			std::cout<<"\t\t->overriding with default "<<default_thresh<<"\n";
+			Log("\t\t->overriding with default "+toString(default_thresh),v_debug,m_verbose);
 			skruninf_.softtrg_thr[atrigtype] = default_thresh;
 		}
 		
@@ -129,10 +134,11 @@ bool PlotHitTimes::Execute(){
 		
 		// adjust times relative to this subtrigger
 		int it0xsk = skheadqb_.it0sk + t0_sub.at(m);
-		if(myTreeReader->GetTree()->GetBranch("TQREAL")==nullptr){
-			set_timing_gate_(&it0xsk);
-		} else {
+		Log(m_unique_name+" shifting timing to it0xsk "+toString(it0xsk)+" for subtrigger "+toString(m),v_debug,m_verbose);
+		if(myTreeReader->GetTree()->GetBranch("TQLIST")==nullptr || useSetTimingGateM){
 			set_timing_gate_m_(&it0xsk);
+		} else {
+			set_timing_gate_(&it0xsk);
 		}
 		/*
 		// sanity check that loading subtriggers then reloading the primary does not affect times
@@ -160,7 +166,18 @@ bool PlotHitTimes::Execute(){
 		
 		//int nbins=1000;
 		// use number of bins such that each bin represents 200ns, the window size used for finding subtriggers
+		// if total timespan in ns including padding is (latest_hit_time -earliest_hit_time)+padding
+		//                                            = (padding/0.05)+padding = 21*padding
+		// then divide this by 200 to get numer of bins: nbins = (21/200) * padding = 0.105*padding
 		int nbins=padding*0.105;
+		if(nbins<=0){
+			std::cerr<<"ERROR BAD BINS"<<std::endl;
+			std::cerr<<" hits span range "<<earliest_hit_time<<" to "<<latest_hit_time
+			         <<", padding is "<<padding<<", nbins: "<<nbins<<std::endl;
+			//exit(1);
+			//m_data->vars.Set("StopLoop",1);
+			return false;
+		}
 		
 		// histograms for out-of-gate, in-gate, and each 1.3us window for the (current) primary and all subtriggers
 		// times will be plotted in the frame of reference of the primary trigger
@@ -196,14 +213,17 @@ bool PlotHitTimes::Execute(){
 				// (except of course with the primary trigger, which is independent from the subtrigger search)
 				int in_prim = (in_subtrigger_flags.at(i).test(0)) ? 1 : 0;
 				if(multi_subtrigger_hits>0 && in_subtrigger_flags.at(i).count()>(in_prim+1)){
-					std::cerr<<"Hit "<<i<<" is in "<<(in_subtrigger_flags.at(i).count()-in_prim)
+					std::cerr<<"Hit "<<i<<" at "<<sktqz_.tiskz[i]<<" is in "<<(in_subtrigger_flags.at(i).count()-in_prim)
 					         <<" subtriggers!"<<std::endl;
+					         for(int k=0; k<64; ++k){
+					         	if(in_subtrigger_flags.at(i).test(k)) std::cerr<<"\tsubtrigger "<<k<<std::endl;
+					         }
 					if(multi_subtrigger_hits==0) std::cerr<<"suppressing further warnings..."<<std::endl;
 					--multi_subtrigger_hits;
 				}
 				// add it to the appropriate histogram. prioritise the primary trigger
 				// otherwise take the first subtrigger if multiple (it doesn't seem to happen)
-				for(int j=0; j<32; ++j){
+				for(int j=0; j<64; ++j){
 					if(in_subtrigger_flags.at(i).test(j)){
 						ahist = (TH1D*)h_hits.GetHists()->At(2+j);
 						ahist->Fill(sktqz_.tiskz[i]);
@@ -226,14 +246,16 @@ bool PlotHitTimes::Execute(){
 		}
 		
 		// debug print
-		std::cout<<"1.3us window hit counts:\n";
-		for(int i=0; i<hitcounts_in_1p3us.size(); ++i){
-			std::cout<<"\tSubtrigger "<<i<<": "<<hitcounts_in_1p3us.at(i);
-			ahist=(TH1D*)h_hits.GetHists()->At(i+2);
-			std::cout<<" ("<<ahist->GetEntries()<<")\n";
-		}
-		if(hitcounts_in_1p3us.size()==0){
-			std::cout<<"\tNone"<<std::endl;
+		if(m_verbose>v_debug){
+			std::cout<<"1.3us window hit counts:\n";
+			for(int i=0; i<hitcounts_in_1p3us.size(); ++i){
+				std::cout<<"\tSubtrigger "<<i<<": "<<hitcounts_in_1p3us.at(i);
+				ahist=(TH1D*)h_hits.GetHists()->At(i+2);
+				std::cout<<" ("<<ahist->GetEntries()<<")\n";
+			}
+			if(hitcounts_in_1p3us.size()==0){
+				std::cout<<"\tNone"<<std::endl;
+			}
 		}
 		
 		// FIXME right now a subtrigger may wholly overlap with the primary trigger,
@@ -262,7 +284,7 @@ bool PlotHitTimes::Execute(){
 			c_subtriggers->cd();
 			h_hits.Draw();
 			std::string canv_name = "event_"+std::to_string(myTreeReader->GetEntryNumber())+"_trigger_"+std::to_string(m);
-			std::cout<<"writing event "<<canv_name<<std::endl;
+			//std::cout<<"writing event "<<canv_name<<std::endl;
 			c_subtriggers->Write(canv_name.c_str());
 			gDirectory->cd();
 		}
@@ -282,15 +304,13 @@ int PlotHitTimes::GetSubtriggers(int subtrigtype, std::vector<int>& subtrigger_t
 	
 	// scan for subtriggers of a given type
 	
-	// arbitrary limit of max num subtriggers. 32 should be more than sufficient
+	// arbitrary limit of max num subtriggers. 64 should be more than sufficient
 	// note this has to be equal to or smaller than the size of the bitset we use
-	int MAX_SUBTRIGS=32;
+	int MAX_SUBTRIGS=64;
 	
 	// trigger time of the primary trigger
-	std::cout<<"primary trigger is at "<<skheadqb_.it0sk
-	         <<" or "<<(double(skheadqb_.it0sk)/COUNT_PER_NSEC)<<" ns"<<std::endl;
-	std::cout<<"t0 offset is "<<skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum]<<" or "
-	         <<double(skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum])/COUNT_PER_NSEC<<" ns"<<std::endl;
+	Log(m_unique_name+"primary trigger is at "+toString(skheadqb_.it0sk)
+	         +" or "+toString((double(skheadqb_.it0sk)/COUNT_PER_NSEC))+" ns",v_debug,m_verbose);
 	
 	int ntrigsfound=0;
 	std::vector<int> t0_sub(MAX_SUBTRIGS,-1);  // relative time of subtrigger to IT0SK
@@ -303,11 +323,12 @@ int PlotHitTimes::GetSubtriggers(int subtrigtype, std::vector<int>& subtrigger_t
 			Log(m_unique_name+" no SLE_times in CStore!",v_error,m_verbose);
 			return false;
 		}
+		Log(m_unique_name+" SLE_Search found "+toString(sle_times.size())+" triggers",v_debug,m_verbose);
 		// convert nanoseconds from primary trigger to clock ticks
 		for(int i=0; i<sle_times.size(); ++i){
-			t0_sub.at(i) = sle_times.at(i)*COUNT_PER_NSEC;
-			std::cout<<"SLESearch time "<<i<<" at "<<sle_times.at(i)
-			         << " ns or " << t0_sub.at(i) << " ticks from primary trigger" << std::endl;
+			t0_sub.at(i) = sle_times.at(i)*COUNT_PER_NSEC;  // convert to counts
+			Log(m_unique_name+" SLESearch time "+toString(i)+" at "+toString(sle_times.at(i))
+			         + " ns or "+toString(t0_sub.at(i))+" ticks from primary trigger",v_debug,m_verbose);
 		}
 		ntrigsfound=sle_times.size();
 	} else {
@@ -324,7 +345,7 @@ int PlotHitTimes::GetSubtriggers(int subtrigtype, std::vector<int>& subtrigger_t
 	
 }
 
-int PlotHitTimes::GetSubtriggerFlags(const std::vector<int>& t0_sub, std::vector<std::bitset<32>>& subtrigger_flags){
+int PlotHitTimes::GetSubtriggerFlags(const std::vector<int>& t0_sub, std::vector<std::bitset<64>>& subtrigger_flags){
 	
 	// we need the lun to call skcread
 	// this is needed to recalculate some variables, e.g. nqisk
@@ -334,30 +355,35 @@ int PlotHitTimes::GetSubtriggerFlags(const std::vector<int>& t0_sub, std::vector
 	
 	// for each subtrigger, scan over every hit and note which subtriggers are in its 1.3us gate
 	int nhiterrs=5;
+	std::stringstream msg;
 	for(int i=0; i<t0_sub.size(); ++i){
 		
 		// trigger time of the subtrigger
 		int it0xsk = skheadqb_.it0sk + t0_sub.at(i);
 		
-         // FIXME a few of the following assume SLE_hitsum triggertype
-         // would need to pass the trigger types vector if we need this
-         // for now though nothing actually critical, only printouts and debug stuff uses it.
-		std::cout<<"subtrigger "<<i<<" is at it0xsk "<<uint64_t(it0xsk)
-		         <<" or "<<(t0_sub.at(i)/COUNT_PER_NSEC)<<" ns from the primary trigger"
-		         <<" so peak should be at "<<(double(t0_sub.at(i))/COUNT_PER_NSEC)
-		         +(double(skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum])/COUNT_PER_NSEC)<<" ns"<<std::endl;
+		// FIXME a few of the following assume SLE_hitsum triggertype
+		// would need to pass the trigger types vector if we need this
+		// for now though nothing actually critical, only printouts and debug stuff uses it.
+		msg<<"subtrigger "<<i<<" is at it0xsk "<<uint64_t(it0xsk)
+		   <<" or "<<(t0_sub.at(i)/COUNT_PER_NSEC)<<" ns from the primary trigger"
+		   <<" so peak should be at "<<(double(t0_sub.at(i))/COUNT_PER_NSEC)
+		   +(double(skruninf_.softtrg_t0_offset[TriggerType::SLE_hitsum])/COUNT_PER_NSEC)<<" ns";
+		Log(msg.str(),v_debug,m_verbose);
+		msg.str("");
 		
 		// set IT0XSK to the position of the next subtrigger
 		// this updates the hit flags ihtiflz and icabiz, anc times in itiskz, tiskz
 		// based on the values in commons itiskz_raw, tbuf_raw, icabbf_raw etc.
-		if(myTreeReader->GetTree()->GetBranch("TQREAL")==nullptr){
-			set_timing_gate_(&it0xsk);
-		} else {
+		if(myTreeReader->GetTree()->GetBranch("TQLIST")==nullptr || useSetTimingGateM){
 			// the in-1.3us flag is set based on whether sktqz_.itisk[] is within the gate
 			// but itiskz is not populated for processed files (tbuf_raw and tiskz are, but not itiskz)
+			// (n.b. rfm files have both TQLIST and TQREAL branches, but only TQLIST is populated)
+			// assume that if TQLIST is dropped, that implies TQREAL is now populated
 			// so we have a modified version that instead uses these instead
-			Log(m_unique_name+" using set_timing_gate_m",v_debug,m_verbose);
+			//Log(m_unique_name+" using set_timing_gate_m",v_debug,m_verbose);
 			set_timing_gate_m_(&it0xsk);
+		} else {
+			set_timing_gate_(&it0xsk);
 		}
 		
 		/*
@@ -372,14 +398,12 @@ int PlotHitTimes::GetSubtriggerFlags(const std::vector<int>& t0_sub, std::vector
 		int n_in_gate_hits_this_subtrigger=0;
 		
 		// scan hits, check whether they're in the new 1.3us gate
-		std::cout<<"looping over "<<subtrigger_flags.size()<<" hits"<<std::endl;
+		Log(m_unique_name+" looping over "+toString(subtrigger_flags.size())+" hits",v_debug,m_verbose);
 		for(int k=0; k<subtrigger_flags.size(); ++k){
 			std::unordered_map<std::string, int> hit_flags = GetHitFlagNames(sktqz_.ihtiflz[k]);
 			
 			// sanity check
 			/* FIXME enable when we know what index to use for pre- and post- t0's
-			// fixed; pretty sure it's runinfo_.t0_offset[i] where i is the index for the type of trigger
-			// as in GetTriggerName(i)
 			float new_time = sktqz_.tiskz[i] - (it0xsk - skheadqb_.it0sk)/COUNT_PER_NSEC;
 			if(nhiterrs>0 && hit_flags.at("in 1.3us") != (new_time > subtr_start_t && new_time < subtr_end_t)){
 				Log(m_unique_name+" hit "+toString(k)+" in subtrigger "+toString(j)+" has time "
@@ -393,14 +417,31 @@ int PlotHitTimes::GetSubtriggerFlags(const std::vector<int>& t0_sub, std::vector
 			if(hit_flags.at("in 1.3us")){
 				subtrigger_flags.at(k).set(i);
 				++n_in_gate_hits_this_subtrigger;
+				if(n_in_gate_hits_this_subtrigger==1){
+					Log(m_unique_name+" first hit in subtrigger "+toString(i)+" at "+toString(sktqz_.tiskz[k]),v_debug,m_verbose);
+				}
+				/*
+				std::cout<<"hit "<<k<<" at "<<sktqz_.tiskz[k]<<" in 1.3us, flags: ";
+				std::bitset<32> bits(sktqz_.ihtiflz[k]);
+				std::cout<<bits<<std::endl;
+				if(std::abs(rawtqinfo_.tbuf_raw[k]-(t0_sub.at(i)/COUNT_PER_NSEC))>2E3){ // or just std::abs(sktqz_.tiskz[k])>1E3
+					std::cerr<<"Hit at "<<sktqz_.tiskz[k]<<" ("<<(rawtqinfo_.tbuf_raw[k]-(t0_sub.at(i)/COUNT_PER_NSEC))
+					         <<")  ns in trigger flagged as in 1.3us?? Hit time "<<rawtqinfo_.tbuf_raw[k]
+					         <<" ns relative to primary trigger, subtrigger "<<i
+					         <<" at "<<(t0_sub.at(i)/COUNT_PER_NSEC)<<" ns"<<std::endl;
+				}
+				*/
 			} else {
 				subtrigger_flags.at(k).reset(i);
 			}
 		}
 		
-		std::cout<<"Found "<<n_in_gate_hits_this_subtrigger
-		         <<" hits with in-1.3us flag set for subtrigger "<<i<<std::endl;
-		
+		Log(m_unique_name+" Found "+toString(n_in_gate_hits_this_subtrigger)
+		         +" hits with in-1.3us flag set for subtrigger "+toString(i),v_debug,m_verbose);
+		if(n_in_gate_hits_this_subtrigger< skruninf_.softtrg_thr[TriggerType::SLE]){
+			Log(m_unique_name+" ERROR! TOO FEW HITS FOR SLE TRIGGER!!",v_error,m_verbose);
+			//exit(1);
+		}
 	}
 	
 	return 1;

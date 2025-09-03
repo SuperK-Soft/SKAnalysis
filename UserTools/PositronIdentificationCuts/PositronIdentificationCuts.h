@@ -18,7 +18,19 @@ class PositronIdentificationCuts: public Tool {
   bool Finalise();
 
  private:
+  int total=0;
+  int nmue_rejects=0;
+  int max_pre_rejects=0;
+  int max_pre_gate_rejects=0;
+  int q50n50_rejects=0;
+  int accepted=0;
   
+  int nmue_thresh;
+  int max_pre_threshold;
+  int max_pregate_threshold;
+  int q50n50_threshold;
+ 
+  TFile* outfile=nullptr; 
   TH1D pre_q50n50_ratio_cut;
   TH1D pre_nmue_cut;
   TH1D pre_maxpre_cut;
