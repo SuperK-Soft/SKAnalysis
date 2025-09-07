@@ -25,12 +25,23 @@ class PositronIdentificationCuts: public Tool {
   int q50n50_rejects=0;
   int accepted=0;
   
+  bool rejected=false; // current event
+  
+  double q50n50_ratio = 0;
+  int nmue = 0;
+  std::vector<double> mue_times;
+  int max_pre = 0;
+  int max_pregate = 0;
+  
+  int q50n50_threshold;
   int nmue_thresh;
   int max_pre_threshold;
   int max_pregate_threshold;
-  int q50n50_threshold;
  
   TFile* outfile=nullptr; 
+  TTree* out_tree=nullptr;
+  
+  TFile* plotfile=nullptr; 
   TH1D pre_q50n50_ratio_cut;
   TH1D pre_nmue_cut;
   TH1D pre_maxpre_cut;

@@ -1,6 +1,7 @@
 myTreeReader TreeReader configfiles/DecayElectronCuts/TreeReader_config
+myRemoveBadHits RemoveBadHits configfiles/NeutronCloudCalculation/RemoveBadHits_config
 #myPrintEvent PrintEvent configfiles/DecayElectronCuts/PrintEventConfig
-#my_lfallfit lfallfit configfiles/DecayElectronCuts/lfallfit_config # need this for testing RFM files, but dont' re-do it for processed files!
+#my_lfallfit lfallfit configfiles/DecayElectronCuts/lfallfit_config # need this for testing RFM files, but don't re-do it for processed files!
 mymuechk muechk configfiles/DecayElectronCuts/muechk_config
 myCalculatePreactivityObservables CalculatePreactivityObservables configfiles/DecayElectronCuts/CalculatePreactivityObservables_config
 myPositronIdentificationCuts PositronIdentificationCuts configfiles/DecayElectronCuts/PositronIdentificationCuts_config

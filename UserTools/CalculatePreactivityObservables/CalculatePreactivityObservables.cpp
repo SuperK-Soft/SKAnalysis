@@ -25,6 +25,11 @@ bool CalculatePreactivityObservables::Initialise(std::string configfile, DataMod
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
   m_variables.Get("dark_threshold", dark_threshold);
   m_variables.Get("fraction", fraction);
+  
+  // FIXME make configurable
+  q50n50_window_size = 50; //think this is in ns
+  preact_window_size = 15;
+  preact_window_cutoff = 12;
 
   GetTreeReader();
   
@@ -58,12 +63,9 @@ bool CalculatePreactivityObservables::Execute(){
     - loop from * to ** until the last hit in the vector is 12ns before the main trigger
   */
 
-  // set some constants
+  // used in calculating max_pregate
   double lowest_in_gate_time = 9999999;
-  const double q50n50_window_size = 50; //think this is in ns
-  const double preact_window_size = 15; 
-  const double preact_window_cutoff = 12;
-
+  
   //std::vector<Hit> tof_sub_hits = std::vector<Hit>(sktqz_.nqiskz, {0,0,0});
   Log(m_unique_name+": total number of hits: "+std::to_string(sktqz_.nqiskz),v_debug,m_verbose);
   std::vector<Hit> tof_sub_hits;
@@ -82,8 +84,8 @@ bool CalculatePreactivityObservables::Execute(){
 #ifdef PREACTIVITY_DEBUG
   TCanvas cpre;
   std::string titlet="h_times_"+std::to_string(skhead_.nevsk);
-  double mint=*std::min_element(sktqz_.tiskz,sktqz_.tiskz+sktqz_.nqiskz);
-  double maxt=*std::max_element(sktqz_.tiskz,sktqz_.tiskz+sktqz_.nqiskz);
+  double mint=*std::min_element(TQREAL->T,TQREAL->T+sktqz_.nqiskz);
+  double maxt=*std::max_element(TQREAL->T,TQREAL->T+sktqz_.nqiskz);
   TH1F h_times(titlet.c_str(),titlet.c_str(),200,-50E3,50e3);
   std::string titlett="h_tofs_"+std::to_string(skhead_.nevsk);
   TH1F h_tofs(titlett.c_str(),titlett.c_str(),200,-50E3,50E3);
@@ -118,7 +120,7 @@ bool CalculatePreactivityObservables::Execute(){
     if (((sktqz_.ihtiflz[hit_idx] & 0x01)==1) && (new_time < lowest_in_gate_time)){
       lowest_in_gate_time = new_time; // 'in-gate' here refers to in 1.3us window
     }
-    tof_sub_hits.emplace_back(new_time, 0, sktqz_.qiskz[hit_idx]); //calculate goodness in the next loop
+    tof_sub_hits.emplace_back(new_time, 0, TQREAL->Q[hit_idx]); //calculate goodness in the next loop
     
 #ifdef PREACTIVITY_DEBUG
     h_times.Fill(raw_time);
@@ -179,42 +181,43 @@ bool CalculatePreactivityObservables::Execute(){
   */
   
   /*
+  // debug checks
   if(skhead_.nevsk==1129864270){
-  	for(int hit_idx=0,j=0; j<10; ++hit_idx){
-  		if((sktqz_.icabiz[hit_idx])<=0 || (sktqz_.icabiz[hit_idx]>MAXPM)) continue;
-  		if((sktqz_.ihtiflz[hit_idx] & 0x02)==0) continue;
-  		if(sktqz_.tiskz[hit_idx]>-4000) continue;
-  		++j;
-  		std::cout<<"event "<<skhead_.nevsk<<" hit "<<hit_idx<<" at time: "<<sktqz_.tiskz[hit_idx]<<" ("<<TQREAL->T.at(hit_idx)<<")"
-  		         <<" PMT "<<sktqz_.icabiz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) & 0xFFFF)<<")"
-  		         <<", flags "<<sktqz_.ihtiflz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) >> 16)<<")"
-  		         <<", <MAXPM: "<<(sktqz_.icabiz[hit_idx]<MAXPM && sktqz_.icabiz[hit_idx]>0)
-  		         <<", in-gate: "<<(sktqz_.ihtiflz[hit_idx] & 0x02)<<std::endl;
-  		
-  	}
-  	for(int i=0, j=0; j<10; ++i){
-  		int hit_idx=TQREAL->T.size()-1-i;
-  		if((sktqz_.icabiz[hit_idx])<=0 || (sktqz_.icabiz[hit_idx]>MAXPM)) continue;
-  		if((sktqz_.ihtiflz[hit_idx] & 0x02)==0) continue;
-  		++j;
-  		std::cout<<"event "<<skhead_.nevsk<<" hit "<<hit_idx
-  		         <<" PMT "<<sktqz_.icabiz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) & 0xFFFF)<<")"
-  		         <<", flags "<<sktqz_.ihtiflz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) >> 16)<<")"
-  		         <<", <MAXPM: "<<(sktqz_.icabiz[hit_idx]<MAXPM && sktqz_.icabiz[hit_idx]>0)
-  		         <<", in-gate: "<<(sktqz_.ihtiflz[hit_idx] & 0x02)<<std::endl;
-  	}
-  	
-  	std::sort(times_and_corrs.begin(), times_and_corrs.end(),
-  		[](const std::pair<float,float>& h1, const std::pair<float,float>& h2) {return h1.first < h2.first;}
-  	);
-  	for(int i=0, j=0; j<10; ++i){
-  		if(times_and_corrs.at(i).first>-4000) continue;
-  		++j;
-  		std::cout<<"hit "<<i<<" TOF,vtx T corrected time: "<<tof_sub_hits.at(i).time<<std::endl;
-  		std::cout<<"raw time, correction: "<<times_and_corrs.at(i).first<<", "<<times_and_corrs.at(i).second<<std::endl;
-  	}
-  	m_data->vars.Set("StopLoop",1);
-  	return true;
+          for(int hit_idx=0,j=0; j<10; ++hit_idx){
+                  if((sktqz_.icabiz[hit_idx])<=0 || (sktqz_.icabiz[hit_idx]>MAXPM)) continue;
+                  if((sktqz_.ihtiflz[hit_idx] & 0x02)==0) continue;
+                  if(sktqz_.tiskz[hit_idx]>-4000) continue;
+                  ++j;
+                  std::cout<<"event "<<skhead_.nevsk<<" hit "<<hit_idx<<" at time: "<<sktqz_.tiskz[hit_idx]<<" ("<<TQREAL->T.at(hit_idx)<<")"
+                           <<" PMT "<<sktqz_.icabiz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) & 0xFFFF)<<")"
+                           <<", flags "<<sktqz_.ihtiflz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) >> 16)<<")"
+                           <<", <MAXPM: "<<(sktqz_.icabiz[hit_idx]<MAXPM && sktqz_.icabiz[hit_idx]>0)
+                           <<", in-gate: "<<(sktqz_.ihtiflz[hit_idx] & 0x02)<<std::endl;
+                  
+          }
+          for(int i=0, j=0; j<10; ++i){
+                  int hit_idx=TQREAL->T.size()-1-i;
+                  if((sktqz_.icabiz[hit_idx])<=0 || (sktqz_.icabiz[hit_idx]>MAXPM)) continue;
+                  if((sktqz_.ihtiflz[hit_idx] & 0x02)==0) continue;
+                  ++j;
+                  std::cout<<"event "<<skhead_.nevsk<<" hit "<<hit_idx
+                           <<" PMT "<<sktqz_.icabiz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) & 0xFFFF)<<")"
+                           <<", flags "<<sktqz_.ihtiflz[hit_idx]<<" ("<<(TQREAL->cables.at(hit_idx) >> 16)<<")"
+                           <<", <MAXPM: "<<(sktqz_.icabiz[hit_idx]<MAXPM && sktqz_.icabiz[hit_idx]>0)
+                           <<", in-gate: "<<(sktqz_.ihtiflz[hit_idx] & 0x02)<<std::endl;
+          }
+          
+          std::sort(times_and_corrs.begin(), times_and_corrs.end(),
+                  [](const std::pair<float,float>& h1, const std::pair<float,float>& h2) {return h1.first < h2.first;}
+          );
+          for(int i=0, j=0; j<10; ++i){
+                  if(times_and_corrs.at(i).first>-4000) continue;
+                  ++j;
+                  std::cout<<"hit "<<i<<" TOF,vtx T corrected time: "<<tof_sub_hits.at(i).time<<std::endl;
+                  std::cout<<"raw time, correction: "<<times_and_corrs.at(i).first<<", "<<times_and_corrs.at(i).second<<std::endl;
+          }
+          m_data->vars.Set("StopLoop",1);
+          return true;
   }
   */
 
@@ -262,10 +265,10 @@ bool CalculatePreactivityObservables::Execute(){
       current_q50=0;
       n50=0;
       for(const auto& h : q50n50_window){
-      	current_q50+=h.charge;
-      	++n50;
-      	q50n50_ratio=current_q50/n50;
-      	printf("hit at time: %.2f, dt: %.2f, charge: %.2f, total: %.2f, n50: %d, ratio: %.2f\n", h.time, (h.time - q50n50_window.front().time), h.charge, current_q50, n50, q50n50_ratio);
+              current_q50+=h.charge;
+              ++n50;
+              q50n50_ratio=current_q50/n50;
+              printf("hit at time: %.2f, dt: %.2f, charge: %.2f, total: %.2f, n50: %d, ratio: %.2f\n", h.time, (h.time - q50n50_window.front().time), h.charge, current_q50, n50, q50n50_ratio);
       }
       */
     }
@@ -299,10 +302,10 @@ bool CalculatePreactivityObservables::Execute(){
     // add new hits until the newly truncated window is 50ns long again
     while(next_hit_idx < tof_sub_hits.size()){
       if(std::abs(tof_sub_hits.at(next_hit_idx).time - q50n50_window.front().time) < q50n50_window_size){
-	q50n50_window.push_back(tof_sub_hits.at(next_hit_idx));
-	++next_hit_idx;
+        q50n50_window.push_back(tof_sub_hits.at(next_hit_idx));
+        ++next_hit_idx;
       } else {
-	break;
+        break;
       }
     }
   }
@@ -333,30 +336,43 @@ bool CalculatePreactivityObservables::Execute(){
     if (hit_idx < 10){ printf("%.3f\n",tof_sub_hits.at(hit_idx).time); }
   }
   */
-  /*
+  
+#ifdef PREACTIVITY_DEBUG
   //TH1D h_goodness("h_goodness","goodness dist",100,0,6);
   std::vector<double> gs, ts;
   for(auto&& h : tof_sub_hits){
-  	//h_goodness.Fill(h.goodness);
-  	gs.push_back(h.goodness);
-  	ts.push_back(h.time);
+          //h_goodness.Fill(h.goodness);
+          gs.push_back(h.goodness);
+          ts.push_back(h.time);
   }
   //h_goodness.SaveAs("h_goodness.root");
   TGraph g_goodness(tof_sub_hits.size(),gs.data(),ts.data());
   g_goodness.Draw("a*");
   std::string fname="g_goodness_"+std::to_string(skhead_.nevsk)+".png";
   cpre.SaveAs(fname.c_str());
-  */
+#endif
   
   //std::cout << "erase hits below goodness threshold " << std::endl;
   //erase hits that fall below goodness threshold
   //std::cout<<"hits before goodness cut: "<<tof_sub_hits.size();
   tof_sub_hits.erase(std::remove_if(tof_sub_hits.begin(), tof_sub_hits.end(),
-				    [this, max_goodness](const Hit& h){
-				     return (h.goodness < dark_threshold) ||
-				            (h.time > 0 && h.goodness < (dark_threshold + fraction*max_goodness*exp(-h.time/60.)) );
-				    }), tof_sub_hits.end());
+                                    [this, max_goodness](const Hit& h){
+                                     return (h.goodness < dark_threshold) ||
+                                            (h.time > 0 && h.goodness < (dark_threshold + fraction*max_goodness*exp(-h.time/60.)) );
+                                    }), tof_sub_hits.end());
   //std::cout<<", after goodness cut: "<<tof_sub_hits.size()<<std::endl;
+  
+#ifdef PREACTIVITY_DEBUG
+  gs.clear(); ts.clear();
+  for(auto&& h : tof_sub_hits){
+          gs.push_back(h.goodness);
+          ts.push_back(h.time);
+  }
+  TGraph g_goodness_pass(tof_sub_hits.size(),gs.data(),ts.data());
+  g_goodness_pass.Draw("a*");
+  fname="g_goodness_pass_"+std::to_string(skhead_.nevsk)+".png";
+  cpre.SaveAs(fname.c_str());
+#endif
   
   /*
   std::cout<<"first 10 hits after goodness cut:"<<std::endl;
@@ -388,64 +404,65 @@ bool CalculatePreactivityObservables::Execute(){
   }
   //std::cout<<"initial preact_window size: "<<preact_window.size()<<std::endl;
   
-  // otherwise calling .back() segfaults
   if(preact_window.size()==0){
-  	std::cerr<<"no hits passing goodness cut with t<preact_window_cutoff!"<<std::endl;
-  	return false;
+    // i think this is prooobably fine...
+    Log(m_unique_name+": no hits passing goodness cut with t<preact_window_cutoff",v_message,m_verbose);
   }
 
   //std::cout << "go through the hits in preactivity window" << std::endl;
   //std::cout<<"last preact hit time "<<preact_window.back()<<" vs cutoff "<<-preact_window_cutoff
   //         <<", next hit_idx: "<<next_hit_idx<<" vs tof_sub_hits.size(): "<<tof_sub_hits.size()<<std::endl;
   
-  while ((preact_window.back() < -preact_window_cutoff) && (next_hit_idx != tof_sub_hits.size() - 1)){
+  if(preact_window.size()){
+    while ((preact_window.back() < -preact_window_cutoff) && (next_hit_idx != tof_sub_hits.size() - 1)){
 
-    //std::cout<<"preact_window.size() after adding new hits "<<preact_window.size()<<std::endl;
-    
-    //std::cout <<"get max_pre for this window iteration" << std::endl;
-    if (preact_window.size() > max_pre){
-      max_pre = preact_window.size();
-    }
+      //std::cout<<"preact_window.size() after adding new hits "<<preact_window.size()<<std::endl;
+      
+      //std::cout <<"get max_pre for this window iteration" << std::endl;
+      if (preact_window.size() > max_pre){
+        max_pre = preact_window.size();
+      }
 
-    //std::cout << " and the same for max_pregate" << std::endl;
-    if ((preact_window.size() > max_pregate) && ((preact_window.front() >= lowest_in_gate_time))){
-      max_pregate = preact_window.size();
-    }
+      //std::cout << " and the same for max_pregate" << std::endl;
+      if ((preact_window.size() > max_pregate) && ((preact_window.front() >= lowest_in_gate_time))){
+        max_pregate = preact_window.size();
+      }
 
-    if(next_hit_idx == tof_sub_hits.size()) break; // no more hits to grab
-    
-    //std::cout << "shifting preact_window" << std::endl;
-    // drop hits from the the front of the preact_window_size until we exceed the dt to the next hit
-    // (otherwise we're just removing hits and max_pre/max_pregate are just going to be falling)
-    double dt_to_next_hit = tof_sub_hits.at(next_hit_idx).time - preact_window.back();
-    //std::cout<<"dt to next hit: "<<dt_to_next_hit<<std::endl;
-    // shortcut
-    if(std::abs(dt_to_next_hit)>preact_window_size){
-        preact_window.clear();
-    } else {
-        double current_first_hit = preact_window.front();
-        while (preact_window.size() && (preact_window.front() - current_first_hit) < std::abs(dt_to_next_hit)){
-            preact_window.pop_front();
-        }
-    }
-    if(preact_window.empty()){
-      preact_window.push_back(tof_sub_hits.at(next_hit_idx).time);
-      ++next_hit_idx;
-    }
-    //std::cout<<"preact_window.size() before adding new hits "<<preact_window.size()<<std::endl;
-
-    //std::cout << " add new hits until the newly truncated window is 12ns long again" << std::endl;
-    while (next_hit_idx < tof_sub_hits.size()){
-      //std::cout<<"next hit at "<<tof_sub_hits.at(next_hit_idx).time<<" vs current preact first hit "<<preact_window.front()<<std::endl;
-      if (std::abs(tof_sub_hits.at(next_hit_idx).time - preact_window.front()) < preact_window_size){
-	preact_window.push_back(tof_sub_hits.at(next_hit_idx).time);
-	//std::cout<<"added"<<std::endl;
-	++next_hit_idx;
+      if(next_hit_idx == tof_sub_hits.size()) break; // no more hits to grab
+      
+      //std::cout << "shifting preact_window" << std::endl;
+      // drop hits from the the front of the preact_window_size until we exceed the dt to the next hit
+      // (otherwise we're just removing hits and max_pre/max_pregate are just going to be falling)
+      double dt_to_next_hit = tof_sub_hits.at(next_hit_idx).time - preact_window.back();
+      //std::cout<<"dt to next hit: "<<dt_to_next_hit<<std::endl;
+      // shortcut
+      if(std::abs(dt_to_next_hit)>preact_window_size){
+          preact_window.clear();
       } else {
-	break;
-      } 
+          double current_first_hit = preact_window.front();
+          while (preact_window.size() && (preact_window.front() - current_first_hit) < std::abs(dt_to_next_hit)){
+              preact_window.pop_front();
+          }
+      }
+      if(preact_window.empty()){
+        preact_window.push_back(tof_sub_hits.at(next_hit_idx).time);
+        ++next_hit_idx;
+      }
+      //std::cout<<"preact_window.size() before adding new hits "<<preact_window.size()<<std::endl;
+
+      //std::cout << " add new hits until the newly truncated window is 12ns long again" << std::endl;
+      while (next_hit_idx < tof_sub_hits.size()){
+        //std::cout<<"next hit at "<<tof_sub_hits.at(next_hit_idx).time<<" vs current preact first hit "<<preact_window.front()<<std::endl;
+        if (std::abs(tof_sub_hits.at(next_hit_idx).time - preact_window.front()) < preact_window_size){
+          preact_window.push_back(tof_sub_hits.at(next_hit_idx).time);
+          //std::cout<<"added"<<std::endl;
+          ++next_hit_idx;
+        } else {
+          break;
+        } 
+      }
+      
     }
-    
   }
 
   //std::cout << "max_pre: " << max_pre << std::endl;

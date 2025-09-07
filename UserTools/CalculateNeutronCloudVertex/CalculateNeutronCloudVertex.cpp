@@ -85,9 +85,11 @@ bool CalculateNeutronCloudVertex::Finalise(){
   mult_plot.Write();
   N_SLE_plot.Write();
   dist_to_mu_plot.Write();
+  plotfile->Close();
 
   nvc_file_ptr->cd();
   nvc_tree_ptr->Write("*",TObject::kOverwrite);
+  nvc_file_ptr->Close();
   
   return true;
 }
@@ -151,6 +153,7 @@ void CalculateNeutronCloudVertex::CreateOutputFile(){
   nvc_tree_ptr = new TTree("neutron_cloud_info", "neutron_cloud_info");
   nvc_tree_ptr->Branch("neutron_cloud_multiplicity", &mult);
   nvc_tree_ptr->Branch("neutron_cloud_vertex", &neutron_cloud_vertex);
+  nvc_tree_ptr->Branch("nevsk",&skhead_.nevsk); // to check Tree alignment
   
   
   // for plots

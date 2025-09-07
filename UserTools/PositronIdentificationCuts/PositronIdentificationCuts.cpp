@@ -33,13 +33,31 @@ bool PositronIdentificationCuts::Initialise(std::string configfile, DataModel &d
   
   std::string outfile_name = "";
   bool ok = m_variables.Get("outfile_name", outfile_name);
-  if (!ok || outfile_name.empty()){ outfile_name = "decay_electrons_cuts_out.root";}
-
-  outfile = TFile::Open(outfile_name.c_str(), "UPDATE");
+  if (!ok || outfile_name.empty()){ outfile_name = "decay_electrons_cut_out.root";}
+  
+  outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
   if (outfile == nullptr){
     throw std::runtime_error("PositronIdentificationCuts::Initialise - Couldn't open output file");
   }
-
+  
+  out_tree = new TTree("muechk","muechk");
+  out_tree->Branch("rejected",&rejected);
+  out_tree->Branch("nevsk",&skhead_.nevsk); // to check event alignment
+  out_tree->Branch("nmue",&nmue);
+  out_tree->Branch("mue_times",&mue_times);
+  out_tree->Branch("q50n50",&q50n50_ratio);
+  out_tree->Branch("maxpre",&max_pre);
+  out_tree->Branch("maxpregate",&max_pregate);
+  
+  std::string plotfile_name = "";
+  ok = m_variables.Get("plotfile_name", plotfile_name);
+  if (!ok || plotfile_name.empty()){ plotfile_name = "decay_electrons_cut_plots.root";}
+  
+  plotfile = TFile::Open(plotfile_name.c_str(), "RECREATE");
+  if (plotfile == nullptr){
+    throw std::runtime_error("PositronIdentificationCuts::Initialise - Couldn't open plot file");
+  }
+  
   pre_q50n50_ratio_cut = TH1D("pre_q50n50_ratio_cut", "pre_q50n50_ratio_cut;q50/n50", 100, 0, 0);
   pre_nmue_cut = TH1D("pre_nmue_cut", "pre_nmue_cut;nmue", 10, 0, 0);
   pre_maxpre_cut = TH1D("pre_maxpre_cut", "pre_maxpre_cut;maxpre", 20, 0, 0);
@@ -52,20 +70,19 @@ bool PositronIdentificationCuts::Initialise(std::string configfile, DataModel &d
 
 
 bool PositronIdentificationCuts::Execute(){
-
-  double q50n50_ratio = 0;
+  
+  rejected=true;
+  
   m_data->CStore.Get("q50n50_ratio", q50n50_ratio);
   pre_q50n50_ratio_cut.Fill(q50n50_ratio);
   
-  int nmue = 0;
   m_data->CStore.Get("nmue", nmue);
+  m_data->CStore.Get("mue_times", mue_times);
   pre_nmue_cut.Fill(nmue);
 
-  int max_pre = 0;
   m_data->CStore.Get("max_pre", max_pre);
   pre_maxpre_cut.Fill(max_pre);
   
-  int max_pregate = 0;
   m_data->CStore.Get("max_pregate", max_pregate);
   pre_maxpregate_cut.Fill(max_pregate);
   
@@ -95,7 +112,9 @@ bool PositronIdentificationCuts::Execute(){
     return true;
   }
   
+  rejected=false;
   ++accepted;
+  out_tree->Fill();
   
   return true;
 }
@@ -111,11 +130,17 @@ bool PositronIdentificationCuts::Finalise(){
   
   if(outfile){
     outfile->cd();
+    out_tree->Write();
+    outfile->Close();
+  }
+  
+  if(plotfile){
+    plotfile->cd();
     pre_nmue_cut.Write();
     pre_maxpre_cut.Write();
     pre_maxpregate_cut.Write();
     pre_q50n50_ratio_cut.Write();
-    outfile->Close();
+    plotfile->Close();
   }
   
   return true;
@@ -124,5 +149,6 @@ bool PositronIdentificationCuts::Finalise(){
 void PositronIdentificationCuts::SkipEntry(){
   bool skip = true;
   m_data->CStore.Set("Skip", skip);
+  out_tree->Fill();
   return;
 }

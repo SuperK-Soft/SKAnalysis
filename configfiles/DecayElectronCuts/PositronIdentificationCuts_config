@@ -1,0 +1,3 @@
+verbosity 1
+outfile_name decay_electrons_cut_out.root
+plotfile_name decay_electrons_cut_plots.root

@@ -31,9 +31,9 @@ bool RemoveBadHits::Execute(){
 	for (hit_idx = 0; hit_idx < sktqz_.nqiskz; ++hit_idx){
 		if(sktqz_.tiskz[hit_idx]>600E3) break;
 	}
-	Log(m_unique_name+": truncating nqiskz from "+toString(sktqz_.nqiskz)+" to "+toString(hit_idx-1),v_debug,m_verbose);
-	sktqz_.nqiskz=hit_idx-1;
-	rawtqinfo_.nqisk_raw=hit_idx-1;
+	Log(m_unique_name+": truncating nqiskz from "+toString(sktqz_.nqiskz)+" to "+toString(hit_idx),v_debug,m_verbose);
+	sktqz_.nqiskz=hit_idx;
+	rawtqinfo_.nqisk_raw=hit_idx;
 	
 	TQReal* TQREAL = nullptr;
 	tree_reader->Get("TQREAL", TQREAL);

@@ -173,6 +173,8 @@ bool muechk::Execute(){
   int nmue = apmue_.apnmue;
   nmue_plot.Fill(nmue);
   m_data->CStore.Set("nmue", nmue);
+  std::vector<double> mue_times(apmue_.apmuetime,apmue_.apmuetime+nmue);
+  m_data->CStore.Set("mue_times", mue_times);
   
   Log(m_unique_name+"::Execute: nmue = "+std::to_string(nmue),v_debug,m_verbose);
   for (int i = 0; i < nmue; ++i){
@@ -223,7 +225,7 @@ bool muechk::Execute(){
 bool muechk::Finalise(){
 
   nmue_plot.SaveAs("nmue_plot.root");
-  nmue_times.SaveAs("nmue_times.root");
+  nmue_times.SaveAs("mue_times.root");
   
   return true;
 }

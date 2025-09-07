@@ -28,6 +28,9 @@ class CalculatePreactivityObservables: public Tool {
 
   double dark_threshold = 4;
   double fraction = 0.4;
+  double q50n50_window_size = 50; //think this is in ns
+  double preact_window_size = 15;
+  double preact_window_cutoff = 12;
   ConnectionTable* connection_table = nullptr;
   MTreeReader* LOWE_tree_reader;
   TH1F h_maxpre;
