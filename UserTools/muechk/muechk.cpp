@@ -28,7 +28,14 @@ bool muechk::Initialise(std::string configfile, DataModel &data){
   }
   tree_reader_ptr = m_data->Trees.at(reader_name);
   lun = m_data->GetLUN(reader_name);
-
+  
+  TDirectory::TContext ctxt();
+  std::string outfname="muechk_plots.root";
+  m_variables.Get("outfname",outfname);
+  outfile = new TFile(outfname.c_str(),"RECREATE");
+  if(outfile==nullptr || outfile->IsZombie()){
+    throw std::runtime_error("muechk::Initialise: Failed to open output file!");
+  }
   nmue_plot = TH1D("nmue_plot", "nmue_plot", 20, 0, 0);
   nmue_times = TH1D("nmue_times", "nmue_times", 100, 0, 0);
   
@@ -224,8 +231,12 @@ bool muechk::Execute(){
 
 bool muechk::Finalise(){
 
-  nmue_plot.SaveAs("nmue_plot.root");
-  nmue_times.SaveAs("mue_times.root");
+  if(outfile){
+    outfile->cd();
+    nmue_plot.Write("",TObject::kOverwrite);
+    nmue_times.Write("",TObject::kOverwrite);
+    outfile->Close();
+  }
   
   return true;
 }

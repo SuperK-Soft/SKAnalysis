@@ -21,7 +21,8 @@ class muechk: public Tool {
 
   MTreeReader* tree_reader_ptr = nullptr;
   int lun=0;
-
+  
+  TFile* outfile=nullptr;
   TH1D nmue_plot;
   TH1D nmue_times;
   
