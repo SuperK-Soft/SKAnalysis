@@ -1,6 +1,4 @@
-reader_input reader_input
-reader_bdt reader_bdt
-reader_ntag reader_ntag
+reader_input reader
 ibd no  # whether to propagate branches of MC weights. We could detect the presence of these branches and not need a config var...
 #outfile /disk03/lowe12/warwick/mc/atmos/medium_tests/atmnu.lowfit.r90000.300.bdt_mod.root
 #outfile ./combined_test.root

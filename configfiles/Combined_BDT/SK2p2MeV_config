@@ -1,5 +1,5 @@
 verbosity 1
-treeReaderName reader_input
+treeReaderName reader
 derived_classname merged
 #derived_classname mc
 #useTrueVertex false

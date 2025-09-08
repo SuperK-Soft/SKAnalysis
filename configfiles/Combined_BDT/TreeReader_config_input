@@ -1,5 +1,5 @@
 verbosity 1
-readerName reader_input
+readerName reader
 FileListName MyFileList
 
 #inputFile /HOME/relic.precut.sheaft.074462.root   # a single input file - if not specified, use FileListName

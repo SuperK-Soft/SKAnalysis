@@ -54,7 +54,7 @@ class MTreeReader {
 		} else {
 			pointer_in = reinterpret_cast<const T*>(branch_value_pointers.at(branchname));
 		}
-		if(verbosity>3) std::cout<<"retrieved pointer to "<<type_name<T>()<<" at "<<pointer_in<<std::endl;
+		if(verbosity) std::cout<<"retrieved pointer to "<<type_name<T>()<<" at "<<pointer_in<<std::endl;
 		return 1;
 	}
 	
@@ -290,7 +290,7 @@ class MTreeReader {
 	TTree* thetree=nullptr;          // generic, if working with a tchain we cast it to a TTree
 	bool iownthisfile=true;          // whether we own the file and should close and delete it in destructor
 	bool autoclear=false;            // call 'Clear' method on all object branches before GetEntry
-	int verbosity=1;                 // TODO add to constructor
+	int verbosity=0;                 // TODO add to constructor
 	uint64_t currentEntryNumber=0;
 	int currentTreeNumber=0;
 	bool isMC=false;
