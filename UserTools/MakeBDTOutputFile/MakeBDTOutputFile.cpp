@@ -48,20 +48,20 @@ bool MakeBDTOutputFile::Initialise(std::string configfile, DataModel &data){
 
 bool MakeBDTOutputFile::Execute(){
 
-  std::cout << "reader_ntagbdt_ptr->GetTree(): " << reader_ntagbdt_ptr->GetTree() << std::endl;
-  std::cout << "reader_ntagbdt_ptr->GetTree()->GetEntries(): " << reader_ntagbdt_ptr->GetTree()->GetEntries() << std::endl;
+  //std::cout << "reader_ntagbdt_ptr->GetTree(): " << reader_ntagbdt_ptr->GetTree() << std::endl;
+  //std::cout << "reader_ntagbdt_ptr->GetTree()->GetEntries(): " << reader_ntagbdt_ptr->GetTree()->GetEntries() << std::endl;
   
   neutron_likelihoods.clear();
   np_temp = 0;
   if (reader_ntagbdt_ptr->GetTree()->GetEntries() == entry_number_tmp){
-    std::cout << "didn't find any neutrons on this loop" << std::endl;                                                                                         
+    Log(m_unique_name+": didn't find any neutrons on this loop",v_debug,m_verbose);
   } else {
     
     ok = reader_ntagbdt_ptr->Get("np", np_temp);
     if(!ok){throw std::runtime_error("MakeBDTOutputFile: Couldn't retrieve np branch");}
     
   }
-  std::cout << "np_temp: " << np_temp << std::endl;
+  Log(m_unique_name+": num neutrons this event: "+toString(np_temp),v_debug,m_verbose);
    
   if(np_temp!=0){
     //float neutron5_temp[5]{0};
@@ -84,12 +84,12 @@ bool MakeBDTOutputFile::Execute(){
     // ok= reader_ntagbdt_ptr->Get("bse", bse_temp);
     // if(!ok){throw std::runtime_error("MakeBDTOutputFile: Couldn't retrieve bse branch");}
 
-    std::cout << "neutron5_temp[0]: " << neutron5_temp[0] << std::endl;
-    neutron_likelihoods = std::vector<float>(neutron5_temp, neutron5_temp+np_temp);
-  }  
+    Log(m_unique_name+": first neutron likelihood: "+toString(neutron5_temp[0]),v_debug,m_verbose);
+    neutron_likelihoods.assign(neutron5_temp, neutron5_temp+np_temp);
+  }
   entry_number_tmp = reader_ntagbdt_ptr->GetTree()->GetEntries();
 
-  std::cout << "filling output tree" << std::endl;
+  Log(m_unique_name+": filling output tree",v_debug,m_verbose);
   output_tree_ptr->Fill();
   
   return true;
@@ -98,9 +98,10 @@ bool MakeBDTOutputFile::Execute(){
 
 bool MakeBDTOutputFile::Finalise(){
 
-  std::cout << "saving to output file: " << outfile_str << std::endl;
+  Log(m_unique_name+": saving to output file: "+outfile_str,v_debug,m_verbose);
   output_file_ptr->cd();
   output_tree_ptr->Write();
+  output_file_ptr->Close();
   
   return true;
 }
@@ -109,6 +110,9 @@ void MakeBDTOutputFile::SetOutputBranches(TTree* tree){
 
   bool ok = true;
   
+  /*
+  // no need to carry over, we can just gonna friend the results instead
+  // neither SK2p2MeV nor ntag_BDT omit entries, so we retain 1:1 mapping
   ok = reader_input_ptr->Get("LOWE", lowe_ptr);
   if (!ok){throw std::runtime_error("couldn't get LOWE branch");}
   tree->Branch("LOWE", "LoweInfo", lowe_ptr, 1024*1024, 0);
@@ -140,8 +144,11 @@ void MakeBDTOutputFile::SetOutputBranches(TTree* tree){
   // ok = reader_input_ptr->Get("ODTQLIST", odtqlist_ptr);
   // if (!ok){throw std::runtime_error("couldn't get ODTQLIST branch");}
   // tree->Branch("ODTQLIST", "ODTQList", odtqlist_ptr, 1024*1024, 0);
+  */
   
+  tree->Branch("nevsk",&skhead_.nevsk);
   tree->Branch("neutron_likelihoods", &neutron_likelihoods, 1024*1024, 0);
+  
   // tree->Branch("neutron5", neutron5_temp, "neutron5[np]/F", 0);
   // tree->Branch("np", &np_temp);
   // tree->Branch("nvx", x_temp, "nvx[np]/F", 0);
@@ -154,7 +161,6 @@ void MakeBDTOutputFile::SetOutputBranches(TTree* tree){
 
   for (auto&& [name, val] : srn_weights){
     reader_input_ptr->Get(name.c_str(), val);
-    
     tree->Branch(name.c_str(), val);
   }
   

@@ -1,5 +1,6 @@
 verbosity 1
 treeReaderName sk2p2_OutTree
+copy_over_data 0        # do not copy standard SK branches over to output tree
 writeFrequency 1000     # intermittently write to output file every 1000 events, in case of crash
 n10_threshold 6         # precut: num hits in 10ns
 NLOWINDEX 0             # unused; which Nlow branch to propagate
