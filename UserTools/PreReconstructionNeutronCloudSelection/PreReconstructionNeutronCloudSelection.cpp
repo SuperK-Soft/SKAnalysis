@@ -18,6 +18,16 @@ bool PreReconstructionNeutronCloudSelection::Initialise(std::string configfile, 
   m_log= m_data->Log;
 
   if(!m_variables.Get("verbosity",m_verbose)) m_verbose=1;
+  
+  std::string outfile_name = "";
+  bool ok = m_variables.Get("outfile_name", outfile_name);
+  if (!ok || outfile_name.empty()){ outfile_name = "pre_recon_neut_cloud_out.root";}
+
+  TDirectory::TContext ctxt();
+  outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
+  if (!outfile || outfile->IsZombie()){
+    throw std::runtime_error("PreReconstructionNeutronCloudSelection::Finalise - Couldn't open output file");
+  }
 
   pre_dt_cut = TH1D("pre_dt_cut", "pre_dt_cut;dt", 50, 0, 0);
   post_dt_cut = TH1D("post_dt_cut", "post_dt_cut;dt", 50, 0, 0);
@@ -65,18 +75,11 @@ bool PreReconstructionNeutronCloudSelection::Execute(){
 
 
 bool PreReconstructionNeutronCloudSelection::Finalise(){
-
-  std::string outfile_name = "";
-  bool ok = m_variables.Get("outfile_name", outfile_name);
-  if (!ok || outfile_name.empty()){ outfile_name = "pre_recon_neut_cloud_out.root";}
-
-  TFile* outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
-  if (!outfile || outfile->IsZombie()){
-    throw std::runtime_error("PreReconstructionNeutronCloudSelection::Finalise - Couldn't open output file");
-  }
-
+  
+  outfile->cd();
   pre_dt_cut.Write();
   post_dt_cut.Write();
+  outfile->Close();
 
   return true;
 }

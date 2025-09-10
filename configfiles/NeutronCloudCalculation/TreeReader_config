@@ -19,12 +19,8 @@ treeName mu                                    # the name of the tree within the
 #maxEntries -1
 
 skFile 1
-skrootMode 0
 skoptn 31,30,26,25                             # options describing what to load via skread/skrawread (31)
 skbadopt 23
-
-#outputFile /home/mattnich/disk3stor/neutron_cloud_test_run868.root
-outputFile /disk02/usr6/moflaher/run870_apr/neutron_cloud.root
 
 SK_GEOMETRY 6
 

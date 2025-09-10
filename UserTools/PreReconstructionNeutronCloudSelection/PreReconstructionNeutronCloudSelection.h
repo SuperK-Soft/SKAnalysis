@@ -18,7 +18,8 @@ class PreReconstructionNeutronCloudSelection: public Tool {
   bool Finalise();
 
  private:
-
+  
+  TFile* outfile=nullptr;
   TH1D pre_dt_cut;
   TH1D post_dt_cut;
   

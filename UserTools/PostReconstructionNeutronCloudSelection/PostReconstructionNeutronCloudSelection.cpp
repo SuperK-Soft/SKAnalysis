@@ -52,6 +52,7 @@ bool PostReconstructionNeutronCloudSelection::Initialise(std::string configfile,
   bool ok = m_variables.Get("outfile_name", outfile_name);
   if (!ok || outfile_name.empty()){ outfile_name = "post_recon_neut_cloud_out.root";}
   
+  TDirectory::TContext ctxt();
   outfile = TFile::Open(outfile_name.c_str(), "RECREATE");
   if (outfile == nullptr){
     throw std::runtime_error("PostReconstructionNeutronCloudSelection::Initialise - Couldn't open output file");

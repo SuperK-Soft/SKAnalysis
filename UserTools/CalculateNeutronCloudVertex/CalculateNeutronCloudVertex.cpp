@@ -73,7 +73,7 @@ bool CalculateNeutronCloudVertex::Execute(){
   // intermittent write so we don't lose everything if toolchain crashes
   if (MU_tree_reader->GetEntryNumber() % 1000 == 0){
     nvc_file_ptr->cd();
-    nvc_tree_ptr->Write("*",TObject::kOverwrite);
+    nvc_tree_ptr->Write("",TObject::kOverwrite);
   }
   
   return true;
@@ -88,7 +88,7 @@ bool CalculateNeutronCloudVertex::Finalise(){
   plotfile->Close();
 
   nvc_file_ptr->cd();
-  nvc_tree_ptr->Write("*",TObject::kOverwrite);
+  nvc_tree_ptr->Write("",TObject::kOverwrite);
   nvc_file_ptr->Close();
   
   return true;
