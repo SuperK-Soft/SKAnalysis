@@ -88,7 +88,7 @@ bool PositronIdentificationCuts::Execute(){
   
   ++total;
   
-  if (nmue != nmue_thresh){
+  if (nmue > nmue_thresh){
     SkipEntry();
     ++nmue_rejects;
     return true;

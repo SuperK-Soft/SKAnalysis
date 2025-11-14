@@ -1,0 +1,5 @@
+verbosity 1
+selectorName solarCuts
+selectionsFile /disk02/usr6/moflaher/trashme/solar_cuts.root
+distributionsFile /disk02/usr6/moflaher/trashme/solar_distributions.root
+treeReaderName solarReader

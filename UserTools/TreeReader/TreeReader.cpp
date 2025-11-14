@@ -526,6 +526,9 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 						         <<") for total ticks "<<firsteventticks<<" ("<<std::bitset<64>(firsteventticks)<<")"<<std::endl; 
 						thiseventticks = firsteventticks;
 						m_data->CStore.Set("firsteventticks",firsteventticks);
+						skhead_.nrunsk=header->nrunsk;
+						skhead_.nsubsk=header->nsubsk;
+						skhead_.nevsk=header->nevsk;
 					}
 					
 					break;
@@ -777,10 +780,19 @@ bool TreeReader::Initialise(std::string configfile, DataModel &data){
 		// and excessive printouts slow things down considerably
 		int tmp_verb = m_verbose;
 		m_verbose=0;
+		// if this entry isn't a physics one (e.g. if not specified, entry 0 probably isn't one)
+		// then this wipes out the run and subrun numbers in the skhead_ common that other Tools
+		// may use in Initialise, so keep those
+		int run = skhead_.nrunsk;
+		int subrun = skhead_.nsubsk;
+		int evnum = skhead_.nevsk;
 		for(int i=0; i<firstEntry; ++i){
 			if(i%1000) Log(m_unique_name+" entry "+toString(i)+"...",v_error,m_verbose);
 			ReadEntry(i,true);
 		}
+		skhead_.nrunsk = run;
+		skhead_.nsubsk = subrun;
+		skhead_.nevsk = evnum;
 		m_verbose = tmp_verb;
 	}
 	
@@ -1239,10 +1251,10 @@ bool TreeReader::Finalise(){
 	
 	if(myTreeSelections) delete myTreeSelections;
 	
-	if(skrootMode==SKROOTMODE::WRITE){
+	if(skrootMode==SKROOTMODE::WRITE && m_verbose>v_debug){
 		TreeManager* mgr = skroot_get_mgr(&LUN);
 		TTree* otree = mgr->GetOTree();
-		//std::cout<<m_unique_name<<" tree has "<<otree->GetEntries()<<" entries in Finalise"<<std::endl;
+		std::cout<<m_unique_name<<" tree has "<<otree->GetEntries()<<" entries in Finalise"<<std::endl;
 	}
 	
 	

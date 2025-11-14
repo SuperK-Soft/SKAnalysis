@@ -1,3 +1,16 @@
 # print event config file
 verbosity 3
 treeReaderName demoReader
+printCommons 1
+printRunInfo 1
+printHeader 1
+printTriggers 1
+printMCInfo 1
+printPrevT0 1
+printBadChannels 1
+printDarkInfo 1
+printTQREAL 1
+printTQAREAL 1
+printHits 1
+printLoweInfo 1
+printSubTriggers 0

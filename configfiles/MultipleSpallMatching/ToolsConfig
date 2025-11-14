@@ -1,0 +1,37 @@
+# gracefully handle SIGINT and call Finalise
+GracefulStop GracefulStop configfiles/MultipleSpallMatching/GracefulStopConfig
+
+# generate the list of files for a given run
+FileList LoadFileList configfiles/MultipleSpallMatching/LoadFileListConfig
+
+# read solar events from "spalomu" files
+# SK-IV tech note suggests the solar cuts in SolarPreSelection Tool *define* this sample
+# (in which case we could just read these instead of applying that Tool to the RFM file...)
+# SK-VI tech note suggests that SolarSelection cuts are applied *to* this sample...
+# (in which case we would apply the SolarPreSelection tool to this solar sample...)
+# however... I dunno where the solar files are. So i guess we hope that SK-IV is right
+# and re-generate it from RFM files, otherwise we don't know what defines the solar sample.
+#SpalomuReader TreeReader configfiles/MultipleSpallMatching/TreeReaderConfig_spalomu
+
+# TreeReader for RFM file
+RFMReader TreeReader configfiles/MultipleSpallMatching/TreeReaderConfig
+
+# data quality cuts: skip incomplete events, those with ID or OD off, spacers etc
+DataQualityCuts DataQualityCuts configfiles/MultipleSpallMatching/DataQualityCutsConfig
+
+# Make an MTreeSelection to record solar event selection
+# part of this can be checking whether this event is within 60s of a relic candidate
+SolarCutRecorder CutRecorder configfiles/MultipleSpallMatching/SolarCutRecorderConfig
+
+# pre-selection: time match against relic events
+SolarPreSelection SolarPreSelection configfiles/MultipleSpallMatching/SolarPreSelectionConfig
+
+# lowe reconstruction of solar events (if not available from spalomu file)
+lfallfit lfallfit configfiles/MultipleSpallMatching/lfallfitConfig
+
+# post-selection: solar selection cuts defined in tech note
+SolarPostSelection SolarPostSelection configfiles/MultipleSpallMatching/SolarPostSelectionConfig
+
+# Write out passing solar events along with all relics within +-60s
+# note this needs to record matches from a relic tree perspective as well
+WriteSolarMatches WriteSolarMatches configfiles/MultipleSpallMatching/WriteSolarMatchesConfig

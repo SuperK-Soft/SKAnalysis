@@ -1,0 +1,36 @@
+verbosity 1
+FileListName MyFileList                                                  # required argument
+#outFile ./files_processed.txt                                            # save the generated set of files
+
+useRegex 0
+#fileList configfiles/SpallReduction/list_of_files.txt
+#fileList configfiles/SpallReduction/segtest.txt
+#maxFiles 100
+
+#sk6
+#inputDirectory /disk02/data7/sk6/run/
+#inputDirectory /disk02/data7/sk6/run/0868/   # ok
+#inputDirectory /disk02/data7/sk6/run/0869/   # bad run according to jack
+#inputDirectory /disk02/data7/sk6/run/0870
+#inputDirectory /disk02/data7/sk6/run/0871    # segfault when loading all files, but fixed number ok?
+#inputDirectory /disk02/data7/sk6/run/0872
+#inputDirectory /disk02/data7/sk6/run/0867/086721/
+inputDirectory /disk02/data7/sk6/run/0868/086831
+
+#sk7
+#inputDirectory /disk02/data7/sk7/run/0901/
+#inputDirectory /disk03/data8/sk7/run/0912/
+#inputDirectory /disk03/lowe10/sk7/rfm/0912/   # whats the difference to above?
+
+#filePattern rfm_run*.root
+filePattern *.root
+
+#inputDirectory /disk02/usr7/jfannon/data/recon
+#inputDirectory /disk02/data7/sk6/run/0869/086933                         # BAD RUN AVOID FOR NOW
+#filePattern "rfm_run075000.000020.root"
+
+#inputDirectory /disk02/data7/sk6/run/0870/087096
+#inputDirectory /disk01/data6/sk4/run/0750/075000
+#inputDirectory /disk02/usr7/jfannon/simulations/ibd/sim/flatsim         # directory for flat IBD
+#fileList /home/jfannon/075000.txt
+

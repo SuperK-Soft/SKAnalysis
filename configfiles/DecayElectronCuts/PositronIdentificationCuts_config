@@ -1,3 +1,7 @@
 verbosity 1
 outfile_name decay_electrons_cut_out.root
 plotfile_name decay_electrons_cut_plots.root
+nmue_thresh 0   # reject events with > this many nmue
+max_pre_threshold 12
+max_pregate_threshold 5
+q50n50_threshold 2

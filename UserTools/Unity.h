@@ -90,3 +90,6 @@
 #include "GetSubTriggers.h"
 #include "CalculateSpallationVariables.h"
 #include "RemoveBadHits.h"
+#include "SolarPreSelection.h"
+#include "SolarPostSelection.h"
+#include "WriteSolarMatches.h"

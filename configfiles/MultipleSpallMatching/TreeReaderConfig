@@ -1,0 +1,42 @@
+verbosity 1
+FileListName MyFileList
+
+#inputFile /disk02/data7/sk6/run/0870/087096/rfm_run087096.000164.root  ## cosang at 36046
+#firstEntry 10715
+#maxEntries 3                       # max num input entries to process
+
+treeName data
+readerName solarReader
+skFile 1
+skrootMode 0 # root2root
+outputFile solar.root
+skoptn 31,30,26,25
+skbadopt 23   # 55? we need to re-read with 0 for muons
+allowedTriggers 2,0,1,18,16,17,28
+skipBadRuns 1
+SK_GEOMETRY 6
+
+StartSkippedInputBranches
+SPACERS
+QBEESTATUS
+DBSTATUS
+MISMATCHEDHITS
+ATMPD
+UPMU
+IDODXTLK
+EndSkippedInputBranches
+
+StartSkippedOutputBranches
+TQLIST
+ODTQLIST
+MU
+SOFTWARETRG
+EVENTTRAILER
+HWTRGLIST
+PEDESTALS
+EVENTHEADER
+GPSLIST
+PREVT0
+SLE
+T2KGPSLIST
+EndSkippedOutputBranches

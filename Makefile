@@ -5,6 +5,7 @@ PWD=`pwd`
 Dependencies=Dependencies
 
 # C++ compiler flags - XXX config.gmk sets this already, so APPEND ONLY XXX
+#-march=native  uh, somehow this results in code that won't run. Nice. :|
 CXXFLAGS += -fmax-errors=10 -fPIC -O3 -g -std=c++17 -lgfortran -malign-double -mpreferred-stack-boundary=8 -fdiagnostics-color=always -Werror=array-bounds -Werror=return-type # -Wpadded -Wpacked -Wpedantic << too many pybind warnings?
 CXXFLAGS += -Wno-reorder -Wno-misleading-indentation -Wno-sign-compare -Wno-unused-but-set-variable -Wno-unused-variable -Wno-register -Wno-delete-non-virtual-dtor
 

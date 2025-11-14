@@ -95,6 +95,9 @@ if (tool=="CompareCommons") ret=new CompareCommons;
 if (tool=="GetSubTriggers") ret=new GetSubTriggers;
 if (tool=="CalculateSpallationVariables") ret=new CalculateSpallationVariables;
 if (tool=="RemoveBadHits") ret=new RemoveBadHits;
+if (tool=="SolarPreSelection") ret=new SolarPreSelection;
+if (tool=="SolarPostSelection") ret=new SolarPostSelection;
+if (tool=="WriteSolarMatches") ret=new WriteSolarMatches;
 return ret;
 }
 

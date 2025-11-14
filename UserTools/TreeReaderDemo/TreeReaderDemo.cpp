@@ -44,7 +44,7 @@ bool TreeReaderDemo::Execute(){
 	
 	// run and subrun number
 	std::cout<<std::endl<<"Event "<<myTreeReader->GetEntryNumber()
-			 <<" was from run "<<header->nrunsk<<", subrun "<<header->nsubsk<<std::endl;
+	         <<" was from run "<<header->nrunsk<<", subrun "<<header->nsubsk<<std::endl;
 	
 	// event time and date
 	tm rundate = {0};
@@ -62,11 +62,12 @@ bool TreeReaderDemo::Execute(){
 	// total hits and charge
 	double total_charge = std::accumulate(tqreal->Q.begin(),tqreal->Q.end(),0);
 	std::cout<<"The event saw "<<tqreal->nhits
-			 <<" PMTs hit with a total charge of "<<total_charge<<" nC"<<std::endl;
+	         <<" PMTs hit with a total charge of "<<total_charge<<" nC"<<std::endl;
 	
-	bool has_secondary_info = myTreeReader->Get("SECONDARY",secondaries);
+	bool has_secondary_info = myTreeReader->GetTree()->GetBranch("SECONDARY")!=nullptr;
 	if(has_secondary_info){
 		std::cout<<"calling secondary print"<<std::endl;
+		myTreeReader->Get("SECONDARY",secondaries);
 		secondaries->Print();
 	} else {
 		Log(m_unique_name+" No SECONDARY branch - cannot print secondary information at this time.",v_debug,m_verbose);
