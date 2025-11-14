@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['vectgen_437',['vectgen',['../classvectgen.html',1,'']]],
-  ['vertexfitter_438',['VertexFitter',['../classVertexFitter.html',1,'']]]
+  ['vectgen_445',['vectgen',['../classvectgen.html',1,'']]],
+  ['vertexfitter_446',['VertexFitter',['../classVertexFitter.html',1,'']]]
 ];

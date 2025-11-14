@@ -94,7 +94,7 @@ $(function() {
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classPlotHitTimes.html#a68c44df79ede202c125d688d8da8aba2">Execute</a>(); </div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classPlotHitTimes.html#a22b39684c67c5ac8647a5925999540d5">Finalise</a>(); </div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keywordtype">int</span> GetSubtriggers(<span class="keywordtype">int</span> subtrigtype, std::vector&lt;int&gt;&amp; subtrigger_times);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">int</span> GetSubtriggerFlags(<span class="keyword">const</span> std::vector&lt;int&gt;&amp; subtrigger_times, std::vector&lt;std::bitset&lt;32&gt;&gt;&amp; in_subtrigger_flags);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keywordtype">int</span> GetSubtriggerFlags(<span class="keyword">const</span> std::vector&lt;int&gt;&amp; subtrigger_times, std::vector&lt;std::bitset&lt;64&gt;&gt;&amp; in_subtrigger_flags);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    </div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    </div>
@@ -103,19 +103,20 @@ $(function() {
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    TCanvas* c_subtriggers = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <a class="code" href="classColourWheel.html">ColourWheel</a> colourwheel;</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">int</span> onlyWriteSubtriggers=0;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;  <span class="keywordtype">bool</span> useSLESearchTool = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;};</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">bool</span> useSLESearchTool = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">bool</span> useSetTimingGateM = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;};</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassColourWheel_html"><div class="ttname"><a href="classColourWheel.html">ColourWheel</a></div><div class="ttdef"><b>Definition:</b> ColourWheel.h:6</div></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:67</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
 <div class="ttc" id="aclassPlotHitTimes_html"><div class="ttname"><a href="classPlotHitTimes.html">PlotHitTimes</a></div><div class="ttdef"><b>Definition:</b> PlotHitTimes.h:26</div></div>
 <div class="ttc" id="aclassPlotHitTimes_html_a12b83b376eea8d96fce7812040389e46"><div class="ttname"><a href="classPlotHitTimes.html#a12b83b376eea8d96fce7812040389e46">PlotHitTimes::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> PlotHitTimes.cpp:12</div></div>
-<div class="ttc" id="aclassPlotHitTimes_html_a22b39684c67c5ac8647a5925999540d5"><div class="ttname"><a href="classPlotHitTimes.html#a22b39684c67c5ac8647a5925999540d5">PlotHitTimes::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> PlotHitTimes.cpp:410</div></div>
-<div class="ttc" id="aclassPlotHitTimes_html_a68c44df79ede202c125d688d8da8aba2"><div class="ttname"><a href="classPlotHitTimes.html#a68c44df79ede202c125d688d8da8aba2">PlotHitTimes::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> PlotHitTimes.cpp:51</div></div>
+<div class="ttc" id="aclassPlotHitTimes_html_a22b39684c67c5ac8647a5925999540d5"><div class="ttname"><a href="classPlotHitTimes.html#a22b39684c67c5ac8647a5925999540d5">PlotHitTimes::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> PlotHitTimes.cpp:451</div></div>
+<div class="ttc" id="aclassPlotHitTimes_html_a68c44df79ede202c125d688d8da8aba2"><div class="ttname"><a href="classPlotHitTimes.html#a68c44df79ede202c125d688d8da8aba2">PlotHitTimes::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Executre function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> PlotHitTimes.cpp:53</div></div>
 <div class="ttc" id="aclassPlotHitTimes_html_a79a924adc0575f92ea30108ed40c3c86"><div class="ttname"><a href="classPlotHitTimes.html#a79a924adc0575f92ea30108ed40c3c86">PlotHitTimes::PlotHitTimes</a></div><div class="ttdeci">PlotHitTimes()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> PlotHitTimes.cpp:10</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

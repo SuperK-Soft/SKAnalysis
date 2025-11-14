@@ -100,12 +100,12 @@ $(function() {
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  TH1D N_SLE_plot;</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;  </div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  <span class="keywordtype">int</span> mult = 0;</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  std::vector&lt;double&gt; neutron_cloud_vertex = {};</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  std::vector&lt;double&gt; muon_dir = {};</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <a class="code" href="classMTreeReader.html">MTreeReader</a>* MU_tree_reader = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  TFile* nvc_file_ptr = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  TTree* nvc_tree_ptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  std::vector&lt;double&gt; neutron_cloud_vertex{0,0,0};</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;  <a class="code" href="classMTreeReader.html">MTreeReader</a>* MU_tree_reader = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  TFile* nvc_file_ptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  TTree* nvc_tree_ptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  TFile* plotfile = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  <span class="keywordtype">void</span> GetTreeReader();</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  <span class="keywordtype">void</span> CreateOutputFile();</div>
