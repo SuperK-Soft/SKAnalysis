@@ -31,6 +31,7 @@ class SolarPreSelection: public Tool {
 	TTree* solarTree=nullptr;
 	
 	std::deque<SolarRelic> relics_this_run;
+	TFile* fout=nullptr;
 	TTree* relic_tree=nullptr;
 	SolarRelic out_relic;
 	

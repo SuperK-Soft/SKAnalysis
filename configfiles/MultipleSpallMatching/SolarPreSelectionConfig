@@ -3,3 +3,4 @@ match_window 60
 solar_nqisk_precut_thresh 1000
 rfmReaderName solarReader
 solarSelectorName solarCuts
+out_fname /disk02/usr6/moflaher/trashme/solar.root

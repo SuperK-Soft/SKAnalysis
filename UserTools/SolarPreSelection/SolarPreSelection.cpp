@@ -36,6 +36,15 @@ bool SolarPreSelection::Initialise(std::string configfile, DataModel &data){
 	rfmReader = m_data->Trees.at(rfmReaderName);
 	m_data->vars.Set("SolarRfmReader",rfmReaderName);
 	
+	// get output file name. Use name "root2root" to use that file if using that mode.
+	std::string out_fname;
+	get_ok = m_variables.Get("out_fname",out_fname);
+	if(!get_ok){
+		Log(m_unique_name+"Error! No output file name given!",v_error,m_verbose);
+		m_data->vars.Set("StopLoop",1);
+		return false;
+	}
+	
 	// get relics we'll be matching against
 	// there's not many per run, and we need to know if a solar event will be matched to relics that may come after it,
 	// so just read in all the relics up front.
@@ -95,20 +104,28 @@ bool SolarPreSelection::Initialise(std::string configfile, DataModel &data){
 	intptr_t solar_relics_ptr = reinterpret_cast<intptr_t>(&relics_this_run);
 	m_data->CStore.Set("solar_relics", solar_relics_ptr);
 	
-	// add some extra branches to solar event tree
-	int lun = m_data->GetLUN(rfmReaderName);
-	TreeManager* mgr = skroot_get_mgr(&lun);
-	solarTree = mgr->GetOTree();
-	// rename tree to solar as we'll add a relic tree in a second
-	solarTree->SetName("solar");
-	solarTree->Branch("HwClockTicks",&thiseventticks);
-	// note the set of relics (time) matched to a solar is fixed here - if this solar is later rejected, it just won't be recorded
-	solarTree->Branch("MatchedEvNums",&matched_ev_nums);
-	solarTree->Branch("MatchedOutEntryNums",&matched_out_entry_nums);
-	solarTree->Branch("MatchedTimeDiffs",&matched_tdiffs);
+	// if doing root2root mode add some extra branches to solar event tree
+	if(out_fname=="root2root"){
+		int lun = m_data->GetLUN(rfmReaderName);
+		TreeManager* mgr = skroot_get_mgr(&lun);
+		solarTree = mgr->GetOTree();
+		// rename tree to solar as we'll add a relic tree in a second
+		solarTree->SetName("solar");
+		solarTree->Branch("HwClockTicks",&thiseventticks);
+		// note the set of relics (time) matched to a solar is fixed here - if this solar is later rejected, it just won't be recorded
+		solarTree->Branch("MatchedEvNums",&matched_ev_nums);
+		solarTree->Branch("MatchedOutEntryNums",&matched_out_entry_nums);
+		solarTree->Branch("MatchedTimeDiffs",&matched_tdiffs);
+		
+		solarTree->GetCurrentFile()->cd();
+	} else {
+		// actually tbh, we don't need the solar events for anything after this and we're tight on disk space
+		// so let's just write the relic (pairing) tree standalone and not propagate the solar events in their own tree
+		fout = new TFile(out_fname.c_str(),"RECREATE");
+		fout->cd();
+	}
 	
 	// also add an output relic tree with 1:1 matching to input relic tree
-	solarTree->GetCurrentFile()->cd();
 	relic_tree = new TTree("relic","relic");
 	relic_tree->Branch("nevsk",&out_relic.nevsk);
 	relic_tree->Branch("MatchedEvNums",&out_relic.matched_ev_nums);
@@ -187,7 +204,7 @@ bool SolarPreSelection::Execute(){
 			if(a_relic.nevsk < skhead_.nevsk){
 				// if this relic is >60s before current event,
 				// it won't be matched to any future solars, so can be written out
-				std::cout<<"relic "<<relici<<" ready for writeout"<<std::endl;
+				std::cout<<"relic "<<(erased_count + to_erase_count + matched_relic_count)<<" ready for writeout"<<std::endl;
 				FillRelic(a_relic);
 				++to_erase_count;
 				if(&a_relic==&relics_this_run.back()){
