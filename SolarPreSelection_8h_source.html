@@ -98,33 +98,34 @@ $(function() {
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    TTree* solarTree=<span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    </div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    std::deque&lt;SolarRelic&gt; relics_this_run;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    TTree* relic_tree=<span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <a class="code" href="structSolarRelic.html">SolarRelic</a> out_relic;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    Long64_t thiseventticks=0;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">double</span> match_window = 60; <span class="comment">// [seconds]</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    int64_t match_window_ticks;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">int</span> solar_nqisk_precut_thresh; <span class="comment">// nhits</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    std::vector&lt;int32_t&gt; matched_ev_nums;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::vector&lt;uint64_t&gt; matched_out_entry_nums;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    std::vector&lt;size_t&gt; matched_indices; <span class="comment">// for forwarding to WriteSolarMatches tool</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    std::vector&lt;double&gt; matched_tdiffs;  <span class="comment">// seconds</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">int</span> solarcount=0;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">int</span> matchedsolarcount=0;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">int</span> erased_count=0;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;};</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    TFile* fout=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    TTree* relic_tree=<span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <a class="code" href="structSolarRelic.html">SolarRelic</a> out_relic;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    Long64_t thiseventticks=0;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keywordtype">double</span> match_window = 60; <span class="comment">// [seconds]</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    int64_t match_window_ticks;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">int</span> solar_nqisk_precut_thresh; <span class="comment">// nhits</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    </div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    std::vector&lt;int32_t&gt; matched_ev_nums;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    std::vector&lt;uint64_t&gt; matched_out_entry_nums;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    std::vector&lt;size_t&gt; matched_indices; <span class="comment">// for forwarding to WriteSolarMatches tool</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    std::vector&lt;double&gt; matched_tdiffs;  <span class="comment">// seconds</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">int</span> solarcount=0;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">int</span> matchedsolarcount=0;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">int</span> erased_count=0;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;};</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDataModel_html"><div class="ttname"><a href="classDataModel.html">DataModel</a></div><div class="ttdef"><b>Definition:</b> DataModel.h:67</div></div>
 <div class="ttc" id="aclassMTreeReader_html"><div class="ttname"><a href="classMTreeReader.html">MTreeReader</a></div><div class="ttdef"><b>Definition:</b> MTreeReader.h:29</div></div>
 <div class="ttc" id="aclassSolarPreSelection_html"><div class="ttname"><a href="classSolarPreSelection.html">SolarPreSelection</a></div><div class="ttdef"><b>Definition:</b> SolarPreSelection.h:17</div></div>
-<div class="ttc" id="aclassSolarPreSelection_html_a5dd4aa0ae4a95b25ec70e4d627943fc1"><div class="ttname"><a href="classSolarPreSelection.html#a5dd4aa0ae4a95b25ec70e4d627943fc1">SolarPreSelection::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> SolarPreSelection.cpp:238</div></div>
+<div class="ttc" id="aclassSolarPreSelection_html_a5dd4aa0ae4a95b25ec70e4d627943fc1"><div class="ttname"><a href="classSolarPreSelection.html#a5dd4aa0ae4a95b25ec70e4d627943fc1">SolarPreSelection::Finalise</a></div><div class="ttdeci">bool Finalise()</div><div class="ttdoc">Finalise funciton used to clean up resorces.</div><div class="ttdef"><b>Definition:</b> SolarPreSelection.cpp:255</div></div>
 <div class="ttc" id="aclassSolarPreSelection_html_a635aa50dd8266095c13e4326221b78a7"><div class="ttname"><a href="classSolarPreSelection.html#a635aa50dd8266095c13e4326221b78a7">SolarPreSelection::Initialise</a></div><div class="ttdeci">bool Initialise(std::string configfile, DataModel &amp;data)</div><div class="ttdoc">Initialise Function for setting up Tool resorces.</div><div class="ttdef"><b>Definition:</b> SolarPreSelection.cpp:13</div></div>
 <div class="ttc" id="aclassSolarPreSelection_html_a6ca94fb745de9048fbb49853508ec76c"><div class="ttname"><a href="classSolarPreSelection.html#a6ca94fb745de9048fbb49853508ec76c">SolarPreSelection::SolarPreSelection</a></div><div class="ttdeci">SolarPreSelection()</div><div class="ttdoc">Simple constructor.</div><div class="ttdef"><b>Definition:</b> SolarPreSelection.cpp:11</div></div>
-<div class="ttc" id="aclassSolarPreSelection_html_ae78b6d120ac597a159f966424eeb7d6a"><div class="ttname"><a href="classSolarPreSelection.html#ae78b6d120ac597a159f966424eeb7d6a">SolarPreSelection::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> SolarPreSelection.cpp:133</div></div>
+<div class="ttc" id="aclassSolarPreSelection_html_ae78b6d120ac597a159f966424eeb7d6a"><div class="ttname"><a href="classSolarPreSelection.html#ae78b6d120ac597a159f966424eeb7d6a">SolarPreSelection::Execute</a></div><div class="ttdeci">bool Execute()</div><div class="ttdoc">Execute function used to perform Tool perpose.</div><div class="ttdef"><b>Definition:</b> SolarPreSelection.cpp:150</div></div>
 <div class="ttc" id="astructSolarRelic_html"><div class="ttname"><a href="structSolarRelic.html">SolarRelic</a></div><div class="ttdef"><b>Definition:</b> SolarRelic.h:3</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
